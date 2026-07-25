@@ -115,7 +115,7 @@ Effect =
 
 ## 6. Game loop & progression
 
-**Creation → Recruiting (fixed events):** set last name / jersey / home state / position. Starting `overall` implies a HS star rating; that + `homeState` surface school offers RNG-weighted by tier (blue-bloods rare unless elite). Pick → sets `school` + `tier`.
+**Creation → Recruiting (fixed events):** set last name / jersey / home state / position. **Starting talent is a fixed baseline for every player** — ~3★, `overall` ~58-62, with **no starting-stat randomization**. All starting variety comes from home state, position, and the choices you make — never a talent roll. That baseline maps to a HS star rating which, combined with `homeState`, surfaces school offers RNG-weighted by tier (blue-bloods are rare for everyone at the start; `homeState` biases which local/regional programs recruit you). Pick → sets `school` + `tier`. The "walk-on to blue-chip" fantasy, if ever wanted, is a deliberate future difficulty toggle — explicitly out of scope for v1.
 
 **Season loop** (while `status==='active'`), iterating `offseason → nonconf → conference → postseason`:
 1. **Event selection:** all matching `fixed` events fire (scripted milestones), plus random events drawn by `weight`, filtered by `conditions`, resolved via seeded RNG.
