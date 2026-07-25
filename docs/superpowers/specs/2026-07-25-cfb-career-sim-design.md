@@ -185,3 +185,13 @@ Rough v1 targets:
 - **Content validation:** schema validation (e.g., Zod or hand-rolled) run in tests.
 - **UI:** React + Vite (mirrors the original's stack), `localStorage` persistence, deployable free to static hosting (Vercel/Netlify/GitHub Pages).
 - **No backend.**
+
+**UI aesthetic direction (Phase 3):** match the reference soccer game's look — sleek, high-readability, **dark theme**, clean sans-serif type, **card-based** decision screens, generous whitespace, minimal chrome. Easy to read at a glance; the decision + its options should be the clear focal point.
+
+## 12. Build phasing
+
+The spec covers all three layers, but the build proceeds in phases, each its own plan → implementation cycle:
+
+- **Phase 1 — Engine + playable headless core.** Pure engine, content schema, content validator, seeded PRNG, the Monte-Carlo balance harness, and a thin content slice (one position bucket, ~a dozen events, a few schools) — enough to play a **complete career start-to-draft headlessly** (in tests / terminal). No UI. De-risks the whole design. **This is the first implementation plan.**
+- **Phase 2 — Content authoring.** With the schema frozen and validator guarding it, author the full content library (~60-100 events, all 6 position buckets, school ladder, injuries, awards). The large, parallelizable, subagent-delegatable pile.
+- **Phase 3 — UI.** React/Vite front-end wrapping the finished engine (creation flow, decision screens, summary/share card, localStorage), per the aesthetic direction above.
