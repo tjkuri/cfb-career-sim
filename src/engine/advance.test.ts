@@ -17,6 +17,19 @@ function autoplay(seed: string) {
   return s;
 }
 
+function autoplayAlwaysReturn(seed: string) {
+  let s = createCareer(setup, seed);
+  let guard = 0;
+  while (s.status === "active" && guard++ < 500) {
+    const decision = getDecision(s);
+    if (!decision) throw new Error("active career with no decision");
+    // Policy: whenever asked to declare, return to school instead; otherwise take the first option.
+    const choiceId = decision.eventId === "declare" ? "return" : decision.options[0]!.id;
+    s = advance(s, choiceId);
+  }
+  return s;
+}
+
 describe("advance / getDecision", () => {
   it("first decision is recruiting with tier options", () => {
     const s = createCareer(setup, "seed");
@@ -51,5 +64,19 @@ describe("advance / getDecision", () => {
     const snapshot = JSON.parse(JSON.stringify(s0));
     advance(s0, d.options[0]!.id);
     expect(s0).toEqual(snapshot);
+  });
+
+  it("always-return policy plays all 4 years then force-declares with no phantom trailing season", () => {
+    const s = autoplayAlwaysReturn("always-return");
+    expect(s.status).toBe("drafted");
+    expect(s.eligibility.yearsUsed).toBe(4);
+    expect(s.seasons.length).toBe(4);
+    // The last season line must reflect an actually-played season, not a
+    // just-pushed-then-abandoned empty one from the postseason->offseason rollover.
+    const lastSeason = s.seasons[s.seasons.length - 1]!;
+    expect(lastSeason.snaps).toBeGreaterThan(0);
+    for (const season of s.seasons) {
+      expect(season.snaps).toBeGreaterThan(0);
+    }
   });
 });

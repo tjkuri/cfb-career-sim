@@ -10,6 +10,7 @@ import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
 
 const DECLARE_EVENT_ID = "declare";
+const ON_FIELD_PHASES = new Set(["nonconf", "conference", "postseason"]);
 
 export interface PendingDecision {
   eventId: string;
@@ -89,7 +90,6 @@ function advancePhase(s: GameState): void {
     // postseason -> next season offseason
     s.seasonIndex += 1;
     s.phase = "offseason";
-    s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
   } else {
     s.phase = PHASE_ORDER[idx + 1]!;
   }
@@ -118,6 +118,12 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
       // First time entering this phase: tick + produce exactly once.
       tickPhaseStart(s, injuryOf);
       if (s.status !== "active") return;
+      if (ON_FIELD_PHASES.has(s.phase)) {
+        const last = s.seasons[s.seasons.length - 1];
+        if (!last || last.seasonIndex !== s.seasonIndex) {
+          s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+        }
+      }
       simulatePhaseProduction(s, rng);
       s.phaseSimulated = true;
 
