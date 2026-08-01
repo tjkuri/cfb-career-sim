@@ -39,6 +39,13 @@ describe("eventMatches", () => {
     s.injuries.push({ injuryType: "acl", remainingPhases: 2, restoreAmount: 10 });
     expect(eventMatches(s, injuredOnly)).toBe(true);
   });
+  it("respects tier conditions", () => {
+    const s = createCareer(setup, "s"); s.phase = "nonconf";
+    const tier3Only: GameEvent = { ...qbEvent, conditions: { tier: [3] } };
+    expect(eventMatches(s, tier3Only)).toBe(false);
+    s.school.tier = 3;
+    expect(eventMatches(s, tier3Only)).toBe(true);
+  });
 });
 
 describe("selectRandomEvent", () => {
