@@ -82,3 +82,32 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
     }
   }
 }
+
+export function isSidelined(state: GameState): boolean {
+  return state.injuries.some((i) => i.remainingPhases > 0);
+}
+
+export function tickPhaseStart(state: GameState, injuryOf: InjuryLookup): void {
+  // 1) Fire deferred effects that are due, then drop them.
+  const due = state.pendingEffects.filter((p) => p.firePhaseAbs <= state.phaseAbs);
+  state.pendingEffects = state.pendingEffects.filter((p) => p.firePhaseAbs > state.phaseAbs);
+  for (const p of due) {
+    // Apply deferred effects as immediate so they don't re-defer
+    const effect = p.effect.kind === "overall" && p.effect.timing === "deferred"
+      ? { ...p.effect, timing: "immediate" as const }
+      : p.effect;
+    applyEffect(state, effect, injuryOf);
+  }
+
+  // 2) Decrement injuries; heal (restore overall) when they reach 0.
+  const stillInjured: typeof state.injuries = [];
+  for (const inj of state.injuries) {
+    const remaining = inj.remainingPhases - 1;
+    if (remaining <= 0) {
+      state.overall = clampOverall(state.overall + inj.restoreAmount);
+    } else {
+      stillInjured.push({ ...inj, remainingPhases: remaining });
+    }
+  }
+  state.injuries = stillInjured;
+}
