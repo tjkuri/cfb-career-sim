@@ -1,6 +1,6 @@
 export interface Rng {
   next(): number;
-  cursor: number;
+  readonly cursor: number;
 }
 
 // Deterministic string -> 32-bit seed (xfnv1a).
@@ -34,9 +34,6 @@ export function createRng(seed: string, cursor = 0): Rng {
     get cursor() {
       return c;
     },
-    set cursor(v: number) {
-      c = v;
-    },
     next() {
       c += 1;
       return gen();
@@ -45,6 +42,9 @@ export function createRng(seed: string, cursor = 0): Rng {
 }
 
 export function rngInt(rng: Rng, minInclusive: number, maxInclusive: number): number {
+  if (maxInclusive < minInclusive) {
+    throw new RangeError(`rngInt: max (${maxInclusive}) < min (${minInclusive})`);
+  }
   const span = maxInclusive - minInclusive + 1;
   return minInclusive + Math.floor(rng.next() * span);
 }

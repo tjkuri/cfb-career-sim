@@ -64,4 +64,14 @@ describe("rng", () => {
     expect(rngChance(r, 1)).toBe(true);
     expect(rngChance(r, 0)).toBe(false);
   });
+
+  it("rngInt throws when max < min instead of returning a wrong result", () => {
+    const rng = createRng("guard");
+    expect(() => rngInt(rng, 5, 1)).toThrow(RangeError);
+  });
+
+  it("rngInt still works when min === max (single-value span)", () => {
+    const rng = createRng("guard");
+    expect(rngInt(rng, 3, 3)).toBe(3);
+  });
 });
