@@ -15,6 +15,9 @@ export function eventMatches(state: GameState, ev: GameEvent): boolean {
     if (have < need) return false;
   }
   if (c.requiresInjury && state.injuries.length === 0) return false;
+  if (c.requiresActiveInjury && !state.injuries.some((i) => i.kind === "injury")) return false;
+  if (c.maxCharacter !== undefined && state.character > c.maxCharacter) return false;
+  if (c.maxOverall !== undefined && state.overall > c.maxOverall) return false;
   return true;
 }
 

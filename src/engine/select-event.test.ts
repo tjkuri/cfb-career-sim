@@ -3,7 +3,7 @@ import { eventMatches, selectRandomEvent } from "./select-event";
 import { createCareer } from "./create-career";
 import { createRng } from "./rng";
 import type { ContentBundle } from "../content/schema";
-import type { GameEvent, Setup } from "./types";
+import type { EventConditions, GameEvent, GameState, Setup } from "./types";
 
 const setup: Setup = { lastName: "A", jerseyNumber: 1, homeState: "TX", position: "QB" };
 
@@ -16,6 +16,25 @@ const dlEvent: GameEvent = { ...qbEvent, id: "dl-only", conditions: { position: 
 const bundle = (events: GameEvent[]): ContentBundle => ({
   events, injuries: {}, schools: [], positions: {} as any, trophyIds: [], awardIds: [],
 });
+
+function makeState(overrides: Partial<GameState>): GameState {
+  const s = structuredClone(createCareer(setup, "s"));
+  s.phase = "offseason";
+  return { ...s, ...overrides };
+}
+
+function makeEvent(overrides: { conditions?: EventConditions } & Partial<GameEvent>): GameEvent {
+  return {
+    id: "ev",
+    kind: "random",
+    phase: "offseason",
+    weight: 1,
+    title: "t",
+    description: "d",
+    options: [{ id: "o", label: "l", probability: 1, positiveOutcome: { description: "x", effects: [] } }],
+    ...overrides,
+  };
+}
 
 describe("eventMatches", () => {
   it("requires the current phase", () => {
@@ -45,6 +64,30 @@ describe("eventMatches", () => {
     expect(eventMatches(s, tier3Only)).toBe(false);
     s.school.tier = 3;
     expect(eventMatches(s, tier3Only)).toBe(true);
+  });
+
+  it("maxCharacter gates on low character", () => {
+    const ev = makeEvent({ conditions: { maxCharacter: 30 } }); // phase must match state.phase
+    const lowChar = makeState({ character: 20 });
+    const highChar = makeState({ character: 50 });
+    expect(eventMatches(lowChar, ev)).toBe(true);
+    expect(eventMatches(highChar, ev)).toBe(false);
+  });
+
+  it("maxOverall gates on low overall", () => {
+    const ev = makeEvent({ conditions: { maxOverall: 55 } });
+    expect(eventMatches(makeState({ overall: 50 }), ev)).toBe(true);
+    expect(eventMatches(makeState({ overall: 70 }), ev)).toBe(false);
+  });
+
+  it("requiresActiveInjury counts injuries but not suspensions", () => {
+    const ev = makeEvent({ conditions: { requiresActiveInjury: true } });
+    const healthy = makeState({});
+    const injured = makeState({ injuries: [{ kind: "injury", injuryType: "acl", remainingPhases: 3, restoreAmount: 14 }] });
+    const suspended = makeState({ injuries: [{ kind: "suspension", injuryType: "suspension", remainingPhases: 1, restoreAmount: 0 }] });
+    expect(eventMatches(healthy, ev)).toBe(false);
+    expect(eventMatches(injured, ev)).toBe(true);
+    expect(eventMatches(suspended, ev)).toBe(false);
   });
 });
 

@@ -131,4 +131,23 @@ describe("validateContent", () => {
     const errors = validateContent(bundle);
     expect(errors.some((e) => e.includes("bad-tier") && e.toLowerCase().includes("tier"))).toBe(true);
   });
+
+  it("rejects out-of-range maxCharacter / maxOverall condition values", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "bad-maxchar", kind: "random", phase: "nonconf", weight: 1,
+      conditions: { maxCharacter: 150 },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    bundle.events.push({
+      id: "bad-maxovr", kind: "random", phase: "nonconf", weight: 1,
+      conditions: { maxOverall: -5 },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("bad-maxchar") && e.toLowerCase().includes("maxcharacter"))).toBe(true);
+    expect(errors.some((e) => e.includes("bad-maxovr") && e.toLowerCase().includes("maxoverall"))).toBe(true);
+  });
 });

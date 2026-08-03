@@ -55,6 +55,9 @@ export interface EventConditions {
   minClass?: ClassYear;
   tier?: Tier[];
   requiresInjury?: boolean;
+  requiresActiveInjury?: boolean;
+  maxCharacter?: number;
+  maxOverall?: number;
 }
 
 export interface GameEvent {

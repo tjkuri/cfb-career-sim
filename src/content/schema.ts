@@ -43,6 +43,10 @@ export function validateContent(bundle: ContentBundle): string[] {
         if (t < 1 || t > 4) errors.push(`Event ${ev.id}: invalid tier "${t}"`);
       if (c.position) for (const p of c.position)
         if (!KNOWN_POSITIONS.has(p)) errors.push(`Event ${ev.id}: invalid position "${p}"`);
+      if (c.maxCharacter !== undefined && (c.maxCharacter < 0 || c.maxCharacter > 100))
+        errors.push(`Event ${ev.id}: invalid maxCharacter "${c.maxCharacter}"`);
+      if (c.maxOverall !== undefined && (c.maxOverall < 0 || c.maxOverall > 99))
+        errors.push(`Event ${ev.id}: invalid maxOverall "${c.maxOverall}"`);
     }
   }
   const recruiting = bundle.events.find((e) => e.id === "recruiting");
