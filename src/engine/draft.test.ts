@@ -69,3 +69,39 @@ describe("computeDraftResult", () => {
     expect(a).toEqual(b);
   });
 });
+
+describe("draft thresholds (boundaries)", () => {
+  // character 50 => characterPart 0; no snaps/trophies/awards; FR => classPart 0.
+  // deriveDraftStock then reduces to round((overall - 40) * 1.4).
+  const stockState = (target: number): GameState => {
+    const s = base();
+    s.character = 50;
+    s.overall = 40 + target / 1.4;
+    return s;
+  };
+
+  it("the helper produces the requested stock exactly", () => {
+    expect(deriveDraftStock(stockState(24))).toBe(24);
+    expect(deriveDraftStock(stockState(25))).toBe(25);
+    expect(deriveDraftStock(stockState(34))).toBe(34);
+    expect(deriveDraftStock(stockState(35))).toBe(35);
+  });
+
+  it("undrafted floor: stock 34 is undrafted, 35 is drafted in round 7", () => {
+    const under = computeDraftResult(stockState(34), createRng("d"));
+    expect(under.undrafted).toBe(true);
+
+    const at = computeDraftResult(stockState(35), createRng("d"));
+    expect(at.undrafted).toBe(false);
+    expect(at.round).toBe(7);
+  });
+
+  it("tier cutoffs: 24|25 gate tier 2, 44|45 gate tier 3, 69|70 gate tier 4", () => {
+    expect(eligibleTiers(stockState(24))).not.toContain(2);
+    expect(eligibleTiers(stockState(25))).toContain(2);
+    expect(eligibleTiers(stockState(44))).not.toContain(3);
+    expect(eligibleTiers(stockState(45))).toContain(3);
+    expect(eligibleTiers(stockState(69))).not.toContain(4);
+    expect(eligibleTiers(stockState(70))).toContain(4);
+  });
+});
