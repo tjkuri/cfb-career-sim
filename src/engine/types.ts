@@ -69,6 +69,7 @@ export interface GameEvent {
 }
 
 export interface ActiveInjury {
+  kind: "injury" | "suspension";
   injuryType: string;
   remainingPhases: number;
   restoreAmount: number; // overall points restored when the injury heals

@@ -40,7 +40,7 @@ describe("simulatePhaseProduction", () => {
     const s = createCareer(setup, "s");
     applyRecruitingChoice(s, "mont", CONTENT);
     s.phase = "conference";
-    s.injuries.push({ injuryType: "acl", remainingPhases: 2, restoreAmount: 10 });
+    s.injuries.push({ kind: "injury", injuryType: "acl", remainingPhases: 2, restoreAmount: 10 });
     simulatePhaseProduction(s, createRng("p"));
     expect(s.seasons[0]!.snaps).toBe(0);
   });

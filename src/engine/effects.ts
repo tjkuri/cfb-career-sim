@@ -47,6 +47,7 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
       const info = injuryOf(effect.injuryType);
       state.overall = clampOverall(state.overall - info.overallDelta);
       state.injuries.push({
+        kind: "injury",
         injuryType: effect.injuryType,
         remainingPhases: info.recoveryPhases,
         restoreAmount: info.overallDelta,
@@ -55,8 +56,9 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
     }
     case "suspension": {
       // Modeled as an injury-like block with no overall penalty: it zeroes snaps
-      // while active. Reuse the injuries list with restoreAmount 0.
+      // while active. Discriminated by kind so it never collides with a real injury id.
       state.injuries.push({
+        kind: "suspension",
         injuryType: "suspension",
         remainingPhases: effect.phases,
         restoreAmount: 0,
@@ -79,6 +81,10 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
       state.status = "busted";
       state.endingReason = effect.reason;
       return;
+    }
+    default: {
+      const _exhaustive: never = effect;
+      throw new Error(`Unhandled effect kind: ${JSON.stringify(_exhaustive)}`);
     }
   }
 }

@@ -36,7 +36,7 @@ describe("eventMatches", () => {
     expect(eventMatches(s, srOnly)).toBe(true);
     const injuredOnly: GameEvent = { ...qbEvent, conditions: { requiresInjury: true } };
     expect(eventMatches(s, injuredOnly)).toBe(false);
-    s.injuries.push({ injuryType: "acl", remainingPhases: 2, restoreAmount: 10 });
+    s.injuries.push({ kind: "injury", injuryType: "acl", remainingPhases: 2, restoreAmount: 10 });
     expect(eventMatches(s, injuredOnly)).toBe(true);
   });
   it("respects tier conditions", () => {

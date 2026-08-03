@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyEffect, type InjuryLookup } from "./effects";
+import { applyEffect, isSidelined, type InjuryLookup } from "./effects";
 import { createCareer } from "./create-career";
 import type { Setup } from "./types";
 
@@ -56,7 +56,7 @@ describe("applyEffect (immediate)", () => {
     const s = fresh();
     applyEffect(s, { kind: "injury", injuryType: "acl" }, injuryOf);
     expect(s.overall).toBe(48);
-    expect(s.injuries).toEqual([{ injuryType: "acl", remainingPhases: 4, restoreAmount: 12 }]);
+    expect(s.injuries).toEqual([{ kind: "injury", injuryType: "acl", remainingPhases: 4, restoreAmount: 12 }]);
   });
 
   it("records trophies, awards, and moments", () => {
@@ -82,7 +82,7 @@ describe("applyEffect (immediate)", () => {
     const overallBefore = s.overall;
     applyEffect(s, { kind: "suspension", phases: 2 }, injuryOf);
     expect(s.injuries).toEqual([
-      { injuryType: "suspension", remainingPhases: 2, restoreAmount: 0 },
+      { kind: "suspension", injuryType: "suspension", remainingPhases: 2, restoreAmount: 0 },
     ]);
     expect(s.overall).toBe(overallBefore);
   });
@@ -92,5 +92,19 @@ describe("applyEffect (immediate)", () => {
     applyEffect(s, { kind: "overall", timing: "permanent", amount: 5 }, injuryOf);
     expect(s.overall).toBe(65);
     expect(s.pendingEffects.length).toBe(0);
+  });
+
+  it("tags injury vs suspension entries with a kind discriminator", () => {
+    const injuryOf: InjuryLookup = () => ({ overallDelta: 4, recoveryPhases: 2 });
+
+    const hurt = fresh();
+    applyEffect(hurt, { kind: "injury", injuryType: "ankle" }, injuryOf);
+    expect(hurt.injuries[0]!.kind).toBe("injury");
+
+    const banned = fresh();
+    applyEffect(banned, { kind: "suspension", phases: 1 }, injuryOf);
+    expect(banned.injuries[0]!.kind).toBe("suspension");
+    expect(banned.injuries[0]!.restoreAmount).toBe(0);
+    expect(isSidelined(banned)).toBe(true);
   });
 });
