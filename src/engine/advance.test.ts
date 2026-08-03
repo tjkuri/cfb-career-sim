@@ -53,7 +53,8 @@ describe("advance / getDecision", () => {
 
   it("advances eligibility across seasons (reaches at least JR before ending)", () => {
     const s = autoplay("eligibility");
-    // A first-option policy returns to school when able, so it should progress past FR.
+    // The declare decision lists "declare" first, so a first-option policy declares
+    // as soon as it becomes draft-eligible (JR), i.e. after yearsUsed reaches 2.
     const reachedUpperclass = s.eligibility.yearsUsed >= 2;
     expect(reachedUpperclass).toBe(true);
   });
@@ -78,5 +79,19 @@ describe("advance / getDecision", () => {
     for (const season of s.seasons) {
       expect(season.snaps).toBeGreaterThan(0);
     }
+  });
+
+  it("rejects a bogus choiceId at the declare decision", () => {
+    let s = createCareer(setup, "declare-guard");
+    let guard = 0;
+    while (s.status === "active" && guard++ < 500) {
+      const d = getDecision(s)!;
+      if (d.eventId === "declare") {
+        expect(() => advance(s, "banana")).toThrow(/declare/i);
+        return;
+      }
+      s = advance(s, d.options[0]!.id);
+    }
+    throw new Error("never reached the declare decision");
   });
 });

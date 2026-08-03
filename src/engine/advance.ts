@@ -71,6 +71,9 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     return;
   }
   if (s.currentEventId === DECLARE_EVENT_ID) {
+    if (choiceId !== "declare" && choiceId !== "return") {
+      throw new Error(`Invalid declare choice: ${choiceId}`);
+    }
     if (choiceId === "declare") s.status = "declared";
     s.currentEventId = null;
     return;
