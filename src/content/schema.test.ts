@@ -91,4 +91,44 @@ describe("validateContent", () => {
     expect(errs).toContain("no options");
     expect(errs).toContain("recruiting");
   });
+
+  it("rejects a recruiting event that is not kind 'fixed'", () => {
+    const bundle = goodBundle();
+    const rec = bundle.events.find((e) => e.id === "recruiting")!;
+    rec.kind = "random";
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("recruiting") && e.includes("fixed"))).toBe(true);
+  });
+
+  it("rejects an unknown minClass condition value", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "bad-minclass",
+      kind: "random",
+      phase: "nonconf",
+      weight: 1,
+      conditions: { minClass: "XX" as never },
+      title: "t",
+      description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("bad-minclass") && e.toLowerCase().includes("minclass"))).toBe(true);
+  });
+
+  it("rejects an out-of-range tier condition value", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "bad-tier",
+      kind: "random",
+      phase: "nonconf",
+      weight: 1,
+      conditions: { tier: [5 as never] },
+      title: "t",
+      description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("bad-tier") && e.toLowerCase().includes("tier"))).toBe(true);
+  });
 });

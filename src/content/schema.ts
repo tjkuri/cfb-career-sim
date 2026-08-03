@@ -1,4 +1,5 @@
-import type { Effect, GameEvent, Position } from "../engine/types";
+import type { Effect, GameEvent, Outcome, Position } from "../engine/types";
+import { CLASS_ORDER } from "../engine/types";
 
 export interface ContentBundle {
   events: GameEvent[];
@@ -8,6 +9,8 @@ export interface ContentBundle {
   trophyIds: string[];
   awardIds: string[];
 }
+
+const KNOWN_POSITIONS = new Set<Position>(["QB", "OSKILL", "OL", "DL", "DSKILL", "K"]);
 
 export function validateContent(bundle: ContentBundle): string[] {
   const errors: string[] = [];
@@ -26,11 +29,25 @@ export function validateContent(bundle: ContentBundle): string[] {
     for (const opt of ev.options) {
       if (opt.probability < 0 || opt.probability > 1)
         errors.push(`Event ${ev.id} option ${opt.id}: probability must be in [0,1]`);
-      const outcomes = [opt.positiveOutcome, opt.negativeOutcome].filter(Boolean);
-      for (const oc of outcomes) for (const eff of oc!.effects) checkEffect(ev.id, opt.id, eff, errors);
+      const outcomes = [opt.positiveOutcome, opt.negativeOutcome].filter(
+        (o): o is Outcome => o !== undefined,
+      );
+      for (const oc of outcomes) for (const eff of oc.effects) checkEffect(ev.id, opt.id, eff, errors);
+    }
+
+    const c = ev.conditions;
+    if (c) {
+      if (c.minClass && !CLASS_ORDER.includes(c.minClass))
+        errors.push(`Event ${ev.id}: invalid minClass "${c.minClass}"`);
+      if (c.tier) for (const t of c.tier)
+        if (t < 1 || t > 4) errors.push(`Event ${ev.id}: invalid tier "${t}"`);
+      if (c.position) for (const p of c.position)
+        if (!KNOWN_POSITIONS.has(p)) errors.push(`Event ${ev.id}: invalid position "${p}"`);
     }
   }
-  if (!seen.has("recruiting")) errors.push('Missing required fixed event "recruiting"');
+  const recruiting = bundle.events.find((e) => e.id === "recruiting");
+  if (!recruiting) errors.push('Missing required fixed event "recruiting"');
+  else if (recruiting.kind !== "fixed") errors.push('Event recruiting: must be kind "fixed"');
   return errors;
 
   function checkEffect(evId: string, optId: string, eff: Effect, out: string[]) {
