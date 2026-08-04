@@ -3,6 +3,7 @@ import { POSITIONS } from "./positions";
 import { INJURIES } from "./injuries";
 import { SCHOOLS } from "./schools";
 import { EVENTS } from "./events";
+import { POSTSEASON, PROGRESSION } from "./postseason";
 
 export const CONTENT: ContentBundle = {
   positions: POSITIONS,
@@ -11,6 +12,8 @@ export const CONTENT: ContentBundle = {
   trophyIds: ["confTitle", "cfpTitle", "bowlWin"],
   awardIds: ["heisman", "allAmerican", "allConference"],
   events: EVENTS,
+  postseason: POSTSEASON,
+  progression: PROGRESSION,
 };
 
 // Fail fast at module load if content is malformed.

@@ -1,5 +1,24 @@
-import type { Effect, GameEvent, Outcome, Position } from "../engine/types";
+import type { Effect, GameEvent, Outcome, Position, Tier } from "../engine/types";
 import { CLASS_ORDER } from "../engine/types";
+
+export interface AwardBand { min: number; prob: number }
+export interface PrestigeAward { id: string; bands: AwardBand[]; teamSuccessBoost: number }
+export interface ProductionAward { id: string; position: Position; stat: string; threshold: number; prob: number }
+export interface TrophyRule { id: string; minWins: number; prob: number }
+export interface TieredTrophyRule { id: string; minWins: number; probByTier: Record<Tier, number> }
+export interface PostseasonConfig {
+  gamesPerSeason: number;
+  tierBaseWinPct: Record<Tier, number>;
+  overallWinShiftPerPoint: number;
+  winPctClamp: [number, number];
+  bowl: TrophyRule;
+  conf: TieredTrophyRule;
+  cfp: TieredTrophyRule;
+  positionMultiplier: Record<Position, number>;
+  prestige: PrestigeAward[];
+  production: ProductionAward[];
+}
+export interface ProgressionConfig { snapsPerDevPoint: number; devCap: number }
 
 export interface ContentBundle {
   events: GameEvent[];
@@ -8,6 +27,8 @@ export interface ContentBundle {
   positions: Record<Position, { label: string; stats: string[] }>;
   trophyIds: string[];
   awardIds: string[];
+  postseason: PostseasonConfig;
+  progression: ProgressionConfig;
 }
 
 export function validateContent(bundle: ContentBundle): string[] {
@@ -24,6 +45,28 @@ export function validateContent(bundle: ContentBundle): string[] {
 
   for (const [id, inj] of Object.entries(bundle.injuries))
     if (inj.recoveryPhases < 1) errors.push(`Injury ${id}: recoveryPhases must be >= 1`);
+
+  const ps = bundle.postseason;
+  const inRange = (p: number) => p >= 0 && p <= 1;
+  for (const t of [ps.bowl] as { id: string; prob: number }[]) {
+    if (!knownTrophies.has(t.id)) errors.push(`Postseason: unknown trophy "${t.id}"`);
+    if (!inRange(t.prob)) errors.push(`Postseason trophy ${t.id}: prob must be in [0,1]`);
+  }
+  for (const t of [ps.conf, ps.cfp]) {
+    if (!knownTrophies.has(t.id)) errors.push(`Postseason: unknown trophy "${t.id}"`);
+    for (const p of Object.values(t.probByTier))
+      if (!inRange(p)) errors.push(`Postseason trophy ${t.id}: probByTier must be in [0,1]`);
+  }
+  for (const a of ps.prestige) {
+    if (!knownAwards.has(a.id)) errors.push(`Postseason: unknown award "${a.id}"`);
+    for (const band of a.bands) if (!inRange(band.prob)) errors.push(`Postseason award ${a.id}: band prob must be in [0,1]`);
+  }
+  for (const a of ps.production) {
+    if (!knownAwards.has(a.id)) errors.push(`Postseason: unknown award "${a.id}"`);
+    if (!knownStats.has(a.stat)) errors.push(`Postseason award ${a.id}: unknown stat "${a.stat}"`);
+    if (!knownPositions.has(a.position)) errors.push(`Postseason award ${a.id}: unknown position "${a.position}"`);
+    if (!inRange(a.prob)) errors.push(`Postseason award ${a.id}: prob must be in [0,1]`);
+  }
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {

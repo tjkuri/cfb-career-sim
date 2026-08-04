@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validateContent, type ContentBundle } from "./schema";
+import { POSTSEASON, PROGRESSION } from "./postseason";
 
 function goodBundle(): ContentBundle {
   return {
@@ -13,8 +14,10 @@ function goodBundle(): ContentBundle {
     },
     injuries: { acl: { label: "Torn ACL", overallDelta: 12, recoveryPhases: 4 } },
     schools: [{ id: "bama", name: "Alabama", tier: 4, conference: "SEC", state: "AL" }],
-    trophyIds: ["confTitle", "cfpTitle"],
-    awardIds: ["heisman"],
+    trophyIds: ["confTitle", "cfpTitle", "bowlWin"],
+    awardIds: ["heisman", "allAmerican", "allConference"],
+    postseason: POSTSEASON,
+    progression: PROGRESSION,
     events: [
       {
         id: "recruiting",
@@ -171,5 +174,29 @@ describe("validateContent", () => {
     const errors = validateContent(bundle);
     expect(errors.some((e) => e.includes("bad-maxchar") && e.toLowerCase().includes("maxcharacter"))).toBe(true);
     expect(errors.some((e) => e.includes("bad-maxovr") && e.toLowerCase().includes("maxoverall"))).toBe(true);
+  });
+
+  it("rejects a prestige award id not in awardIds", () => {
+    const b = goodBundle();
+    b.postseason = { ...b.postseason, prestige: [{ id: "ghostAward", bands: [{ min: 90, prob: 0.5 }], teamSuccessBoost: 0.3 }] };
+    expect(validateContent(b).join()).toContain("ghostAward");
+  });
+
+  it("rejects a trophy id not in trophyIds", () => {
+    const b = goodBundle();
+    b.postseason = { ...b.postseason, bowl: { id: "ghostTrophy", minWins: 7, prob: 0.5 } };
+    expect(validateContent(b).join()).toContain("ghostTrophy");
+  });
+
+  it("rejects a production award referencing an unknown stat", () => {
+    const b = goodBundle();
+    b.postseason = { ...b.postseason, production: [{ id: "allConference", position: "QB", stat: "notAStat", threshold: 1, prob: 0.7 }] };
+    expect(validateContent(b).join()).toContain("notAStat");
+  });
+
+  it("rejects a probability outside [0,1] in postseason config", () => {
+    const b = goodBundle();
+    b.postseason = { ...b.postseason, bowl: { id: "bowlWin", minWins: 7, prob: 1.5 } };
+    expect(validateContent(b).some((e) => e.toLowerCase().includes("prob"))).toBe(true);
   });
 });

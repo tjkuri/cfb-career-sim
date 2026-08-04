@@ -3,6 +3,7 @@ import { eventMatches, selectRandomEvent } from "./select-event";
 import { createCareer } from "./create-career";
 import { createRng } from "./rng";
 import type { ContentBundle } from "../content/schema";
+import { POSTSEASON, PROGRESSION } from "../content/postseason";
 import type { EventConditions, GameEvent, GameState, Setup } from "./types";
 
 const setup: Setup = { lastName: "A", jerseyNumber: 1, homeState: "TX", position: "QB" };
@@ -15,6 +16,7 @@ const qbEvent: GameEvent = {
 const dlEvent: GameEvent = { ...qbEvent, id: "dl-only", conditions: { position: ["DL"] } };
 const bundle = (events: GameEvent[]): ContentBundle => ({
   events, injuries: {}, schools: [], positions: {} as any, trophyIds: [], awardIds: [],
+  postseason: POSTSEASON, progression: PROGRESSION,
 });
 
 function makeState(overrides: Partial<GameState>): GameState {
