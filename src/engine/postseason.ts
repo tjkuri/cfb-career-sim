@@ -1,4 +1,4 @@
-import type { Tier } from "./types";
+import type { Tier, Effect } from "./types";
 import type { Rng } from "./rng";
 import type { PostseasonConfig } from "../content/schema";
 
@@ -17,4 +17,15 @@ export function simulateTeamRecord(
   let wins = 0;
   for (let g = 0; g < cfg.gamesPerSeason; g++) if (rng.next() < winPct) wins++;
   return { wins, losses: cfg.gamesPerSeason - wins };
+}
+
+export function resolveTrophies(wins: number, tier: Tier, cfg: PostseasonConfig, rng: Rng): Effect[] {
+  const effects: Effect[] = [];
+  if (wins >= cfg.bowl.minWins && rng.next() < cfg.bowl.prob)
+    effects.push({ kind: "trophy", id: cfg.bowl.id });
+  if (wins >= cfg.conf.minWins && rng.next() < cfg.conf.probByTier[tier])
+    effects.push({ kind: "trophy", id: cfg.conf.id });
+  if (wins >= cfg.cfp.minWins && rng.next() < cfg.cfp.probByTier[tier])
+    effects.push({ kind: "trophy", id: cfg.cfp.id });
+  return effects;
 }
