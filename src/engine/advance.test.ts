@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createCareer } from "./create-career";
-import { advance, getDecision, developmentDelta } from "./advance";
+import { advance, getDecision, developmentDelta, runOffseasonHub } from "./advance";
+import { CONTENT } from "../content/index";
 import type { Setup } from "./types";
 
 const setup: Setup = { lastName: "Allen", jerseyNumber: 7, homeState: "MT", position: "QB" };
@@ -127,5 +128,15 @@ describe("development curve", () => {
     // the starting baseline (60) purely from development (no gamble events needed).
     const s = autoplayAlwaysReturn("develops");
     expect(s.overall).toBeGreaterThan(60);
+  });
+
+  it("runOffseasonHub raises overall by exactly developmentDelta from last season's snaps", () => {
+    const s = createCareer(setup, "hub-dev");
+    s.overall = 70;
+    s.phase = "offseason";
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+    const expected = 70 + developmentDelta(400, CONTENT.progression); // floor(400/180)=2 -> 72
+    runOffseasonHub(s, CONTENT);
+    expect(s.overall).toBe(expected);
   });
 });

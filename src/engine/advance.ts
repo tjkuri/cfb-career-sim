@@ -104,7 +104,7 @@ export function developmentDelta(seasonSnaps: number, cfg: { snapsPerDevPoint: n
   return Math.min(cfg.devCap, Math.floor(seasonSnaps / cfg.snapsPerDevPoint));
 }
 
-function runOffseasonHub(s: GameState, content: ContentBundle): void {
+export function runOffseasonHub(s: GameState, content: ContentBundle): void {
   // Develop from last season's playing time before advancing eligibility.
   const lastSeason = s.seasons[s.seasons.length - 1];
   if (lastSeason) {
