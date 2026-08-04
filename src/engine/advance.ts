@@ -1,7 +1,7 @@
 import type { GameEvent, GameState } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, type Rng } from "./rng";
-import { applyEffect, tickPhaseStart, type InjuryLookup } from "./effects";
+import { applyEffect, tickPhaseStart, clampOverall, type InjuryLookup } from "./effects";
 import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent } from "./select-event";
 import { recruitingOptions, applyRecruitingChoice, simulatePhaseProduction } from "./simulate";
@@ -100,7 +100,17 @@ function advancePhase(s: GameState): void {
   s.phaseAbs += 1;
 }
 
-function runOffseasonHub(s: GameState): void {
+export function developmentDelta(seasonSnaps: number, cfg: { snapsPerDevPoint: number; devCap: number }): number {
+  return Math.min(cfg.devCap, Math.floor(seasonSnaps / cfg.snapsPerDevPoint));
+}
+
+function runOffseasonHub(s: GameState, content: ContentBundle): void {
+  // Develop from last season's playing time before advancing eligibility.
+  const lastSeason = s.seasons[s.seasons.length - 1];
+  if (lastSeason) {
+    s.overall = clampOverall(s.overall + developmentDelta(lastSeason.snaps, content.progression));
+  }
+
   // Advance eligibility one class year.
   const ci = CLASS_ORDER.indexOf(s.eligibility.classYear);
   if (ci < CLASS_ORDER.length - 1) s.eligibility.classYear = CLASS_ORDER[ci + 1]!;
@@ -144,7 +154,7 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
     advancePhase(s);
     s.phaseSimulated = false;
     if (s.phase === "offseason") {
-      runOffseasonHub(s);
+      runOffseasonHub(s, content);
       // Hub may set a declare decision (stop) or force-declare (ending).
       if (s.currentEventId !== null || s.status !== "active") return;
     }

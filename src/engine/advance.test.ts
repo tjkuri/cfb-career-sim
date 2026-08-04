@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createCareer } from "./create-career";
-import { advance, getDecision } from "./advance";
+import { advance, getDecision, developmentDelta } from "./advance";
 import type { Setup } from "./types";
 
 const setup: Setup = { lastName: "Allen", jerseyNumber: 7, homeState: "MT", position: "QB" };
@@ -110,5 +110,22 @@ describe("advance / getDecision", () => {
       s = advance(s, d.options[0]!.id);
     }
     throw new Error("never reached the declare decision");
+  });
+});
+
+describe("development curve", () => {
+  it("developmentDelta scales with snaps and caps out", () => {
+    const cfg = { snapsPerDevPoint: 180, devCap: 3 };
+    expect(developmentDelta(0, cfg)).toBe(0);
+    expect(developmentDelta(200, cfg)).toBe(1);
+    expect(developmentDelta(400, cfg)).toBe(2);
+    expect(developmentDelta(2000, cfg)).toBe(3); // capped
+  });
+
+  it("a returning player's overall rises across seasons from playing", () => {
+    // Always-return policy plays multiple full seasons; overall should end above
+    // the starting baseline (60) purely from development (no gamble events needed).
+    const s = autoplayAlwaysReturn("develops");
+    expect(s.overall).toBeGreaterThan(60);
   });
 });
