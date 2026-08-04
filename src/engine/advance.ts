@@ -6,6 +6,7 @@ import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent } from "./select-event";
 import { recruitingOptions, applyRecruitingChoice, simulatePhaseProduction } from "./simulate";
 import { computeDraftResult } from "./draft";
+import { runPostseasonResolver } from "./postseason";
 import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
 
@@ -137,7 +138,9 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
         return;
       }
     }
-    // Phase fully handled (no event, or the event was just resolved): move on.
+    // Phase fully handled (no event, or the event was just resolved).
+    // Resolve postseason honors for the season just completed, then move on.
+    if (s.phase === "postseason") runPostseasonResolver(s, content, rng, injuryOf);
     advancePhase(s);
     s.phaseSimulated = false;
     if (s.phase === "offseason") {

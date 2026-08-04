@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { simulateTeamRecord, resolveTrophies, resolveAwards, bandProb } from "./postseason";
+import { simulateTeamRecord, resolveTrophies, resolveAwards, bandProb, runPostseasonResolver } from "./postseason";
 import { createRng } from "./rng";
 import { POSTSEASON } from "../content/postseason";
+import { CONTENT } from "../content/index";
+import { createCareer } from "./create-career";
 import type { PostseasonConfig } from "../content/schema";
-import type { Position } from "./types";
+import type { Position, Setup } from "./types";
 
 describe("simulateTeamRecord", () => {
   it("always produces wins + losses === gamesPerSeason", () => {
@@ -107,5 +109,39 @@ describe("resolveAwards", () => {
     const a = resolveAwards("QB", 90, { passYards: 1500 }, true, POSTSEASON, createRng("same"));
     const b = resolveAwards("QB", 90, { passYards: 1500 }, true, POSTSEASON, createRng("same"));
     expect(a).toEqual(b);
+  });
+});
+
+const injuryOf = (t: string) => CONTENT.injuries[t] ?? { overallDelta: 3, recoveryPhases: 1 };
+const resolverSetup: Setup = { lastName: "R", jerseyNumber: 1, homeState: "TX", position: "QB" };
+
+describe("runPostseasonResolver", () => {
+  it("writes a full team record to the current season line", () => {
+    const s = createCareer(resolverSetup, "resolve");
+    s.school = { schoolId: "smu", tier: 3 };
+    s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 480, stats: { passYards: 1500 }, teamWins: 0, teamLosses: 0 });
+    runPostseasonResolver(s, CONTENT, createRng("resolve"), injuryOf);
+    const line = s.seasons[0]!;
+    expect(line.teamWins + line.teamLosses).toBe(CONTENT.postseason.gamesPerSeason);
+  });
+
+  it("does nothing when there is no season line for the current index", () => {
+    const s = createCareer(resolverSetup, "noline");
+    const before = JSON.stringify(s);
+    runPostseasonResolver(s, CONTENT, createRng("noline"), injuryOf);
+    expect(JSON.stringify(s)).toBe(before);
+  });
+
+  it("an elite career accumulates at least one trophy or award across seeds", () => {
+    let honored = 0;
+    for (let i = 0; i < 40; i++) {
+      const s = createCareer(resolverSetup, `elite-${i}`);
+      s.overall = 96;
+      s.school = { schoolId: "bama", tier: 4 };
+      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0 });
+      runPostseasonResolver(s, CONTENT, createRng(`elite-${i}`), injuryOf);
+      if (Object.keys(s.trophies).length > 0 || s.awards.length > 0) honored++;
+    }
+    expect(honored).toBeGreaterThan(0);
   });
 });

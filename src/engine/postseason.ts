@@ -1,6 +1,7 @@
-import type { Tier, Effect, Position } from "./types";
+import type { Tier, Effect, Position, GameState } from "./types";
 import type { Rng } from "./rng";
-import type { PostseasonConfig, AwardBand } from "../content/schema";
+import type { PostseasonConfig, AwardBand, ContentBundle } from "../content/schema";
+import { applyEffect, type InjuryLookup } from "./effects";
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -56,4 +57,21 @@ export function resolveAwards(
     if (rng.next() < award.prob) effects.push({ kind: "award", id: award.id });
   }
   return effects;
+}
+
+export function runPostseasonResolver(
+  state: GameState,
+  content: ContentBundle,
+  rng: Rng,
+  injuryOf: InjuryLookup,
+): void {
+  const season = state.seasons[state.seasons.length - 1];
+  if (!season || season.seasonIndex !== state.seasonIndex) return;
+  const cfg = content.postseason;
+  const record = simulateTeamRecord(state.overall, state.school.tier, cfg, rng);
+  season.teamWins = record.wins;
+  season.teamLosses = record.losses;
+  const trophyEffects = resolveTrophies(record.wins, state.school.tier, cfg, rng);
+  const awardEffects = resolveAwards(state.setup.position, state.overall, season.stats, trophyEffects.length > 0, cfg, rng);
+  for (const eff of [...trophyEffects, ...awardEffects]) applyEffect(state, eff, injuryOf);
 }

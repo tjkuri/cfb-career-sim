@@ -81,6 +81,23 @@ describe("advance / getDecision", () => {
     }
   });
 
+  it("populates a team record for every played season and can accrue honors", () => {
+    // Play many careers; every completed season must have a full record, and
+    // across the sample at least one career earns a trophy or award.
+    let honored = 0;
+    let checkedSeasons = 0;
+    for (let i = 0; i < 30; i++) {
+      const s = autoplay(`records-${i}`);
+      for (const line of s.seasons) {
+        expect(line.teamWins + line.teamLosses).toBe(12);
+        checkedSeasons++;
+      }
+      if (Object.keys(s.trophies).length > 0 || s.awards.length > 0) honored++;
+    }
+    expect(checkedSeasons).toBeGreaterThan(0);
+    expect(honored).toBeGreaterThan(0);
+  });
+
   it("rejects a bogus choiceId at the declare decision", () => {
     let s = createCareer(setup, "declare-guard");
     let guard = 0;
