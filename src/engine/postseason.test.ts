@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { simulateTeamRecord, resolveTrophies } from "./postseason";
+import { simulateTeamRecord, resolveTrophies, resolveAwards, bandProb } from "./postseason";
 import { createRng } from "./rng";
 import { POSTSEASON } from "../content/postseason";
 import type { PostseasonConfig } from "../content/schema";
+import type { Position } from "./types";
 
 describe("simulateTeamRecord", () => {
   it("always produces wins + losses === gamesPerSeason", () => {
@@ -61,6 +62,50 @@ describe("resolveTrophies", () => {
   it("is deterministic for a seed", () => {
     const a = resolveTrophies(11, 4, POSTSEASON, createRng("same"));
     const b = resolveTrophies(11, 4, POSTSEASON, createRng("same"));
+    expect(a).toEqual(b);
+  });
+});
+
+describe("bandProb", () => {
+  it("returns the first matching band's prob, else 0", () => {
+    const bands = [{ min: 90, prob: 0.5 }, { min: 80, prob: 0.2 }];
+    expect(bandProb(95, bands)).toBe(0.5);
+    expect(bandProb(82, bands)).toBe(0.2);
+    expect(bandProb(70, bands)).toBe(0);
+  });
+});
+
+describe("resolveAwards", () => {
+  it("grants no awards to a mediocre low-stat player", () => {
+    const effs = resolveAwards("QB", 60, { passYards: 200 }, false, POSTSEASON, createRng("x"));
+    expect(effs).toEqual([]);
+  });
+
+  it("an elite QB with huge stats and a title can win prestige + production awards", () => {
+    // Search seeds to prove reachability (rng-gated), not a single fixed seed.
+    let sawPrestige = false, sawProduction = false;
+    for (let i = 0; i < 80; i++) {
+      const effs = resolveAwards("QB", 95, { passYards: 2000 }, true, POSTSEASON, createRng(`s-${i}`));
+      const ids = effs.map((e) => (e.kind === "award" ? e.id : ""));
+      if (ids.includes("heisman") || ids.includes("allAmerican")) sawPrestige = true;
+      if (ids.includes("allConference")) sawProduction = true;
+    }
+    expect(sawPrestige).toBe(true);
+    expect(sawProduction).toBe(true);
+  });
+
+  it("a kicker almost never wins prestige awards (multiplier 0.05)", () => {
+    let kickerPrestige = 0;
+    for (let i = 0; i < 200; i++) {
+      const effs = resolveAwards("K", 95, {}, true, POSTSEASON, createRng(`k-${i}`));
+      if (effs.some((e) => e.kind === "award" && (e.id === "heisman" || e.id === "allAmerican"))) kickerPrestige++;
+    }
+    expect(kickerPrestige).toBeLessThan(30); // rare by design
+  });
+
+  it("is deterministic for a seed", () => {
+    const a = resolveAwards("QB", 90, { passYards: 1500 }, true, POSTSEASON, createRng("same"));
+    const b = resolveAwards("QB", 90, { passYards: 1500 }, true, POSTSEASON, createRng("same"));
     expect(a).toEqual(b);
   });
 });
