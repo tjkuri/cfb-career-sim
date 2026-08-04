@@ -10,15 +10,20 @@ export interface ContentBundle {
   awardIds: string[];
 }
 
-const KNOWN_POSITIONS = new Set<Position>(["QB", "OSKILL", "OL", "DL", "DSKILL", "K"]);
-
 export function validateContent(bundle: ContentBundle): string[] {
   const errors: string[] = [];
   const knownStats = new Set<string>();
   for (const p of Object.values(bundle.positions)) for (const s of p.stats) knownStats.add(s);
+  // Derive the known-position set from the bundle itself so it can't drift from
+  // the authored positions table (and so a condition referencing a position the
+  // bundle doesn't define is flagged).
+  const knownPositions = new Set<string>(Object.keys(bundle.positions));
   const knownInjuries = new Set(Object.keys(bundle.injuries));
   const knownTrophies = new Set(bundle.trophyIds);
   const knownAwards = new Set(bundle.awardIds);
+
+  for (const [id, inj] of Object.entries(bundle.injuries))
+    if (inj.recoveryPhases < 1) errors.push(`Injury ${id}: recoveryPhases must be >= 1`);
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {
@@ -42,7 +47,7 @@ export function validateContent(bundle: ContentBundle): string[] {
       if (c.tier) for (const t of c.tier)
         if (t < 1 || t > 4) errors.push(`Event ${ev.id}: invalid tier "${t}"`);
       if (c.position) for (const p of c.position)
-        if (!KNOWN_POSITIONS.has(p)) errors.push(`Event ${ev.id}: invalid position "${p}"`);
+        if (!knownPositions.has(p)) errors.push(`Event ${ev.id}: invalid position "${p}"`);
       if (c.maxCharacter !== undefined && (c.maxCharacter < 0 || c.maxCharacter > 100))
         errors.push(`Event ${ev.id}: invalid maxCharacter "${c.maxCharacter}"`);
       if (c.maxOverall !== undefined && (c.maxOverall < 0 || c.maxOverall > 99))

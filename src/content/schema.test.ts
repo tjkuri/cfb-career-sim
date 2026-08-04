@@ -132,6 +132,28 @@ describe("validateContent", () => {
     expect(errors.some((e) => e.includes("bad-tier") && e.toLowerCase().includes("tier"))).toBe(true);
   });
 
+  it("rejects a condition position not defined in the bundle", () => {
+    const bundle = goodBundle();
+    // Remove a position from the bundle's own table; a condition referencing it
+    // must now be flagged (the known-position set is derived from the bundle).
+    delete (bundle.positions as Partial<Record<string, unknown>>).K;
+    bundle.events.push({
+      id: "bad-pos", kind: "random", phase: "nonconf", weight: 1,
+      conditions: { position: ["K"] },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("bad-pos") && e.toLowerCase().includes("position"))).toBe(true);
+  });
+
+  it("rejects an injury with recoveryPhases < 1", () => {
+    const bundle = goodBundle();
+    bundle.injuries.instant = { label: "Instant", overallDelta: 3, recoveryPhases: 0 };
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("instant") && e.toLowerCase().includes("recoveryphases"))).toBe(true);
+  });
+
   it("rejects out-of-range maxCharacter / maxOverall condition values", () => {
     const bundle = goodBundle();
     bundle.events.push({
