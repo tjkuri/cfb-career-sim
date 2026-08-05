@@ -27,4 +27,10 @@ export const POSTSEASON: PostseasonConfig = {
   ],
 };
 
-export const PROGRESSION: ProgressionConfig = { snapsPerDevPoint: 180, devCap: 3 };
+export const PROGRESSION: ProgressionConfig = {
+  snapsPerDevPoint: 180,
+  devCap: 3,
+  washoutOverallFloor: 45,
+  washoutSnapFloor: 60,
+  washoutConsecutiveSeasons: 2,
+};

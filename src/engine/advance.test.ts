@@ -153,3 +153,54 @@ describe("development curve", () => {
     expect(s.overall).toBe(expected);
   });
 });
+
+describe("soft-washout bust", () => {
+  it("busts a career whose overall has collapsed below the floor", () => {
+    const s = createCareer(setup, "washout-ovr");
+    s.overall = 40; // below washoutOverallFloor (45)
+    s.phase = "offseason";
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+    enterOffseason(s, CONTENT, createRng("washout-ovr"));
+    expect(s.status).toBe("busted");
+    expect(s.endingReason).toBeTruthy();
+    expect(s.currentEventId).toBeNull();
+  });
+
+  it("does not bust a healthy, playing career", () => {
+    const s = createCareer(setup, "healthy");
+    s.overall = 75;
+    s.phase = "offseason";
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+    enterOffseason(s, CONTENT, createRng("healthy"));
+    expect(s.status).toBe("active");
+  });
+
+  it("drives a full career to the busted terminal via advance()", () => {
+    // Play one season, then force overall low and advance to the next offseason;
+    // the engine must transition to busted and stop (no decision, no draft).
+    let s = createCareer(setup, "e2e-bust");
+    // advance through recruiting + season 0 up to the first offseason decision or terminal
+    let guard = 0;
+    while (s.status === "active" && s.seasonIndex === 0 && guard++ < 200) {
+      const d = getDecision(s)!;
+      s = advance(s, d.options[0]!.id);
+    }
+    // Now at/after the first offseason. Force a collapse and push to the next offseason.
+    // Use a value well below washoutOverallFloor (45): the remaining offseason/nonconf
+    // events for this season can still fire positive-overall outcomes (e.g. gym-grind's
+    // "grind" option, chosen first-option, is +3 @ 72%), so a value just under the floor
+    // (e.g. 38) can recover above it before the next enterOffseason check for this seed.
+    s = JSON.parse(JSON.stringify(s));
+    s.overall = 20;
+    guard = 0;
+    while (s.status === "active" && guard++ < 200) {
+      const d = getDecision(s);
+      if (!d) break;
+      s = advance(s, d.eventId === "declare" ? "return" : d.options[0]!.id);
+      if (s.status === "busted") break;
+    }
+    expect(s.status).toBe("busted");
+    expect(getDecision(s)).toBeNull();
+    expect(s.draftResult).toBeUndefined();
+  });
+});

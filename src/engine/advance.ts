@@ -118,6 +118,20 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
     s.overall = clampOverall(s.overall + developmentDelta(lastSeason.snaps, content.progression));
   }
 
+  // Soft-washout: collapsed overall, or buried (near-zero snaps) for consecutive seasons.
+  const prog = content.progression;
+  const recent = s.seasons.slice(-prog.washoutConsecutiveSeasons);
+  const buried =
+    recent.length >= prog.washoutConsecutiveSeasons &&
+    recent.every((line) => line.snaps < prog.washoutSnapFloor);
+  if (s.overall < prog.washoutOverallFloor || buried) {
+    s.status = "busted";
+    s.endingReason =
+      s.overall < prog.washoutOverallFloor ? "Lost a step and washed out" : "Buried on the depth chart";
+    s.currentEventId = null;
+    return;
+  }
+
   // Advance eligibility one class year.
   const ci = CLASS_ORDER.indexOf(s.eligibility.classYear);
   if (ci < CLASS_ORDER.length - 1) s.eligibility.classYear = CLASS_ORDER[ci + 1]!;

@@ -18,7 +18,13 @@ export interface PostseasonConfig {
   prestige: PrestigeAward[];
   production: ProductionAward[];
 }
-export interface ProgressionConfig { snapsPerDevPoint: number; devCap: number }
+export interface ProgressionConfig {
+  snapsPerDevPoint: number;
+  devCap: number;
+  washoutOverallFloor: number;
+  washoutSnapFloor: number;
+  washoutConsecutiveSeasons: number;
+}
 export interface RegionsConfig { [region: string]: string[] }
 export interface SchoolSamplerConfig { base: number; homeStateBonus: number; regionBonus: number }
 export interface TransferConfig {
@@ -87,6 +93,11 @@ export function validateContent(bundle: ContentBundle): string[] {
   const tr = bundle.transfer;
   for (const [k, v] of Object.entries(tr))
     if (typeof v === "number" && v < 0) errors.push(`transfer.${k} must be >= 0`);
+
+  const prog = bundle.progression;
+  if (prog.snapsPerDevPoint < 1) errors.push("progression.snapsPerDevPoint must be >= 1");
+  if (prog.devCap < 0) errors.push("progression.devCap must be >= 0");
+  if (prog.washoutConsecutiveSeasons < 1) errors.push("progression.washoutConsecutiveSeasons must be >= 1");
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {
