@@ -4,6 +4,7 @@ import { INJURIES } from "./injuries";
 import { SCHOOLS } from "./schools";
 import { EVENTS } from "./events";
 import { POSTSEASON, PROGRESSION } from "./postseason";
+import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
 
 export const CONTENT: ContentBundle = {
   positions: POSITIONS,
@@ -14,6 +15,9 @@ export const CONTENT: ContentBundle = {
   events: EVENTS,
   postseason: POSTSEASON,
   progression: PROGRESSION,
+  regions: REGIONS,
+  schoolSampler: SCHOOL_SAMPLER,
+  transfer: TRANSFER,
 };
 
 // Fail fast at module load if content is malformed.

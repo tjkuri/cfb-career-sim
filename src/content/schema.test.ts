@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { validateContent, type ContentBundle } from "./schema";
 import { POSTSEASON, PROGRESSION } from "./postseason";
+import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
 
 function goodBundle(): ContentBundle {
   return {
@@ -18,6 +19,9 @@ function goodBundle(): ContentBundle {
     awardIds: ["heisman", "allAmerican", "allConference"],
     postseason: POSTSEASON,
     progression: PROGRESSION,
+    regions: REGIONS,
+    schoolSampler: SCHOOL_SAMPLER,
+    transfer: TRANSFER,
     events: [
       {
         id: "recruiting",
@@ -198,5 +202,11 @@ describe("validateContent", () => {
     const b = goodBundle();
     b.postseason = { ...b.postseason, bowl: { id: "bowlWin", minWins: 7, prob: 1.5 } };
     expect(validateContent(b).some((e) => e.toLowerCase().includes("prob"))).toBe(true);
+  });
+
+  it("rejects negative school-sampler weights", () => {
+    const b = goodBundle();
+    b.schoolSampler = { base: 1, homeStateBonus: -1, regionBonus: 2 };
+    expect(validateContent(b).join()).toContain("schoolSampler");
   });
 });

@@ -3,6 +3,7 @@ import { rngInt, type Rng } from "./rng";
 import { isSidelined } from "./effects";
 import { eligibleTiers } from "./draft";
 import type { ContentBundle } from "../content/schema";
+import { bestSchoolInTier } from "./schools";
 
 export function recruitingOptions(
   state: GameState,
@@ -11,11 +12,8 @@ export function recruitingOptions(
   const tiers = eligibleTiers(state);
   const opts: { id: string; label: string; schoolId: string; tier: Tier }[] = [];
   for (const tier of tiers) {
-    // Prefer a school in the player's home state, else the first of that tier.
-    const inTier = content.schools.filter((s) => s.tier === tier);
-    if (inTier.length === 0) continue;
-    const home = inTier.find((s) => s.state === state.setup.homeState);
-    const school = home ?? inTier[0]!;
+    const school = bestSchoolInTier(content, tier, state.setup.homeState);
+    if (!school) continue;
     opts.push({ id: `commit-${school.id}`, label: `Commit to ${school.name}`, schoolId: school.id, tier });
   }
   return opts;

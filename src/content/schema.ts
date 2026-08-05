@@ -19,6 +19,14 @@ export interface PostseasonConfig {
   production: ProductionAward[];
 }
 export interface ProgressionConfig { snapsPerDevPoint: number; devCap: number }
+export interface RegionsConfig { [region: string]: string[] }
+export interface SchoolSamplerConfig { base: number; homeStateBonus: number; regionBonus: number }
+export interface TransferConfig {
+  lateralSnapModifier: number;
+  moveUpSnapModifier: number;
+  moveDownSnapModifier: number;
+  buriedSnapThreshold: number;
+}
 
 export interface ContentBundle {
   events: GameEvent[];
@@ -29,6 +37,9 @@ export interface ContentBundle {
   awardIds: string[];
   postseason: PostseasonConfig;
   progression: ProgressionConfig;
+  regions: RegionsConfig;
+  schoolSampler: SchoolSamplerConfig;
+  transfer: TransferConfig;
 }
 
 export function validateContent(bundle: ContentBundle): string[] {
@@ -67,6 +78,15 @@ export function validateContent(bundle: ContentBundle): string[] {
     if (!knownPositions.has(a.position)) errors.push(`Postseason award ${a.id}: unknown position "${a.position}"`);
     if (!inRange(a.prob)) errors.push(`Postseason award ${a.id}: prob must be in [0,1]`);
   }
+
+  for (const [region, states] of Object.entries(bundle.regions))
+    if (!Array.isArray(states)) errors.push(`Region ${region}: states must be an array`);
+  const sampler = bundle.schoolSampler;
+  if (sampler.base < 0 || sampler.homeStateBonus < 0 || sampler.regionBonus < 0)
+    errors.push("schoolSampler: weights must be >= 0");
+  const tr = bundle.transfer;
+  for (const [k, v] of Object.entries(tr))
+    if (typeof v === "number" && v < 0) errors.push(`transfer.${k} must be >= 0`);
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {
