@@ -9,8 +9,10 @@ import { computeDraftResult } from "./draft";
 import { runPostseasonResolver } from "./postseason";
 import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
+import { generateTransferOffers } from "./transfer";
 
 const DECLARE_EVENT_ID = "declare";
+const TRANSFER_EVENT_ID = "transfer";
 const ON_FIELD_PHASES = new Set(["nonconf", "conference", "postseason"]);
 
 type HubStep = "entry" | "redshirt" | "declare" | "transfer";
@@ -48,6 +50,15 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
       ],
     };
   }
+  if (state.currentEventId === TRANSFER_EVENT_ID) {
+    const opts = state.pendingOptions ?? [];
+    return {
+      eventId: TRANSFER_EVENT_ID,
+      title: "Transfer Portal",
+      description: "The portal is open. Stay, or take an offer?",
+      options: opts.map((o) => ({ id: o.id, label: o.label })),
+    };
+  }
   const ev = content.events.find((e) => e.id === state.currentEventId);
   if (!ev) return null;
   return { eventId: ev.id, title: ev.title, description: ev.description, options: ev.options.map((o) => ({ id: o.id, label: o.label })) };
@@ -81,6 +92,16 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     if (choiceId === "declare") { s.status = "declared"; s.currentEventId = null; return; }
     // return to school: proceed to the next hub decision (transfer, once wired).
     raiseNextHubDecision(s, content, rng, "declare");
+    return;
+  }
+  if (s.currentEventId === TRANSFER_EVENT_ID) {
+    const offer = (s.pendingOptions ?? []).find((o) => o.id === choiceId);
+    if (!offer) throw new Error(`Invalid transfer choice: ${choiceId}`);
+    if (offer.id !== "stay") s.school = { schoolId: offer.schoolId, tier: offer.tier };
+    s.snapModifier = offer.snapModifier;
+    s.pendingOptions = undefined;
+    s.currentEventId = null;
+    raiseNextHubDecision(s, content, rng, "transfer");
     return;
   }
   const ev = content.events.find((e) => e.id === s.currentEventId);
@@ -155,7 +176,11 @@ function raiseNextHubDecision(s: GameState, content: ContentBundle, rng: Rng, fr
     if (step === "declare") {
       if (s.eligibility.draftEligible) { s.currentEventId = DECLARE_EVENT_ID; return; }
     }
-    // transfer: added in Stage-2b Task 6.
+    if (step === "transfer") {
+      s.pendingOptions = generateTransferOffers(s, content, rng);
+      s.currentEventId = TRANSFER_EVENT_ID;
+      return;
+    }
   }
   s.currentEventId = null;
 }

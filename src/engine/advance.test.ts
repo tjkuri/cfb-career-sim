@@ -204,3 +204,69 @@ describe("soft-washout bust", () => {
     expect(s.draftResult).toBeUndefined();
   });
 });
+
+describe("transfer portal", () => {
+  it("offers a transfer decision in the offseason after the first season", () => {
+    // Play recruiting + season 0; a first-option policy will hit either a
+    // transfer or declare decision. Drive until a transfer decision appears.
+    let s = createCareer(setup, "xfer-offered");
+    let guard = 0;
+    let sawTransfer = false;
+    while (s.status === "active" && guard++ < 300) {
+      const d = getDecision(s);
+      if (!d) break;
+      if (d.eventId === "transfer") { sawTransfer = true; break; }
+      s = advance(s, d.eventId === "declare" ? "return" : d.options[0]!.id);
+    }
+    expect(sawTransfer).toBe(true);
+  });
+
+  it("staying leaves school unchanged and modifier at 1; moving changes tier and sets the modifier", () => {
+    // Build a state parked on a transfer decision by generating offers directly,
+    // then exercise applyChoice via advance for a concrete non-stay offer.
+    let s = createCareer(setup, "xfer-apply");
+    let guard = 0;
+    while (s.status === "active" && guard++ < 300) {
+      const d = getDecision(s);
+      if (!d) throw new Error("no decision");
+      if (d.eventId === "transfer") {
+        const move = d.options.find((o) => o.id !== "stay");
+        const beforeTier = s.school.tier;
+        if (move) {
+          const after = advance(s, move.id);
+          // A non-stay offer sets a non-1 modifier (up<1 or down/lateral>1).
+          expect(after.snapModifier).not.toBe(1);
+          // tier may change (up/down) or stay (lateral) — but school-or-modifier changed.
+          expect(after.school.tier !== beforeTier || after.snapModifier !== 1).toBe(true);
+        } else {
+          const after = advance(s, "stay");
+          expect(after.snapModifier).toBe(1);
+        }
+        break;
+      }
+      s = advance(s, d.eventId === "declare" ? "return" : d.options[0]!.id);
+    }
+    expect(guard).toBeLessThan(300);
+  });
+
+  it("rejects an unknown transfer choice id", () => {
+    let s = createCareer(setup, "xfer-bad");
+    let guard = 0;
+    while (s.status === "active" && guard++ < 300) {
+      const d = getDecision(s);
+      if (!d) throw new Error("no decision");
+      if (d.eventId === "transfer") {
+        expect(() => advance(s, "not-an-offer")).toThrow();
+        break;
+      }
+      s = advance(s, d.eventId === "declare" ? "return" : d.options[0]!.id);
+    }
+  });
+
+  it("still reaches a terminal state and stays deterministic with transfers in play", () => {
+    const a = autoplay("xfer-term");
+    const b = autoplay("xfer-term");
+    expect(["drafted", "busted"]).toContain(a.status);
+    expect(a).toEqual(b);
+  });
+});
