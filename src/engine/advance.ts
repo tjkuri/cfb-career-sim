@@ -13,6 +13,9 @@ import type { ContentBundle } from "../content/schema";
 const DECLARE_EVENT_ID = "declare";
 const ON_FIELD_PHASES = new Set(["nonconf", "conference", "postseason"]);
 
+type HubStep = "entry" | "redshirt" | "declare" | "transfer";
+const HUB_ORDER: Exclude<HubStep, "entry">[] = ["redshirt", "declare", "transfer"];
+
 export interface PendingDecision {
   eventId: string;
   title: string;
@@ -75,8 +78,9 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     if (choiceId !== "declare" && choiceId !== "return") {
       throw new Error(`Invalid declare choice: ${choiceId}`);
     }
-    if (choiceId === "declare") s.status = "declared";
-    s.currentEventId = null;
+    if (choiceId === "declare") { s.status = "declared"; s.currentEventId = null; return; }
+    // return to school: proceed to the next hub decision (transfer, once wired).
+    raiseNextHubDecision(s, content, rng, "declare");
     return;
   }
   const ev = content.events.find((e) => e.id === s.currentEventId);
@@ -104,7 +108,10 @@ export function developmentDelta(seasonSnaps: number, cfg: { snapsPerDevPoint: n
   return Math.min(cfg.devCap, Math.floor(seasonSnaps / cfg.snapsPerDevPoint));
 }
 
-export function runOffseasonHub(s: GameState, content: ContentBundle): void {
+export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): void {
+  // Reset the one-season snap modifier from any prior transfer (Task 4 uses this).
+  s.snapModifier = 1;
+
   // Develop from last season's playing time before advancing eligibility.
   const lastSeason = s.seasons[s.seasons.length - 1];
   if (lastSeason) {
@@ -122,7 +129,21 @@ export function runOffseasonHub(s: GameState, content: ContentBundle): void {
     s.status = "declared";
     return;
   }
-  if (s.eligibility.draftEligible) s.currentEventId = DECLARE_EVENT_ID;
+
+  raiseNextHubDecision(s, content, rng, "entry");
+}
+
+function raiseNextHubDecision(s: GameState, content: ContentBundle, rng: Rng, from: HubStep): void {
+  const startIdx = from === "entry" ? 0 : HUB_ORDER.indexOf(from) + 1;
+  for (let i = startIdx; i < HUB_ORDER.length; i++) {
+    const step = HUB_ORDER[i]!;
+    if (step === "redshirt") continue; // deferred to Stage 2c
+    if (step === "declare") {
+      if (s.eligibility.draftEligible) { s.currentEventId = DECLARE_EVENT_ID; return; }
+    }
+    // transfer: added in Stage-2b Task 6.
+  }
+  s.currentEventId = null;
 }
 
 function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: InjuryLookup): void {
@@ -154,7 +175,7 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
     advancePhase(s);
     s.phaseSimulated = false;
     if (s.phase === "offseason") {
-      runOffseasonHub(s, content);
+      enterOffseason(s, content, rng);
       // Hub may set a declare decision (stop) or force-declare (ending).
       if (s.currentEventId !== null || s.status !== "active") return;
     }

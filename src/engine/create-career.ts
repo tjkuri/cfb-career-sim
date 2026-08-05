@@ -11,6 +11,7 @@ export function createCareer(setup: Setup, seed: string): GameState {
     setup,
     overall: STARTING_OVERALL,
     character: STARTING_CHARACTER,
+    snapModifier: 1,
     eligibility: { classYear: "FR", yearsUsed: 0, redshirtUsed: false, draftEligible: false },
     school: { schoolId: "", tier: 1 },
     seasonIndex: 0,

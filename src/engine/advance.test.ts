@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createCareer } from "./create-career";
-import { advance, getDecision, developmentDelta, runOffseasonHub } from "./advance";
+import { advance, getDecision, developmentDelta, enterOffseason } from "./advance";
+import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
 import type { Setup } from "./types";
 
@@ -99,6 +100,18 @@ describe("advance / getDecision", () => {
     expect(honored).toBeGreaterThan(0);
   });
 
+  it("still offers declare at JR and force-declares when out of eligibility (post-refactor)", () => {
+    // First-option policy declares at JR (declare is option 0).
+    const s = autoplay("refactor-declare");
+    expect(["drafted", "busted"]).toContain(s.status);
+
+    // Always-return plays all 4 years then force-declares (no phantom season).
+    const r = autoplayAlwaysReturn("refactor-force");
+    expect(r.status).toBe("drafted");
+    expect(r.eligibility.yearsUsed).toBe(4);
+    expect(r.seasons.length).toBe(4);
+  });
+
   it("rejects a bogus choiceId at the declare decision", () => {
     let s = createCareer(setup, "declare-guard");
     let guard = 0;
@@ -130,13 +143,13 @@ describe("development curve", () => {
     expect(s.overall).toBeGreaterThan(60);
   });
 
-  it("runOffseasonHub raises overall by exactly developmentDelta from last season's snaps", () => {
+  it("enterOffseason raises overall by exactly developmentDelta from last season's snaps", () => {
     const s = createCareer(setup, "hub-dev");
     s.overall = 70;
     s.phase = "offseason";
     s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
     const expected = 70 + developmentDelta(400, CONTENT.progression); // floor(400/180)=2 -> 72
-    runOffseasonHub(s, CONTENT);
+    enterOffseason(s, CONTENT, createRng("hub-dev-rng"));
     expect(s.overall).toBe(expected);
   });
 });

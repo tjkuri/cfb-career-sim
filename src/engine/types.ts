@@ -98,6 +98,7 @@ export interface GameState {
 
   overall: number;
   character: number;
+  snapModifier: number;
 
   eligibility: {
     classYear: ClassYear;
