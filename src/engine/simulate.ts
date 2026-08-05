@@ -48,7 +48,8 @@ export function simulatePhaseProduction(state: GameState, rng: Rng): void {
   const season = state.seasons[state.seasons.length - 1];
   if (!season) return;
   const model = STAT_MODEL[state.setup.position];
-  const snaps = rngInt(rng, model.snapsMin, model.snapsMax);
+  const rolled = rngInt(rng, model.snapsMin, model.snapsMax);
+  const snaps = Math.max(0, Math.round(rolled * state.snapModifier));
   season.snaps += snaps;
   const skill = state.overall / 70;
   for (const [stat, per100] of Object.entries(model.per100)) {

@@ -52,4 +52,21 @@ describe("simulatePhaseProduction", () => {
     simulatePhaseProduction(s, createRng("p"));
     expect(s.seasons[0]!.snaps).toBe(0);
   });
+
+  it("scales rolled snaps by state.snapModifier", () => {
+    // Two identical states + same seed; one with a 0.5 modifier should accrue
+    // roughly half the snaps of the 1.0 baseline for the same phase.
+    const mk = () => {
+      const s = createCareer(setup, "snapmod");
+      s.phase = "nonconf";
+      s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+      return s;
+    };
+    const full = mk();
+    simulatePhaseProduction(full, createRng("same"));
+    const half = mk();
+    half.snapModifier = 0.5;
+    simulatePhaseProduction(half, createRng("same"));
+    expect(half.seasons[0]!.snaps).toBe(Math.round(full.seasons[0]!.snaps * 0.5));
+  });
 });
