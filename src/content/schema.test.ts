@@ -209,4 +209,16 @@ describe("validateContent", () => {
     b.schoolSampler = { base: 1, homeStateBonus: -1, regionBonus: 2 };
     expect(validateContent(b).join()).toContain("schoolSampler");
   });
+
+  it("rejects a negative washoutOverallFloor", () => {
+    const b = goodBundle();
+    b.progression = { ...b.progression, washoutOverallFloor: -1 };
+    expect(validateContent(b).join()).toContain("washoutOverallFloor");
+  });
+
+  it("rejects a zero moveUpSnapModifier", () => {
+    const b = goodBundle();
+    b.transfer = { ...b.transfer, moveUpSnapModifier: 0 };
+    expect(validateContent(b).join()).toContain("moveUpSnapModifier");
+  });
 });

@@ -175,6 +175,20 @@ describe("soft-washout bust", () => {
     expect(s.status).toBe("active");
   });
 
+  it("busts a career buried on the depth chart for consecutive seasons even with a healthy overall", () => {
+    const s = createCareer(setup, "buried");
+    s.overall = 70; // well above washoutOverallFloor (45): only the buried condition should trip
+    s.phase = "offseason";
+    const floor = CONTENT.progression.washoutSnapFloor;
+    const belowFloor = Math.max(0, floor - 1);
+    for (let i = 0; i < CONTENT.progression.washoutConsecutiveSeasons; i++) {
+      s.seasons.push({ seasonIndex: i, schoolId: "x", snaps: belowFloor, stats: {}, teamWins: 0, teamLosses: 0 });
+    }
+    enterOffseason(s, CONTENT, createRng("buried"));
+    expect(s.status).toBe("busted");
+    expect(s.endingReason).toMatch(/buried/i);
+  });
+
   it("drives a full career to the busted terminal via advance()", () => {
     // Play one season, then force overall low and advance to the next offseason;
     // the engine must transition to busted and stop (no decision, no draft).

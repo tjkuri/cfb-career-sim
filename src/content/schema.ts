@@ -91,13 +91,19 @@ export function validateContent(bundle: ContentBundle): string[] {
   if (sampler.base < 0 || sampler.homeStateBonus < 0 || sampler.regionBonus < 0)
     errors.push("schoolSampler: weights must be >= 0");
   const tr = bundle.transfer;
-  for (const [k, v] of Object.entries(tr))
-    if (typeof v === "number" && v < 0) errors.push(`transfer.${k} must be >= 0`);
+  // Snap modifiers scale a transferee's whole season; a value of 0 would zero it out,
+  // so these three must be strictly positive. buriedSnapThreshold is just a cutoff and
+  // may legitimately be 0.
+  for (const k of ["lateralSnapModifier", "moveUpSnapModifier", "moveDownSnapModifier"] as const)
+    if (tr[k] <= 0) errors.push(`transfer.${k} must be > 0`);
+  if (tr.buriedSnapThreshold < 0) errors.push("transfer.buriedSnapThreshold must be >= 0");
 
   const prog = bundle.progression;
   if (prog.snapsPerDevPoint < 1) errors.push("progression.snapsPerDevPoint must be >= 1");
   if (prog.devCap < 0) errors.push("progression.devCap must be >= 0");
   if (prog.washoutConsecutiveSeasons < 1) errors.push("progression.washoutConsecutiveSeasons must be >= 1");
+  if (prog.washoutOverallFloor < 0) errors.push("progression.washoutOverallFloor must be >= 0");
+  if (prog.washoutSnapFloor < 0) errors.push("progression.washoutSnapFloor must be >= 0");
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {
