@@ -83,6 +83,14 @@ export interface DeferredEffect {
   firePhaseAbs: number;
 }
 
+export interface SchoolOffer {
+  id: string;
+  label: string;
+  schoolId: string;
+  tier: Tier;
+  snapModifier: number;
+}
+
 export interface DraftResult {
   undrafted: boolean;
   round: number; // 1-7, or 0 if undrafted
@@ -114,6 +122,7 @@ export interface GameState {
   phaseSimulated: boolean; // has the current phase already been ticked+produced this cycle?
 
   currentEventId: string | null; // event awaiting a decision; null between decisions
+  pendingOptions?: SchoolOffer[];
 
   seasons: SeasonLine[];
   trophies: Record<string, number>;

@@ -1,5 +1,6 @@
 import type { Tier } from "./types";
 import type { ContentBundle } from "../content/schema";
+import { rngWeightedPick, type Rng } from "./rng";
 
 type SchoolRow = ContentBundle["schools"][number];
 
@@ -33,4 +34,16 @@ export function bestSchoolInTier(
     if (w > bestW) { best = s; bestW = w; } // strict > keeps first-in-array on ties
   }
   return best;
+}
+
+export function sampleSchoolInTier(
+  content: ContentBundle,
+  tier: Tier,
+  homeState: string,
+  rng: Rng,
+  excludeId?: string,
+): SchoolRow | undefined {
+  const pool = content.schools.filter((s) => s.tier === tier && s.id !== excludeId);
+  if (pool.length === 0) return undefined;
+  return rngWeightedPick(rng, pool, (s) => schoolWeight(s, homeState, content));
 }

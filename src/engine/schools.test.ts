@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { schoolWeight, bestSchoolInTier } from "./schools";
+import { schoolWeight, bestSchoolInTier, sampleSchoolInTier } from "./schools";
+import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
 
 describe("schoolWeight", () => {
@@ -29,5 +30,26 @@ describe("bestSchoolInTier", () => {
   it("returns undefined when a tier has no schools", () => {
     const content = { ...CONTENT, schools: [] };
     expect(bestSchoolInTier(content, 2, "TX")).toBeUndefined();
+  });
+});
+
+describe("sampleSchoolInTier", () => {
+  it("only returns schools in the requested tier and respects exclude", () => {
+    const content = { ...CONTENT, schools: [
+      { id: "a", name: "A", tier: 2 as const, conference: "X", state: "TX" },
+      { id: "b", name: "B", tier: 2 as const, conference: "X", state: "OK" },
+      { id: "c", name: "C", tier: 3 as const, conference: "X", state: "TX" },
+    ]};
+    for (let i = 0; i < 20; i++) {
+      const pick = sampleSchoolInTier(content, 2, "TX", createRng(`s-${i}`), "a");
+      expect(pick).toBeDefined();
+      expect(pick!.tier).toBe(2);
+      expect(pick!.id).not.toBe("a");
+    }
+  });
+
+  it("returns undefined when no school matches", () => {
+    const content = { ...CONTENT, schools: [{ id: "c", name: "C", tier: 3 as const, conference: "X", state: "TX" }] };
+    expect(sampleSchoolInTier(content, 2, "TX", createRng("x"))).toBeUndefined();
   });
 });
