@@ -72,6 +72,8 @@ export function runPostseasonResolver(
   season.teamWins = record.wins;
   season.teamLosses = record.losses;
   const trophyEffects = resolveTrophies(record.wins, state.school.tier, cfg, rng);
-  const awardEffects = resolveAwards(state.setup.position, state.overall, season.stats, trophyEffects.length > 0, cfg, rng);
+  const awardEffects = state.redshirtSeasonActive
+    ? []
+    : resolveAwards(state.setup.position, state.overall, season.stats, trophyEffects.length > 0, cfg, rng);
   for (const eff of [...trophyEffects, ...awardEffects]) applyEffect(state, eff, injuryOf);
 }

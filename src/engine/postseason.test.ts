@@ -144,4 +144,31 @@ describe("runPostseasonResolver", () => {
     }
     expect(honored).toBeGreaterThan(0);
   });
+
+  describe("runPostseasonResolver — redshirt season", () => {
+    it("grants no individual awards during a redshirt season but still resolves the team record", () => {
+      const s = createCareer(resolverSetup, "redshirt-resolve");
+      s.overall = 96; // would very likely earn awards if not redshirting
+      s.redshirtSeasonActive = true;
+      s.school = { schoolId: "bama", tier: 4 };
+      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0 });
+      runPostseasonResolver(s, CONTENT, createRng("redshirt-resolve"), injuryOf);
+      expect(s.awards).toEqual([]); // suppressed
+      const line = s.seasons[0]!;
+      expect(line.teamWins + line.teamLosses).toBe(CONTENT.postseason.gamesPerSeason); // record still resolved
+    });
+
+    it("still grants awards across seeds when NOT a redshirt season (control)", () => {
+      let honored = 0;
+      for (let i = 0; i < 40; i++) {
+        const s = createCareer(resolverSetup, `ctrl-${i}`);
+        s.overall = 96;
+        s.school = { schoolId: "bama", tier: 4 };
+        s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0 });
+        runPostseasonResolver(s, CONTENT, createRng(`ctrl-${i}`), injuryOf);
+        if (s.awards.length > 0) honored++;
+      }
+      expect(honored).toBeGreaterThan(0);
+    });
+  });
 });
