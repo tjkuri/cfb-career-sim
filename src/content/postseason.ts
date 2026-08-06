@@ -2,9 +2,10 @@ import type { PostseasonConfig, ProgressionConfig } from "./schema";
 
 // All values are initial, balance-tunable starting points (tuned in Stage 4).
 // Award stat thresholds are grounded in the STAT_MODEL yields in engine/simulate.ts:
-// a full season is ~3 on-field phases x ~160 snaps at overall 70. K produces no
-// stats in the current model, so K earns no production award (intentional hard-mode);
-// its tiny prestige multiplier keeps prestige awards near-impossible too.
+// a full season is ~3 on-field phases x ~160 snaps at overall 70 (fewer for K, which
+// plays special-teams snaps). K now produces countable stats and can earn All-Conference
+// (a strong kicker clears its threshold); its tiny 0.05 prestige multiplier still keeps
+// prestige awards near-impossible, holding the hard-mode draft ceiling.
 export const POSTSEASON: PostseasonConfig = {
   gamesPerSeason: 12,
   tierBaseWinPct: { 1: 0.45, 2: 0.5, 3: 0.58, 4: 0.68 },
