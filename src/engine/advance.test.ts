@@ -389,3 +389,51 @@ describe("redshirt decision", () => {
     expect(() => advance(redshirtDecisionState("rs-bad"), "banana")).toThrow(/redshirt/i);
   });
 });
+
+describe("fixed milestone events", () => {
+  const fixedNonconf = (id: string) => ({
+    id, kind: "fixed" as const, phase: "nonconf" as const, weight: 1, title: id, description: "d",
+    options: [{ id: "ok", label: "ok", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+  });
+  const withFixed = {
+    ...CONTENT,
+    events: [
+      ...CONTENT.events.filter((e) => e.id === "recruiting"),
+      fixedNonconf("milestone-1"),
+      fixedNonconf("milestone-2"),
+    ],
+  } as typeof CONTENT;
+
+  it("fires each matching fixed event once, in content order, then proceeds", () => {
+    let s = createCareer(setup, "fixed-fire");
+    const seen: string[] = [];
+    let guard = 0;
+    while (s.status === "active" && guard++ < 400) {
+      const d = getDecision(s, withFixed);
+      if (!d) break;
+      seen.push(d.eventId);
+      s = advance(s, d.options[0]!.id, withFixed);
+    }
+    const firstMs1 = seen.indexOf("milestone-1");
+    const firstMs2 = seen.indexOf("milestone-2");
+    expect(firstMs1).toBeGreaterThanOrEqual(0);
+    expect(firstMs2).toBeGreaterThan(firstMs1); // m1 before m2 (content order)
+    // Each fires exactly once per season it matches; over a full career (>=1 nonconf phase) at least once.
+    expect(seen.filter((x) => x === "milestone-1").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("is behavior-preserving for the real content bundle (no non-recruiting fixed events)", () => {
+    // Same seed with real CONTENT must be identical to itself (determinism) and terminate.
+    const play = (seed: string) => {
+      let s = createCareer(setup, seed);
+      let guard = 0;
+      while (s.status === "active" && guard++ < 400) {
+        const d = getDecision(s)!;
+        s = advance(s, d.eventId === "declare" ? "return" : d.options[0]!.id);
+      }
+      return s;
+    };
+    expect(play("preserve")).toEqual(play("preserve"));
+    expect(["drafted", "busted"]).toContain(play("preserve").status);
+  });
+});

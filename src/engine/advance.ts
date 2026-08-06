@@ -3,7 +3,7 @@ import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, clampOverall, type InjuryLookup } from "./effects";
 import { resolveOutcome } from "./outcomes";
-import { selectRandomEvent } from "./select-event";
+import { selectRandomEvent, selectFixedEvent } from "./select-event";
 import { recruitingOptions, applyRecruitingChoice, simulatePhaseProduction } from "./simulate";
 import { computeDraftResult } from "./draft";
 import { runPostseasonResolver } from "./postseason";
@@ -140,6 +140,7 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
   if (!opt) throw new Error(`Invalid choice ${choiceId} for event ${ev.id}`);
   const outcome = resolveOutcome(opt, rng);
   for (const eff of outcome.effects) applyEffect(s, eff, injuryOf);
+  if (ev.kind === "fixed") s.phaseFiredEventIds.push(ev.id);
   s.currentEventId = null;
 }
 
@@ -244,16 +245,28 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
       }
       simulatePhaseProduction(s, rng);
       s.phaseSimulated = true;
+      s.phaseFiredEventIds = [];
+      s.phaseRandomDrawn = false;
+    }
 
-      // At most one random event per phase. If one fires, stop for a decision.
+    // Fire matching fixed (scripted) events one at a time.
+    const fixedEv = selectFixedEvent(s, content);
+    if (fixedEv) {
+      s.currentEventId = fixedEv.id;
+      return;
+    }
+
+    // Then at most one random event per phase.
+    if (!s.phaseRandomDrawn) {
+      s.phaseRandomDrawn = true;
       const ev: GameEvent | null = selectRandomEvent(s, content, rng);
       if (ev) {
         s.currentEventId = ev.id;
         return;
       }
     }
-    // Phase fully handled (no event, or the event was just resolved).
-    // Resolve postseason honors for the season just completed, then move on.
+
+    // Phase fully handled: resolve postseason honors, then move on.
     if (s.phase === "postseason") runPostseasonResolver(s, content, rng, injuryOf);
     advancePhase(s);
     s.phaseSimulated = false;
