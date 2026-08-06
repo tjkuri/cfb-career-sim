@@ -132,6 +132,19 @@ describe("runPostseasonResolver", () => {
     expect(JSON.stringify(s)).toBe(before);
   });
 
+  it("a strong kicker can earn All-Conference across seeds (production award reachable)", () => {
+    let honored = 0;
+    for (let i = 0; i < 60; i++) {
+      const s = createCareer({ lastName: "K", jerseyNumber: 9, homeState: "TX", position: "K" }, `k-${i}`);
+      s.overall = 90;
+      s.school = { schoolId: "smu", tier: 3 };
+      s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 180, stats: { fieldGoals: 20, points: 90 }, teamWins: 0, teamLosses: 0 });
+      runPostseasonResolver(s, CONTENT, createRng(`k-${i}`), injuryOf);
+      if (s.awards.includes("allConference")) honored++;
+    }
+    expect(honored).toBeGreaterThan(0);
+  });
+
   it("an elite career accumulates at least one trophy or award across seeds", () => {
     let honored = 0;
     for (let i = 0; i < 40; i++) {

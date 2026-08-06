@@ -39,7 +39,7 @@ const STAT_MODEL: Record<Position, { snapsMin: number; snapsMax: number; per100:
   OL: { snapsMin: 150, snapsMax: 220, per100: { pancakes: 6, sacksAllowed: 2 } },
   DL: { snapsMin: 130, snapsMax: 200, per100: { sacks: 1.5, tfls: 3, tackles: 10 } },
   DSKILL: { snapsMin: 130, snapsMax: 200, per100: { tackles: 12, ints: 1, passBreakups: 3 } },
-  K: { snapsMin: 40, snapsMax: 70, per100: { fgPct: 0, longFg: 0, gameWinners: 0 } },
+  K: { snapsMin: 40, snapsMax: 70, per100: { fieldGoals: 9, points: 42, gameWinners: 0.8 } },
 };
 
 export function simulatePhaseProduction(state: GameState, rng: Rng): void {

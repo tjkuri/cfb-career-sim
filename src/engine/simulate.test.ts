@@ -69,4 +69,15 @@ describe("simulatePhaseProduction", () => {
     simulatePhaseProduction(half, createRng("same"));
     expect(half.seasons[0]!.snaps).toBe(Math.round(full.seasons[0]!.snaps * 0.5));
   });
+
+  it("a kicker accumulates non-zero countable stats over a phase", () => {
+    const s = createCareer({ lastName: "K", jerseyNumber: 9, homeState: "TX", position: "K" }, "kicker");
+    s.phase = "nonconf";
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+    simulatePhaseProduction(s, createRng("kicker"));
+    const line = s.seasons[0]!;
+    expect(line.snaps).toBeGreaterThan(0);
+    expect(line.stats.fieldGoals ?? 0).toBeGreaterThan(0);
+    expect(line.stats.points ?? 0).toBeGreaterThan(0);
+  });
 });

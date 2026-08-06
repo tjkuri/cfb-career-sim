@@ -24,6 +24,7 @@ export const POSTSEASON: PostseasonConfig = {
     { id: "allConference", position: "OL", stat: "pancakes", threshold: 30, prob: 0.7 },
     { id: "allConference", position: "DL", stat: "sacks", threshold: 7, prob: 0.7 },
     { id: "allConference", position: "DSKILL", stat: "tackles", threshold: 60, prob: 0.7 },
+    { id: "allConference", position: "K", stat: "fieldGoals", threshold: 15, prob: 0.6 },
   ],
 };
 

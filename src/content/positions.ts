@@ -6,5 +6,5 @@ export const POSITIONS: Record<Position, { label: string; stats: string[] }> = {
   OL: { label: "Offensive line", stats: ["pancakes", "sacksAllowed"] },
   DL: { label: "Defensive line", stats: ["sacks", "tfls", "tackles"] },
   DSKILL: { label: "Defensive skill", stats: ["tackles", "ints", "passBreakups"] },
-  K: { label: "Kicker", stats: ["fgPct", "longFg", "gameWinners"] },
+  K: { label: "Kicker", stats: ["fieldGoals", "points", "gameWinners"] },
 };
