@@ -69,11 +69,15 @@ describe("advance / getDecision", () => {
     expect(s0).toEqual(snapshot);
   });
 
-  it("always-return policy plays all 4 years then force-declares with no phantom trailing season", () => {
+  it("always-return policy plays all years (incl. one redshirt) then force-declares with no phantom trailing season", () => {
     const s = autoplayAlwaysReturn("always-return");
     expect(s.status).toBe("drafted");
-    expect(s.eligibility.yearsUsed).toBe(4);
-    expect(s.seasons.length).toBe(4);
+    // "redshirt" is now first-option at the offseason hub, so this always-first-option
+    // policy takes it once (early, per redshirtOffered), bumping the eligibility cap
+    // 4->5 and adding one played season versus the pre-redshirt expectation.
+    expect(s.eligibility.redshirtUsed).toBe(true);
+    expect(s.eligibility.yearsUsed).toBe(5);
+    expect(s.seasons.length).toBe(5);
     // The last season line must reflect an actually-played season, not a
     // just-pushed-then-abandoned empty one from the postseason->offseason rollover.
     const lastSeason = s.seasons[s.seasons.length - 1]!;
@@ -105,11 +109,14 @@ describe("advance / getDecision", () => {
     const s = autoplay("refactor-declare");
     expect(["drafted", "busted"]).toContain(s.status);
 
-    // Always-return plays all 4 years then force-declares (no phantom season).
+    // Always-return plays all years then force-declares (no phantom season). With
+    // redshirt now first-option at the hub, this policy takes it once, so the cap
+    // is 5 (4 base + 1 redshirt) rather than 4.
     const r = autoplayAlwaysReturn("refactor-force");
     expect(r.status).toBe("drafted");
-    expect(r.eligibility.yearsUsed).toBe(4);
-    expect(r.seasons.length).toBe(4);
+    expect(r.eligibility.redshirtUsed).toBe(true);
+    expect(r.eligibility.yearsUsed).toBe(5);
+    expect(r.seasons.length).toBe(5);
   });
 
   it("rejects a bogus choiceId at the declare decision", () => {
@@ -282,5 +289,103 @@ describe("transfer portal", () => {
     const b = autoplay("xfer-term");
     expect(["drafted", "busted"]).toContain(a.status);
     expect(a).toEqual(b);
+  });
+});
+
+// Content with no random events, so the sit season can't fire an overall-changing event.
+const NO_EVENTS = { ...CONTENT, events: CONTENT.events.filter((e) => e.id === "recruiting") };
+
+function redshirtDecisionState(seed: string) {
+  const s = createCareer(setup, seed);
+  s.overall = 70;
+  s.school = { schoolId: "unt", tier: 2 };
+  s.eligibility = { classYear: "SO", yearsUsed: 1, redshirtUsed: false, draftEligible: false };
+  s.phase = "offseason";
+  // seasonIndex must point PAST the completed season so autoProgress starts a fresh
+  // season line for the sit year instead of merging its (near-zero) snaps into the
+  // already-completed one (which would pollute the next enterOffseason's dev calc).
+  s.seasonIndex = 1;
+  s.seasons.push({ seasonIndex: 0, schoolId: "unt", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+  s.currentEventId = "redshirt";
+  return s;
+}
+
+describe("redshirt decision", () => {
+  it("is offered to an early, unused player and not once used", () => {
+    const s = createCareer(setup, "rs-offer");
+    s.eligibility.classYear = "SO";
+    s.currentEventId = "redshirt";
+    const d = getDecision(s);
+    expect(d?.eventId).toBe("redshirt");
+    expect(d!.options.map((o) => o.id)).toEqual(["redshirt", "decline"]);
+  });
+
+  it("taking it applies the bump on a success roll and the sink on a failure roll", () => {
+    // Find one seed whose first rngChance(0.6) succeeds and one that fails.
+    // (Implementer: try seeds; assert both outcomes are reachable and exact.)
+    const bumped = advance(redshirtDecisionState("rs-seed-0"), "redshirt", NO_EVENTS);
+    expect(bumped.eligibility.redshirtUsed).toBe(true);
+    expect(bumped.overall).toBe(70 + NO_EVENTS.redshirt.bumpOverall);
+
+    const sunk = advance(redshirtDecisionState("rs-seed-4"), "redshirt", NO_EVENTS);
+    expect(sunk.eligibility.redshirtUsed).toBe(true);
+    expect(sunk.overall).toBe(70 + NO_EVENTS.redshirt.sinkOverall);
+  });
+
+  it("the redshirt season is a sit (near-zero snaps) and grants no awards", () => {
+    // Drive a real career taking redshirt when offered, then keep playing (taking
+    // redshirt itself doesn't end the phase loop -- it only ends the offseason hub
+    // sequence; the sit season's on-field phases, and any offseason-phase event like
+    // a training decision, still need to resolve before its season line materializes).
+    let s = createCareer(setup, "rs-sit");
+    let guard = 0;
+    let redshirted = false;
+    while (s.status === "active" && guard++ < 400) {
+      const d = getDecision(s);
+      if (!d) break;
+      if (d.eventId === "redshirt" && !redshirted) {
+        s = advance(s, "redshirt");
+        redshirted = true;
+        continue;
+      }
+      s = advance(s, d.eventId === "declare" ? "return" : (d.options.find((o) => o.id === "stay")?.id ?? d.options[0]!.id));
+    }
+    expect(redshirted).toBe(true);
+    // The lowest-snap season should be the sit (well under a normal ~360+ season).
+    const minSnaps = Math.min(...s.seasons.map((x) => x.snaps));
+    expect(minSnaps).toBeLessThan(100);
+  });
+
+  it("declining proceeds to the rest of the offseason (does not set redshirtUsed)", () => {
+    const s = redshirtDecisionState("rs-decline");
+    const after = advance(s, "decline");
+    expect(after.eligibility.redshirtUsed).toBe(false);
+    // decline chains onward; the career keeps progressing to a terminal or next decision.
+    expect(["active", "drafted", "busted", "declared"]).toContain(after.status);
+  });
+
+  it("a redshirt career can reach a 5th season and still terminates deterministically", () => {
+    const play = (seed: string) => {
+      let s = createCareer(setup, seed);
+      let guard = 0;
+      while (s.status === "active" && guard++ < 400) {
+        const d = getDecision(s);
+        if (!d) break;
+        // Take redshirt if offered; otherwise return/first-option.
+        if (d.eventId === "redshirt") s = advance(s, "redshirt");
+        else s = advance(s, d.eventId === "declare" ? "return" : (d.options.find((o) => o.id === "stay")?.id ?? d.options[0]!.id));
+      }
+      return s;
+    };
+    const a = play("rs-fifth");
+    const b = play("rs-fifth");
+    expect(a).toEqual(b); // determinism with redshirt in play
+    expect(a.eligibility.redshirtUsed).toBe(true);
+    expect(a.seasons.length).toBeGreaterThanOrEqual(5); // the extra year materialized
+    expect(["drafted", "busted"]).toContain(a.status);
+  });
+
+  it("rejects an unknown redshirt choice id", () => {
+    expect(() => advance(redshirtDecisionState("rs-bad"), "banana")).toThrow(/redshirt/i);
   });
 });

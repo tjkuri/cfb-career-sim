@@ -1,6 +1,6 @@
 import type { GameEvent, GameState } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
-import { createRng, type Rng } from "./rng";
+import { createRng, rngChance, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, clampOverall, type InjuryLookup } from "./effects";
 import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent } from "./select-event";
@@ -13,6 +13,7 @@ import { generateTransferOffers } from "./transfer";
 
 const DECLARE_EVENT_ID = "declare";
 const TRANSFER_EVENT_ID = "transfer";
+const REDSHIRT_EVENT_ID = "redshirt";
 const ON_FIELD_PHASES = new Set(["nonconf", "conference", "postseason"]);
 
 type HubStep = "entry" | "redshirt" | "declare" | "transfer";
@@ -57,6 +58,17 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
       title: "Transfer Portal",
       description: "The portal is open. Stay, or take an offer?",
       options: opts.map((o) => ({ id: o.id, label: o.label })),
+    };
+  }
+  if (state.currentEventId === REDSHIRT_EVENT_ID) {
+    return {
+      eventId: REDSHIRT_EVENT_ID,
+      title: "Redshirt?",
+      description: "Sit this season to preserve a year of eligibility and gamble on coming back stronger — it might backfire.",
+      options: [
+        { id: "redshirt", label: "Take the redshirt (sit the season)" },
+        { id: "decline", label: "Play this season" },
+      ],
     };
   }
   const ev = content.events.find((e) => e.id === state.currentEventId);
@@ -104,6 +116,24 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     raiseNextHubDecision(s, content, rng, "transfer");
     return;
   }
+  if (s.currentEventId === REDSHIRT_EVENT_ID) {
+    if (choiceId !== "redshirt" && choiceId !== "decline") {
+      throw new Error(`Invalid redshirt choice: ${choiceId}`);
+    }
+    if (choiceId === "decline") {
+      raiseNextHubDecision(s, content, rng, "redshirt");
+      return;
+    }
+    // Take the redshirt: roll the bump/sink, sit the upcoming season, preserve eligibility.
+    const cfg = content.redshirt;
+    const success = rngChance(rng, cfg.successProb);
+    applyEffect(s, { kind: "overall", timing: "permanent", amount: success ? cfg.bumpOverall : cfg.sinkOverall }, injuryOf);
+    s.eligibility.redshirtUsed = true;
+    s.snapModifier = cfg.sitSnapModifier;
+    s.redshirtSeasonActive = true;
+    s.currentEventId = null; // taking the redshirt ends this offseason's hub sequence
+    return;
+  }
   const ev = content.events.find((e) => e.id === s.currentEventId);
   if (!ev) throw new Error(`No current event: ${s.currentEventId}`);
   const opt = ev.options.find((o) => o.id === choiceId);
@@ -130,8 +160,9 @@ export function developmentDelta(seasonSnaps: number, cfg: { snapsPerDevPoint: n
 }
 
 export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): void {
-  // Reset the one-season snap modifier from any prior transfer (Task 4 uses this).
+  // Reset per-season modifiers from any prior transfer/redshirt.
   s.snapModifier = 1;
+  s.redshirtSeasonActive = false;
 
   // Develop from last season's playing time before advancing eligibility.
   const lastSeason = s.seasons[s.seasons.length - 1];
@@ -159,7 +190,8 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   s.eligibility.yearsUsed += 1;
   s.eligibility.draftEligible = s.eligibility.classYear === "JR" || s.eligibility.classYear === "SR";
 
-  if (s.eligibility.yearsUsed >= CLASS_ORDER.length) {
+  const eligibilityCap = CLASS_ORDER.length + (s.eligibility.redshirtUsed ? 1 : 0);
+  if (s.eligibility.yearsUsed >= eligibilityCap) {
     // Out of eligibility -> forced to declare.
     s.status = "declared";
     return;
@@ -168,11 +200,23 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   raiseNextHubDecision(s, content, rng, "entry");
 }
 
+function redshirtOffered(s: GameState): boolean {
+  return (
+    !s.eligibility.redshirtUsed &&
+    (s.eligibility.classYear === "SO" ||
+      s.eligibility.classYear === "JR" ||
+      s.injuries.some((i) => i.kind === "injury"))
+  );
+}
+
 function raiseNextHubDecision(s: GameState, content: ContentBundle, rng: Rng, from: HubStep): void {
   const startIdx = from === "entry" ? 0 : HUB_ORDER.indexOf(from) + 1;
   for (let i = startIdx; i < HUB_ORDER.length; i++) {
     const step = HUB_ORDER[i]!;
-    if (step === "redshirt") continue; // deferred to Stage 2c
+    if (step === "redshirt") {
+      if (redshirtOffered(s)) { s.currentEventId = REDSHIRT_EVENT_ID; return; }
+      continue;
+    }
     if (step === "declare") {
       if (s.eligibility.draftEligible) { s.currentEventId = DECLARE_EVENT_ID; return; }
     }
