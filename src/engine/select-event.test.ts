@@ -5,6 +5,7 @@ import { createRng } from "./rng";
 import type { ContentBundle } from "../content/schema";
 import { POSTSEASON, PROGRESSION } from "../content/postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "../content/regions";
+import { REDSHIRT } from "../content/redshirt";
 import type { EventConditions, GameEvent, GameState, Setup } from "./types";
 
 const setup: Setup = { lastName: "A", jerseyNumber: 1, homeState: "TX", position: "QB" };
@@ -18,7 +19,7 @@ const dlEvent: GameEvent = { ...qbEvent, id: "dl-only", conditions: { position: 
 const bundle = (events: GameEvent[]): ContentBundle => ({
   events, injuries: {}, schools: [], positions: {} as any, trophyIds: [], awardIds: [],
   postseason: POSTSEASON, progression: PROGRESSION,
-  regions: REGIONS, schoolSampler: SCHOOL_SAMPLER, transfer: TRANSFER,
+  regions: REGIONS, schoolSampler: SCHOOL_SAMPLER, transfer: TRANSFER, redshirt: REDSHIRT,
 });
 
 function makeState(overrides: Partial<GameState>): GameState {

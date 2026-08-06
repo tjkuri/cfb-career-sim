@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { validateContent, type ContentBundle } from "./schema";
 import { POSTSEASON, PROGRESSION } from "./postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
+import { REDSHIRT } from "./redshirt";
 
 function goodBundle(): ContentBundle {
   return {
@@ -22,6 +23,7 @@ function goodBundle(): ContentBundle {
     regions: REGIONS,
     schoolSampler: SCHOOL_SAMPLER,
     transfer: TRANSFER,
+    redshirt: REDSHIRT,
     events: [
       {
         id: "recruiting",
@@ -220,5 +222,17 @@ describe("validateContent", () => {
     const b = goodBundle();
     b.transfer = { ...b.transfer, moveUpSnapModifier: 0 };
     expect(validateContent(b).join()).toContain("moveUpSnapModifier");
+  });
+
+  it("rejects a redshirt successProb outside [0,1]", () => {
+    const b = goodBundle();
+    b.redshirt = { ...b.redshirt, successProb: 1.5 };
+    expect(validateContent(b).join()).toContain("successProb");
+  });
+
+  it("rejects a non-positive redshirt sitSnapModifier", () => {
+    const b = goodBundle();
+    b.redshirt = { ...b.redshirt, sitSnapModifier: 0 };
+    expect(validateContent(b).join()).toContain("sitSnapModifier");
   });
 });

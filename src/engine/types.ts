@@ -107,6 +107,7 @@ export interface GameState {
   overall: number;
   character: number;
   snapModifier: number;
+  redshirtSeasonActive: boolean;
 
   eligibility: {
     classYear: ClassYear;

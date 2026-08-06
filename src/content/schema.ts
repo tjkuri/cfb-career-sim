@@ -33,6 +33,12 @@ export interface TransferConfig {
   moveDownSnapModifier: number;
   buriedSnapThreshold: number;
 }
+export interface RedshirtConfig {
+  successProb: number;
+  bumpOverall: number;
+  sinkOverall: number;
+  sitSnapModifier: number;
+}
 
 export interface ContentBundle {
   events: GameEvent[];
@@ -46,6 +52,7 @@ export interface ContentBundle {
   regions: RegionsConfig;
   schoolSampler: SchoolSamplerConfig;
   transfer: TransferConfig;
+  redshirt: RedshirtConfig;
 }
 
 export function validateContent(bundle: ContentBundle): string[] {
@@ -104,6 +111,10 @@ export function validateContent(bundle: ContentBundle): string[] {
   if (prog.washoutConsecutiveSeasons < 1) errors.push("progression.washoutConsecutiveSeasons must be >= 1");
   if (prog.washoutOverallFloor < 0) errors.push("progression.washoutOverallFloor must be >= 0");
   if (prog.washoutSnapFloor < 0) errors.push("progression.washoutSnapFloor must be >= 0");
+
+  const rs = bundle.redshirt;
+  if (rs.successProb < 0 || rs.successProb > 1) errors.push("redshirt.successProb must be in [0,1]");
+  if (rs.sitSnapModifier <= 0 || rs.sitSnapModifier > 1) errors.push("redshirt.sitSnapModifier must be in (0,1]");
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {
