@@ -26,3 +26,12 @@ export function selectRandomEvent(state: GameState, content: ContentBundle, rng:
   if (pool.length === 0) return null;
   return rngWeightedPick(rng, pool, (e) => e.weight);
 }
+
+export function selectFixedEvent(state: GameState, content: ContentBundle): GameEvent | null {
+  for (const ev of content.events) {
+    if (ev.kind !== "fixed" || ev.id === "recruiting") continue;
+    if (state.phaseFiredEventIds.includes(ev.id)) continue;
+    if (eventMatches(state, ev)) return ev;
+  }
+  return null;
+}

@@ -108,6 +108,8 @@ export interface GameState {
   character: number;
   snapModifier: number;
   redshirtSeasonActive: boolean;
+  phaseFiredEventIds: string[];
+  phaseRandomDrawn: boolean;
 
   eligibility: {
     classYear: ClassYear;

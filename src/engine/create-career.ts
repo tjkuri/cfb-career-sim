@@ -13,6 +13,8 @@ export function createCareer(setup: Setup, seed: string): GameState {
     character: STARTING_CHARACTER,
     snapModifier: 1,
     redshirtSeasonActive: false,
+    phaseFiredEventIds: [],
+    phaseRandomDrawn: false,
     eligibility: { classYear: "FR", yearsUsed: 0, redshirtUsed: false, draftEligible: false },
     school: { schoolId: "", tier: 1 },
     seasonIndex: 0,

@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { eventMatches, selectRandomEvent } from "./select-event";
+import { eventMatches, selectRandomEvent, selectFixedEvent } from "./select-event";
 import { createCareer } from "./create-career";
 import { createRng } from "./rng";
 import type { ContentBundle } from "../content/schema";
+import { CONTENT } from "../content/index";
 import { POSTSEASON, PROGRESSION } from "../content/postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "../content/regions";
 import { REDSHIRT } from "../content/redshirt";
@@ -105,5 +106,28 @@ describe("selectRandomEvent", () => {
     const s = createCareer(setup, "s"); s.phase = "nonconf";
     const ev = selectRandomEvent(s, bundle([qbEvent, dlEvent]), createRng("s"));
     expect(ev?.id).toBe("qb-only");
+  });
+});
+
+describe("selectFixedEvent", () => {
+  it("returns the first matching fixed event, excluding recruiting and already-fired ids", () => {
+    const state = makeState({ phase: "nonconf" }); // ensure phase matches the events below
+    const content = {
+      ...CONTENT,
+      events: [
+        { id: "recruiting", kind: "fixed", phase: "nonconf", weight: 1, title: "r", description: "d",
+          options: [{ id: "c", label: "c", probability: 1, positiveOutcome: { description: "d", effects: [] } }] },
+        { id: "m1", kind: "fixed", phase: "nonconf", weight: 1, title: "m1", description: "d",
+          options: [{ id: "ok", label: "ok", probability: 1, positiveOutcome: { description: "d", effects: [] } }] },
+        { id: "m2", kind: "fixed", phase: "nonconf", weight: 1, title: "m2", description: "d",
+          options: [{ id: "ok", label: "ok", probability: 1, positiveOutcome: { description: "d", effects: [] } }] },
+        { id: "r1", kind: "random", phase: "nonconf", weight: 1, title: "r1", description: "d",
+          options: [{ id: "ok", label: "ok", probability: 1, positiveOutcome: { description: "d", effects: [] } }] },
+      ],
+    } as typeof CONTENT;
+
+    expect(selectFixedEvent({ ...state, phaseFiredEventIds: [] }, content)!.id).toBe("m1"); // recruiting excluded
+    expect(selectFixedEvent({ ...state, phaseFiredEventIds: ["m1"] }, content)!.id).toBe("m2");
+    expect(selectFixedEvent({ ...state, phaseFiredEventIds: ["m1", "m2"] }, content)).toBeNull(); // random not returned
   });
 });
