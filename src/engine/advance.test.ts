@@ -307,6 +307,13 @@ function redshirtDecisionState(seed: string) {
   s.seasonIndex = 1;
   s.seasons.push({ seasonIndex: 0, schoolId: "unt", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
   s.currentEventId = "redshirt";
+  // createCareer already consumed schoolSampler.offerCount rng draws generating
+  // Signing Day offers (and set pendingOptions for that recruiting event). Reset
+  // both so this fixture's hand-tuned seeds are pinned to the redshirt roll only,
+  // not to a Stage-4-tunable content constant -- and so it no longer carries the
+  // impossible state of a live recruiting `pendingOptions` next to a redshirt event.
+  s.rngCursor = 0;
+  s.pendingOptions = undefined;
   return s;
 }
 
@@ -321,13 +328,15 @@ describe("redshirt decision", () => {
   });
 
   it("taking it applies the bump on a success roll and the sink on a failure roll", () => {
-    // Find one seed whose first rngChance(0.6) succeeds and one that fails.
-    // (Implementer: try seeds; assert both outcomes are reachable and exact.)
+    // Seeds picked against rngCursor 0 (the redshirt roll is the fixture's first
+    // draw -- see redshirtDecisionState's rngCursor reset above): "rs-seed-0"'s
+    // first rngChance(0.6) succeeds, "rs-seed-4"'s fails. Both outcomes are
+    // reachable and exact.
     const bumped = advance(redshirtDecisionState("rs-seed-0"), "redshirt", NO_EVENTS);
     expect(bumped.eligibility.redshirtUsed).toBe(true);
     expect(bumped.overall).toBe(70 + NO_EVENTS.redshirt.bumpOverall);
 
-    const sunk = advance(redshirtDecisionState("rs-seed-3"), "redshirt", NO_EVENTS);
+    const sunk = advance(redshirtDecisionState("rs-seed-4"), "redshirt", NO_EVENTS);
     expect(sunk.eligibility.redshirtUsed).toBe(true);
     expect(sunk.overall).toBe(70 + NO_EVENTS.redshirt.sinkOverall);
   });

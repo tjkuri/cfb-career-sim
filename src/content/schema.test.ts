@@ -183,6 +183,20 @@ describe("validateContent", () => {
     expect(errors.some((e) => e.includes("bad-maxovr") && e.toLowerCase().includes("maxoverall"))).toBe(true);
   });
 
+  it("rejects a non-boolean requiresFinalSeason condition value", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "bad-final-season", kind: "random", phase: "nonconf", weight: 1,
+      conditions: { requiresFinalSeason: "yes" as never },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(
+      errors.some((e) => e.includes("bad-final-season") && e.toLowerCase().includes("requiresfinalseason")),
+    ).toBe(true);
+  });
+
   it("rejects a prestige award id not in awardIds", () => {
     const b = goodBundle();
     b.postseason = { ...b.postseason, prestige: [{ id: "ghostAward", bands: [{ min: 90, prob: 0.5 }], teamSuccessBoost: 0.3 }] };
@@ -258,5 +272,21 @@ describe("schoolSampler validation", () => {
       schoolSampler: { ...CONTENT.schoolSampler, regionBonus: { 1: -1, 2: 3, 3: 2, 4: 1 } },
     };
     expect(validateContent(bad).some((e) => e.includes("regionBonus"))).toBe(true);
+  });
+
+  it("rejects an offerCount that is non-integer or below 1", () => {
+    // Two distinct failure modes through the same guard: a fractional value fails
+    // the Number.isInteger check, a too-small integer fails the < 1 check.
+    const nonInteger = {
+      ...CONTENT,
+      schoolSampler: { ...CONTENT.schoolSampler, offerCount: 2.5 },
+    };
+    expect(validateContent(nonInteger).some((e) => e.includes("offerCount"))).toBe(true);
+
+    const tooSmall = {
+      ...CONTENT,
+      schoolSampler: { ...CONTENT.schoolSampler, offerCount: 0 },
+    };
+    expect(validateContent(tooSmall).some((e) => e.includes("offerCount"))).toBe(true);
   });
 });

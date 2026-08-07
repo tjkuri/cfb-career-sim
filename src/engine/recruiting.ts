@@ -29,6 +29,10 @@ export function generateRecruitingOffers(
         label: `Commit to ${school.name}`,
         schoolId: school.id,
         tier: school.tier,
+        // Fixed at 1 by design: recruiting offers carry no snap penalty/bonus today.
+        // applyRecruitingChoice deliberately does not read this field (unlike the
+        // transfer path, which does) — if a future stage gives recruiting offers a
+        // real snapModifier, applyRecruitingChoice will need to consume it too.
         snapModifier: 1,
       });
       added = true;
