@@ -41,9 +41,9 @@ export function sampleSchoolInTier(
   tier: Tier,
   homeState: string,
   rng: Rng,
-  excludeId?: string,
+  excludeIds?: ReadonlySet<string>,
 ): SchoolRow | undefined {
-  const pool = content.schools.filter((s) => s.tier === tier && s.id !== excludeId);
+  const pool = content.schools.filter((s) => s.tier === tier && !excludeIds?.has(s.id));
   if (pool.length === 0) return undefined;
   return rngWeightedPick(rng, pool, (s) => schoolWeight(s, homeState, content));
 }

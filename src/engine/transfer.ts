@@ -18,7 +18,7 @@ export function generateTransferOffers(state: GameState, content: ContentBundle,
     snapModifier: 1,
   }];
 
-  const lateral = sampleSchoolInTier(content, currentTier, homeState, rng, state.school.schoolId);
+  const lateral = sampleSchoolInTier(content, currentTier, homeState, rng, new Set([state.school.schoolId]));
   if (lateral) offers.push({ id: `transfer-${lateral.id}`, label: `Transfer to ${lateral.name} (bigger role)`, schoolId: lateral.id, tier: lateral.tier, snapModifier: cfg.lateralSnapModifier });
 
   const tiers = eligibleTiers(state);

@@ -59,7 +59,7 @@ describe("sampleSchoolInTier", () => {
       { id: "c", name: "C", tier: 3 as const, conference: "X", state: "TX" },
     ]};
     for (let i = 0; i < 20; i++) {
-      const pick = sampleSchoolInTier(content, 2, "TX", createRng(`s-${i}`), "a");
+      const pick = sampleSchoolInTier(content, 2, "TX", createRng(`s-${i}`), new Set(["a"]));
       expect(pick).toBeDefined();
       expect(pick!.tier).toBe(2);
       expect(pick!.id).not.toBe("a");
@@ -69,5 +69,24 @@ describe("sampleSchoolInTier", () => {
   it("returns undefined when no school matches", () => {
     const content = { ...CONTENT, schools: [{ id: "c", name: "C", tier: 3 as const, conference: "X", state: "TX" }] };
     expect(sampleSchoolInTier(content, 2, "TX", createRng("x"))).toBeUndefined();
+  });
+
+  it("excludes every id in the exclusion set", () => {
+    const content = { ...CONTENT, schools: [
+      { id: "a", name: "A", tier: 2 as const, conference: "X", state: "TX" },
+      { id: "b", name: "B", tier: 2 as const, conference: "X", state: "TX" },
+      { id: "c", name: "C", tier: 2 as const, conference: "X", state: "TX" },
+    ]};
+    for (let i = 0; i < 20; i++) {
+      const pick = sampleSchoolInTier(content, 2, "TX", createRng(`ex-${i}`), new Set(["a", "b"]));
+      expect(pick!.id).toBe("c");
+    }
+  });
+
+  it("returns undefined when the exclusion set covers the whole tier", () => {
+    const content = { ...CONTENT, schools: [
+      { id: "a", name: "A", tier: 2 as const, conference: "X", state: "TX" },
+    ]};
+    expect(sampleSchoolInTier(content, 2, "TX", createRng("x"), new Set(["a"]))).toBeUndefined();
   });
 });
