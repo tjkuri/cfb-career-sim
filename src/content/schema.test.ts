@@ -213,6 +213,7 @@ describe("validateContent", () => {
       base: 1,
       homeStateBonus: { 1: -1, 2: 8, 3: 4, 4: 1 },
       regionBonus: { 1: 5, 2: 3, 3: 2, 4: 0.5 },
+      offerCount: 3,
     };
     expect(validateContent(b).join()).toContain("schoolSampler");
   });
