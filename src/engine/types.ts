@@ -56,6 +56,7 @@ export interface EventConditions {
   tier?: Tier[];
   requiresInjury?: boolean;
   requiresActiveInjury?: boolean;
+  requiresFinalSeason?: boolean;
   maxCharacter?: number;
   maxOverall?: number;
 }

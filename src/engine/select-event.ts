@@ -16,6 +16,13 @@ export function eventMatches(state: GameState, ev: GameEvent): boolean {
   }
   if (c.requiresInjury && state.injuries.length === 0) return false;
   if (c.requiresActiveInjury && !state.injuries.some((i) => i.kind === "injury")) return false;
+  if (c.requiresFinalSeason) {
+    // Final playable season == yearsUsed one short of the eligibility cap.
+    // A redshirt raises the cap by exactly the year it consumes, so a sit
+    // season can never satisfy this.
+    const cap = CLASS_ORDER.length + (state.eligibility.redshirtUsed ? 1 : 0);
+    if (state.eligibility.yearsUsed !== cap - 1) return false;
+  }
   if (c.maxCharacter !== undefined && state.character > c.maxCharacter) return false;
   if (c.maxOverall !== undefined && state.overall > c.maxOverall) return false;
   return true;

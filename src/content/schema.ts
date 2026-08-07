@@ -158,6 +158,8 @@ export function validateContent(bundle: ContentBundle): string[] {
         errors.push(`Event ${ev.id}: invalid maxCharacter "${c.maxCharacter}"`);
       if (c.maxOverall !== undefined && (c.maxOverall < 0 || c.maxOverall > 99))
         errors.push(`Event ${ev.id}: invalid maxOverall "${c.maxOverall}"`);
+      if (c.requiresFinalSeason !== undefined && typeof c.requiresFinalSeason !== "boolean")
+        errors.push(`Event ${ev.id}: requiresFinalSeason must be a boolean`);
     }
   }
   const recruiting = bundle.events.find((e) => e.id === "recruiting");

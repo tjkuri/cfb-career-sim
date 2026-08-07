@@ -97,6 +97,54 @@ describe("eventMatches", () => {
   });
 });
 
+describe("requiresFinalSeason", () => {
+  const ev: GameEvent = {
+    id: "senior-day",
+    kind: "fixed",
+    phase: "offseason",
+    weight: 1,
+    conditions: { requiresFinalSeason: true },
+    title: "Senior Day",
+    description: "The last time you run out of this tunnel.",
+    options: [{ id: "go", label: "Go", probability: 1, positiveOutcome: { description: "ok", effects: [] } }],
+  };
+
+  const stateWith = (yearsUsed: number, redshirtUsed: boolean): GameState => {
+    const base = createCareer({ lastName: "S", jerseyNumber: 7, homeState: "TX", position: "QB" }, "fs");
+    return {
+      ...base,
+      phase: "offseason",
+      eligibility: { ...base.eligibility, classYear: "SR", yearsUsed, redshirtUsed },
+    };
+  };
+
+  it("matches the final season of a career with no redshirt (cap 4)", () => {
+    expect(eventMatches(stateWith(3, false), ev)).toBe(true);
+  });
+
+  it("does not match earlier seasons of a career with no redshirt", () => {
+    expect(eventMatches(stateWith(2, false), ev)).toBe(false);
+  });
+
+  it("matches only the fifth season of a redshirted career (cap 5)", () => {
+    expect(eventMatches(stateWith(4, true), ev)).toBe(true);
+    expect(eventMatches(stateWith(3, true), ev)).toBe(false);
+  });
+
+  it("does not match during a redshirt sit season", () => {
+    // Taking a redshirt raises the cap by exactly the year it consumes, so the
+    // sit season can never be the final season. The latest possible sit is an
+    // injured SR at yearsUsed 3 against a cap of 5.
+    const sitting = { ...stateWith(3, true), redshirtSeasonActive: true };
+    expect(eventMatches(sitting, ev)).toBe(false);
+  });
+
+  it("ignores the condition when it is absent", () => {
+    const plain: GameEvent = { ...ev, conditions: {} };
+    expect(eventMatches(stateWith(1, false), plain)).toBe(true);
+  });
+});
+
 describe("selectRandomEvent", () => {
   it("returns null when nothing matches", () => {
     const s = createCareer(setup, "s"); s.phase = "nonconf";
