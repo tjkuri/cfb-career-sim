@@ -445,10 +445,11 @@ describe("recruiting offers are generated once", () => {
     const s = createCareer(rSetup, "same-set");
     const decision = getDecision(s)!;
     expect(decision.eventId).toBe("recruiting");
-    const chosenId = decision.options[0]!.id;
-    const expectedSchoolId = s.pendingOptions!.find((o) => o.id === chosenId)!.schoolId;
-    const next = advance(s, chosenId);
-    expect(next.school.schoolId).toBe(expectedSchoolId);
+    expect(decision.options.map((o) => o.id)).toEqual(s.pendingOptions!.map((o) => o.id));
+    for (const opt of decision.options) {
+      const expected = s.pendingOptions!.find((o) => o.id === opt.id)!.schoolId;
+      expect(advance(s, opt.id).school.schoolId).toBe(expected);
+    }
   });
 
   it("accepts every displayed option", () => {
