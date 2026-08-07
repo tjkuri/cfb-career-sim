@@ -20,22 +20,6 @@ export function schoolWeight(school: SchoolRow, homeState: string, content: Cont
   return w;
 }
 
-export function bestSchoolInTier(
-  content: ContentBundle,
-  tier: Tier,
-  homeState: string,
-  excludeId?: string,
-): SchoolRow | undefined {
-  let best: SchoolRow | undefined;
-  let bestW = -Infinity;
-  for (const s of content.schools) {
-    if (s.tier !== tier || s.id === excludeId) continue;
-    const w = schoolWeight(s, homeState, content);
-    if (w > bestW) { best = s; bestW = w; } // strict > keeps first-in-array on ties
-  }
-  return best;
-}
-
 export function sampleSchoolInTier(
   content: ContentBundle,
   tier: Tier,

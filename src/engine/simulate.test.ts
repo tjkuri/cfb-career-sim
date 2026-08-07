@@ -1,30 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { recruitingOptions, applyRecruitingChoice, simulatePhaseProduction } from "./simulate";
+import { simulatePhaseProduction } from "./simulate";
+import { applyRecruitingChoice } from "./recruiting";
 import { createCareer } from "./create-career";
 import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
 import type { Setup } from "./types";
 
 const setup: Setup = { lastName: "A", jerseyNumber: 1, homeState: "TX", position: "QB" };
-
-describe("recruiting", () => {
-  it("offers only tiers the player is eligible for at baseline (no blue-bloods)", () => {
-    const s = createCareer(setup, "s");
-    const opts = recruitingOptions(s, CONTENT);
-    const tiers = opts.map((o) => o.tier);
-    expect(tiers).toContain(1);
-    expect(tiers).not.toContain(4);
-  });
-
-  it("applying a choice sets the school and opens season 0", () => {
-    const s = createCareer(setup, "s");
-    const opts = recruitingOptions(s, CONTENT);
-    applyRecruitingChoice(s, opts[0]!.schoolId, CONTENT);
-    expect(s.school.schoolId).toBe(opts[0]!.schoolId);
-    expect(s.seasons).toHaveLength(1);
-    expect(s.seasons[0]!.seasonIndex).toBe(0);
-  });
-});
 
 describe("simulatePhaseProduction", () => {
   it("accrues snaps and QB stats during on-field phases", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { schoolWeight, bestSchoolInTier, sampleSchoolInTier } from "./schools";
+import { schoolWeight, sampleSchoolInTier } from "./schools";
 import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
 
@@ -32,22 +32,6 @@ describe("schoolWeight", () => {
     const w = (id: string) => schoolWeight(content.schools.find((s) => s.id === id)!, "TX", content);
     expect(w("f1")).toBe(CONTENT.schoolSampler.base);
     expect(w("f4")).toBe(CONTENT.schoolSampler.base);
-  });
-});
-
-describe("bestSchoolInTier", () => {
-  it("returns the highest-weight school in a tier and can exclude one", () => {
-    const content = { ...CONTENT, schools: [
-      { id: "home", name: "Home U", tier: 3 as const, conference: "X", state: "TX" },
-      { id: "far", name: "Far U", tier: 3 as const, conference: "X", state: "OH" },
-    ]};
-    expect(bestSchoolInTier(content, 3, "TX")!.id).toBe("home");
-    expect(bestSchoolInTier(content, 3, "TX", "home")!.id).toBe("far"); // excluded -> next best
-  });
-
-  it("returns undefined when a tier has no schools", () => {
-    const content = { ...CONTENT, schools: [] };
-    expect(bestSchoolInTier(content, 2, "TX")).toBeUndefined();
   });
 });
 

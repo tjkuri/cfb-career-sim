@@ -4,7 +4,8 @@ import { createRng, rngChance, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, clampOverall, type InjuryLookup } from "./effects";
 import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent, selectFixedEvent } from "./select-event";
-import { recruitingOptions, applyRecruitingChoice, simulatePhaseProduction } from "./simulate";
+import { simulatePhaseProduction } from "./simulate";
+import { applyRecruitingChoice } from "./recruiting";
 import { computeDraftResult } from "./draft";
 import { runPostseasonResolver } from "./postseason";
 import { CONTENT } from "../content/index";
@@ -37,8 +38,13 @@ function clone(state: GameState): GameState {
 export function getDecision(state: GameState, content: ContentBundle = CONTENT): PendingDecision | null {
   if (state.status !== "active" || state.currentEventId === null) return null;
   if (state.currentEventId === "recruiting") {
-    const opts = recruitingOptions(state, content);
-    return { eventId: "recruiting", title: "Signing Day", description: "Where do you commit?", options: opts.map((o) => ({ id: o.id, label: o.label })) };
+    const opts = state.pendingOptions ?? [];
+    return {
+      eventId: "recruiting",
+      title: "Signing Day",
+      description: "Where do you commit?",
+      options: opts.map((o) => ({ id: o.id, label: o.label })),
+    };
   }
   if (state.currentEventId === DECLARE_EVENT_ID) {
     return {
@@ -91,9 +97,10 @@ export function advance(state: GameState, choiceId: string, content: ContentBund
 
 function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng: Rng, injuryOf: InjuryLookup): void {
   if (s.currentEventId === "recruiting") {
-    const opt = recruitingOptions(s, content).find((o) => o.id === choiceId);
-    if (!opt) throw new Error(`Invalid recruiting choice: ${choiceId}`);
-    applyRecruitingChoice(s, opt.schoolId, content);
+    const offer = (s.pendingOptions ?? []).find((o) => o.id === choiceId);
+    if (!offer) throw new Error(`Invalid recruiting choice: ${choiceId}`);
+    applyRecruitingChoice(s, offer.schoolId, content);
+    s.pendingOptions = undefined;
     s.currentEventId = null;
     return;
   }

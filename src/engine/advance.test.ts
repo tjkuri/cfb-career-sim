@@ -327,7 +327,7 @@ describe("redshirt decision", () => {
     expect(bumped.eligibility.redshirtUsed).toBe(true);
     expect(bumped.overall).toBe(70 + NO_EVENTS.redshirt.bumpOverall);
 
-    const sunk = advance(redshirtDecisionState("rs-seed-4"), "redshirt", NO_EVENTS);
+    const sunk = advance(redshirtDecisionState("rs-seed-3"), "redshirt", NO_EVENTS);
     expect(sunk.eligibility.redshirtUsed).toBe(true);
     expect(sunk.overall).toBe(70 + NO_EVENTS.redshirt.sinkOverall);
   });
@@ -435,5 +435,39 @@ describe("fixed milestone events", () => {
     };
     expect(play("preserve")).toEqual(play("preserve"));
     expect(["drafted", "busted"]).toContain(play("preserve").status);
+  });
+});
+
+describe("recruiting offers are generated once", () => {
+  const rSetup: Setup = { lastName: "Smith", jerseyNumber: 7, homeState: "TX", position: "QB" };
+
+  it("resolves the choice against the same offer set that was displayed", () => {
+    const s = createCareer(rSetup, "same-set");
+    const decision = getDecision(s)!;
+    expect(decision.eventId).toBe("recruiting");
+    const chosenId = decision.options[0]!.id;
+    const expectedSchoolId = s.pendingOptions!.find((o) => o.id === chosenId)!.schoolId;
+    const next = advance(s, chosenId);
+    expect(next.school.schoolId).toBe(expectedSchoolId);
+  });
+
+  it("accepts every displayed option", () => {
+    for (let i = 0; i < 10; i++) {
+      const s = createCareer(rSetup, `accept-${i}`);
+      for (const opt of getDecision(s)!.options) {
+        expect(() => advance(s, opt.id)).not.toThrow();
+      }
+    }
+  });
+
+  it("rejects an option that was not offered", () => {
+    const s = createCareer(rSetup, "reject");
+    expect(() => advance(s, "commit-not-a-real-school")).toThrow();
+  });
+
+  it("clears pendingOptions once the commitment is made", () => {
+    const s = createCareer(rSetup, "clear");
+    const next = advance(s, getDecision(s)!.options[0]!.id);
+    expect(next.pendingOptions).toBeUndefined();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateRecruitingOffers } from "./recruiting";
+import { generateRecruitingOffers, applyRecruitingChoice } from "./recruiting";
 import { createRng } from "./rng";
 import { createCareer } from "./create-career";
 import { CONTENT } from "../content/index";
@@ -54,5 +54,16 @@ describe("generateRecruitingOffers", () => {
     for (const o of generateRecruitingOffers(s, CONTENT, createRng("mod"))) {
       expect(o.snapModifier).toBe(1);
     }
+  });
+});
+
+describe("applyRecruitingChoice", () => {
+  it("applying a choice sets the school and opens season 0", () => {
+    const s = createCareer(setup, "apply");
+    const offers = generateRecruitingOffers(s, CONTENT, createRng("apply"));
+    applyRecruitingChoice(s, offers[0]!.schoolId, CONTENT);
+    expect(s.school.schoolId).toBe(offers[0]!.schoolId);
+    expect(s.seasons).toHaveLength(1);
+    expect(s.seasons[0]!.seasonIndex).toBe(0);
   });
 });

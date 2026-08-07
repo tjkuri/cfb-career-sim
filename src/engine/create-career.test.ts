@@ -23,10 +23,18 @@ describe("createCareer", () => {
     expect(s.status).toBe("active");
   });
 
-  it("carries the seed and starts the rng cursor at 0", () => {
+  it("carries the seed and advances the rng cursor past recruiting-offer generation", () => {
     const s = createCareer(setup, "abc");
     expect(s.seed).toBe("abc");
-    expect(s.rngCursor).toBe(0);
+    expect(s.rngCursor).toBeGreaterThan(0);
+  });
+
+  it("populates recruiting offers deterministically", () => {
+    const a = createCareer(setup, "abc");
+    const b = createCareer(setup, "abc");
+    expect(a.pendingOptions).toBeDefined();
+    expect(a.pendingOptions!.length).toBeGreaterThan(0);
+    expect(a.pendingOptions).toEqual(b.pendingOptions);
   });
 
   it("initializes empty records", () => {
