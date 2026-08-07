@@ -30,6 +30,7 @@ export interface SchoolSamplerConfig {
   base: number;
   homeStateBonus: Record<Tier, number>;
   regionBonus: Record<Tier, number>;
+  offerCount: number;
 }
 export interface TransferConfig {
   lateralSnapModifier: number;
@@ -100,6 +101,8 @@ export function validateContent(bundle: ContentBundle): string[] {
     if (!Array.isArray(states)) errors.push(`Region ${region}: states must be an array`);
   const sampler = bundle.schoolSampler;
   if (sampler.base < 0) errors.push("schoolSampler.base must be >= 0");
+  if (!Number.isInteger(sampler.offerCount) || sampler.offerCount < 1)
+    errors.push("schoolSampler.offerCount must be an integer >= 1");
   const ALL_TIERS: Tier[] = [1, 2, 3, 4];
   for (const field of ["homeStateBonus", "regionBonus"] as const) {
     const table = sampler[field];

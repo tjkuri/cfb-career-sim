@@ -16,6 +16,8 @@ export const SCHOOL_SAMPLER: SchoolSamplerConfig = {
   base: 1,
   homeStateBonus: { 1: 12, 2: 8, 3: 4, 4: 1 },
   regionBonus: { 1: 5, 2: 3, 3: 2, 4: 0.5 },
+  // How many schools a recruit chooses between on Signing Day.
+  offerCount: 3,
 };
 
 // Transfer knobs (used in Stage-2b Tasks 5-6). One-season snap multipliers by

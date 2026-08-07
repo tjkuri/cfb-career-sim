@@ -1,34 +1,6 @@
-import type { GameState, Position, SeasonLine, Tier } from "./types";
+import type { GameState, Position } from "./types";
 import { rngInt, type Rng } from "./rng";
 import { isSidelined } from "./effects";
-import { eligibleTiers } from "./draft";
-import type { ContentBundle } from "../content/schema";
-import { bestSchoolInTier } from "./schools";
-
-export function recruitingOptions(
-  state: GameState,
-  content: ContentBundle,
-): { id: string; label: string; schoolId: string; tier: Tier }[] {
-  const tiers = eligibleTiers(state);
-  const opts: { id: string; label: string; schoolId: string; tier: Tier }[] = [];
-  for (const tier of tiers) {
-    const school = bestSchoolInTier(content, tier, state.setup.homeState);
-    if (!school) continue;
-    opts.push({ id: `commit-${school.id}`, label: `Commit to ${school.name}`, schoolId: school.id, tier });
-  }
-  return opts;
-}
-
-function newSeasonLine(state: GameState): SeasonLine {
-  return { seasonIndex: state.seasonIndex, schoolId: state.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 };
-}
-
-export function applyRecruitingChoice(state: GameState, schoolId: string, content: ContentBundle): void {
-  const school = content.schools.find((s) => s.id === schoolId);
-  if (!school) throw new Error(`Unknown school: ${schoolId}`);
-  state.school = { schoolId: school.id, tier: school.tier };
-  if (state.seasons.length === 0) state.seasons.push(newSeasonLine(state));
-}
 
 const ON_FIELD = new Set(["nonconf", "conference", "postseason"]);
 
