@@ -35,7 +35,7 @@ Geographic pull currently applies identically to an FCS program and to Alabama. 
 - Consumes: nothing from earlier tasks.
 - Produces: `SchoolSamplerConfig` with `homeStateBonus: Record<Tier, number>` and `regionBonus: Record<Tier, number>`. `schoolWeight(school: SchoolRow, homeState: string, content: ContentBundle): number` — signature unchanged.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `src/engine/schools.test.ts`, inside the existing `describe("schoolWeight", ...)` block:
 
@@ -81,12 +81,12 @@ describe("schoolSampler validation", () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run src/engine/schools.test.ts src/content/schema.test.ts`
 Expected: FAIL. The `schoolWeight` tests fail because every tier currently gets the same flat bonus (`toBeGreaterThan` gets equal values). The schema tests fail because no per-tier validation exists yet.
 
-- [ ] **Step 3: Change the config interface and validation**
+- [x] **Step 3: Change the config interface and validation**
 
 In `src/content/schema.ts`, replace the `SchoolSamplerConfig` interface:
 
@@ -124,7 +124,7 @@ with:
 
 `Tier` is already imported at the top of `schema.ts` — no new import needed.
 
-- [ ] **Step 4: Update the config values**
+- [x] **Step 4: Update the config values**
 
 In `src/content/regions.ts`, replace the `SCHOOL_SAMPLER` constant:
 
@@ -138,7 +138,7 @@ export const SCHOOL_SAMPLER: SchoolSamplerConfig = {
 };
 ```
 
-- [ ] **Step 5: Update `schoolWeight`**
+- [x] **Step 5: Update `schoolWeight`**
 
 In `src/engine/schools.ts`, replace the body of `schoolWeight`:
 
@@ -152,19 +152,19 @@ export function schoolWeight(school: SchoolRow, homeState: string, content: Cont
 }
 ```
 
-- [ ] **Step 6: Run the full suite**
+- [x] **Step 6: Run the full suite**
 
 Run: `npm test`
 Expected: PASS, 145 tests (141 baseline + 4 new).
 
 If the pre-existing `schoolWeight` ordering test ("weights a home-state school above a same-region school above an out-of-region school") fails, that is a real regression — it uses tier-3 schools, where the new values are `homeStateBonus 4` / `regionBonus 2` / `base 1`, so the ordering must still hold. Fix the implementation, not the test.
 
-- [ ] **Step 7: Typecheck**
+- [x] **Step 7: Typecheck**
 
 Run: `npm run typecheck`
 Expected: both passes exit 0.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/content/schema.ts src/content/regions.ts src/engine/schools.ts src/engine/schools.test.ts src/content/schema.test.ts
@@ -186,7 +186,7 @@ An offer set draws several schools and must not repeat one. The current `exclude
 - Consumes: `schoolWeight` from Task 1 (unchanged signature).
 - Produces: `sampleSchoolInTier(content: ContentBundle, tier: Tier, homeState: string, rng: Rng, excludeIds?: ReadonlySet<string>): SchoolRow | undefined`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `src/engine/schools.test.ts`, inside the existing `describe("sampleSchoolInTier", ...)` block:
 
@@ -211,12 +211,12 @@ Add to `src/engine/schools.test.ts`, inside the existing `describe("sampleSchool
   });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run src/engine/schools.test.ts`
 Expected: FAIL — a `Set` is not a `string`, so the filter never excludes anything and the first test picks `a` or `b`. TypeScript will also flag the argument type.
 
-- [ ] **Step 3: Change the signature**
+- [x] **Step 3: Change the signature**
 
 In `src/engine/schools.ts`, replace `sampleSchoolInTier`:
 
@@ -234,7 +234,7 @@ export function sampleSchoolInTier(
 }
 ```
 
-- [ ] **Step 4: Update the transfer call site**
+- [x] **Step 4: Update the transfer call site**
 
 In `src/engine/transfer.ts`, line 21 currently reads:
 
@@ -252,12 +252,12 @@ The two other calls in `transfer.ts` (lines 28 and 36) pass no exclusion and nee
 
 **Do not change the existing test** that reads `sampleSchoolInTier(content, 2, "TX", createRng(...), "a")` — update it to `new Set(["a"])` so it still compiles. Its assertions stay the same.
 
-- [ ] **Step 5: Run the full suite and typecheck**
+- [x] **Step 5: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, 147 tests. Both typecheck passes exit 0. In particular the 5 tests in `transfer.test.ts` must still pass — the lateral offer must still exclude the current school.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/engine/schools.ts src/engine/transfer.ts src/engine/schools.test.ts
@@ -284,7 +284,7 @@ Recruiting logic currently lives in `simulate.ts`, which is otherwise about per-
   - `applyRecruitingChoice(state: GameState, schoolId: string, content: ContentBundle): void` (moved verbatim from `simulate.ts`)
   - `SchoolSamplerConfig.offerCount: number`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `src/engine/recruiting.test.ts`:
 
@@ -349,12 +349,12 @@ describe("generateRecruitingOffers", () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run src/engine/recruiting.test.ts`
 Expected: FAIL — `Cannot find module './recruiting'`.
 
-- [ ] **Step 3: Add `offerCount` to the config**
+- [x] **Step 3: Add `offerCount` to the config**
 
 In `src/content/schema.ts`, add the field to `SchoolSamplerConfig`:
 
@@ -386,7 +386,7 @@ export const SCHOOL_SAMPLER: SchoolSamplerConfig = {
 };
 ```
 
-- [ ] **Step 4: Create `src/engine/recruiting.ts`**
+- [x] **Step 4: Create `src/engine/recruiting.ts`**
 
 ```ts
 import type { GameState, SchoolOffer, SeasonLine } from "./types";
@@ -448,7 +448,7 @@ export function applyRecruitingChoice(state: GameState, schoolId: string, conten
 }
 ```
 
-- [ ] **Step 5: Remove the moved code from `simulate.ts`**
+- [x] **Step 5: Remove the moved code from `simulate.ts`**
 
 Delete from `src/engine/simulate.ts`: the `recruitingOptions` function (lines 8-20), the `newSeasonLine` function (lines 22-24), and the `applyRecruitingChoice` function (lines 26-31). Then prune the now-unused imports — `eligibleTiers` from `./draft`, `bestSchoolInTier` from `./schools`, and `SeasonLine` / `Tier` from `./types` if nothing else in the file uses them.
 
@@ -456,12 +456,12 @@ After this, `simulate.ts` contains only `STAT_MODEL`, `ON_FIELD`, and `simulateP
 
 This will break `src/engine/advance.ts`, which still imports `recruitingOptions` and `applyRecruitingChoice` from `./simulate`. **That is expected and Task 4 fixes it** — the build will not be green at the end of this step.
 
-- [ ] **Step 6: Run the new tests only**
+- [x] **Step 6: Run the new tests only**
 
 Run: `npx vitest run src/engine/recruiting.test.ts`
 Expected: PASS, 6 tests. `advance.ts` is broken at this point, so do not run the full suite yet.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/engine/recruiting.ts src/engine/recruiting.test.ts src/engine/simulate.ts src/content/schema.ts src/content/regions.ts
@@ -486,7 +486,7 @@ git commit -m "feat(engine): generateRecruitingOffers + recruiting module split 
 - Consumes: `generateRecruitingOffers` and `applyRecruitingChoice` from Task 3.
 - Produces: `createCareer(setup: Setup, seed: string, content?: ContentBundle): GameState` — third parameter defaults to `CONTENT`; returned state has `pendingOptions` populated and `rngCursor` advanced.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `src/engine/create-career.test.ts`, **replace** the existing test `"carries the seed and starts the rng cursor at 0"` with:
 
@@ -546,12 +546,12 @@ describe("recruiting offers are generated once", () => {
 
 Make sure `createCareer`, `getDecision`, `advance`, and the `Setup` type are imported in `advance.test.ts` — most already are; add whatever is missing.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run src/engine/create-career.test.ts src/engine/advance.test.ts`
 Expected: FAIL. `advance.ts` does not yet compile (Task 3 removed its imports), and `createCareer` does not populate `pendingOptions`.
 
-- [ ] **Step 3: Update `createCareer`**
+- [x] **Step 3: Update `createCareer`**
 
 Replace the whole of `src/engine/create-career.ts`:
 
@@ -602,7 +602,7 @@ export function createCareer(setup: Setup, seed: string, content: ContentBundle 
 }
 ```
 
-- [ ] **Step 4: Update `advance.ts`**
+- [x] **Step 4: Update `advance.ts`**
 
 Change the import on line 7 from:
 
@@ -644,13 +644,13 @@ In `applyChoice`, replace the recruiting branch:
   }
 ```
 
-- [ ] **Step 5: Delete the now-dead `bestSchoolInTier`**
+- [x] **Step 5: Delete the now-dead `bestSchoolInTier`**
 
 `generateRecruitingOffers` was its last production caller. In `src/engine/schools.ts`, delete the entire `bestSchoolInTier` function (lines 23-37). In `src/engine/schools.test.ts`, delete the whole `describe("bestSchoolInTier", ...)` block (its 2 tests).
 
 If `npm run typecheck` reports `bestSchoolInTier` still imported anywhere, remove that import too.
 
-- [ ] **Step 6: Repair `simulate.test.ts`**
+- [x] **Step 6: Repair `simulate.test.ts`**
 
 Task 3 removed `recruitingOptions` and `applyRecruitingChoice` from `simulate.ts`. `src/engine/simulate.test.ts:2` still imports both, so it is broken exactly as `advance.ts` was.
 
@@ -681,19 +681,19 @@ Add `applyRecruitingChoice` to that file's import from `./recruiting`.
 
 The three `simulatePhaseProduction` tests that call `applyRecruitingChoice` as setup (lines 32, 41, 50) need no change beyond the repointed import.
 
-- [ ] **Step 7: Run the full suite**
+- [x] **Step 7: Run the full suite**
 
 Run: `npm test`
 Expected: PASS, **155 tests**. The arithmetic: 153 after Task 3, plus 4 new in `advance.test.ts`, plus a net +1 in `create-career.test.ts` (1 test replaced by 2), plus 1 migrated into `recruiting.test.ts`, minus the 2 deleted `bestSchoolInTier` tests, minus the 2 deleted `simulate.test.ts` recruiting tests. If the count differs, reconcile it explicitly before continuing rather than assuming it is fine.
 
 Pay attention to any pre-existing test that asserted a specific recruiting school. Recruiting is now sampled, so such a test is legitimately obsolete — but confirm the change is the sampling and not a real defect before editing it.
 
-- [ ] **Step 8: Typecheck and smoke-test the CLI**
+- [x] **Step 8: Typecheck and smoke-test the CLI**
 
 Run: `npm run typecheck && npm run play -- demo`
 Expected: both typecheck passes exit 0; the demo plays a QB career to a terminal state and prints JSON.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add src/engine/create-career.ts src/engine/advance.ts src/engine/schools.ts src/engine/schools.test.ts src/engine/create-career.test.ts src/engine/advance.test.ts src/engine/simulate.test.ts src/engine/recruiting.test.ts
@@ -718,7 +718,7 @@ git commit -m "feat(engine): generate recruiting offers once into pendingOptions
 
 **The rule:** the final playable season is `yearsUsed === eligibilityCap - 1`, where `eligibilityCap = CLASS_ORDER.length + (redshirtUsed ? 1 : 0)`. Traced from `enterOffseason`: a non-redshirt career plays seasons at `yearsUsed` 0/1/2/3 against a cap of 4; a redshirted career plays 0/1/2/3/4 against a cap of 5.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `src/engine/select-event.test.ts`:
 
@@ -780,12 +780,12 @@ describe("requiresFinalSeason", () => {
 
 Ensure `GameEvent`, `GameState`, `createCareer`, and `eventMatches` are imported in that file.
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run src/engine/select-event.test.ts`
 Expected: FAIL — TypeScript rejects `requiresFinalSeason` as an unknown property of `EventConditions`.
 
-- [ ] **Step 3: Add the condition to the type**
+- [x] **Step 3: Add the condition to the type**
 
 In `src/engine/types.ts`, add the field to `EventConditions`:
 
@@ -802,7 +802,7 @@ export interface EventConditions {
 }
 ```
 
-- [ ] **Step 4: Evaluate it in `eventMatches`**
+- [x] **Step 4: Evaluate it in `eventMatches`**
 
 In `src/engine/select-event.ts`, add this check inside `eventMatches`, after the `requiresActiveInjury` line and before the `maxCharacter` line:
 
@@ -818,7 +818,7 @@ In `src/engine/select-event.ts`, add this check inside `eventMatches`, after the
 
 `CLASS_ORDER` is already imported at the top of `select-event.ts`.
 
-- [ ] **Step 5: Validate it**
+- [x] **Step 5: Validate it**
 
 In `src/content/schema.ts`, inside the `const c = ev.conditions; if (c) { ... }` block, add:
 
@@ -827,12 +827,12 @@ In `src/content/schema.ts`, inside the `const c = ev.conditions; if (c) { ... }`
         errors.push(`Event ${ev.id}: requiresFinalSeason must be a boolean`);
 ```
 
-- [ ] **Step 6: Run the full suite and typecheck**
+- [x] **Step 6: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, **160 tests** (155 + 5 new). Both typecheck passes exit 0.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/engine/types.ts src/engine/select-event.ts src/content/schema.ts src/engine/select-event.test.ts
@@ -853,29 +853,29 @@ The prior tasks each verified locally. This confirms the stage holds together an
 - Consumes: everything from Tasks 1-5.
 - Produces: nothing consumed by later tasks.
 
-- [ ] **Step 1: Full green check**
+- [x] **Step 1: Full green check**
 
 Run: `npm test && npm run typecheck`
 Expected: 160 tests pass; both typecheck passes exit 0.
 
-- [ ] **Step 2: Play a career end-to-end**
+- [x] **Step 2: Play a career end-to-end**
 
 Run: `npm run play -- demo`
 Expected: a QB career reaches a terminal state and prints JSON. Confirm by eye that the Signing Day options now show **three** schools rather than two, and that they are not all the same state.
 
-- [ ] **Step 3: Balance smoke check**
+- [x] **Step 3: Balance smoke check**
 
 Run: `npm run balance -- 500 random`
 Expected: a distribution summary prints without error.
 
 Compare against the pre-stage baseline. Drafted/undrafted/busted rates should be **broadly similar** — this stage changed which schools get offered, not the progression or draft math. A large shift means the tier mix of offers moved substantially, which is plausible given the 10-school ladder has only 2-3 schools per tier. Record the numbers in the ledger either way; do not treat a shift as a failure, but do note it, because Stage 3c's ladder will change it again.
 
-- [ ] **Step 4: Confirm no purity regressions**
+- [x] **Step 4: Confirm no purity regressions**
 
 Run: `grep -rn "Math.random\|Date.now\|process\.\|require(" src/engine src/content --include="*.ts" | grep -v "\.test\.ts"`
 Expected: no output.
 
-- [ ] **Step 5: Update the ledger**
+- [x] **Step 5: Update the ledger**
 
 Append a Stage 3b entry to `.superpowers/sdd/progress.md` following the format of the existing Stage 2a/2b/2c/3a entries: the branch, the commit range, the final test count, per-task commit hashes with review status, the balance numbers from Step 3, and any minors logged for Stage 4.
 
@@ -884,7 +884,7 @@ Add these Stage-4 items, which came out of the Stage-3b design:
 - No washout floor on **character** — a very-low-character player sits under every character gate indefinitely, diluted only by the random draw. Intentional for now; revisit when tuning bust rates.
 - All Task-1 weights (`homeStateBonus`, `regionBonus`) and `offerCount: 3` are feel-based guesses, not measured. Tune against `npm run balance` once Stage 3c's full ladder exists.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-08-07-phase2-stage3b-recruiting-geography.md .superpowers/sdd/progress.md
