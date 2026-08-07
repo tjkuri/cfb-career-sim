@@ -3,6 +3,7 @@ import { validateContent, type ContentBundle } from "./schema";
 import { POSTSEASON, PROGRESSION } from "./postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
 import { REDSHIRT } from "./redshirt";
+import { CONTENT } from "./index";
 
 function goodBundle(): ContentBundle {
   return {
@@ -208,7 +209,11 @@ describe("validateContent", () => {
 
   it("rejects negative school-sampler weights", () => {
     const b = goodBundle();
-    b.schoolSampler = { base: 1, homeStateBonus: -1, regionBonus: 2 };
+    b.schoolSampler = {
+      base: 1,
+      homeStateBonus: { 1: -1, 2: 8, 3: 4, 4: 1 },
+      regionBonus: { 1: 5, 2: 3, 3: 2, 4: 0.5 },
+    };
     expect(validateContent(b).join()).toContain("schoolSampler");
   });
 
@@ -234,5 +239,23 @@ describe("validateContent", () => {
     const b = goodBundle();
     b.redshirt = { ...b.redshirt, sitSnapModifier: 0 };
     expect(validateContent(b).join()).toContain("sitSnapModifier");
+  });
+});
+
+describe("schoolSampler validation", () => {
+  it("rejects a bonus table missing a tier", () => {
+    const bad = {
+      ...CONTENT,
+      schoolSampler: { ...CONTENT.schoolSampler, homeStateBonus: { 1: 5, 2: 4, 3: 3 } as never },
+    };
+    expect(validateContent(bad).some((e) => e.includes("missing entry for tier 4"))).toBe(true);
+  });
+
+  it("rejects a negative tier bonus", () => {
+    const bad = {
+      ...CONTENT,
+      schoolSampler: { ...CONTENT.schoolSampler, regionBonus: { 1: -1, 2: 3, 3: 2, 4: 1 } },
+    };
+    expect(validateContent(bad).some((e) => e.includes("regionBonus"))).toBe(true);
   });
 });

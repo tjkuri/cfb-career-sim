@@ -15,6 +15,24 @@ describe("schoolWeight", () => {
     expect(w("home")).toBeGreaterThan(w("region"));
     expect(w("region")).toBeGreaterThan(w("far"));
   });
+
+  it("scales the home-state bonus down as tier rises", () => {
+    const mk = (id: string, tier: 1 | 2 | 3 | 4) => ({ id, name: id, tier, conference: "X", state: "TX" });
+    const content = { ...CONTENT, schools: [mk("t1", 1), mk("t2", 2), mk("t3", 3), mk("t4", 4)] };
+    const w = (id: string) => schoolWeight(content.schools.find((s) => s.id === id)!, "TX", content);
+    expect(w("t1")).toBeGreaterThan(w("t2"));
+    expect(w("t2")).toBeGreaterThan(w("t3"));
+    expect(w("t3")).toBeGreaterThan(w("t4"));
+  });
+
+  it("gives an out-of-region school only the base weight at every tier", () => {
+    // OH is Midwest; homeState TX is Southwest -> neither home-state nor same-region.
+    const mk = (id: string, tier: 1 | 2 | 3 | 4) => ({ id, name: id, tier, conference: "X", state: "OH" });
+    const content = { ...CONTENT, schools: [mk("f1", 1), mk("f4", 4)] };
+    const w = (id: string) => schoolWeight(content.schools.find((s) => s.id === id)!, "TX", content);
+    expect(w("f1")).toBe(CONTENT.schoolSampler.base);
+    expect(w("f4")).toBe(CONTENT.schoolSampler.base);
+  });
 });
 
 describe("bestSchoolInTier", () => {

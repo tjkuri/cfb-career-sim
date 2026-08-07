@@ -10,7 +10,13 @@ export const REGIONS: RegionsConfig = {
   Northeast: ["NY", "NJ", "PA", "MA", "CT"],
 };
 
-export const SCHOOL_SAMPLER: SchoolSamplerConfig = { base: 1, homeStateBonus: 6, regionBonus: 2 };
+// Geographic pull scales with tier: a small school recruits its backyard, a
+// blue blood recruits nationally. Initial values, tuned in Stage 4.
+export const SCHOOL_SAMPLER: SchoolSamplerConfig = {
+  base: 1,
+  homeStateBonus: { 1: 12, 2: 8, 3: 4, 4: 1 },
+  regionBonus: { 1: 5, 2: 3, 3: 2, 4: 0.5 },
+};
 
 // Transfer knobs (used in Stage-2b Tasks 5-6). One-season snap multipliers by
 // move direction, and the "buried" snap threshold that surfaces a move-down offer.

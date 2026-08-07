@@ -15,8 +15,8 @@ function sameRegion(a: string, b: string, regions: ContentBundle["regions"]): bo
 export function schoolWeight(school: SchoolRow, homeState: string, content: ContentBundle): number {
   const cfg = content.schoolSampler;
   let w = cfg.base;
-  if (school.state === homeState) w += cfg.homeStateBonus;
-  else if (sameRegion(school.state, homeState, content.regions)) w += cfg.regionBonus;
+  if (school.state === homeState) w += cfg.homeStateBonus[school.tier];
+  else if (sameRegion(school.state, homeState, content.regions)) w += cfg.regionBonus[school.tier];
   return w;
 }
 

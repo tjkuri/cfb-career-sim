@@ -26,7 +26,11 @@ export interface ProgressionConfig {
   washoutConsecutiveSeasons: number;
 }
 export interface RegionsConfig { [region: string]: string[] }
-export interface SchoolSamplerConfig { base: number; homeStateBonus: number; regionBonus: number }
+export interface SchoolSamplerConfig {
+  base: number;
+  homeStateBonus: Record<Tier, number>;
+  regionBonus: Record<Tier, number>;
+}
 export interface TransferConfig {
   lateralSnapModifier: number;
   moveUpSnapModifier: number;
@@ -95,8 +99,16 @@ export function validateContent(bundle: ContentBundle): string[] {
   for (const [region, states] of Object.entries(bundle.regions))
     if (!Array.isArray(states)) errors.push(`Region ${region}: states must be an array`);
   const sampler = bundle.schoolSampler;
-  if (sampler.base < 0 || sampler.homeStateBonus < 0 || sampler.regionBonus < 0)
-    errors.push("schoolSampler: weights must be >= 0");
+  if (sampler.base < 0) errors.push("schoolSampler.base must be >= 0");
+  const ALL_TIERS: Tier[] = [1, 2, 3, 4];
+  for (const field of ["homeStateBonus", "regionBonus"] as const) {
+    const table = sampler[field];
+    for (const t of ALL_TIERS) {
+      const v = table?.[t];
+      if (v === undefined) errors.push(`schoolSampler.${field}: missing entry for tier ${t}`);
+      else if (v < 0) errors.push(`schoolSampler.${field}: tier ${t} must be >= 0`);
+    }
+  }
   const tr = bundle.transfer;
   // Snap modifiers scale a transferee's whole season; a value of 0 would zero it out,
   // so these three must be strictly positive. buriedSnapThreshold is just a cutoff and
