@@ -479,7 +479,8 @@ git commit -m "feat(engine): generateRecruitingOffers + recruiting module split 
 - Modify: `src/engine/advance.ts:37-42` (`getDecision` recruiting branch), `:92-99` (`applyChoice` recruiting branch), and the import on line 7
 - Modify: `src/engine/schools.ts` (delete the now-unused `bestSchoolInTier`)
 - Modify: `src/engine/schools.test.ts` (delete the `bestSchoolInTier` describe block)
-- Test: `src/engine/create-career.test.ts`, `src/engine/advance.test.ts`
+- Modify: `src/engine/simulate.test.ts` (repoint its import; drop its obsolete `recruiting` block)
+- Test: `src/engine/create-career.test.ts`, `src/engine/advance.test.ts`, `src/engine/recruiting.test.ts`
 
 **Interfaces:**
 - Consumes: `generateRecruitingOffers` and `applyRecruitingChoice` from Task 3.
@@ -649,22 +650,53 @@ In `applyChoice`, replace the recruiting branch:
 
 If `npm run typecheck` reports `bestSchoolInTier` still imported anywhere, remove that import too.
 
-- [ ] **Step 6: Run the full suite**
+- [ ] **Step 6: Repair `simulate.test.ts`**
+
+Task 3 removed `recruitingOptions` and `applyRecruitingChoice` from `simulate.ts`. `src/engine/simulate.test.ts:2` still imports both, so it is broken exactly as `advance.ts` was.
+
+Replace its import line:
+
+```ts
+import { simulatePhaseProduction } from "./simulate";
+import { applyRecruitingChoice } from "./recruiting";
+```
+
+Delete the entire `describe("recruiting", ...)` block (lines 10-27, 2 tests). Both are obsolete or relocated:
+
+- `"offers only tiers the player is eligible for at baseline (no blue-bloods)"` tested `recruitingOptions`, which no longer exists. `recruiting.test.ts` already covers the same property in `"only offers schools in tiers the player is eligible for"`.
+- `"applying a choice sets the school and opens season 0"` tests `applyRecruitingChoice`, which still exists and still deserves coverage. **Move it to `src/engine/recruiting.test.ts`**, rewritten against the new API:
+
+```ts
+  it("applying a choice sets the school and opens season 0", () => {
+    const s = createCareer(setup, "apply");
+    const offers = generateRecruitingOffers(s, CONTENT, createRng("apply"));
+    applyRecruitingChoice(s, offers[0]!.schoolId, CONTENT);
+    expect(s.school.schoolId).toBe(offers[0]!.schoolId);
+    expect(s.seasons).toHaveLength(1);
+    expect(s.seasons[0]!.seasonIndex).toBe(0);
+  });
+```
+
+Add `applyRecruitingChoice` to that file's import from `./recruiting`.
+
+The three `simulatePhaseProduction` tests that call `applyRecruitingChoice` as setup (lines 32, 41, 50) need no change beyond the repointed import.
+
+- [ ] **Step 7: Run the full suite**
 
 Run: `npm test`
-Expected: PASS, **156 tests**. The arithmetic: 153 after Task 3, plus 4 new in `advance.test.ts`, plus a net +1 in `create-career.test.ts` (1 test replaced by 2), minus the 2 deleted `bestSchoolInTier` tests. If the count differs, reconcile it explicitly before continuing rather than assuming it is fine.
+Expected: PASS, **155 tests**. The arithmetic: 153 after Task 3, plus 4 new in `advance.test.ts`, plus a net +1 in `create-career.test.ts` (1 test replaced by 2), plus 1 migrated into `recruiting.test.ts`, minus the 2 deleted `bestSchoolInTier` tests, minus the 2 deleted `simulate.test.ts` recruiting tests. If the count differs, reconcile it explicitly before continuing rather than assuming it is fine.
 
 Pay attention to any pre-existing test that asserted a specific recruiting school. Recruiting is now sampled, so such a test is legitimately obsolete — but confirm the change is the sampling and not a real defect before editing it.
 
-- [ ] **Step 7: Typecheck and smoke-test the CLI**
+- [ ] **Step 8: Typecheck and smoke-test the CLI**
 
 Run: `npm run typecheck && npm run play -- demo`
 Expected: both typecheck passes exit 0; the demo plays a QB career to a terminal state and prints JSON.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add src/engine/create-career.ts src/engine/advance.ts src/engine/schools.ts src/engine/schools.test.ts src/engine/create-career.test.ts src/engine/advance.test.ts
+git add src/engine/create-career.ts src/engine/advance.ts src/engine/schools.ts src/engine/schools.test.ts src/engine/create-career.test.ts src/engine/advance.test.ts src/engine/simulate.test.ts src/engine/recruiting.test.ts
 git commit -m "feat(engine): generate recruiting offers once into pendingOptions"
 ```
 
@@ -792,7 +824,7 @@ In `src/content/schema.ts`, inside the `const c = ev.conditions; if (c) { ... }`
 - [ ] **Step 6: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
-Expected: PASS, **161 tests** (156 + 5 new). Both typecheck passes exit 0.
+Expected: PASS, **160 tests** (155 + 5 new). Both typecheck passes exit 0.
 
 - [ ] **Step 7: Commit**
 
@@ -818,7 +850,7 @@ The prior tasks each verified locally. This confirms the stage holds together an
 - [ ] **Step 1: Full green check**
 
 Run: `npm test && npm run typecheck`
-Expected: 161 tests pass; both typecheck passes exit 0.
+Expected: 160 tests pass; both typecheck passes exit 0.
 
 - [ ] **Step 2: Play a career end-to-end**
 
