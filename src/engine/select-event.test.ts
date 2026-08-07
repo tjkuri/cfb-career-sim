@@ -131,12 +131,15 @@ describe("requiresFinalSeason", () => {
     expect(eventMatches(stateWith(3, true), ev)).toBe(false);
   });
 
-  it("does not match during a redshirt sit season", () => {
-    // Taking a redshirt raises the cap by exactly the year it consumes, so the
-    // sit season can never be the final season. The latest possible sit is an
-    // injured SR at yearsUsed 3 against a cap of 5.
+  it("ignores redshirtSeasonActive — the sit-season exclusion is structural, not special-cased", () => {
+    // Taking a redshirt raises the cap by exactly the year it consumes, so a sit
+    // season can never be the final season. The latest possible sit is a medical
+    // redshirt for an injured SR at yearsUsed 3 against a cap of 5.
     const sitting = { ...stateWith(3, true), redshirtSeasonActive: true };
     expect(eventMatches(sitting, ev)).toBe(false);
+    // The flag itself is inert: set on the actual final season, it still matches.
+    const finalWithFlag = { ...stateWith(4, true), redshirtSeasonActive: true };
+    expect(eventMatches(finalWithFlag, ev)).toBe(true);
   });
 
   it("ignores the condition when it is absent", () => {
