@@ -137,9 +137,23 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
       const stats = allEffects(ev)
         .filter((e): e is Extract<Effect, { kind: "stat" }> => e.kind === "stat")
         .map((e) => e.stat);
-      expect(stats.length, `${ev.id} references no stat at all`).toBeGreaterThan(0);
       for (const s of stats) {
         expect(own.has(s), `${ev.id} references foreign stat "${s}"`).toBe(true);
+      }
+    }
+  });
+
+  it("gives every on-field event a stat effect, and no offseason event one", () => {
+    for (const ev of events) {
+      const stats = allEffects(ev).filter((e) => e.kind === "stat");
+      if (ev.phase === "offseason") {
+        // In an offseason, applyEffect writes to seasons[length - 1], which is
+        // the PREVIOUS, already-resolved season: development is spent, the
+        // washout check has run, and awards are decided. A stat effect there
+        // silently edits history. Pay offseason outcomes in overall instead.
+        expect(stats.length, `${ev.id} is an offseason event and must not carry a stat effect`).toBe(0);
+      } else {
+        expect(stats.length, `${ev.id} is an on-field event and must carry a stat effect`).toBeGreaterThan(0);
       }
     }
   });
@@ -241,7 +255,8 @@ against a fixed target. Expected red until all six buckets land."
 1. **≥8 events**, all `kind: "random"`, all with `conditions.position` set to exactly your bucket.
 2. **Phase quota:** ≥2 `offseason`, ≥3 `nonconf`, ≥3 `conference`, ≥2 `postseason`.
 3. **Weight 2–4** on every event.
-4. **Every event must carry at least one `stat` effect**, and may only reference stats from its own bucket's `POSITIONS` row.
+4. **Every on-field event (nonconf/conference/postseason) must carry at least one `stat` effect**, and any `stat` effect anywhere may only reference stats from your own bucket's `POSITIONS` row.
+   **Offseason events must carry no `stat` effect at all.** In an offseason, `applyEffect` writes to `seasons[seasons.length - 1]` — the *previous, already-resolved* season, whose development is already spent, whose washout check has already run, and whose awards are already decided. A stat effect there silently edits history. **Pay offseason outcomes in `overall` instead** (and note the same applies to `snaps`, which is near-inert there — only `productionScore` in `draft.ts:5` still reads it).
 5. **≥2 events gated by `minClass`**, **≥1 gated by `tier`**.
 6. **No `ending` effects. No `injury` whose type has `recoveryPhases: 1`** (`hamstring`, `concussion`, `turfToe` are banned; `ankle`, `shoulder`, `collarbone`, `mcl`, `acl` are allowed). **No `suspension` with `phases: 1`.**
 7. **Character effects capped at ±2.**
