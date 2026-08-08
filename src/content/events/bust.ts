@@ -3,8 +3,10 @@ import type { GameEvent } from "../../engine/types";
 // Career-ending events. All `random`, so weight is the rarity knob and a
 // vulnerable player is exposed sometimes, not every season. Every gate is a
 // real vulnerability, so the ending is telegraphed and earned rather than a
-// bolt from the blue. Every survival outcome pushes the player back above the
-// gate that surfaced the event, so surviving genuinely reduces re-exposure.
+// bolt from the blue. Every event offers at least one survival path that
+// crosses its own gate; low-effort survivals may deliberately leave the
+// player under it, because those are the lethal options. A survival grant
+// must act on the axis its event is gated on.
 // Weights and probabilities are initial values, tuned in Stage 4.
 export const BUST_EVENTS: GameEvent[] = [
   {

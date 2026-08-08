@@ -11,6 +11,10 @@ import { BUST_EVENTS } from "./bust";
 import { MILESTONE_EVENTS } from "./milestones";
 
 // Every slice must appear here. events/index.test.ts fails if one is missing.
+// Note: not every decision the player sees lives here. The engine injects
+// synthetic decisions at the offseason hub (declare, transfer, redshirt) and
+// overrides the recruiting event's options at runtime; none of those are
+// content-authored events.
 export const EVENTS: GameEvent[] = [
   ...RECRUITING_EVENTS,
   ...UNIVERSAL_EVENTS,

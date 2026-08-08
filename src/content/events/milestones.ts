@@ -78,7 +78,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The ankle goes on the second series and you watch the rest in a boot.",
-          effects: [{ kind: "injury", injuryType: "turfToe" }],
+          effects: [{ kind: "injury", injuryType: "ankle" }],
         },
       },
       {

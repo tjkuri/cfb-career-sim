@@ -34,9 +34,9 @@ export const SCHOOLS: { id: string; name: string; tier: 1 | 2 | 3 | 4; conferenc
   { id: "ucla", name: "UCLA", tier: 3, conference: "Big Ten", state: "CA" },
 
   // Tier 2 — Group of 5
-  { id: "boise", name: "Boise State", tier: 2, conference: "Mountain West", state: "ID" },
-  { id: "fresno", name: "Fresno State", tier: 2, conference: "Mountain West", state: "CA" },
-  { id: "sdsu", name: "San Diego State", tier: 2, conference: "Mountain West", state: "CA" },
+  { id: "boise", name: "Boise State", tier: 2, conference: "Pac-12", state: "ID" },
+  { id: "fresno", name: "Fresno State", tier: 2, conference: "Pac-12", state: "CA" },
+  { id: "sdsu", name: "San Diego State", tier: 2, conference: "Pac-12", state: "CA" },
   { id: "unt", name: "North Texas", tier: 2, conference: "American", state: "TX" },
   { id: "utsa", name: "UTSA", tier: 2, conference: "American", state: "TX" },
   { id: "memphis", name: "Memphis", tier: 2, conference: "American", state: "TN" },
