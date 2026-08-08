@@ -117,8 +117,10 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
   });
 
   it("gates at least two events by class and one by tier", () => {
-    expect(events.filter((e) => e.conditions?.minClass !== undefined).length).toBeGreaterThanOrEqual(2);
-    expect(events.filter((e) => e.conditions?.tier !== undefined).length).toBeGreaterThanOrEqual(1);
+    const byClass = events.filter((e) => e.conditions?.minClass !== undefined).length;
+    const byTier = events.filter((e) => e.conditions?.tier !== undefined).length;
+    expect(byClass, `${position} needs >= 2 events gated by minClass, has ${byClass}`).toBeGreaterThanOrEqual(2);
+    expect(byTier, `${position} needs >= 1 event gated by tier, has ${byTier}`).toBeGreaterThanOrEqual(1);
   });
 
   it("emits no ending effects", () => {
