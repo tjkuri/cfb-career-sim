@@ -36,7 +36,7 @@ Milestones assume the player is on the field; a redshirt sit season assumes they
 - Consumes: nothing from earlier tasks.
 - Produces: `EventConditions.requiresPlaying?: boolean`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `src/engine/select-event.test.ts`:
 
@@ -97,12 +97,12 @@ Add to `src/content/schema.test.ts`, alongside the existing event-condition vali
   });
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run src/engine/select-event.test.ts src/content/schema.test.ts`
 Expected: FAIL — TypeScript rejects `requiresPlaying` as an unknown property of `EventConditions`.
 
-- [ ] **Step 3: Add the field**
+- [x] **Step 3: Add the field**
 
 In `src/engine/types.ts`, add to `EventConditions`, immediately after `requiresFinalSeason`:
 
@@ -110,7 +110,7 @@ In `src/engine/types.ts`, add to `EventConditions`, immediately after `requiresF
   requiresPlaying?: boolean;
 ```
 
-- [ ] **Step 4: Evaluate it**
+- [x] **Step 4: Evaluate it**
 
 In `src/engine/select-event.ts`, inside `eventMatches`, immediately after the `requiresFinalSeason` block:
 
@@ -120,7 +120,7 @@ In `src/engine/select-event.ts`, inside `eventMatches`, immediately after the `r
   if (c.requiresPlaying && state.redshirtSeasonActive) return false;
 ```
 
-- [ ] **Step 5: Validate it**
+- [x] **Step 5: Validate it**
 
 In `src/content/schema.ts`, inside the `const c = ev.conditions; if (c) { ... }` block, next to the `requiresFinalSeason` check:
 
@@ -129,12 +129,12 @@ In `src/content/schema.ts`, inside the `const c = ev.conditions; if (c) { ... }`
         errors.push(`Event ${ev.id}: requiresPlaying must be a boolean`);
 ```
 
-- [ ] **Step 6: Run the full suite and typecheck**
+- [x] **Step 6: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, **166 tests** (162 + 4 new). Both typecheck passes exit 0.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/engine/types.ts src/engine/select-event.ts src/content/schema.ts src/engine/select-event.test.ts src/content/schema.test.ts
@@ -159,7 +159,7 @@ Split the single `events.ts` into a directory with one file per slice, so Stage 
 
 **This is a pure move. No event content changes.** The six existing events keep their exact ids, weights, conditions, text, and effects.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/content/events/index.test.ts`:
 
@@ -208,12 +208,12 @@ describe("events barrel", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run src/content/events/index.test.ts`
 Expected: FAIL — `Cannot find module './index'`.
 
-- [ ] **Step 3: Create the eight empty slices**
+- [x] **Step 3: Create the eight empty slices**
 
 Each of `oskill.ts`, `ol.ts`, `dl.ts`, `dskill.ts`, `k.ts` gets a stub. Use this shape, substituting the name and label — Stage 3d fills them:
 
@@ -250,7 +250,7 @@ import type { GameEvent } from "../../engine/types";
 export const MILESTONE_EVENTS: GameEvent[] = [];
 ```
 
-- [ ] **Step 4: Move the six existing events**
+- [x] **Step 4: Move the six existing events**
 
 Read `src/content/events.ts`. Move each event **verbatim** — same id, kind, phase, weight, conditions, title, description, options, effects — into:
 
@@ -260,7 +260,7 @@ Read `src/content/events.ts`. Move each event **verbatim** — same id, kind, ph
 
 Each file imports `import type { GameEvent } from "../../engine/types";` (note the extra `../` — these files are one level deeper than the old `events.ts`).
 
-- [ ] **Step 5: Write the barrel**
+- [x] **Step 5: Write the barrel**
 
 Create `src/content/events/index.ts`:
 
@@ -292,7 +292,7 @@ export const EVENTS: GameEvent[] = [
 ];
 ```
 
-- [ ] **Step 6: Repoint the consumer and delete the old file**
+- [x] **Step 6: Repoint the consumer and delete the old file**
 
 In `src/content/index.ts`, change `import { EVENTS } from "./events";` to `import { EVENTS } from "./events/index";`.
 
@@ -300,14 +300,14 @@ Then delete `src/content/events.ts`.
 
 Run `grep -rn "from \"./events\"\|from \"../content/events\"" src/` and repoint anything else that surfaces.
 
-- [ ] **Step 7: Run the full suite and typecheck**
+- [x] **Step 7: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, **169 tests** (166 + 3 new). Both typecheck passes exit 0.
 
 Every pre-existing test must still pass unchanged — this task moved code, it did not change behavior. If a test that asserts event behavior fails, an event was altered during the move. Fix the move, not the test.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/content/events src/content/index.ts
@@ -332,7 +332,7 @@ Grow the ladder from 10 to 57 schools so the Stage-3b sampler has a real pool to
 
 **Why `regions.ts` changes:** `KY` (Louisville) and `VA` (Liberty, James Madison) appear in the new ladder but are in no region, so those schools would never receive a region bonus. Adding them to `South` is one line and keeps the sampler's geography meaningful.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/content/schools.test.ts`:
 
@@ -389,12 +389,12 @@ describe("school ladder", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run src/content/schools.test.ts`
 Expected: FAIL — the 10-school ladder has only 2 schools at tier 1, empty region × tier cells, and no two-per-state coverage.
 
-- [ ] **Step 3: Add the two missing states to `REGIONS`**
+- [x] **Step 3: Add the two missing states to `REGIONS`**
 
 In `src/content/regions.ts`, change the `South` line to:
 
@@ -402,7 +402,7 @@ In `src/content/regions.ts`, change the `South` line to:
   South: ["AL", "GA", "FL", "MS", "LA", "SC", "TN", "NC", "KY", "VA"],
 ```
 
-- [ ] **Step 4: Write the ladder**
+- [x] **Step 4: Write the ladder**
 
 Replace the whole array in `src/content/schools.ts`:
 
@@ -481,19 +481,19 @@ export const SCHOOLS: { id: string; name: string; tier: 1 | 2 | 3 | 4; conferenc
 ];
 ```
 
-- [ ] **Step 5: Run the full suite and typecheck**
+- [x] **Step 5: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, **174 tests** (169 + 5 new). Both typecheck passes exit 0.
 
 Watch for pre-existing tests that hard-code a school id or assume a small pool. `src/engine/simulate.test.ts` and `src/engine/advance.test.ts` reference `"mont"`, which still exists. If a test asserts a *specific* school is offered, that is now legitimately obsolete — recruiting samples from a much larger pool. Confirm the cause is the pool size before editing any test, and never weaken an assertion.
 
-- [ ] **Step 6: Sanity-check the geography by hand**
+- [x] **Step 6: Sanity-check the geography by hand**
 
 Run: `npm run play -- demo`
 Expected: a career plays to a terminal state. The Signing Day offers should now look regionally plausible for the demo's home state rather than drawing from ten schools nationwide.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/content/schools.ts src/content/regions.ts src/content/schools.test.ts
@@ -516,7 +516,7 @@ Six `kind: "random"` events gated on genuine vulnerability. **This is what final
 
 **Design rules, from the spec:** every event is `random` (weight is the rarity knob); every gate is a real vulnerability; **every event offers at least one survival path that crosses its own gate** — low-effort survivals may deliberately leave the player under it, because those are the lethal options (55-80% fatal per firing) and making them a free reprieve would flatten the choice. A survival grant must act on **the axis its event is gated on**.
 
-- [ ] **Step 1: Write the failing e2e test**
+- [x] **Step 1: Write the failing e2e test**
 
 Create `src/engine/bust.test.ts`:
 
@@ -581,12 +581,12 @@ describe("bust content", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run src/engine/bust.test.ts`
 Expected: FAIL — `BUST_EVENTS` is empty, so `length >= 6` fails and `find("bust-arrest")` is undefined.
 
-- [ ] **Step 3: Author the bust events**
+- [x] **Step 3: Author the bust events**
 
 Replace `src/content/events/bust.ts`:
 
@@ -845,7 +845,7 @@ export const BUST_EVENTS: GameEvent[] = [
 ];
 ```
 
-- [ ] **Step 4: Run the bust tests and hand-pick the e2e seed**
+- [x] **Step 4: Run the bust tests and hand-pick the e2e seed**
 
 Run: `npx vitest run src/engine/bust.test.ts`
 Expected: PASS, 3 tests. In particular the e2e test must reach `status: "busted"`.
@@ -858,12 +858,12 @@ Do **not** weaken the assertion to `toBeOneOf(["busted", "drafted"])` or similar
 
 Also confirm the pool filter leaves `bust-arrest` as the only `random` event and that `character: 5` satisfies its `maxCharacter: 20` gate.
 
-- [ ] **Step 5: Run the full suite and typecheck**
+- [x] **Step 5: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, **177 tests** (174 + 3 new). Both typecheck passes exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/content/events/bust.ts src/engine/bust.test.ts
@@ -890,7 +890,7 @@ Five `kind: "fixed"` beats, capped at one per phase, plus three injuries for var
 - Every matching fixed event fires each phase (`advance.ts:259-264`) *before* the single random draw. One per phase keeps the pacing sane; Senior Day is the deliberate exception in the final season.
 - `runPostseasonResolver` runs at `advance.ts:277`, **after** the postseason phase's events — so `Bowl Season`'s stat effects land in the season line the resolver then reads for awards.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/content/events/milestones.test.ts`:
 
@@ -931,12 +931,12 @@ describe("milestone slice", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run src/content/events/milestones.test.ts`
 Expected: FAIL — `MILESTONE_EVENTS` is empty, so `toHaveLength(5)` fails.
 
-- [ ] **Step 3: Add the three injuries**
+- [x] **Step 3: Add the three injuries**
 
 In `src/content/injuries.ts`, add to the `INJURIES` record:
 
@@ -946,7 +946,7 @@ In `src/content/injuries.ts`, add to the `INJURIES` record:
   mcl: { label: "MCL sprain", overallDelta: 8, recoveryPhases: 3 },
 ```
 
-- [ ] **Step 4: Author the milestones**
+- [x] **Step 4: Author the milestones**
 
 Replace `src/content/events/milestones.ts`:
 
@@ -1111,14 +1111,14 @@ export const MILESTONE_EVENTS: GameEvent[] = [
 ];
 ```
 
-- [ ] **Step 5: Run the full suite and typecheck**
+- [x] **Step 5: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: PASS, **181 tests** (177 + 4 new). Both typecheck passes exit 0.
 
 Milestones now fire every season, so pre-existing tests that count decisions or advance a fixed number of times may need adjusting. **Confirm the cause is the new milestones before touching any test**, and never weaken an assertion — if a test asserted "a season takes N advances," the correct fix is updating N, not deleting the assertion.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/content/events/milestones.ts src/content/injuries.ts src/content/events/milestones.test.ts
@@ -1137,17 +1137,17 @@ git commit -m "feat(content): milestone slice + three injuries"
 - Consumes: everything from Tasks 1-5.
 - Produces: nothing consumed by later tasks.
 
-- [ ] **Step 1: Full green check**
+- [x] **Step 1: Full green check**
 
 Run: `npm test && npm run typecheck`
 Expected: 181 tests pass; both typecheck passes exit 0.
 
-- [ ] **Step 2: Play a career end-to-end**
+- [x] **Step 2: Play a career end-to-end**
 
 Run: `npm run play -- demo`
 Expected: a career reaches a terminal state. Confirm by eye that milestone beats appear in the decision stream and that Signing Day offers look regionally plausible.
 
-- [ ] **Step 3: Balance check and re-baseline**
+- [x] **Step 3: Balance check and re-baseline**
 
 Run: `npm run balance -- 500 random`
 
@@ -1155,12 +1155,12 @@ Compare against the Stage-3b baseline recorded in the project ledger: `draftedRa
 
 **`bustedRate` should now be above 0** — that is the headline result of this stage, since bust content is the only real path to the terminal. If it is still exactly 0, that is a finding worth reporting, not a number to shrug at: it would mean the gates are too tight or the weights too low for any career in 500 to reach one. Record the full distribution either way.
 
-- [ ] **Step 4: Confirm no purity regressions**
+- [x] **Step 4: Confirm no purity regressions**
 
 Run: `grep -rn "Math.random\|Date.now\|process\.\|require(" src/engine src/content --include="*.ts" | grep -v "\.test\.ts"`
 Expected: no output.
 
-- [ ] **Step 5: Update the project ledger**
+- [x] **Step 5: Update the project ledger**
 
 Append a Stage 3c entry to `.superpowers/sdd/progress.md`, matching the format of the existing Stage 2a/2b/2c/3a/3b entries: branch, commit range, final test count, per-task commits with review status, the balance numbers from Step 3 including the new `bustedRate`, and the Stage-4 minors.
 
@@ -1172,7 +1172,7 @@ Stage-4 items to include:
 - All bust weights and ending probabilities are feel-based starting points.
 - The ~57-school ladder changes the tier mix of offers, so this stage's balance run is the new baseline.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-08-07-phase2-stage3c-content-foundation.md
