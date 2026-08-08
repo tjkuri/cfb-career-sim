@@ -1,24 +1,6 @@
-import type { GameEvent } from "../engine/types";
+import type { GameEvent } from "../../engine/types";
 
-// Phase 1 slice: a recruiting fixed event, a handful of random on-field and
-// off-field events, an injury gamble, and a fixed declare-for-draft milestone.
-// The declare event is injected by the engine at the offseason hub (Task 11),
-// so it is NOT listed here; these are the pooled + recruiting events.
-export const EVENTS: GameEvent[] = [
-  {
-    id: "recruiting",
-    kind: "fixed",
-    phase: "offseason",
-    weight: 1,
-    title: "Signing Day",
-    description: "The offers are in. Where do you commit?",
-    // Options are generated dynamically by the engine from eligibleTiers (Task 10);
-    // this single placeholder option keeps the event schema-valid. The engine
-    // overrides recruiting options at runtime.
-    options: [
-      { id: "commit", label: "Commit", probability: 1, positiveOutcome: { description: "Committed.", effects: [] } },
-    ],
-  },
+export const UNIVERSAL_EVENTS: GameEvent[] = [
   {
     id: "gym-grind",
     kind: "random",
@@ -45,30 +27,6 @@ export const EVENTS: GameEvent[] = [
         label: "Play it safe and rest",
         probability: 1,
         positiveOutcome: { description: "You stay fresh, no change.", effects: [] },
-      },
-    ],
-  },
-  {
-    id: "film-study",
-    kind: "random",
-    phase: "nonconf",
-    weight: 3,
-    conditions: { position: ["QB"] },
-    title: "Extra Film Study",
-    description: "The QB room is open late. Grind the tape?",
-    options: [
-      {
-        id: "study",
-        label: "Study the tape",
-        probability: 0.9,
-        positiveOutcome: {
-          description: "The game slows down for you.",
-          effects: [
-            { kind: "overall", timing: "permanent", amount: 1 },
-            { kind: "stat", stat: "passYards", amount: 120 },
-          ],
-        },
-        negativeOutcome: { description: "You're gassed for practice.", effects: [{ kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 } ] },
       },
     ],
   },
@@ -115,34 +73,6 @@ export const EVENTS: GameEvent[] = [
         probability: 0.85,
         positiveOutcome: { description: "A warning and a story.", effects: [{ kind: "moment", item: "Talked his way out of a speeding ticket", icon: "car" }] },
         negativeOutcome: { description: "Coach finds out. One-game suspension.", effects: [{ kind: "suspension", phases: 1 }, { kind: "character", amount: -4 }] },
-      },
-    ],
-  },
-  {
-    id: "signature-win",
-    kind: "random",
-    phase: "postseason",
-    weight: 3,
-    conditions: { position: ["QB"] },
-    title: "Bowl Spotlight",
-    description: "National TV, prime time. Do you rise to it?",
-    options: [
-      {
-        id: "ball-out",
-        label: "Leave it all on the field",
-        probability: 0.6,
-        positiveOutcome: {
-          description: "You put on a show and win MVP buzz.",
-          effects: [
-            { kind: "stat", stat: "passYards", amount: 320 },
-            { kind: "stat", stat: "passTds", amount: 3 },
-            { kind: "overall", timing: "permanent", amount: 2 },
-          ],
-        },
-        negativeOutcome: {
-          description: "Nerves. Two picks and a rough night.",
-          effects: [{ kind: "stat", stat: "ints", amount: 2 }, { kind: "overall", timing: "immediate", amount: -1 }],
-        },
       },
     ],
   },

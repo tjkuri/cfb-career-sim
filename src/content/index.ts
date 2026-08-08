@@ -2,7 +2,7 @@ import { validateContent, type ContentBundle } from "./schema";
 import { POSITIONS } from "./positions";
 import { INJURIES } from "./injuries";
 import { SCHOOLS } from "./schools";
-import { EVENTS } from "./events";
+import { EVENTS } from "./events/index";
 import { POSTSEASON, PROGRESSION } from "./postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
 import { REDSHIRT } from "./redshirt";
