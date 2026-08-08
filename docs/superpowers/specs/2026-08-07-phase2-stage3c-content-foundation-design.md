@@ -12,7 +12,7 @@
 
 The content push was too large for one spec. It splits on the **execution-mode boundary**:
 
-- **Stage 3c (this spec)** — the foundation and the mechanically-loaded content: one engine condition, the ~50-school ladder, the `events/` directory restructure, the bust slice, the milestone slice, and the injury pool. All of this is careful sequential work that needs real review: bust events emit `{kind:"ending"}`, milestones interact with the redshirt sit season and the postseason resolver, and the school ladder changes sampler behavior globally.
+- **Stage 3c (this spec)** — the foundation and the mechanically-loaded content: one engine condition, the ~57-school ladder, the `events/` directory restructure, the bust slice, the milestone slice, and the injury pool. All of this is careful sequential work that needs real review: bust events emit `{kind:"ending"}`, milestones interact with the redshirt sit season and the postseason resolver, and the school ladder changes sampler behavior globally.
 - **Stage 3d (separate spec, written after 3c merges)** — the ~70-event flavor pile: 8–12 events per position bucket plus the universal/off-field pool. Append-only slices, parallel-authored, with the content validator as the guardrail.
 
 Splitting here means each stage gets the review depth it needs. A whole-branch review pointed at ~3,000 lines of event data plus a restructure plus a school ladder either skims or takes enormous effort, and a review that cannot be done well still gets trusted.
@@ -37,16 +37,16 @@ if (c.requiresPlaying && state.redshirtSeasonActive) return false;
 
 Added to `EventConditions`, evaluated in `eventMatches` (`src/engine/select-event.ts`), validated as a boolean in `validateContent`. Same shape as `requiresFinalSeason`, which landed cleanly in 3b. Closes the Stage-3a review's open warning that fixed events can fire during a redshirt sit.
 
-## 4. The school ladder (~50 schools)
+## 4. The school ladder (57 schools)
 
 **Realism-first by program stature**, matching what the current 10 schools already establish:
 
 | Tier | Meaning | Target count |
 |---|---|---|
-| 4 | National contenders / blue bloods | ~9 |
-| 3 | Power-conference programs | ~17 |
-| 2 | Group of 5 | ~15 |
-| 1 | FCS | ~9 |
+| 4 | National contenders / blue bloods | 9 |
+| 3 | Power-conference programs | 17 |
+| 2 | Group of 5 | 18 |
+| 1 | FCS | 13 |
 
 Then check the region × tier grid and backfill **only genuinely empty cells**, choosing the most defensible real program available rather than inventing stature. An empty cell makes `sampleSchoolInTier` return `undefined`, which yields no offer at that tier — that is the failure worth preventing. Mild lumpiness is a feature: a recruit from Montana *should* have fewer blue-blood options nearby, and the game modeling that is correct.
 
@@ -164,6 +164,9 @@ Two guards so it cannot silently stay dead:
 
 1. **The off-field pool must include enough negative character pressure for the spiral to be enterable** — not one token event, but a realistic accumulation path from 70 down into the 30s across a career of bad choices.
 2. **"Re-run `npm run balance -- 500 random` and confirm `bustedRate > 0`" is an explicit exit criterion of Stage 3d**, not a Stage-4 hope. If it is still 0 when 3d completes, that is a blocking finding for 3d, not a tuning note.
+3. **3d must emit at least one injury with `recoveryPhases >= 3`, or `bust-mri` stays unsatisfiable regardless of character pressure.** Its gate is `requiresActiveInjury` at `phase: "offseason"` — a different axis from the character problem above, so the downward-pressure fix does nothing for it. `tickPhaseStart` decrements every injury at each phase entry and drops it at 0, so a `recoveryPhases: 1` or `2` injury cannot survive from the phase that inflicts it into an offseason. The whole-branch review measured **0 `bust-mri` firings across 2,000 careers**. Without this clause, 3d could satisfy criterion 2 perfectly and leave one of the six bust events permanently dead. The same mechanism also makes `redshirtOffered`'s injury clause (`advance.ts:206`) — the "redshirt because you got hurt" path — unreachable.
+
+**Related mechanical trap, worth knowing before authoring any injury or suspension:** an injury with `recoveryPhases: 1` or a suspension with `phases: 1` is **mechanically inert**. Production for a phase runs *before* that phase's events fire (`advance.ts:253`), and the injury is cleared at the very next phase boundary, so it never sidelines the player for anything. Stage 3c shipped exactly this bug in Rivalry Week (a `turfToe` whose text promised "you watch the rest in a boot" and cost nothing); it was corrected to `ankle` at `recoveryPhases: 2`, which measurably moved `round1Rate` from 0.154 to 0.116. `bust-drug-test`'s "Suspended two games" and `bust-arrest`'s `lawyer-up` suspension are both still `phases: 1` and therefore still free — logged for Stage 4. Note `schema.ts` enforces `recoveryPhases >= 1`, one below the first value that does anything.
 
 ## 11. Logged for Stage 4 (balance)
 
@@ -175,4 +178,16 @@ Carried forward, plus this stage's additions:
 - **The six bust events do not agree with each other on the survival-gate convention.** `coast` (+2 character against a 35 gate), `fight-it` (+4 against 30) and `no-comment` (+6 against 20) all cross their gates by a hair, so their low-effort paths *do* exit the vulnerable band; `sulk` (snaps only) does not. Under the revised rule all six are legal, but four express one convention and one expresses the opposite. Worth a deliberate pass rather than leaving it accidental.
 - **`bust-mri`'s survivals move overall downward** (−2, −4), toward `bust-lost-love`'s `maxOverall: 55` gate and toward `washoutOverallFloor: 45`. Defensible as "the injury costs you," and structurally different from the other five because its own gate is boolean (`requiresActiveInjury`) rather than a threshold — so it has no gate to cross. Name it deliberately when tuning.
 - The offer set's **tier composition is deterministic** (fixed by `offerCount` × the eligible-tier ladder); geography weights only affect which school within a tier. The levers on tier variety are `offerCount` and the `eligibleTiers` thresholds in `draft.ts:21-28`.
-- The ~50-school ladder will move the balance distribution from the first recorded snapshot (`draftedRate 1, bustedRate 0, undraftedRate 0.016, round1Rate 0.022, avgSeasons 3.024` at 500 runs), because the tier mix of offers changes. Re-baseline after this stage.
+- **CORRECTED — the school ladder moved the distribution by nothing; the milestones moved all of it.** This spec originally predicted the ladder would shift the tier mix of offers and told Stage 4 to re-baseline for that reason. The whole-branch review measured it by ablation and the prediction was wrong:
+
+  | Run (500, random policy) | undraftedRate | round1Rate | avgSeasons | avg final overall |
+  |---|---|---|---|---|
+  | Full 3c content | 0.006 | **0.154** | 3.106 | 79.29 |
+  | 3c minus milestones | 0.016 | **0.022** | 3.024 | 73.94 |
+  | Stage-3b baseline | 0.016 | 0.022 | 3.024 | — |
+
+  Removing the milestones reproduces the 3b baseline *exactly*. School tier is the only mechanically load-bearing field on a school row, offer tier-composition is deterministic, and `rngWeightedPick` consumes one draw regardless of pool size — so the ladder is currently pure flavor and stays that way until something reads `conference` or `name`.
+
+- **The real lever is milestone overall-EV against the development cap — audit this, not the ladder.** Three guaranteed fixed events per season each offer `overall: +2 permanent`, plus +2 on Senior Day: up to **+6/season of guaranteed-EV overall against `devCap: 3`**. Because fixed events fire unconditionally, that EV is income rather than variance, unlike a random event's. Round-1 rate went 7× and average final overall +5.35.
+- Milestones are also now the game's largest source of *downward* character pressure (average final character 65.1 with them vs 69.2 without), which interacts with §10's requirement.
+- **New post-fix baseline** (after correcting Rivalry Week's inert injury to `ankle`): `draftedRate 1, bustedRate 0, undraftedRate 0.008, round1Rate 0.116, avgSeasons 3.11` at 500 runs. The `round1Rate` move from 0.154 to 0.116 is the measured cost of that option's downside becoming real.
