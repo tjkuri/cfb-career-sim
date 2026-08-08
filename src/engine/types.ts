@@ -57,6 +57,7 @@ export interface EventConditions {
   requiresInjury?: boolean;
   requiresActiveInjury?: boolean;
   requiresFinalSeason?: boolean;
+  requiresPlaying?: boolean;
   maxCharacter?: number;
   maxOverall?: number;
 }

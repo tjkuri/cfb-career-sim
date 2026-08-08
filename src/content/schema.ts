@@ -160,6 +160,8 @@ export function validateContent(bundle: ContentBundle): string[] {
         errors.push(`Event ${ev.id}: invalid maxOverall "${c.maxOverall}"`);
       if (c.requiresFinalSeason !== undefined && typeof c.requiresFinalSeason !== "boolean")
         errors.push(`Event ${ev.id}: requiresFinalSeason must be a boolean`);
+      if (c.requiresPlaying !== undefined && typeof c.requiresPlaying !== "boolean")
+        errors.push(`Event ${ev.id}: requiresPlaying must be a boolean`);
     }
   }
   const recruiting = bundle.events.find((e) => e.id === "recruiting");

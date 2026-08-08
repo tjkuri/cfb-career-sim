@@ -148,6 +148,37 @@ describe("requiresFinalSeason", () => {
   });
 });
 
+describe("requiresPlaying", () => {
+  const ev: GameEvent = {
+    id: "rivalry-week-test",
+    kind: "fixed",
+    phase: "conference",
+    weight: 1,
+    conditions: { requiresPlaying: true },
+    title: "Rivalry Week",
+    description: "Hate week.",
+    options: [{ id: "go", label: "Go", probability: 1, positiveOutcome: { description: "ok", effects: [] } }],
+  };
+
+  const stateIn = (redshirtSeasonActive: boolean): GameState => {
+    const base = createCareer({ lastName: "S", jerseyNumber: 7, homeState: "TX", position: "QB" }, "rp");
+    return { ...base, phase: "conference", redshirtSeasonActive };
+  };
+
+  it("matches when the player is not redshirting", () => {
+    expect(eventMatches(stateIn(false), ev)).toBe(true);
+  });
+
+  it("does not match during a redshirt sit season", () => {
+    expect(eventMatches(stateIn(true), ev)).toBe(false);
+  });
+
+  it("ignores redshirtSeasonActive when the condition is absent", () => {
+    const plain: GameEvent = { ...ev, conditions: {} };
+    expect(eventMatches(stateIn(true), plain)).toBe(true);
+  });
+});
+
 describe("selectRandomEvent", () => {
   it("returns null when nothing matches", () => {
     const s = createCareer(setup, "s"); s.phase = "nonconf";

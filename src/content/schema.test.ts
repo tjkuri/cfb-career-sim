@@ -197,6 +197,26 @@ describe("validateContent", () => {
     ).toBe(true);
   });
 
+  it("rejects a non-boolean requiresPlaying", () => {
+    const bad = {
+      ...CONTENT,
+      events: [
+        ...CONTENT.events,
+        {
+          id: "bad-requires-playing",
+          kind: "random" as const,
+          phase: "conference" as const,
+          weight: 1,
+          conditions: { requiresPlaying: "yes" as never },
+          title: "T",
+          description: "D",
+          options: [{ id: "o", label: "L", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+        },
+      ],
+    };
+    expect(validateContent(bad).some((e) => e.includes("requiresPlaying"))).toBe(true);
+  });
+
   it("rejects a prestige award id not in awardIds", () => {
     const b = goodBundle();
     b.postseason = { ...b.postseason, prestige: [{ id: "ghostAward", bands: [{ min: 90, prob: 0.5 }], teamSuccessBoost: 0.3 }] };

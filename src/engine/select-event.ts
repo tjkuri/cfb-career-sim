@@ -23,6 +23,9 @@ export function eventMatches(state: GameState, ev: GameEvent): boolean {
     const cap = CLASS_ORDER.length + (state.eligibility.redshirtUsed ? 1 : 0);
     if (state.eligibility.yearsUsed !== cap - 1) return false;
   }
+  // Milestones assume the player is on the field. A redshirt sit season is
+  // exactly the case where they are not, so gate those beats out of it.
+  if (c.requiresPlaying && state.redshirtSeasonActive) return false;
   if (c.maxCharacter !== undefined && state.character > c.maxCharacter) return false;
   if (c.maxOverall !== undefined && state.overall > c.maxOverall) return false;
   return true;
