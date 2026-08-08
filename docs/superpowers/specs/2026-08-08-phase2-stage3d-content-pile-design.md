@@ -178,6 +178,7 @@ It goes in `universal.ts` specifically because the balance harness only ever run
 - **`recoveryPhases: 1` injuries and `phases: 1` suspensions are mechanically inert.** Production for a phase runs *before* that phase's events fire (`advance.ts:253`), and the injury clears at the next phase boundary. Note `schema.ts` enforces `recoveryPhases >= 1`, one below the first value that does anything.
 - **Postseason events fire before the resolver** (`advance.ts:277`), so a postseason `stat` effect feeds that season's record and awards, and an `injury` there can sideline the player for it.
 - **Base production accrues before events** (`advance.ts:253`), so `stat` effects add on top rather than replacing.
+- **Offseason `snaps` effects are mostly inert and semantically backwards.** `applyEffect` writes to `seasons[seasons.length - 1]`, and during an offseason that is the *previous, completed* season — `enterOffseason` has already consumed it for development and already run the washout check. The only remaining consumer is `productionScore` (`draft.ts:5`), total snaps capped at 15 stock. **On offseason events, use `overall` rather than `snaps` as a field cost.** The same applies to offseason `stat` effects, which retroactively edit a season whose awards have already been resolved.
 - **Fixed events fire during a redshirt sit unless gated** with `requiresPlaying`.
 - **`probability: 1` makes the negative branch unreachable.**
 - Only one `random` event fires per phase; every matching `fixed` event fires every phase.
@@ -265,4 +266,5 @@ New to this stage's ledger, on top of what 3b/3c logged:
 - **Only six stats are read** (§2.1). The other eight are inert flavor. Either wire them into something or acknowledge them as pure narration.
 - **Both `busted` paths other than events are unreachable.** Min final overall is 55 against `washoutOverallFloor: 45`; `washoutSnapFloor: 60` needs two consecutive near-zero seasons, which nothing produces.
 - **`redshirtOffered`'s injury clause has never evaluated true** (`advance.ts:216`) and stays that way in 3d, since the `mcl` is inflicted at conference and expires before the *following* offseason's hub check.
+- **Offseason `snaps` and `stat` effects write to the previous, already-resolved season** (§7). Either move the season push earlier or make `applyEffect` a no-op for them during an offseason — right now they are a silent trap for every future author.
 - The deferred `acl` emission (§6) and everything in §8.
