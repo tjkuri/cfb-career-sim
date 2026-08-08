@@ -152,11 +152,25 @@ The empty-but-wired slice files, the barrel and its completeness test, the momen
 
 3d authors 8–12 events per position bucket (QB, OSKILL, OL, DL, DSKILL, K), each referencing its own stats from `POSITIONS`, plus the universal/off-field pool. Single-option events are legitimate: the soccer reference uses them widely (`club_crisis: ["stay_and_fight"]`), and the drama is in the roll rather than the branch.
 
+### REQUIREMENT: 3d must make the bust spiral enterable
+
+**Stage 3c proved the `busted` terminal is structurally reachable but left it naturally unreachable.** The Task 6 balance run — 500 careers, random policy — produced `bustedRate: 0`, unchanged from the pre-stage baseline.
+
+The cause is that nothing makes a player vulnerable. Character starts at **70** and the loosest bust gate is `maxCharacter: 35`, so entering the spiral needs roughly −35. The entire content set's downward pressure is a catfishing meltdown (−6, on a 20% branch), a speeding ticket (−4, on a 15% branch), and three milestone −2s. Meanwhile bust *survivals* grant +2 to +12, and **8 of the 9 positive character grants in the game live in `bust.ts`**. Character can climb substantially and barely fall. The same holds on the other axis: `bust-lost-love` gates at `maxOverall: 55`, but overall starts at 60 and *grows* from snaps via the development curve.
+
+This is the gap 3d's universal/off-field pool exists to fill — arrests, NIL drama, social-media blowups and the like are where downward character pressure naturally lives. So it is deliberately deferred rather than patched here by loosening gates, which would fire bust events at ordinary players and destroy the "telegraphed and earned" property the whole spiral model rests on.
+
+Two guards so it cannot silently stay dead:
+
+1. **The off-field pool must include enough negative character pressure for the spiral to be enterable** — not one token event, but a realistic accumulation path from 70 down into the 30s across a career of bad choices.
+2. **"Re-run `npm run balance -- 500 random` and confirm `bustedRate > 0`" is an explicit exit criterion of Stage 3d**, not a Stage-4 hope. If it is still 0 when 3d completes, that is a blocking finding for 3d, not a tuning note.
+
 ## 11. Logged for Stage 4 (balance)
 
 Carried forward, plus this stage's additions:
 
-- No washout floor on **character** — a very-low-character player sits under every character-gated bust event indefinitely, diluted only by the random draw. This stage makes that reachable for the first time, so it needs a deliberate look when tuning bust rates.
+- No washout floor on **character** — a very-low-character player sits under every character-gated bust event indefinitely, diluted only by the random draw. Note this is currently theoretical: as of 3c no career reaches a low-character state at all (see §10's requirement), so this only becomes live once 3d adds downward pressure.
+- **Character is close to a one-way ratchet.** 8 of the 9 positive character grants in the game are bust survivals; downward pressure is three events and three milestone −2s. Whatever 3d adds, the *ratio* of upward to downward pressure is the knob that decides whether the spiral is enterable, and it is currently far out of balance. Worth measuring rather than eyeballing during the balance pass.
 - All bust weights and ending probabilities in §6 are feel-based starting points.
 - **The six bust events do not agree with each other on the survival-gate convention.** `coast` (+2 character against a 35 gate), `fight-it` (+4 against 30) and `no-comment` (+6 against 20) all cross their gates by a hair, so their low-effort paths *do* exit the vulnerable band; `sulk` (snaps only) does not. Under the revised rule all six are legal, but four express one convention and one expresses the opposite. Worth a deliberate pass rather than leaving it accidental.
 - **`bust-mri`'s survivals move overall downward** (−2, −4), toward `bust-lost-love`'s `maxOverall: 55` gate and toward `washoutOverallFloor: 45`. Defensible as "the injury costs you," and structurally different from the other five because its own gate is boolean (`requiresActiveInjury`) rather than a threshold — so it has no gate to cross. Name it deliberately when tuning.
