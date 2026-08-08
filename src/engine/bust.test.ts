@@ -51,6 +51,6 @@ describe("bust content", () => {
     }
 
     expect(s.status, `career ended as "${s.status}" instead of busted`).toBe("busted");
-    expect(s.endingReason).toBeTruthy();
+    expect(s.endingReason).toBe("Dismissed from the team");
   });
 });

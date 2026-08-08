@@ -239,7 +239,7 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.35,
         positiveOutcome: {
           description: "One missed lift. You are back Thursday.",
-          effects: [{ kind: "character", amount: -3 }],
+          effects: [{ kind: "overall", timing: "permanent", amount: -1 }],
         },
         negativeOutcome: {
           description: "One becomes five. You clean out your locker in June.",
