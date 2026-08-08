@@ -78,7 +78,17 @@ Slices that 3c does not populate are created **empty but exported and wired into
 
 ## 6. The bust slice (~6 events)
 
-All `kind: "random"` per the 3b decision — weight is the primary rarity knob, per-option probability the secondary one. Each is gated on genuine vulnerability so the ending is telegraphed and earned, and each survival outcome grants enough character or overall to cross back above its own gate.
+All `kind: "random"` per the 3b decision — weight is the primary rarity knob, per-option probability the secondary one. Each is gated on genuine vulnerability so the ending is telegraphed and earned.
+
+**The survival-gate rule (revised during implementation).** The original formulation — "every survival outcome crosses back above the event's own gate" — was too strong, and the authored content correctly violates it. The rule is:
+
+> **Every event must offer at least one survival path that crosses its own gate. Low-effort survivals may deliberately leave the player under it.**
+
+The reasoning is that the low-effort options are the *lethal* ones: `sulk` is 55% fatal per firing, `sleep-in` 65%, `no-comment` 80%. A player who coasts does not get ground down across many seasons — they die in one or two firings, so re-exposure risk is second-order and dominated by the fatality odds they already accepted. Requiring both options to cross the gate would make the choice mechanically flat and turn coasting into a free reprieve. The effortful option buying *both* better survival odds and the exit from the vulnerable band is the shape a bust event should have.
+
+The "at least one crossing path" half stays a hard rule, and matters more than it looks: **eleven of the twelve `character` grants in the entire content set live inside `bust.ts`**, so bust survivals are effectively the only character-recovery route in the game.
+
+A survival grant must act on **the axis its event is gated on**. A `maxOverall`-gated event whose survival moves `character` is a category error — it does nothing about the axis that surfaced the event while pushing the player toward unrelated gates.
 
 | Event | Path | Gate |
 |---|---|---|
@@ -148,5 +158,7 @@ Carried forward, plus this stage's additions:
 
 - No washout floor on **character** — a very-low-character player sits under every character-gated bust event indefinitely, diluted only by the random draw. This stage makes that reachable for the first time, so it needs a deliberate look when tuning bust rates.
 - All bust weights and ending probabilities in §6 are feel-based starting points.
+- **The six bust events do not agree with each other on the survival-gate convention.** `coast` (+2 character against a 35 gate), `fight-it` (+4 against 30) and `no-comment` (+6 against 20) all cross their gates by a hair, so their low-effort paths *do* exit the vulnerable band; `sulk` (snaps only) does not. Under the revised rule all six are legal, but four express one convention and one expresses the opposite. Worth a deliberate pass rather than leaving it accidental.
+- **`bust-mri`'s survivals move overall downward** (−2, −4), toward `bust-lost-love`'s `maxOverall: 55` gate and toward `washoutOverallFloor: 45`. Defensible as "the injury costs you," and structurally different from the other five because its own gate is boolean (`requiresActiveInjury`) rather than a threshold — so it has no gate to cross. Name it deliberately when tuning.
 - The offer set's **tier composition is deterministic** (fixed by `offerCount` × the eligible-tier ladder); geography weights only affect which school within a tier. The levers on tier variety are `offerCount` and the `eligibleTiers` thresholds in `draft.ts:21-28`.
 - The ~50-school ladder will move the balance distribution from the first recorded snapshot (`draftedRate 1, bustedRate 0, undraftedRate 0.016, round1Rate 0.022, avgSeasons 3.024` at 500 runs), because the tier mix of offers changes. Re-baseline after this stage.

@@ -514,7 +514,7 @@ Six `kind: "random"` events gated on genuine vulnerability. **This is what final
 - Consumes: `BUST_EVENTS` stub and the barrel from Task 2.
 - Produces: `BUST_EVENTS` populated with 6 events.
 
-**Design rules, from the spec:** every event is `random` (weight is the rarity knob); every gate is a real vulnerability; **every survival outcome grants enough character or overall to cross back above that event's own gate**, so surviving genuinely reduces repeat exposure.
+**Design rules, from the spec:** every event is `random` (weight is the rarity knob); every gate is a real vulnerability; **every event offers at least one survival path that crosses its own gate** — low-effort survivals may deliberately leave the player under it, because those are the lethal options (55-80% fatal per firing) and making them a free reprieve would flatten the choice. A survival grant must act on **the axis its event is gated on**.
 
 - [ ] **Step 1: Write the failing e2e test**
 
@@ -574,7 +574,9 @@ describe("bust content", () => {
     }
 
     expect(s.status, `career ended as "${s.status}" instead of busted`).toBe("busted");
-    expect(s.endingReason).toBeTruthy();
+    // Pin WHICH path ended the career. toBeTruthy() would also pass for the
+    // engine's soft-washout reasons, leaving the content path unasserted.
+    expect(s.endingReason).toBe("Dismissed from the team");
   });
 });
 ```
@@ -830,7 +832,8 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.35,
         positiveOutcome: {
           description: "One missed lift. You are back Thursday.",
-          effects: [{ kind: "character", amount: -3 }],
+          // Grants on the axis this event is gated on (overall), not character.
+          effects: [{ kind: "overall", timing: "permanent", amount: -1 }],
         },
         negativeOutcome: {
           description: "One becomes five. You clean out your locker in June.",
