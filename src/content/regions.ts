@@ -3,7 +3,7 @@ import type { RegionsConfig, SchoolSamplerConfig, TransferConfig } from "./schem
 // Region groupings (initial, balance/coverage-tunable). States not listed get no
 // region bonus. Only states present in the school ladder need appear.
 export const REGIONS: RegionsConfig = {
-  South: ["AL", "GA", "FL", "MS", "LA", "SC", "TN", "NC"],
+  South: ["AL", "GA", "FL", "MS", "LA", "SC", "TN", "NC", "KY", "VA"],
   Midwest: ["OH", "MI", "IN", "IL", "WI", "IA", "MN", "ND", "KS", "MO"],
   West: ["CA", "OR", "WA", "ID", "MT", "CO", "AZ", "UT", "NV"],
   Southwest: ["TX", "OK", "NM"],
