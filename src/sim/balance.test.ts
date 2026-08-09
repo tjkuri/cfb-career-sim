@@ -31,4 +31,30 @@ describe("headless balance harness", () => {
   it("is reproducible for a fixed seed prefix and policy", () => {
     expect(runBalance(200, "fixed", firstOptionPolicy)).toEqual(runBalance(200, "fixed", firstOptionPolicy));
   });
+
+  it("reports the character distribution the spiral is tuned against", () => {
+    const r = runBalance(200, "charA", randomPolicy);
+
+    // Ordered percentiles.
+    expect(r.minFinalCharacter).toBeLessThanOrEqual(r.characterP05);
+    expect(r.characterP05).toBeLessThanOrEqual(r.characterP25);
+
+    // Character and overall are clamped to their engine ranges.
+    for (const v of [r.minFinalCharacter, r.characterP05, r.characterP25, r.avgFinalCharacter]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(100);
+    }
+    for (const v of [r.minFinalOverall, r.avgFinalOverall]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(99);
+    }
+    expect(r.minFinalOverall).toBeLessThanOrEqual(r.avgFinalOverall);
+
+    // Band-entry rates are probabilities, and the deeper band is a subset.
+    for (const v of [r.charUnder55Rate, r.charUnder35Rate]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    }
+    expect(r.charUnder35Rate).toBeLessThanOrEqual(r.charUnder55Rate);
+  });
 });
