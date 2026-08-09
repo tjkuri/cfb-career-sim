@@ -95,8 +95,11 @@ export const OL_EVENTS: GameEvent[] = [
         label: "Ask to stay inside",
         probability: 1,
         positiveOutcome: {
-          description: "You hold your normal spot and have a clean, unremarkable week.",
-          effects: [{ kind: "stat", stat: "pancakes", amount: 2 }],
+          description: "You hold your normal spot and have a clean week — but the staff quietly notes you ducked the tough assignment.",
+          effects: [
+            { kind: "stat", stat: "pancakes", amount: 2 },
+            { kind: "character", amount: -1 },
+          ],
         },
       },
     ],
@@ -231,19 +234,19 @@ export const OL_EVENTS: GameEvent[] = [
       {
         id: "argue-the-call",
         label: "Argue the call with the official",
-        probability: 0.35,
+        probability: 0.45,
         positiveOutcome: {
-          description: "It somehow works — the crowd gets loud, the line feeds off it, and you dominate the next series.",
+          description: "It somehow works — the crowd gets loud, the line feeds off it, and you dominate the rest of the game.",
           effects: [
-            { kind: "stat", stat: "pancakes", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "stat", stat: "pancakes", amount: 5 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
-          description: "You draw a personal foul on top of it, and the coordinator stops trusting you in big moments.",
+          description: "You draw a personal foul on top of it, and the coordinator has a word with you at halftime.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -2 },
-            { kind: "character", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "character", amount: -1 },
           ],
         },
       },
@@ -284,10 +287,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "The backup gets his shot and does fine. You get grief in the meeting room for missing it.",
-          effects: [
-            { kind: "stat", stat: "pancakes", amount: 1 },
-            { kind: "character", amount: -1 },
-          ],
+          effects: [{ kind: "character", amount: -1 }],
         },
       },
     ],
@@ -344,17 +344,17 @@ export const OL_EVENTS: GameEvent[] = [
       {
         id: "work-out-at-guard",
         label: "Work out at guard for the scouts",
-        probability: 0.5,
+        probability: 0.55,
         positiveOutcome: {
           description: "The versatility plays well, and it opens up how teams project you.",
           effects: [
-            { kind: "stat", stat: "pancakes", amount: 3 },
+            { kind: "stat", stat: "pancakes", amount: 5 },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
-          description: "You look stiff and unfamiliar at a new spot, and it doesn't help your grade.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          description: "You look stiff and unfamiliar at a new spot, and it costs you reps you'd normally win clean.",
+          effects: [{ kind: "stat", stat: "pancakes", amount: -1 }],
         },
       },
       {
