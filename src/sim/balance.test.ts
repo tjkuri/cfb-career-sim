@@ -57,4 +57,13 @@ describe("headless balance harness", () => {
     }
     expect(r.charUnder35Rate).toBeLessThanOrEqual(r.charUnder55Rate);
   });
+
+  it("the bust spiral is naturally enterable", () => {
+    // Stage 3d's blocking exit criterion. The seed prefix matches the CLI
+    // (`npm run balance -- 500 random`) so this test and that command agree.
+    const r = runBalance(500, "balance", randomPolicy);
+    expect(r.charUnder55Rate, "nobody reaches band 2").toBeGreaterThan(0);
+    expect(r.charUnder35Rate, "nobody reaches band 3, so no bust event can gate in").toBeGreaterThan(0);
+    expect(r.bustedRate, "Stage 3d exit criterion: the busted terminal must be naturally reachable").toBeGreaterThan(0);
+  });
 });
