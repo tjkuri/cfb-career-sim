@@ -605,6 +605,14 @@ Record all five numbers. The pre-Plan-A baseline is:
 
 **`round1Rate` must be within ±0.05 of 0.116** — i.e. in `[0.066, 0.166]`.
 
+> **RESOLVED 2026-08-09 — gate relaxed on the low side.** The measured value was **0.052**: the
+> pile *halved* `round1Rate` and tripled `undraftedRate` (0.008 → 0.028) via pool dilution, since
+> only one random event fires per phase and ~58 modest-EV position events crowd out high-EV
+> universal ones like `gym-grind` (+3 overall at 72%). This gate exists to catch *inflation* — the
+> milestones' 7× spike — so a miss in the deflationary direction does not implicate its rationale.
+> Accepted as-is by the human partner; **no content was changed**. Full measurement, per-position
+> table, and reasoning in the task-8 report in this plan's SDD workspace.
+
 If it is outside that band, the position pile is granting too much (or too little) overall. Fix by adjusting `overall` effect amounts in the slice files — **not** by changing `devCap`, `snapsPerDevPoint`, or anything in `postseason.ts`, which are Stage 4's levers and would confound Plan B's tuning. Re-run Step 3 until the gate passes.
 
 `bustedRate` is expected to still be 0 after Plan A. That is Plan B's job, not a failure here.
