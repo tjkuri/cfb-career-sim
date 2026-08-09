@@ -30,4 +30,41 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
       },
     ],
   },
+  {
+    id: "the-knee",
+    kind: "random",
+    phase: "conference",
+    weight: 2,
+    conditions: { requiresPlaying: true },
+    title: "Somebody Rolls Up On You",
+    description: "Nobody hits you. A teammate just falls the wrong way across the back of your leg, and the whole sideline hears it.",
+    options: [
+      {
+        id: "walk-it-off",
+        label: "Get up and finish the drive",
+        probability: 0.55,
+        positiveOutcome: {
+          description: "It holds. You finish the game and ice it for a week.",
+          effects: [{ kind: "moment", item: "Finished the game on one good leg", icon: "medical" }],
+        },
+        negativeOutcome: {
+          description: "It does not hold. The trainer meets you at the numbers and you do not put weight on it again until January.",
+          effects: [{ kind: "injury", injuryType: "mcl" }],
+        },
+      },
+      {
+        id: "cart",
+        label: "Wave for the trainer",
+        probability: 0.6,
+        positiveOutcome: {
+          description: "Sprain, not a tear. They shut you down early and you keep the rest of the season.",
+          effects: [{ kind: "injury", injuryType: "ankle" }],
+        },
+        negativeOutcome: {
+          description: "The scan finds more than the sideline test did.",
+          effects: [{ kind: "injury", injuryType: "mcl" }],
+        },
+      },
+    ],
+  },
 ];
