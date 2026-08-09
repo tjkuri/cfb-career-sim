@@ -340,6 +340,281 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     ],
   },
   {
+    id: "offfield-entourage",
+    kind: "random",
+    phase: "offseason",
+    weight: 4,
+    conditions: { maxCharacter: 55 },
+    title: "The Entourage",
+    description: "Six people you did not know last spring now have strong opinions about your playing time.",
+    options: [
+      {
+        id: "lean-in",
+        label: "They are the only ones who get it",
+        probability: 0.6,
+        positiveOutcome: {
+          description: "You stop taking calls from anyone who tells you something you did not want to hear.",
+          effects: [
+            { kind: "character", amount: -8 },
+            { kind: "overall", timing: "permanent", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "One of them gets into it with a strength coach in the parking lot, wearing your jersey.",
+          effects: [{ kind: "character", amount: -10 }],
+        },
+      },
+      {
+        id: "ride-it-out",
+        label: "Say nothing and hope it settles",
+        probability: 1,
+        positiveOutcome: {
+          description: "It does not settle, exactly. It just gets quieter for a while.",
+          effects: [{ kind: "character", amount: -3 }],
+        },
+      },
+      {
+        id: "clear-the-room",
+        label: "Change your number and go home for a month",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "Your mother feeds you and nobody asks you for anything. You come back lighter and further behind.",
+          effects: [
+            { kind: "character", amount: 8 },
+            { kind: "overall", timing: "permanent", amount: -3 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You go home, and half of them are there when you arrive.",
+          effects: [
+            { kind: "character", amount: 3 },
+            { kind: "overall", timing: "permanent", amount: -3 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "offfield-portal-rumor",
+    kind: "random",
+    phase: "offseason",
+    weight: 4,
+    conditions: { maxCharacter: 55 },
+    title: "The Portal Rumor",
+    description: "Your name shows up on a transfer portal tracker you never entered. It is not real, but the staff cannot tell that from three states away.",
+    options: [
+      {
+        id: "let-it-work",
+        label: "Let them think you mean it",
+        probability: 0.55,
+        positiveOutcome: {
+          description: "Every position coach in the building suddenly remembers your name. The rumor cools off before it starts.",
+          effects: [
+            { kind: "character", amount: -8 },
+            { kind: "overall", timing: "permanent", amount: 2 },
+          ],
+        },
+        negativeOutcome: {
+          description: "The staff calls the bluff and quietly starts recruiting your replacement anyway.",
+          effects: [{ kind: "character", amount: -9 }],
+        },
+      },
+      {
+        id: "ride-it-out",
+        label: "Say nothing and let it die on its own",
+        probability: 1,
+        positiveOutcome: {
+          description: "Nobody quite believes it and nobody quite forgets it either.",
+          effects: [{ kind: "character", amount: -3 }],
+        },
+      },
+      {
+        id: "kill-it-yourself",
+        label: "Call compliance and shut it down in writing",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "You spend the week proving you are not going anywhere — in meetings, not in the weight room.",
+          effects: [
+            { kind: "character", amount: 8 },
+            { kind: "overall", timing: "permanent", amount: -3 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You shut it down, and the staff quietly wonders why you needed to.",
+          effects: [
+            { kind: "character", amount: 3 },
+            { kind: "overall", timing: "permanent", amount: -3 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "offfield-coordinator-blowup",
+    kind: "random",
+    phase: "nonconf",
+    weight: 4,
+    conditions: { maxCharacter: 55 },
+    title: "On the Sideline, On Camera",
+    description: "You and your coordinator get into it on the sideline, three feet from a live broadcast camera.",
+    options: [
+      {
+        id: "double-down",
+        label: "Say the rest of it, camera or not",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "The clip is everywhere by halftime. He puts you back in anyway, mostly to prove a point.",
+          effects: [
+            { kind: "character", amount: -9 },
+            { kind: "snaps", amount: 15 },
+          ],
+        },
+        negativeOutcome: {
+          description: "The clip is everywhere by halftime, and he leaves you on the bench to make a different point.",
+          effects: [{ kind: "character", amount: -10 }],
+        },
+      },
+      {
+        id: "ride-it-out",
+        label: "Walk it off and say nothing after",
+        probability: 1,
+        positiveOutcome: {
+          description: "The broadcast crew has a field day. You do not confirm or deny anything.",
+          effects: [{ kind: "character", amount: -3 }],
+        },
+      },
+      {
+        id: "apologize-on-tape",
+        label: "Find him after the game and own it, on the record",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "You sit out the next series so the cameras see you two talk it through instead. It costs you reps you needed.",
+          effects: [
+            { kind: "character", amount: 9 },
+            { kind: "snaps", amount: -20 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You own it on camera, and he still holds the next series over your head.",
+          effects: [
+            { kind: "character", amount: 3 },
+            { kind: "snaps", amount: -20 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "offfield-curfew-check",
+    kind: "random",
+    phase: "conference",
+    weight: 4,
+    conditions: { maxCharacter: 55 },
+    title: "Bed Check",
+    description: "Game-week curfew, and the RA doing bed check finds your room empty at 1 a.m.",
+    options: [
+      {
+        id: "stay-out",
+        label: "You are already out — might as well stay out",
+        probability: 0.45,
+        positiveOutcome: {
+          description: "You roll in at four. Nobody official is awake to see it, and the staff needs you on the field too much to bench you over a curfew anyway.",
+          effects: [
+            { kind: "character", amount: -9 },
+            { kind: "snaps", amount: 15 },
+          ],
+        },
+        negativeOutcome: {
+          description: "A different RA is awake this time, and this one writes things down.",
+          effects: [{ kind: "character", amount: -10 }],
+        },
+      },
+      {
+        id: "ride-it-out",
+        label: "Sneak back in and hope the report gets lost",
+        probability: 1,
+        positiveOutcome: {
+          description: "It does not get lost. It just takes a few days to reach anyone who matters.",
+          effects: [{ kind: "character", amount: -3 }],
+        },
+      },
+      {
+        id: "own-it-monday",
+        label: "Tell the position coach yourself before the report does",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "He respects that you came to him first, and makes sure you understand it anyway — up before dawn for a week of extra conditioning.",
+          effects: [
+            { kind: "character", amount: 9 },
+            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "He respects it, but the extra conditioning happens either way.",
+          effects: [
+            { kind: "character", amount: 3 },
+            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "offfield-exit-interview",
+    kind: "random",
+    phase: "postseason",
+    weight: 4,
+    conditions: { maxCharacter: 55 },
+    title: "The Exit Interview",
+    description: "The staff sits you down for the season-ending meeting and tells you exactly where you stand. It is not where you thought.",
+    options: [
+      {
+        id: "argue-the-tape",
+        label: "Tell them the tape says otherwise",
+        probability: 0.45,
+        positiveOutcome: {
+          description: "You get the last word in the room, and somehow it lands — they pencil you in for a bigger role next fall, mostly to see if you can back it up.",
+          effects: [
+            { kind: "character", amount: -9 },
+            { kind: "overall", timing: "permanent", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You get louder than the tape does. The meeting ends early, and nothing about your role changes.",
+          effects: [{ kind: "character", amount: -10 }],
+        },
+      },
+      {
+        id: "ride-it-out",
+        label: "Nod, say thank you, think about it later",
+        probability: 1,
+        positiveOutcome: {
+          description: "You leave the room with nothing settled, which is its own kind of answer.",
+          effects: [{ kind: "character", amount: -3 }],
+        },
+      },
+      {
+        id: "ask-what-it-takes",
+        label: "Ask exactly what it takes and commit to it in writing",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "They hand you a list. It is a real list, with a real winter of extra work attached to it.",
+          effects: [
+            { kind: "character", amount: 9 },
+            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "They hand you the list. You start the winter behind anyway.",
+          effects: [
+            { kind: "character", amount: 3 },
+            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+          ],
+        },
+      },
+    ],
+  },
+  {
     id: "speeding-georgia",
     kind: "random",
     phase: "conference",
