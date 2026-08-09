@@ -113,8 +113,8 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You push back, politely, and they find a linebacker with a strong leg and no aversion to running downfield. You stay fresh for your own job, and it shows — your looks are still good in the fourth quarter.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }],
+            "You push back, politely, and they find a linebacker with a strong leg and no aversion to running downfield. It's not a fight you needed to win loudly, and the staff notices you didn't.",
+          effects: [{ kind: "character", amount: 1 }],
         },
       },
     ],
@@ -191,8 +191,8 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You don't force it — you take the two yards available and live to kick another day. Not a highlight, but the drive stays on schedule, and the attempt that shows up two plays later goes through clean.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }],
+            "You don't force it — you take the two yards available and live to kick another day. Not a highlight, but the coordinator trusts you with the ball again before the year's out, which is its own kind of compliment.",
+          effects: [{ kind: "character", amount: 1 }],
         },
       },
     ],
@@ -234,11 +234,8 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You walk through your steps one more time on the sideline. Whatever the timeout was supposed to do to you, it just gives you a better look at the kick.",
-          effects: [
-            { kind: "stat", stat: "fieldGoals", amount: 1 },
-            { kind: "character", amount: 1 },
-          ],
+            "You walk through your steps one more time on the sideline and let your heart rate come down. Whatever the timeout was supposed to do to you, it mostly just makes you look calmer for it.",
+          effects: [{ kind: "character", amount: 2 }],
         },
       },
     ],
@@ -281,8 +278,8 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You kick it like a normal person would, mostly because you're tired of arguing about it. It works, which proves nothing either way.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }],
+            "You kick it like a normal person would, mostly because you're tired of arguing about it. It works, and the scoreboard ticks up like it's supposed to — no wind theory required.",
+          effects: [{ kind: "stat", stat: "points", amount: 3 }],
         },
       },
     ],
@@ -368,8 +365,8 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You ask the coordinator for the shorter, safer look that ties it instead of the correct-but-longer shot at the outright win. Nobody argues, and the game just keeps going.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }],
+            "You ask the coordinator for the shorter, safer look that ties the score instead of the correct-but-longer shot at the outright win. Nobody argues, and the game just keeps going.",
+          effects: [{ kind: "stat", stat: "points", amount: 3 }],
         },
       },
     ],
