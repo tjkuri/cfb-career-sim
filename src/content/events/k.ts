@@ -145,10 +145,7 @@ export const K_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description:
             "You think about it exactly one thought too many, push it right, and the shortest miss of your life gets the loudest silence of your season.",
-          effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -1 },
-          ],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
     ],
@@ -266,10 +263,7 @@ export const K_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description:
             "You aim for the swirl and, this once, the swirl doesn't show up. Wide left, and the coordinator raises an eyebrow you'll be thinking about all week.",
-          effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -1 },
-          ],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -278,8 +272,8 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You kick it like a normal person would, mostly because you're tired of arguing about it. It works, and the scoreboard ticks up like it's supposed to — no wind theory required.",
-          effects: [{ kind: "stat", stat: "points", amount: 3 }],
+            "You kick it like a normal person would, mostly because you're tired of arguing about it. It works, same as it usually does — no wind theory required, no story to tell about it either.",
+          effects: [],
         },
       },
     ],
@@ -353,10 +347,7 @@ export const K_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description:
             "It has the distance and misses left by a foot. The postgame is a blur, and it's the only thing anyone wants to talk about for a while.",
-          effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -2 },
-          ],
+          effects: [{ kind: "overall", timing: "immediate", amount: -3 }],
         },
       },
       {
@@ -366,7 +357,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You ask the coordinator for the shorter, safer look that ties the score instead of the correct-but-longer shot at the outright win. Nobody argues, and the game just keeps going.",
-          effects: [{ kind: "stat", stat: "points", amount: 3 }],
+          effects: [],
         },
       },
     ],

@@ -35,7 +35,7 @@ Writes the shared invariant test **before** any slice is authored, so the six pa
 - Consumes: `QB_EVENTS`, `OSKILL_EVENTS`, `OL_EVENTS`, `DL_EVENTS`, `DSKILL_EVENTS`, `K_EVENTS` from their slice files; `POSITIONS` from `../positions`; `INJURIES` from `../injuries`.
 - Produces: the contract Tasks 2–7 satisfy. Each author runs only their own bucket via `-t "<POSITION>"`.
 
-- [ ] **Step 1: Write the contract test**
+- [x] **Step 1: Write the contract test**
 
 Create `src/content/events/positions.test.ts`:
 
@@ -221,18 +221,18 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
 });
 ```
 
-- [ ] **Step 2: Run it and confirm it fails for all six buckets**
+- [x] **Step 2: Run it and confirm it fails for all six buckets**
 
 Run: `npx vitest run src/content/events/positions.test.ts`
 
 Expected: FAIL. QB fails the count/quota assertions (it has 2 events); the other five fail on `events.length` being 0 and on empty-array assertions. This is correct — do not fix it here.
 
-- [ ] **Step 3: Confirm nothing else broke**
+- [x] **Step 3: Confirm nothing else broke**
 
 Run: `npm run typecheck`
 Expected: both passes exit 0. The new test file must compile even though it fails.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/content/events/positions.test.ts
@@ -321,20 +321,20 @@ Its overall EV is `0.9 × 1 + 0.1 × (−1) = 0.8` — under the +1.0 cap, and a
 
 ### Per-task verification (identical for all six)
 
-- [ ] **Step A: Author the events** in your slice file, appending to the existing exported array.
+- [x] **Step A: Author the events** in your slice file, appending to the existing exported array.
 
   Your task gives a concept table with one row per event: its phase, its id where fixed, and its premise. Write each one following the worked pattern above and the nine shared requirements. The prose is yours to write — that is the point of the task — but the *structure* is not: count, phase, gates, stats, weights, and EV are all fixed by the contract test, which is the arbiter. If a judgment call is not settled by the requirements, the concept table, or the test, make it and note it in your commit message.
 
-- [ ] **Step B: Run your bucket's contract tests**
+- [x] **Step B: Run your bucket's contract tests**
   Run: `npx vitest run src/content/events/positions.test.ts -t "<POSITION>"`
   Expected: PASS. Other buckets will still fail — that is expected until all six land.
-- [ ] **Step C: Run the content validator and barrel tests**
+- [x] **Step C: Run the content validator and barrel tests**
   Run: `npx vitest run src/content/`
   Expected: `src/content/index.test.ts` and `events/index.test.ts` PASS. `validateContent` throws at import on any bad stat, injury, trophy, award, or position reference, so an import failure here is a content bug in your file.
-- [ ] **Step D: Typecheck**
+- [x] **Step D: Typecheck**
   Run: `npm run typecheck`
   Expected: both passes exit 0.
-- [ ] **Step E: Commit** (message given per task below).
+- [x] **Step E: Commit** (message given per task below).
 
 ---
 
@@ -364,8 +364,8 @@ Its overall EV is `0.9 × 1 + 0.1 × (−1) = 0.8` — under the +1.0 cap, and a
 | conference | **The Two-Minute Drill** — down four, no timeouts. Gate `minClass: "JR"`. |
 | postseason | **All-Star Game Invite** — accept and show out, or skip and protect your stock. |
 
-- [ ] Complete Steps A–D from "Per-task verification" above, with `-t "QB"`.
-- [ ] **Step E: Commit**
+- [x] Complete Steps A–D from "Per-task verification" above, with `-t "QB"`.
+- [x] **Step E: Commit**
 
 ```bash
 git add src/content/events/qb.ts
@@ -402,8 +402,8 @@ git commit -m "content(qb): eight quarterback events for Stage 3d"
 | postseason | **Bowl Opt-Out** — sit and protect your draft stock, or play for your teammates. Gate `tier: [1, 2]`. |
 | postseason | **The Long One** — one snap, one seam, eighty yards. |
 
-- [ ] Complete Steps A–D from "Per-task verification" above, with `-t "OSKILL"`.
-- [ ] **Step E: Commit**
+- [x] Complete Steps A–D from "Per-task verification" above, with `-t "OSKILL"`.
+- [x] **Step E: Commit**
 
 ```bash
 git add src/content/events/oskill.ts
@@ -442,8 +442,8 @@ git commit -m "content(oskill): ten offensive-skill events for Stage 3d"
 | postseason | **Senior Bowl Invite** — Gate `tier: [1, 2]`. |
 | postseason | **Guard or Tackle?** — scouts want you inside; you've played outside your whole life. |
 
-- [ ] Complete Steps A–D from "Per-task verification" above, with `-t "OL"`.
-- [ ] **Step E: Commit**
+- [x] Complete Steps A–D from "Per-task verification" above, with `-t "OL"`.
+- [x] **Step E: Commit**
 
 ```bash
 git add src/content/events/ol.ts
@@ -482,8 +482,8 @@ git commit -m "content(ol): ten offensive-line events for Stage 3d"
 | postseason | **Bowl Practice Reps** — three weeks of live work against your own offense. |
 | postseason | **Combine Buzz** — scouts want an edge-rusher number you may not have. Gate `tier: [1, 2]`. |
 
-- [ ] Complete Steps A–D from "Per-task verification" above, with `-t "DL"`.
-- [ ] **Step E: Commit**
+- [x] Complete Steps A–D from "Per-task verification" above, with `-t "DL"`.
+- [x] **Step E: Commit**
 
 ```bash
 git add src/content/events/dl.ts
@@ -520,8 +520,8 @@ git commit -m "content(dl): ten defensive-line events for Stage 3d"
 | postseason | **The Bowl Interception** — Gate `tier: [1, 2]`. |
 | postseason | **All-Star Practice Week** — scouts watching every rep of one-on-ones. |
 
-- [ ] Complete Steps A–D from "Per-task verification" above, with `-t "DSKILL"`.
-- [ ] **Step E: Commit**
+- [x] Complete Steps A–D from "Per-task verification" above, with `-t "DSKILL"`.
+- [x] **Step E: Commit**
 
 ```bash
 git add src/content/events/dskill.ts
@@ -560,8 +560,8 @@ git commit -m "content(dskill): ten defensive-skill events for Stage 3d"
 | postseason | **Bowl Game Winner** — Gate `tier: [1, 2]`. |
 | postseason | **The Long Attempt** — 57 yards, and the coach is asking if you have it. |
 
-- [ ] Complete Steps A–D from "Per-task verification" above, with `-t "K"`.
-- [ ] **Step E: Commit**
+- [x] Complete Steps A–D from "Per-task verification" above, with `-t "K"`.
+- [x] **Step E: Commit**
 
 ```bash
 git add src/content/events/k.ts
@@ -581,17 +581,17 @@ The position pile adds ~58 weighted events to the draw pool and a large amount o
 - Consumes: all six slices from Tasks 2–7.
 - Produces: a recorded measurement for Plan B to tune against.
 
-- [ ] **Step 1: Confirm the whole contract is green**
+- [x] **Step 1: Confirm the whole contract is green**
 
 Run: `npx vitest run src/content/events/positions.test.ts`
 Expected: PASS for all six buckets. This is the first moment it can pass.
 
-- [ ] **Step 2: Run the full suite and typecheck**
+- [x] **Step 2: Run the full suite and typecheck**
 
 Run: `npm test && npm run typecheck`
 Expected: all tests pass (181 existing + the new contract tests), both typecheck passes exit 0.
 
-- [ ] **Step 3: Measure**
+- [x] **Step 3: Measure**
 
 Run: `npm run balance -- 500 random`
 
@@ -601,7 +601,7 @@ Record all five numbers. The pre-Plan-A baseline is:
 { "draftedRate": 1, "bustedRate": 0, "undraftedRate": 0.008, "round1Rate": 0.116, "avgSeasons": 3.11 }
 ```
 
-- [ ] **Step 4: Apply the gate**
+- [x] **Step 4: Apply the gate**
 
 **`round1Rate` must be within ±0.05 of 0.116** — i.e. in `[0.066, 0.166]`.
 
@@ -613,11 +613,11 @@ Record all five numbers. The pre-Plan-A baseline is:
 > Accepted as-is by the human partner; **no content was changed**. Full measurement, per-position
 > table, and reasoning in the task-8 report in this plan's SDD workspace.
 
-If it is outside that band, the position pile is granting too much (or too little) overall. Fix by adjusting `overall` effect amounts in the slice files — **not** by changing `devCap`, `snapsPerDevPoint`, or anything in `postseason.ts`, which are Stage 4's levers and would confound Plan B's tuning. Re-run Step 3 until the gate passes.
+**Superseded by the RESOLVED note above — the gate was relaxed and no content was changed.** The original instruction read: If it is outside that band, the position pile is granting too much (or too little) overall. Fix by adjusting `overall` effect amounts in the slice files — **not** by changing `devCap`, `snapsPerDevPoint`, or anything in `postseason.ts`, which are Stage 4's levers and would confound Plan B's tuning. Re-run Step 3 until the gate passes.
 
 `bustedRate` is expected to still be 0 after Plan A. That is Plan B's job, not a failure here.
 
-- [ ] **Step 5: Commit the measurement**
+- [x] **Step 5: Commit the measurement**
 
 ```bash
 git add -A
@@ -631,8 +631,8 @@ bustedRate still 0 — Plan B's blocking criterion."
 
 ## Definition of done
 
-- [ ] Six slices authored, ≥58 new events total.
-- [ ] `positions.test.ts` green for all six buckets.
-- [ ] `npm test` green, `npm run typecheck` green (both passes).
-- [ ] `round1Rate` within `[0.066, 0.166]`, measurement recorded in the commit message.
-- [ ] Ready for Plan B, which tunes the spiral against this final pool composition.
+- [x] Six slices authored, ≥58 new events total.
+- [x] `positions.test.ts` green for all six buckets.
+- [x] `npm test` green, `npm run typecheck` green (both passes).
+- [x] `round1Rate` measured at **0.052** — outside the original `[0.066, 0.166]` band on the low side. Gate relaxed per the RESOLVED note in Task 8, Step 4: accepted as-is by the human partner, no content changed.
+- [x] Ready for Plan B, which tunes the spiral against this final pool composition.
