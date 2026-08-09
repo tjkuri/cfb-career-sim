@@ -601,14 +601,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "They hand you a list. It is a real list, with a real winter of extra work attached to it.",
           effects: [
             { kind: "character", amount: 9 },
-            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+            { kind: "overall", timing: "permanent", amount: -3 },
           ],
         },
         negativeOutcome: {
           description: "They hand you the list. You start the winter behind anyway.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+            { kind: "overall", timing: "permanent", amount: -3 },
           ],
         },
       },
