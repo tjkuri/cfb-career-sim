@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runBalance } from "./balance";
+import { runBalance, percentile, bandRate } from "./balance";
 import { playCareer } from "./play-headless";
 import { firstOptionPolicy, randomPolicy } from "./policies";
 import type { Setup } from "../engine/index";
@@ -56,6 +56,23 @@ describe("headless balance harness", () => {
       expect(v).toBeLessThanOrEqual(1);
     }
     expect(r.charUnder35Rate).toBeLessThanOrEqual(r.charUnder55Rate);
+  });
+
+  it("pins percentile()'s behaviour at p=0.05 and p=0.25", () => {
+    // Hand-computed, not a runBalance call: 20 sorted values, step 10.
+    const sorted = Array.from({ length: 20 }, (_, i) => i * 10); // [0, 10, ..., 190]
+    // floor(20 * 0.05) = 1 -> sorted[1] = 10
+    expect(percentile(sorted, 0.05)).toBe(10);
+    // floor(20 * 0.25) = 5 -> sorted[5] = 50
+    expect(percentile(sorted, 0.25)).toBe(50);
+  });
+
+  it("pins the band-entry predicates at exactly 55 and exactly 35", () => {
+    // A career ending at exactly the threshold must count as "in the band".
+    expect(bandRate([55, 56, 100], 55)).toBeCloseTo(1 / 3);
+    expect(bandRate([35, 36, 100], 35)).toBeCloseTo(1 / 3);
+    expect(bandRate([54, 55], 55)).toBe(1);
+    expect(bandRate([34, 35], 35)).toBe(1);
   });
 
   it("the bust spiral is naturally enterable", () => {

@@ -327,7 +327,7 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Three weeks of live pass rush against your own tackle leaves you banged up and worn down by kickoff.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "permanent", amount: -1 }],
         },
       },
       {

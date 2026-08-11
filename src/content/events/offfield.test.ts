@@ -81,9 +81,8 @@ describe("off-field band 1 — ungated temptations", () => {
       if (INHERITED.has(ev.id)) continue;
       const corrosive = ev.options.find((o) => characterSum(o.positiveOutcome) <= -4);
       expect(corrosive, `${ev.id} has no corrosive option`).toBeDefined();
-      const clean = ev.options.find((o) => o.id !== corrosive!.id);
-      const tradeExists = paysSomething(corrosive!.positiveOutcome) || paysSomething(clean!.positiveOutcome);
-      expect(tradeExists, `${ev.id} offers no real trade — the corrosive option pays nothing and the clean one costs nothing`).toBe(true);
+      const tradeExists = paysSomething(corrosive!.positiveOutcome);
+      expect(tradeExists, `${ev.id} offers no real trade — the corrosive option pays nothing`).toBe(true);
     }
   });
 });

@@ -8,6 +8,7 @@ import type { GameEvent } from "../../engine/types";
 // Band 1 convention: the corrosive option charges character on the branch you
 // take, not merely on the branch where you fail. The descent is a chosen cost.
 export const OFFFIELD_EVENTS: GameEvent[] = [
+  // ——— Band 1: ungated temptations, every career draws against these ———
   {
     id: "offfield-group-chat",
     kind: "random",
@@ -260,7 +261,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "The bed check catches an empty room. You run stadium steps before the practice everyone else sleeps through.",
           effects: [
             { kind: "character", amount: -5 },
-            { kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 },
+            { kind: "overall", timing: "permanent", amount: -1 },
           ],
         },
       },
@@ -339,6 +340,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
       },
     ],
   },
+  // ——— Band 2: the slipping band, gated at maxCharacter 55 ———
   {
     id: "offfield-entourage",
     kind: "random",
@@ -614,6 +616,9 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
       },
     ],
   },
+  // ——— Band 1, continued: moved in from universal.ts, sits here rather than
+  // above with the rest of band 1 to avoid disturbing this event's position
+  // in the file (see whole-branch review, Finding 8) ———
   {
     id: "speeding-georgia",
     kind: "random",

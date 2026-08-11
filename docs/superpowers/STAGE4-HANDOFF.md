@@ -8,27 +8,30 @@ Supersedes `STAGE3D-HANDOFF.md` (deleted — it described 3d, which is now done)
 
 ## Where things stand
 
-- **Branch `stage-3d` is at `e0c5392`**, not yet merged to `main`. Merge it (or continue on it —
-  your call) before or as part of starting Stage 4; nothing about Stage 4 requires the merge to
-  happen first, but don't lose track of the fact that `main` is still at `a136352`, three stages
-  behind.
-- **264 tests pass (23 files), typecheck clean.** Verified 2026-08-09 on `e0c5392`:
-  - `npm test` → 264 passing (23 files).
+- **Branch `stage-3d` is at the tip of `stage-3d`; this handoff is its last commit** (the handoff
+  cannot cite its own commit hash) — not yet merged to `main`. Merge it (or continue on it — your
+  call) before or as part of starting Stage 4; nothing about Stage 4 requires the merge to happen
+  first, but don't lose track of the fact that `main` is still at `a136352`, three stages behind.
+- **266 tests pass (23 files), typecheck clean.** (264 from Stage 3d plus 2 added by the
+  whole-branch-review fix wave, `Finding 7`.) Verified at the tip of `stage-3d`:
+  - `npm test` → 266 passing (23 files).
   - `npm run typecheck` → **two passes** (`tsc -p tsconfig.engine.json && tsc -p tsconfig.json`);
     both exit 0. The engine pass enforces no-Node-globals in `src/engine/**` + `src/content/**`.
   - `npm run play -- demo` → plays a career to a terminal state, prints JSON.
-  - `npm run balance -- 500 random` → current baseline (measured, not copied):
+  - `npm run balance -- 500 random` → current baseline, re-measured after the whole-branch-review
+    fix wave (`Finding 2` changed two `deferred`→`permanent` timings, which nudges the overall
+    fields slightly; `bustedRate` and the character fields are otherwise unchanged):
     ```json
     {
       "runs": 500, "draftedRate": 0.992, "bustedRate": 0.008, "undraftedRate": 0.044,
-      "round1Rate": 0.04, "avgSeasons": 3.108, "avgFinalCharacter": 53.324,
+      "round1Rate": 0.04, "avgSeasons": 3.108, "avgFinalCharacter": 53.32,
       "minFinalCharacter": 3, "characterP05": 32, "characterP25": 48,
       "charUnder55Rate": 0.456, "charUnder35Rate": 0.072,
-      "avgFinalOverall": 73.644, "minFinalOverall": 54
+      "avgFinalOverall": 73.592, "minFinalOverall": 54
     }
     ```
   - Independently re-derived from the same 500-seed run: **median final character = 56**, mean =
-    53.324 (see "Mean vs. median" below — do not conflate them).
+    53.32 (see "Mean vs. median" below — do not conflate them).
 - Node is **v22.0.0 (< 22.6)** → CLI scripts run via `tsx`, not `node --experimental-strip-types`.
 - **Durable ledger:** `.superpowers/sdd/progress.md` (git-ignored, on-disk) — the authoritative
   record of every stage. Trust it and `git log` over any recollection. The two stage-3d ledgers
@@ -46,14 +49,40 @@ character spiral, tuned against the finished pool).
   `qb.ts` +8, `oskill/ol/dl/dskill/k.ts` +10 each (**+58 position pile**), new `offfield.ts` with
   **10 band-1 events** (8 new + 2 moved in from `universal.ts`: `catfished`, `speeding-georgia`)
   and **5 band-2 events**, `universal.ts` +1 (the long injury).
-- **Both of 3d's hard requirements are met, verified on `e0c5392`:**
+- **Both of 3d's hard requirements are met** — but attribute this correctly; a whole-branch review
+  disproved the obvious story by ablation:
   - `bustedRate` moved from a lifetime 0 to **0.008** at 500 careers — the `busted` terminal is now
     *naturally* reachable, not merely structurally reachable (it was structurally reachable since
     3c).
-  - `bust-mri` now fires (~10/2000 measured mid-stage, up from 0/2000) because `the-knee`
-    (`universal.ts`, conference phase, `requiresPlaying`) inflicts an `mcl`
-    (`recoveryPhases: 3`) that survives into the offseason where `bust-mri`'s
-    `requiresActiveInjury` gate matches. Locked by `src/engine/long-injury.test.ts`.
+  - **`bustedRate` is NOT mainly a character-spiral effect. It is mainly `the-knee`.** At the
+    gate's own seed prefix (`balance`, random policy, QB, n=500), 4 of the 500 careers bust, and
+    **3 of those 4 are `Career-ending injury`** — i.e. `bust-mri`, which gates on
+    `requiresActiveInjury` and has **no character gate at all**. `the-knee` (`universal.ts`,
+    conference phase, `requiresPlaying`) inflicts an `mcl` (`recoveryPhases: 3`) that survives into
+    the offseason where `bust-mri`'s gate matches — that's the whole mechanism, and it doesn't
+    touch character. Locked by `src/engine/long-injury.test.ts`.
+  - The character spiral is real and independently clears the exit criterion, just at a much
+    smaller share. Ablation at n=2000, same seed prefix:
+
+    | Content | bustedRate (n=2000) | Ending reasons |
+    |---|---|---|
+    | Full (this handoff's commit) | 0.008 | 14× `Career-ending injury`, 1× `Dismissed from the team`, 1× `Removed from the program` |
+    | All 15 off-field events removed | 0.0115 | 23× `Career-ending injury` only |
+    | `the-knee` removed, spiral intact | **0.001** | 1× dismissed, 1× ran out of rope |
+
+    Both facts are true at once: the spiral alone clears the exit criterion (one career in 500
+    with `the-knee` ablated), **and** `the-knee` carries roughly seven-eighths of the measured
+    rate. Removing the spiral *raises* `bustedRate`, because the spiral dilutes `the-knee`'s
+    conference-phase draw share — so don't read "spiral removed, rate went up" as the spiral being
+    net-harmful either; it's pool dilution, the same mechanism as the `round1Rate` note below.
+  - **Consequently: if you're tuning the spiral (levers 1–6 below), watch `charUnder35Rate`
+    (0.072) and band-3 draw counts, not `bustedRate`.** `bustedRate` is dominated by a path — the
+    long-injury → `bust-mri` chain — that none of those levers touch. This is also why Task 5's
+    "flat across band-1 costs −3 to −4" result reads as a spiral property but is really this: the
+    spiral was never bustedRate's main driver to begin with. And this generalizes beyond QB —
+    `bustedRate` is already non-zero for OSKILL (0.022) and K (0.006) via a *third*, unrelated
+    mechanism, the soft-washout path, not via bust events at all. Treat `bustedRate` as a
+    multi-cause metric everywhere, not just here.
 - **`positions.test.ts`** — a machine-checked content contract six independent authors were held
   to (≥8 events/bucket, own-position gating, phase quota, stat referencing, EV budget, no
   `recoveryPhases: 1` injuries, no `ending`). It has a real blind spot — see below.
@@ -106,9 +135,10 @@ unaddressed:
 3. **`recoveryPhases: 1` injuries and `phases: 1` suspensions are mechanically inert.** Production
    for a phase runs before that phase's events fire, and the injury/suspension clears at the next
    phase boundary — it never sidelines anyone. `schema.ts` enforces `recoveryPhases >= 1`, one
-   below the first value that does anything. Two live instances remain unfixed:
-   `bust-drug-test`'s "Suspended two games" and `bust-arrest`'s `lawyer-up`, both `phases: 1` and
-   therefore still free.
+   below the first value that does anything. Three live instances remain unfixed:
+   `bust-drug-test`'s "Suspended two games" (`bust.ts:108`), `bust-arrest`'s `lawyer-up`
+   (`bust.ts:149`), and `speeding-georgia`'s one-game suspension (`offfield.ts`, moved into its
+   own new file by this branch), all `phases: 1` and therefore still free.
 4. **`timing: "permanent"` and `timing: "immediate"` are applied identically for `overall`
    effects; only `deferred` differs** (`effects.ts:20-28`). All 58 new position-pile events choose
    between two values that behave the same. Either give them distinct behavior or stop
@@ -130,7 +160,7 @@ pile; DL is worst, 3× `+1 sacks` at 14% of threshold each, and has the highest
 
 ## What is unmeasured
 
-**The balance harness hardcodes `position: "QB"`** (`src/sim/balance.ts:29`). Every number in this
+**The balance harness hardcodes `position: "QB"`** (`src/sim/balance.ts:35`). Every number in this
 document's baseline — and every number Stage 4 will look at by running `npm run balance` — is QB
 only. **The other five position slices (oskill, ol, dl, dskill, k) have no committed aggregate
 balance measurement at all.** The only per-position data that exists came from throwaway probe
@@ -190,7 +220,10 @@ The knobs to reach for if `bustedRate` or the character distribution needs to mo
 
 **To decrease pressure:** invert levers 1–3. Note `characterPart` in `deriveDraftStock`
 (`draft.ts`) is only `(character − 50) × 0.15` — character pressure costs at most ~7.5 draft stock,
-so the spiral's effect on draft outcomes is inherently small; its main effect is on `bustedRate`.
+so the spiral's effect on draft outcomes is inherently small. **Its main effect is on
+`charUnder35Rate` and band-3 draw counts, not on `bustedRate`** — see the attribution split in
+"What Stage 3d just shipped" above; the spiral is a minority contributor to the measured
+`bustedRate` (`the-knee` → `bust-mri` carries most of it).
 
 **Also independently relevant:** the position pile's overall-EV budget (spec §5.3) is a lever on
 `round1Rate` orthogonal to all of the above.
@@ -222,8 +255,9 @@ so the spiral's effect on draft outcomes is inherently small; its main effect is
   thresholds sit at ~1 season of baseline production and the position pile's stat grants land on
   top — stat-axis inflation that `round1Rate` is blind to (an award is worth only 3 draft stock,
   once).
-- **`phases: 1` suspensions are still free**: `bust-drug-test`'s "Suspended two games" and
-  `bust-arrest`'s `lawyer-up` cost nothing (same mechanism as the `recoveryPhases: 1` trap above).
+- **`phases: 1` suspensions are still free**: `bust-drug-test`'s "Suspended two games",
+  `bust-arrest`'s `lawyer-up`, and `speeding-georgia`'s one-game suspension all cost nothing (same
+  mechanism as the `recoveryPhases: 1` trap above).
 - **Agency spread**: DL/DSKILL/K give a real choice in 9 of 10 events; QB/OSKILL in 6 of 10.
 - **All six position slices' `tier` gates are `[1,2]`; none is `[3,4]`** — blueblood careers draw a
   smaller conditional pool. Two bowl-game beats are gated to the programs least likely to reach a
@@ -254,9 +288,11 @@ so the spiral's effect on draft outcomes is inherently small; its main effect is
   `enterOffseason` returns out of first when it raises the redshirt decision). So any injury still
   alive at the *end* of the prior phase is visible to the hub check untouched — not just the
   stage's new conference-phase `mcl` (`recoveryPhases: 3`), but even a `postseason`-inflicted
-  `ankle` (`recoveryPhases: 2`) reaches this check, since it only needs to survive one
-  `tickPhaseStart` (at postseason entry, not at the offseason check itself) to still be active when
-  the hub asks. The pre-3d note was wrong about reachability *and* about the reason. Nothing needs
+  `collarbone` (the only postseason injury-inflicting event is `oskill.ts`'s `bowl-opt-out`)
+  reaches this check, since an injury inflicted *during* postseason survives **zero**
+  `tickPhaseStart` calls before the offseason hub check — there is no phase boundary between
+  postseason and the offseason hub asking. The pre-3d note was wrong about reachability *and* about
+  the reason. Nothing needs
   fixing here — this is a live path, not a bug — but any future content author should know the hub
   check and the offseason's own `tickPhaseStart` read the injury list at different, sequential
   points, so "does this injury reach the offseason" and "does this injury reach the offseason hub
@@ -332,7 +368,8 @@ so the spiral's effect on draft outcomes is inherently small; its main effect is
 - **Plans:** `docs/superpowers/plans/` (one per stage/sub-stage).
 - **Balance harness:** `src/sim/balance.ts` (`runBalance`, `BalanceReport`) — hardcodes `position:
   "QB"`, see "What is unmeasured" above. `src/sim/balance.test.ts` carries the `bustedRate > 0`
-  gate and the round1Rate band.
+  gate. (`round1Rate` has only a near-vacuous `< 1` assertion — no band. That gate was
+  deliberately relaxed to nothing during Plan A; adding a real band is Stage 4's call.)
 - **Content:** `src/content/events/{qb,oskill,ol,dl,dskill,k,offfield,universal,bust,
   milestones,recruiting}.ts`. Contract: `src/content/schema.ts` (`validateContent`),
   `src/content/events/positions.test.ts` (position-slice contract — the blind spot lives here),

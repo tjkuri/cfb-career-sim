@@ -21,8 +21,14 @@ export interface BalanceReport {
   minFinalOverall: number;
 }
 
-function percentile(sorted: number[], p: number): number {
+export function percentile(sorted: number[], p: number): number {
   return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))]!;
+}
+
+// A career ending at exactly maxCharacter counts as "in the band" — mirrors
+// the engine's `state.character > c.maxCharacter` gate semantics.
+export function bandRate(characters: number[], maxCharacter: number): number {
+  return characters.filter((c) => c <= maxCharacter).length / characters.length;
 }
 
 export function runBalance(runs: number, seedPrefix: string, policy: Policy): BalanceReport {
@@ -55,8 +61,8 @@ export function runBalance(runs: number, seedPrefix: string, policy: Policy): Ba
     minFinalCharacter: Math.min(...characters),
     characterP05: percentile(sortedChars, 0.05),
     characterP25: percentile(sortedChars, 0.25),
-    charUnder55Rate: characters.filter((c) => c <= 55).length / runs,
-    charUnder35Rate: characters.filter((c) => c <= 35).length / runs,
+    charUnder55Rate: bandRate(characters, 55),
+    charUnder35Rate: bandRate(characters, 35),
     avgFinalOverall: sum(overalls) / runs,
     minFinalOverall: Math.min(...overalls),
   };
