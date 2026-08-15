@@ -93,17 +93,28 @@ export function isSidelined(state: GameState): boolean {
   return state.injuries.some((i) => i.remainingPhases > 0);
 }
 
+// A deferred effect that has come due must be handed to applyEffect as
+// immediate, or applyEffect would just re-queue it forever.
+function asImmediate(effect: Effect): Effect {
+  return effect.kind === "overall" && effect.timing === "deferred"
+    ? { ...effect, timing: "immediate" as const }
+    : effect;
+}
+
+// Drain the whole queue regardless of firePhaseAbs. A career can end from a
+// phase that never reaches another tickPhaseStart, and an effect that was
+// earned must land before the draft is computed.
+export function flushPendingEffects(state: GameState, injuryOf: InjuryLookup): void {
+  const pending = state.pendingEffects;
+  state.pendingEffects = [];
+  for (const p of pending) applyEffect(state, asImmediate(p.effect), injuryOf);
+}
+
 export function tickPhaseStart(state: GameState, injuryOf: InjuryLookup): void {
   // 1) Fire deferred effects that are due, then drop them.
   const due = state.pendingEffects.filter((p) => p.firePhaseAbs <= state.phaseAbs);
   state.pendingEffects = state.pendingEffects.filter((p) => p.firePhaseAbs > state.phaseAbs);
-  for (const p of due) {
-    // Apply deferred effects as immediate so they don't re-defer
-    const effect = p.effect.kind === "overall" && p.effect.timing === "deferred"
-      ? { ...p.effect, timing: "immediate" as const }
-      : p.effect;
-    applyEffect(state, effect, injuryOf);
-  }
+  for (const p of due) applyEffect(state, asImmediate(p.effect), injuryOf);
 
   // 2) Decrement injuries; heal (restore overall) when they reach 0.
   const stillInjured: typeof state.injuries = [];

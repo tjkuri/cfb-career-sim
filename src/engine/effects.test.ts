@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyEffect, isSidelined, type InjuryLookup } from "./effects";
+import { applyEffect, flushPendingEffects, isSidelined, type InjuryLookup } from "./effects";
 import { createCareer } from "./create-career";
 import type { Setup } from "./types";
 
@@ -106,5 +106,35 @@ describe("applyEffect (immediate)", () => {
     expect(banned.injuries[0]!.kind).toBe("suspension");
     expect(banned.injuries[0]!.restoreAmount).toBe(0);
     expect(isSidelined(banned)).toBe(true);
+  });
+});
+
+describe("flushPendingEffects", () => {
+  it("applies effects that are not yet due and empties the queue", () => {
+    const s = fresh();
+    s.phaseAbs = 2;
+    applyEffect(s, { kind: "overall", timing: "deferred", amount: -4, delayPhases: 3 }, injuryOf);
+    expect(s.overall).toBe(60);
+    expect(s.pendingEffects).toHaveLength(1);
+
+    flushPendingEffects(s, injuryOf);
+
+    expect(s.overall).toBe(56);
+    expect(s.pendingEffects).toEqual([]);
+  });
+
+  it("does not re-queue a deferred effect it just applied", () => {
+    const s = fresh();
+    applyEffect(s, { kind: "overall", timing: "deferred", amount: -2 }, injuryOf);
+    flushPendingEffects(s, injuryOf);
+    expect(s.pendingEffects).toEqual([]);
+    expect(s.overall).toBe(58);
+  });
+
+  it("is a no-op on an empty queue", () => {
+    const s = fresh();
+    flushPendingEffects(s, injuryOf);
+    expect(s.overall).toBe(60);
+    expect(s.pendingEffects).toEqual([]);
   });
 });

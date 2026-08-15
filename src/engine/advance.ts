@@ -1,7 +1,7 @@
 import type { GameEvent, GameState } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, type Rng } from "./rng";
-import { applyEffect, tickPhaseStart, clampOverall, type InjuryLookup } from "./effects";
+import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
 import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent, selectFixedEvent } from "./select-event";
 import { simulatePhaseProduction } from "./simulate";
@@ -89,7 +89,7 @@ export function advance(state: GameState, choiceId: string, content: ContentBund
 
   applyChoice(s, choiceId, content, rng, injuryOf);
   if (s.status === "active") autoProgress(s, content, rng, injuryOf);
-  finalizeIfEnded(s, rng);
+  finalizeIfEnded(s, rng, injuryOf);
 
   s.rngCursor = rng.cursor;
   return s;
@@ -285,7 +285,13 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
   }
 }
 
-function finalizeIfEnded(s: GameState, rng: Rng): void {
+function finalizeIfEnded(s: GameState, rng: Rng, injuryOf: InjuryLookup): void {
+  if (s.status === "active") return;
+  // The declare paths return before autoProgress reaches tickPhaseStart, so the
+  // queue's only drain never runs. Flush on every terminal status, busted
+  // included, so a reported final overall is never inflated by a penalty that
+  // was earned and then orphaned.
+  flushPendingEffects(s, injuryOf);
   if (s.status === "declared") {
     s.draftResult = computeDraftResult(s, rng);
     s.status = "drafted";
