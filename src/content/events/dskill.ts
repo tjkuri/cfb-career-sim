@@ -19,7 +19,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You've got every check cold before the second install meeting, and the DC starts calling on you to walk the room through it.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description:
@@ -56,7 +56,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "The extra reps compound — you're diagnosing plays before the guard even twitches.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "You're in the building so much you're gassed by fall camp, and it shows.",
@@ -70,7 +70,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You add real work without wrecking your legs, and it's enough for the staff to notice.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
         },
         negativeOutcome: {
           description: "Even reasonable extra reps catch up to you some mornings, and today's one of them.",
@@ -210,7 +210,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
             "You erase him vertically all afternoon, so they keep checking it down in front of you — and you're there to make the tackle every time.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 13 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
@@ -338,7 +338,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
             "You jump the exact route you circled on the whiteboard and come down with it in front of a national audience.",
           effects: [
             { kind: "stat", stat: "ints", amount: 1 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Picked off a pass in a bowl game", icon: "trophy" },
           ],
         },
@@ -375,7 +375,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You win the rep clean twice in a row, and the scouts start writing your name down instead of his.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "stat", stat: "passBreakups", amount: 1 },
             { kind: "moment", item: "Won one-on-ones in front of NFL scouts", icon: "eye" },
           ],

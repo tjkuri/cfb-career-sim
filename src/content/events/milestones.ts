@@ -21,7 +21,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You take every rep like it is the last one and the pencil becomes ink.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "snaps", amount: 40 },
           ],
         },
@@ -72,7 +72,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You go the whole way and they storm the field.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Won the rivalry game", icon: "trophy" },
           ],
         },
@@ -108,7 +108,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You hug everyone twice and play the cleanest game of your life.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Went out a winner on Senior Day", icon: "star" },
           ],
         },
@@ -135,7 +135,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You are the only one who practiced like that, and it shows.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Carried the team through bowl season", icon: "trophy" },
           ],
         },

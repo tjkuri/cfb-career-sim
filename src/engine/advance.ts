@@ -134,7 +134,7 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     // Take the redshirt: roll the bump/sink, sit the upcoming season, preserve eligibility.
     const cfg = content.redshirt;
     const success = rngChance(rng, cfg.successProb);
-    applyEffect(s, { kind: "overall", timing: "permanent", amount: success ? cfg.bumpOverall : cfg.sinkOverall }, injuryOf);
+    applyEffect(s, { kind: "overall", timing: "immediate", amount: success ? cfg.bumpOverall : cfg.sinkOverall }, injuryOf);
     s.eligibility.redshirtUsed = true;
     s.snapModifier = cfg.sitSnapModifier;
     s.redshirtSeasonActive = true;

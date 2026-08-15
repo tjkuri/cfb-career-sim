@@ -23,8 +23,6 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
           firePhaseAbs: state.phaseAbs + (effect.delayPhases ?? 1),
         });
       } else {
-        // immediate and permanent both apply to overall now; the distinction
-        // matters only for injury recovery (which never restores permanent loss).
         state.overall = clampOverall(state.overall + effect.amount);
       }
       return;

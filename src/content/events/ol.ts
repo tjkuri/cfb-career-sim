@@ -18,7 +18,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "The new frame moves better than the old one. You look like a different player in camp.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "The cut — or the bulk — never quite settles, and camp is a grind.",
@@ -52,7 +52,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 0.55,
         positiveOutcome: {
           description: "The new fundamentals click by the end of camp, and everything downstream gets easier.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "You're still fighting old habits when the season opener arrives.",
@@ -183,7 +183,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You win the leverage battle snap after snap and he never gets home.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 7 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Shut down an All-Conference pass rusher one-on-one", icon: "shield" },
           ],
         },
@@ -310,7 +310,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You win enough reps in the one-on-ones that people start talking about you differently.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 6 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {

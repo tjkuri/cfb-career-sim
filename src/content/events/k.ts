@@ -19,7 +19,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You and the new holder run the two-step count until neither of you has to think about it anymore. By fall camp it looks like you've been doing this for years.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description:
@@ -56,7 +56,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "Kick twelve splits it clean, and so do the next eleven after that. Whatever was wrong in your head just isn't there anymore.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description:
@@ -169,7 +169,7 @@ export const K_EVENTS: GameEvent[] = [
             "The edge is wide open and you tuck it upfield without much grace but plenty of urgency. Two drives later you're back out for the real thing, and that one goes through clean too.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 1 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Converted a fake field goal for a first down", icon: "football" },
           ],
         },
@@ -340,7 +340,7 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
             { kind: "stat", stat: "gameWinners", amount: 1 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "moment", item: "Kicked a walk-off field goal to win a bowl game", icon: "trophy" },
           ],
         },
@@ -381,7 +381,7 @@ export const K_EVENTS: GameEvent[] = [
             "It's got the leg by ten yards and clears the crossbar with room to spare. The broadcast replays it four times before the next snap.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "moment", item: "Made a 57-yard field goal", icon: "target" },
           ],
         },

@@ -7,7 +7,7 @@ const opt: EventOption = {
   id: "gym",
   label: "New workout regimen",
   probability: 0.5,
-  positiveOutcome: { description: "gains", effects: [{ kind: "overall", timing: "permanent", amount: 3 }] },
+  positiveOutcome: { description: "gains", effects: [{ kind: "overall", timing: "immediate", amount: 3 }] },
   negativeOutcome: { description: "hurt", effects: [{ kind: "injury", injuryType: "hamstring" }] },
 };
 

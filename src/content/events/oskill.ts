@@ -18,7 +18,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 0.55,
         positiveOutcome: {
           description: "The new reps click fast and you carve out a real role there.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "The fit never quite comes together, and it shows on the depth chart.",
@@ -52,7 +52,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "You blow past the number with reps to spare, and the staff starts bragging about you to recruits.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "You stall out two reps short, and it's the running joke of the summer.",
@@ -182,7 +182,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
           description: "You wear defenses down in the fourth quarter and become the whole offense.",
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 190 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {

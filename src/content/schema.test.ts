@@ -49,7 +49,7 @@ function goodBundle(): ContentBundle {
             id: "grind",
             label: "Grind",
             probability: 0.7,
-            positiveOutcome: { description: "+", effects: [{ kind: "overall", timing: "permanent", amount: 2 }] },
+            positiveOutcome: { description: "+", effects: [{ kind: "overall", timing: "immediate", amount: 2 }] },
             negativeOutcome: { description: "-", effects: [{ kind: "injury", injuryType: "acl" }] },
           },
         ],

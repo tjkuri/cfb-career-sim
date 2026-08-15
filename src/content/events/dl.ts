@@ -18,7 +18,7 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "Your first step is a full tick quicker by the time pads come on.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "The new mechanics fight your instincts all summer, and you're slower off the ball than when you started.",
@@ -52,7 +52,7 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 0.7,
         positiveOutcome: {
           description: "The extra size lets you hold the point of attack without giving ground.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
         },
         negativeOutcome: {
           description: "The added weight shows up in your legs before it shows up in your game.",
@@ -65,7 +65,7 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "You come back looking like a different kind of player, and the coaches love the new burst.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "You're faster and weaker at the same time, and it costs you at the point of attack.",
@@ -322,12 +322,12 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You show up to the bowl game sharper than you've been all year.",
           effects: [
             { kind: "stat", stat: "sacks", amount: 1 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
           description: "Three weeks of live pass rush against your own tackle leaves you banged up and worn down by kickoff.",
-          effects: [{ kind: "overall", timing: "permanent", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
       {
@@ -361,7 +361,7 @@ export const DL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You post a get-off time that makes the room go quiet.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "stat", stat: "tfls", amount: 1 },
             { kind: "moment", item: "Posted a get-off number that turned heads", icon: "stopwatch" },
           ],

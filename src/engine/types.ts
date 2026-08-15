@@ -23,7 +23,7 @@ export interface SeasonLine {
   teamLosses: number;
 }
 
-export type EffectTiming = "immediate" | "permanent" | "deferred";
+export type EffectTiming = "immediate" | "deferred";
 
 export type Effect =
   | { kind: "overall"; timing: EffectTiming; amount: number; delayPhases?: number }

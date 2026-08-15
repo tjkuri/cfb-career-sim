@@ -15,7 +15,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         probability: 0.72,
         positiveOutcome: {
           description: "You come back noticeably stronger.",
-          effects: [{ kind: "overall", timing: "permanent", amount: 3 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "You tweak a hamstring pushing too hard.",

@@ -89,7 +89,7 @@ describe("applyEffect (immediate)", () => {
 
   it("applies a permanent-timing overall delta immediately without queuing", () => {
     const s = fresh();
-    applyEffect(s, { kind: "overall", timing: "permanent", amount: 5 }, injuryOf);
+    applyEffect(s, { kind: "overall", timing: "immediate", amount: 5 }, injuryOf);
     expect(s.overall).toBe(65);
     expect(s.pendingEffects.length).toBe(0);
   });

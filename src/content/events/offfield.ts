@@ -25,14 +25,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "It gets a laugh in the building and dies by Sunday. The coordinator remembers it anyway.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
           description: "It makes a recruiting Twitter account. The coordinator does not think it is funny.",
           effects: [
             { kind: "character", amount: -6 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -63,14 +63,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "He actually gets you a decent deal. You stop thinking about it, which is the point.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
           description: "Half the money is gone into something he calls 'an opportunity.' Family dinner is tense for a while.",
           effects: [
             { kind: "character", amount: -5 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -101,7 +101,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Compliance never calls. You quit the summer job and train full time instead.",
           effects: [
             { kind: "character", amount: -5 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Cashed an NIL check he probably should not have", icon: "money" },
           ],
         },
@@ -109,7 +109,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Compliance calls. The posts come down, the money goes back, and the meeting is ninety minutes long.",
           effects: [
             { kind: "character", amount: -7 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -140,7 +140,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Good episode, real exposure. You piece the install together from a teammate's notes.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
@@ -216,14 +216,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Cash in hand, nobody notices four tickets among thousands.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
           description: "Compliance flags the resale listing with your name still in the metadata.",
           effects: [
             { kind: "character", amount: -6 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -254,14 +254,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You make it back before the bed check and it becomes a story you tell for years.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
           description: "The bed check catches an empty room. You run stadium steps before the practice everyone else sleeps through.",
           effects: [
             { kind: "character", amount: -5 },
-            { kind: "overall", timing: "permanent", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
       },
@@ -292,7 +292,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "The beat writers grumble, run the postgame without you, and move on by Monday. You spend the hour in the training room instead.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
@@ -358,7 +358,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You stop taking calls from anyone who tells you something you did not want to hear.",
           effects: [
             { kind: "character", amount: -8 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
@@ -383,14 +383,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Your mother feeds you and nobody asks you for anything. You come back lighter and further behind.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "permanent", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -3 },
           ],
         },
         negativeOutcome: {
           description: "You go home, and half of them are there when you arrive.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "permanent", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -3 },
           ],
         },
       },
@@ -413,7 +413,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Every position coach in the building suddenly remembers your name. The rumor cools off before it starts.",
           effects: [
             { kind: "character", amount: -8 },
-            { kind: "overall", timing: "permanent", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
@@ -438,14 +438,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You spend the week proving you are not going anywhere — in meetings, not in the weight room.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "permanent", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -3 },
           ],
         },
         negativeOutcome: {
           description: "You shut it down, and the staff quietly wonders why you needed to.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "permanent", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -3 },
           ],
         },
       },
@@ -578,7 +578,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You get the last word in the room, and somehow it lands — they pencil you in for a bigger role next fall, mostly to see if you can back it up.",
           effects: [
             { kind: "character", amount: -9 },
-            { kind: "overall", timing: "permanent", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
@@ -603,14 +603,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "They hand you a list. It is a real list, with a real winter of extra work attached to it.",
           effects: [
             { kind: "character", amount: 9 },
-            { kind: "overall", timing: "permanent", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -3 },
           ],
         },
         negativeOutcome: {
           description: "They hand you the list. You start the winter behind anyway.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "permanent", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -3 },
           ],
         },
       },

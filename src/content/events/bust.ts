@@ -25,7 +25,7 @@ export const BUST_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "Eight months of misery, and you run again.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "moment", item: "Rehabbed all the way back", icon: "medical" },
           ],
         },
@@ -40,7 +40,7 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.4,
         positiveOutcome: {
           description: "You get away with it. Mostly.",
-          effects: [{ kind: "overall", timing: "permanent", amount: -4 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
         negativeOutcome: {
           description: "It goes on the first cut of camp, and it goes for good.",
@@ -226,7 +226,7 @@ export const BUST_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "It is not fun again yet, but it is yours again.",
           effects: [
-            { kind: "overall", timing: "permanent", amount: 3 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "character", amount: 5 },
           ],
         },
@@ -241,7 +241,7 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.35,
         positiveOutcome: {
           description: "One missed lift. You are back Thursday.",
-          effects: [{ kind: "overall", timing: "permanent", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
         negativeOutcome: {
           description: "One becomes five. You clean out your locker in June.",
