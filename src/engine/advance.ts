@@ -167,6 +167,13 @@ export function developmentDelta(seasonSnaps: number, cfg: { snapsPerDevPoint: n
   return Math.min(cfg.devCap, Math.floor(seasonSnaps / cfg.snapsPerDevPoint));
 }
 
+// The two soft-washout endings. Named so the balance harness can tell this
+// path from the character spiral without matching a literal that might drift.
+export const WASHOUT_REASONS = {
+  overall: "Lost a step and washed out",
+  buried: "Buried on the depth chart",
+} as const;
+
 export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): void {
   // Reset per-season modifiers from any prior transfer/redshirt.
   s.snapModifier = 1;
@@ -187,7 +194,7 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   if (s.overall < prog.washoutOverallFloor || buried) {
     s.status = "busted";
     s.endingReason =
-      s.overall < prog.washoutOverallFloor ? "Lost a step and washed out" : "Buried on the depth chart";
+      s.overall < prog.washoutOverallFloor ? WASHOUT_REASONS.overall : WASHOUT_REASONS.buried;
     s.currentEventId = null;
     return;
   }

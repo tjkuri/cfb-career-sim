@@ -6,6 +6,7 @@ export type Status = "active" | "declared" | "drafted" | "busted";
 
 export const PHASE_ORDER: Phase[] = ["offseason", "nonconf", "conference", "postseason"];
 export const CLASS_ORDER: ClassYear[] = ["FR", "SO", "JR", "SR"];
+export const ALL_POSITIONS: Position[] = ["QB", "OSKILL", "OL", "DL", "DSKILL", "K"];
 
 export interface Setup {
   lastName: string;
