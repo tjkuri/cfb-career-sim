@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { runBalance, percentile, bandRate } from "./balance";
 import { playCareer } from "./play-headless";
 import { firstOptionPolicy, randomPolicy } from "./policies";
-import type { Setup } from "../engine/index";
+import { ALL_POSITIONS, type Setup } from "../engine/index";
 
 const setup: Setup = { lastName: "P", jerseyNumber: 1, homeState: "TX", position: "QB" };
 
@@ -78,9 +78,68 @@ describe("headless balance harness", () => {
   it("the bust spiral is naturally enterable", () => {
     // Stage 3d's blocking exit criterion. The seed prefix matches the CLI
     // (`npm run balance -- 500 random`) so this test and that command agree.
+    //
+    // DELIBERATELY QB-ONLY. This gate rests on ~4 careers in 500, most of them
+    // from the injury path (the-knee -> bust-mri) rather than the character
+    // spiral. Per-position bust rates differ by mechanism — OSKILL and K reach
+    // `busted` through soft washout, which this assertion does not measure.
+    // Do not lift it into the describe.each above.
     const r = runBalance(500, "balance", randomPolicy);
     expect(r.charUnder55Rate, "nobody reaches band 2").toBeGreaterThan(0);
     expect(r.charUnder35Rate, "nobody reaches band 3, so no bust event can gate in").toBeGreaterThan(0);
     expect(r.bustedRate, "Stage 3d exit criterion: the busted terminal must be naturally reachable").toBeGreaterThan(0);
+  });
+});
+
+describe.each(ALL_POSITIONS)("balance report for %s", (position) => {
+  // 200 runs is enough to exercise every slice without doubling suite time.
+  // These are invariants, not thresholds: nothing here should need touching
+  // when Stage 4 moves the numbers.
+  const r = runBalance(200, "perpos", randomPolicy, position);
+
+  it("echoes the position it was asked for", () => {
+    expect(r.position).toBe(position);
+    expect(r.runs).toBe(200);
+  });
+
+  it("reports every rate as a probability", () => {
+    for (const [name, v] of Object.entries({
+      draftedRate: r.draftedRate,
+      bustedRate: r.bustedRate,
+      washoutRate: r.washoutRate,
+      undraftedRate: r.undraftedRate,
+      round1Rate: r.round1Rate,
+      allConfRate: r.allConfRate,
+      injuredRate: r.injuredRate,
+      charUnder55Rate: r.charUnder55Rate,
+      charUnder35Rate: r.charUnder35Rate,
+    })) {
+      expect(v, `${position} ${name} = ${v}`).toBeGreaterThanOrEqual(0);
+      expect(v, `${position} ${name} = ${v}`).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("keeps every career terminal — drafted and busted account for all runs", () => {
+    expect(r.draftedRate + r.bustedRate).toBeCloseTo(1, 5);
+  });
+
+  it("nests its subset rates correctly", () => {
+    // Soft washout is one of the two ways to bust.
+    expect(r.washoutRate).toBeLessThanOrEqual(r.bustedRate);
+    // Band 3 is inside band 2.
+    expect(r.charUnder35Rate).toBeLessThanOrEqual(r.charUnder55Rate);
+  });
+
+  it("orders its character percentiles", () => {
+    expect(r.minFinalCharacter).toBeLessThanOrEqual(r.characterP05);
+    expect(r.characterP05).toBeLessThanOrEqual(r.characterP25);
+  });
+
+  it("runs multi-season careers and records injuries consistently", () => {
+    expect(r.avgSeasons).toBeGreaterThan(1);
+    expect(r.avgInjuries).toBeGreaterThanOrEqual(0);
+    // A career with an injury has at least one, so the mean cannot sit below
+    // the share of careers that had any.
+    expect(r.avgInjuries).toBeGreaterThanOrEqual(r.injuredRate);
   });
 });
