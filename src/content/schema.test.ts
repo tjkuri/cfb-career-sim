@@ -275,6 +275,53 @@ describe("validateContent", () => {
     b.redshirt = { ...b.redshirt, sitSnapModifier: 0 };
     expect(validateContent(b).join()).toContain("sitSnapModifier");
   });
+
+  it("rejects an injury that clears before it can sideline", () => {
+    const b = goodBundle();
+    b.injuries = { acl: { label: "Torn ACL", overallDelta: 12, recoveryPhases: 1 } };
+    expect(validateContent(b).join(" ")).toContain("recoveryPhases must be >= 2");
+  });
+
+  it("accepts an injury at exactly two recovery phases", () => {
+    const b = goodBundle();
+    b.injuries = { acl: { label: "Torn ACL", overallDelta: 12, recoveryPhases: 2 } };
+    expect(validateContent(b)).toEqual([]);
+  });
+
+  it("rejects a one-phase suspension as mechanically free", () => {
+    const b = goodBundle();
+    b.events[1]!.options[0]!.positiveOutcome.effects = [{ kind: "suspension", phases: 1 }];
+    expect(validateContent(b).join(" ")).toContain("suspension of 1 phase is mechanically free");
+  });
+
+  it("accepts a two-phase suspension", () => {
+    const b = goodBundle();
+    b.events[1]!.options[0]!.positiveOutcome.effects = [{ kind: "suspension", phases: 2 }];
+    expect(validateContent(b)).toEqual([]);
+  });
+
+  it("rejects a stat effect on an offseason event", () => {
+    const b = goodBundle();
+    // events[1] is the offseason "gym" event.
+    b.events[1]!.options[0]!.positiveOutcome.effects = [{ kind: "stat", stat: "passYards", amount: 50 }];
+    expect(validateContent(b).join(" ")).toContain("already-resolved season");
+  });
+
+  it("rejects a snaps effect on an offseason event", () => {
+    const b = goodBundle();
+    b.events[1]!.options[0]!.positiveOutcome.effects = [{ kind: "snaps", amount: 40 }];
+    expect(validateContent(b).join(" ")).toContain("already-resolved season");
+  });
+
+  it("allows stat and snaps effects on an on-field event", () => {
+    const b = goodBundle();
+    b.events[1]!.phase = "nonconf";
+    b.events[1]!.options[0]!.positiveOutcome.effects = [
+      { kind: "stat", stat: "passYards", amount: 50 },
+      { kind: "snaps", amount: 40 },
+    ];
+    expect(validateContent(b)).toEqual([]);
+  });
 });
 
 describe("schoolSampler validation", () => {

@@ -1,4 +1,4 @@
-import type { Effect, GameEvent, Outcome, Position, Tier } from "../engine/types";
+import type { Effect, GameEvent, Outcome, Phase, Position, Tier } from "../engine/types";
 import { CLASS_ORDER } from "../engine/types";
 
 export interface AwardBand { min: number; prob: number }
@@ -72,8 +72,11 @@ export function validateContent(bundle: ContentBundle): string[] {
   const knownTrophies = new Set(bundle.trophyIds);
   const knownAwards = new Set(bundle.awardIds);
 
+  // recoveryPhases 1 is fully inert: applyEffect subtracts overallDelta and the
+  // next tickPhaseStart restores it before anything is simulated. 2 is the first
+  // value that actually sidelines anyone.
   for (const [id, inj] of Object.entries(bundle.injuries))
-    if (inj.recoveryPhases < 1) errors.push(`Injury ${id}: recoveryPhases must be >= 1`);
+    if (inj.recoveryPhases < 2) errors.push(`Injury ${id}: recoveryPhases must be >= 2 (1 clears before it can sideline)`);
 
   const ps = bundle.postseason;
   const inRange = (p: number) => p >= 0 && p <= 1;
@@ -143,7 +146,7 @@ export function validateContent(bundle: ContentBundle): string[] {
       const outcomes = [opt.positiveOutcome, opt.negativeOutcome].filter(
         (o): o is Outcome => o !== undefined,
       );
-      for (const oc of outcomes) for (const eff of oc.effects) checkEffect(ev.id, opt.id, eff, errors);
+      for (const oc of outcomes) for (const eff of oc.effects) checkEffect(ev.id, opt.id, eff, ev.phase, errors);
     }
 
     const c = ev.conditions;
@@ -169,12 +172,21 @@ export function validateContent(bundle: ContentBundle): string[] {
   else if (recruiting.kind !== "fixed") errors.push('Event recruiting: must be kind "fixed"');
   return errors;
 
-  function checkEffect(evId: string, optId: string, eff: Effect, out: string[]) {
+  function checkEffect(evId: string, optId: string, eff: Effect, phase: Phase, out: string[]) {
     const where = `Event ${evId} option ${optId}`;
     if (eff.kind === "injury" && !knownInjuries.has(eff.injuryType))
       out.push(`${where}: unknown injury "${eff.injuryType}"`);
     if (eff.kind === "trophy" && !knownTrophies.has(eff.id)) out.push(`${where}: unknown trophy "${eff.id}"`);
     if (eff.kind === "award" && !knownAwards.has(eff.id)) out.push(`${where}: unknown award "${eff.id}"`);
     if (eff.kind === "stat" && !knownStats.has(eff.stat)) out.push(`${where}: unknown stat "${eff.stat}"`);
+    // A phases: 1 suspension clears at the next phase boundary, before it can
+    // zero any snaps. Same inert-by-one-off shape as recoveryPhases: 1.
+    if (eff.kind === "suspension" && eff.phases < 2)
+      out.push(`${where}: suspension of 1 phase is mechanically free`);
+    // In an offseason, applyEffect targets seasons[length - 1] — the PREVIOUS,
+    // already-consumed season. Development is spent, the washout check has run,
+    // and awards are decided. Pay offseason outcomes in overall instead.
+    if (phase === "offseason" && (eff.kind === "stat" || eff.kind === "snaps"))
+      out.push(`${where}: offseason ${eff.kind} effects write to the previous, already-resolved season`);
   }
 }
