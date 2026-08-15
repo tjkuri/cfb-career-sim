@@ -632,7 +632,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         label: "Yes sir, no sir",
         probability: 0.85,
         positiveOutcome: { description: "A warning and a story.", effects: [{ kind: "moment", item: "Talked his way out of a speeding ticket", icon: "car" }] },
-        negativeOutcome: { description: "Coach finds out. One-game suspension.", effects: [{ kind: "suspension", phases: 1 }, { kind: "character", amount: -4 }] },
+        negativeOutcome: { description: "Coach finds out. Two-game suspension.", effects: [{ kind: "suspension", phases: 2 }, { kind: "character", amount: -4 }] },
       },
     ],
   },

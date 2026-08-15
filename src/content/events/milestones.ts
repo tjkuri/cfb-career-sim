@@ -22,7 +22,6 @@ export const MILESTONE_EVENTS: GameEvent[] = [
           description: "You take every rep like it is the last one and the pencil becomes ink.",
           effects: [
             { kind: "overall", timing: "immediate", amount: 2 },
-            { kind: "snaps", amount: 40 },
           ],
         },
         negativeOutcome: {

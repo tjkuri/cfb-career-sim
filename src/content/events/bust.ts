@@ -105,7 +105,7 @@ export const BUST_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "Suspended two games, but the staff respects how you handled it.",
           effects: [
-            { kind: "suspension", phases: 1 },
+            { kind: "suspension", phases: 2 },
             { kind: "character", amount: 10 },
             { kind: "moment", item: "Owned a failed test and came back clean", icon: "shield" },
           ],
@@ -146,7 +146,7 @@ export const BUST_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "Charges dropped. The staff is not thrilled, but you are still on the roster.",
           effects: [
-            { kind: "suspension", phases: 1 },
+            { kind: "suspension", phases: 2 },
             { kind: "character", amount: 8 },
           ],
         },
