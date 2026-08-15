@@ -46,4 +46,8 @@ describe("createCareer", () => {
     expect(s.pendingEffects).toEqual([]);
     expect(s.injuries).toEqual([]);
   });
+
+  it("starts with no career injuries recorded", () => {
+    expect(createCareer(setup, "s").careerInjuries).toBe(0);
+  });
 });

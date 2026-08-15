@@ -138,3 +138,25 @@ describe("flushPendingEffects", () => {
     expect(s.pendingEffects).toEqual([]);
   });
 });
+
+describe("careerInjuries", () => {
+  it("counts every injury applied, including repeats of the same type", () => {
+    const s = fresh();
+    applyEffect(s, { kind: "injury", injuryType: "acl" }, injuryOf);
+    applyEffect(s, { kind: "injury", injuryType: "acl" }, injuryOf);
+    expect(s.careerInjuries).toBe(2);
+  });
+
+  it("keeps counting after an injury heals", () => {
+    const s = fresh();
+    applyEffect(s, { kind: "injury", injuryType: "acl" }, injuryOf);
+    s.injuries = [];
+    expect(s.careerInjuries).toBe(1);
+  });
+
+  it("does not count suspensions", () => {
+    const s = fresh();
+    applyEffect(s, { kind: "suspension", phases: 2 }, injuryOf);
+    expect(s.careerInjuries).toBe(0);
+  });
+});

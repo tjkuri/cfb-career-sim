@@ -32,6 +32,7 @@ export function createCareer(setup: Setup, seed: string, content: ContentBundle 
     moments: [],
     pendingEffects: [],
     injuries: [],
+    careerInjuries: 0,
     status: "active",
   };
 

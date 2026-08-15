@@ -136,6 +136,7 @@ export interface GameState {
 
   pendingEffects: DeferredEffect[];
   injuries: ActiveInjury[];
+  careerInjuries: number; // career-long tally; state.injuries is emptied on heal
 
   status: Status;
   endingReason?: string;

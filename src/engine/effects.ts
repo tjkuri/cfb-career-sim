@@ -43,6 +43,7 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
     }
     case "injury": {
       const info = injuryOf(effect.injuryType);
+      state.careerInjuries += 1;
       state.overall = clampOverall(state.overall - info.overallDelta);
       state.injuries.push({
         kind: "injury",
