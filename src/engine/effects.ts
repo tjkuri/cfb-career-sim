@@ -93,11 +93,13 @@ export function isSidelined(state: GameState): boolean {
 }
 
 // A deferred effect that has come due must be handed to applyEffect as
-// immediate, or applyEffect would just re-queue it forever.
-function asImmediate(effect: Effect): Effect {
-  return effect.kind === "overall" && effect.timing === "deferred"
-    ? { ...effect, timing: "immediate" as const }
-    : effect;
+// immediate, or applyEffect would just re-queue it forever. DeferredEffect's
+// `effect` is narrowed to "overall" (the only kind ever enqueued), so no kind
+// check is needed here.
+function asImmediate(
+  effect: Extract<Effect, { kind: "overall" }>,
+): Extract<Effect, { kind: "overall" }> {
+  return effect.timing === "deferred" ? { ...effect, timing: "immediate" as const } : effect;
 }
 
 // Drain the whole queue regardless of firePhaseAbs. A career can end from a

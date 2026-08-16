@@ -28,7 +28,7 @@ export interface PendingDecision {
 }
 
 function injuryLookup(content: ContentBundle): InjuryLookup {
-  return (t) => content.injuries[t] ?? { overallDelta: 3, recoveryPhases: 1 };
+  return (t) => content.injuries[t] ?? { overallDelta: 3, recoveryPhases: 2 };
 }
 
 function clone(state: GameState): GameState {

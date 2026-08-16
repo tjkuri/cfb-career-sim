@@ -81,8 +81,14 @@ export interface ActiveInjury {
   restoreAmount: number; // overall points restored when the injury heals
 }
 
+// The only kind ever enqueued (effects.ts's sole writer to pendingEffects only
+// pushes here from the "overall" + "deferred" branch). Narrowed rather than
+// left as the full Effect union so a future enqueue site can't silently hand
+// flushPendingEffects the power to, say, set status = "busted" on an
+// already-declared career, or push an injury the career can never heal from,
+// straight into computeDraftResult.
 export interface DeferredEffect {
-  effect: Effect;
+  effect: Extract<Effect, { kind: "overall" }>;
   firePhaseAbs: number;
 }
 
