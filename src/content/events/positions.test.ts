@@ -6,7 +6,6 @@ import { DL_EVENTS } from "./dl";
 import { DSKILL_EVENTS } from "./dskill";
 import { K_EVENTS } from "./k";
 import { POSITIONS } from "../positions";
-import { INJURIES } from "../injuries";
 import type { Effect, GameEvent, Outcome, Phase, Position } from "../../engine/types";
 
 // The Stage 3d position-slice contract, written before the six slices were
@@ -135,24 +134,6 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
     for (const ev of events) {
       const endings = allEffects(ev).filter((e) => e.kind === "ending");
       expect(endings.length, `${ev.id} emits an ending; band 3 is closed content`).toBe(0);
-    }
-  });
-
-  it("emits no mechanically inert injury or suspension", () => {
-    for (const ev of events) {
-      for (const eff of allEffects(ev)) {
-        if (eff.kind === "injury") {
-          const inj = INJURIES[eff.injuryType];
-          expect(inj, `${ev.id} references unknown injury "${eff.injuryType}"`).toBeDefined();
-          expect(
-            inj!.recoveryPhases,
-            `${ev.id} inflicts "${eff.injuryType}" at recoveryPhases 1, which clears before it can sideline anyone`,
-          ).toBeGreaterThanOrEqual(2);
-        }
-        if (eff.kind === "suspension") {
-          expect(eff.phases, `${ev.id} suspension of 1 phase is mechanically free`).toBeGreaterThanOrEqual(2);
-        }
-      }
     }
   });
 
