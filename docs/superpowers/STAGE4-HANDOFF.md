@@ -8,36 +8,47 @@ Supersedes `STAGE3D-HANDOFF.md` (deleted — it described 3d, which is now done)
 
 ## Where things stand
 
-- **Branch `stage-3d` is at the tip of `stage-3d`; this handoff is its last commit** (the handoff
-  cannot cite its own commit hash) — not yet merged to `main`. Merge it (or continue on it — your
-  call) before or as part of starting Stage 4; nothing about Stage 4 requires the merge to happen
-  first, but don't lose track of the fact that `main` is still at `a136352`, three stages behind.
-- **266 tests pass (23 files), typecheck clean.** (264 from Stage 3d plus 2 added by the
-  whole-branch-review fix wave, `Finding 7`.) Verified at the tip of `stage-3d`:
-  - `npm test` → 266 passing (23 files).
+- **Branch `stage-3e` is at the tip of `stage-3e`, 8 commits ahead of `main`; this handoff is its
+  last commit** (the handoff cannot cite its own commit hash) — not yet merged. `main` already
+  carries Stage 3d's handoff plus Stage 3e's design and plan docs (`main` sits at `85dc003`, "docs:
+  Stage 3e implementation plan") — it is no longer "three stages behind" the way an earlier version
+  of this handoff said; only this stage's eight implementation/verification commits are unmerged.
+  Merge before or as part of starting Stage 4; nothing about Stage 4 requires the merge first.
+- **324 tests pass (24 files), typecheck clean.** (Up from 266/23 at Stage 3d's close — Stage 3e
+  added a regression guard for the postseason-flush trap, structural invariants for all six
+  position slices in `balance.test.ts`, and the award-stat-downside assertion in
+  `positions.test.ts`.) Verified at the tip of `stage-3e`:
+  - `npm test` → 324 passing (24 files).
   - `npm run typecheck` → **two passes** (`tsc -p tsconfig.engine.json && tsc -p tsconfig.json`);
     both exit 0. The engine pass enforces no-Node-globals in `src/engine/**` + `src/content/**`.
-  - `npm run play -- demo` → plays a career to a terminal state, prints JSON.
-  - `npm run balance -- 500 random` → current baseline, re-measured after the whole-branch-review
-    fix wave (`Finding 2` changed two `deferred`→`permanent` timings, which nudges the overall
-    fields slightly; `bustedRate` and the character fields are otherwise unchanged):
+  - `npm run play -- demo` → plays a career to a terminal state, prints JSON (`status: "drafted"`
+    on this run).
+  - `npm run balance -- 500 random` → current QB baseline, re-measured after Stage 3e's correctness
+    fixes (the `hamstring` `recoveryPhases` fix, the fall-camp `snaps` removal, and the career-end
+    `flushPendingEffects` drain all shift the numbers slightly). **This is the new reference point —
+    see "Measurement notes" below; don't try to reconcile it against the Stage 3d figure line by
+    line:**
     ```json
     {
-      "runs": 500, "draftedRate": 0.992, "bustedRate": 0.008, "undraftedRate": 0.044,
-      "round1Rate": 0.04, "avgSeasons": 3.108, "avgFinalCharacter": 53.32,
-      "minFinalCharacter": 3, "characterP05": 32, "characterP25": 48,
-      "charUnder55Rate": 0.456, "charUnder35Rate": 0.072,
-      "avgFinalOverall": 73.592, "minFinalOverall": 54
+      "position": "QB", "runs": 500, "draftedRate": 0.99, "bustedRate": 0.01, "washoutRate": 0,
+      "undraftedRate": 0.046, "round1Rate": 0.034, "allConfRate": 0.422, "avgSeasons": 3.104,
+      "avgInjuries": 0.748, "injuredRate": 0.514, "avgFinalCharacter": 53.27,
+      "minFinalCharacter": 0, "characterP05": 32, "characterP25": 48,
+      "charUnder55Rate": 0.454, "charUnder35Rate": 0.074,
+      "avgFinalOverall": 73.368, "minFinalOverall": 54
     }
     ```
-  - Independently re-derived from the same 500-seed run: **median final character = 56**, mean =
-    53.32 (see "Mean vs. median" below — do not conflate them).
+    `bustedRate > 0` — the Stage 3d exit criterion — still holds (0.01, up from 0.008). `position`,
+    `washoutRate`, `allConfRate`, `avgInjuries`, and `injuredRate` are new fields from Stage 3e's
+    instrumentation work; see "Per-position balance table" below for the same command run across
+    all six position slices.
 - Node is **v22.0.0 (< 22.6)** → CLI scripts run via `tsx`, not `node --experimental-strip-types`.
 - **Durable ledger:** `.superpowers/sdd/progress.md` (git-ignored, on-disk) — the authoritative
   record of every stage. Trust it and `git log` over any recollection. The two stage-3d ledgers
   (`.superpowers/sdd/2026-08-08-phase2-stage3d-a-position-pile/progress.md` and
-  `.../2026-08-08-phase2-stage3d-b-spiral/progress.md`) hold the full discovery record this
-  handoff distills — read them if a backlog item below needs more context than fits here.
+  `.../2026-08-08-phase2-stage3d-b-spiral/progress.md`), plus this stage's
+  `.superpowers/sdd/2026-08-14-stage3e/progress.md`, hold the full discovery record this handoff
+  distills — read them if a backlog item below needs more context than fits here.
 
 ## What Stage 3d just shipped
 
@@ -94,30 +105,37 @@ character spiral, tuned against the finished pool).
 
 ### Measurement notes — read before drawing conclusions from the numbers
 
-**`round1Rate` fell across the stage: 0.116 → 0.052 (after Plan A) → 0.040 (after Plan B). This is
-not a regression to chase.** The mechanism is pool dilution: exactly one `random` event fires per
-phase, and Plan A added ~58 events (mostly on-field, EV-neutral-by-design) competing for that one
-draw against the small set of overall-granting events that had been driving `round1Rate` up. The
-Plan A gate (originally `round1Rate` within ±0.05 of 0.116) was deliberately relaxed by the human
-partner after measurement showed the pile *deflated* the figure rather than inflating it, with no
-content changed. Plan B's spiral then applied a second, smaller downward push via
-`characterPart` in `deriveDraftStock` (character below 50 costs draft stock). If Stage 4 wants
+**`round1Rate` fell across the stage: 0.116 → 0.052 (after Plan A) → 0.040 (after Plan B) → 0.034
+(Stage 3e's re-measurement). This is not a regression to chase.** The mechanism is pool dilution:
+exactly one `random` event fires per phase, and Plan A added ~58 events (mostly on-field,
+EV-neutral-by-design) competing for that one draw against the small set of overall-granting events
+that had been driving `round1Rate` up. The Plan A gate (originally `round1Rate` within ±0.05 of
+0.116) was deliberately relaxed by the human partner after measurement showed the pile *deflated*
+the figure rather than inflating it, with no content changed. Plan B's spiral then applied a
+second, smaller downward push via `characterPart` in `deriveDraftStock` (character below 50 costs
+draft stock). Stage 3e's small further drop (0.040 → 0.034) is consistent with the same mechanism,
+not a new one — no content was added or removed on the round1Rate path this stage. If Stage 4 wants
 `round1Rate` back up, the position pile's overall-EV budget (spec §5.3, "EV ≈ 0 to +0.5") is the
 honest lever — not a sign something is broken.
 
-**Mean vs. median for character — keep them distinct.** `avgFinalCharacter` is ~53 but the
-**median is 56**, above the band-2 gate of 55 (independently re-measured this handoff, matching
-the design goal in spec §4: "a typical career brushes the spiral without entering it"). The mean
-is dragged down by a left-skewed tail (`minFinalCharacter: 3`). Mid-stage, a controller read the
-mean (~53) as if it were the median and briefly concluded the design goal — "median career lands
-just above 55" — had failed; measuring the actual median (56) showed it had not. **When judging
-whether "a typical career" does something, use the median or `charUnder55Rate`, not
-`avgFinalCharacter`.**
+**Mean vs. median for character — keep them distinct.** `avgFinalCharacter` is ~53 (53.27 at Stage
+3e's close, next to Stage 3d's 53.32 — barely moved) but Stage 3d's independent re-derivation put
+the **median at 56**, above the band-2 gate of 55, matching the design goal in spec §4: "a typical
+career brushes the spiral without entering it." The median was not independently re-derived this
+stage — the near-unchanged mean gives no reason to think the relationship flipped, but treat that
+as inference, not a fresh measurement. The mean is dragged down by a left-skewed tail
+(`minFinalCharacter: 0` at n=500 this run; 3 in Stage 3d's). Mid-stage in Stage 3d, a controller
+read the mean (~53) as if it were the median and briefly concluded the design goal — "median
+career lands just above 55" — had failed; measuring the actual median (56) showed it had not.
+**When judging whether "a typical career" does something, use the median or `charUnder55Rate`, not
+`avgFinalCharacter`.** This warning still applies at Stage 3e's numbers and is not superseded by
+anything in this handoff.
 
-## Engine-level traps (not tuning items — latent bugs, fix or guard before content leans on them)
+## Engine-level traps (Stage 3e closed all four — kept here as history; the guards below are what
+now prevent regressions)
 
-These bit real content during 3d and will bite Stage 4 or any future content author again if
-unaddressed:
+These bit real content during 3d and would have bitten Stage 4 or any future content author again
+if left unaddressed. All four are now closed:
 
 1. **A `deferred` effect queued from a postseason event can be silently dropped.**
    `state.pendingEffects` has exactly one drain, `tickPhaseStart`, and both declare paths
@@ -127,11 +145,21 @@ unaddressed:
    redemption picks over 3000 probed seeds kept the +9 character grant for zero cost. The fix
    addressed that one event; **the engine gap itself is still open.** Audit every `deferred` effect
    by the phase it's queued from, or drain `pendingEffects` on the declare path.
+   **CLOSED (Stage 3e, Task 1).** `flushPendingEffects` (`src/engine/effects.ts`) is called from
+   `finalizeIfEnded` in `src/engine/advance.ts` on *every* terminal status, before
+   `computeDraftResult` — so a career can no longer end with unresolved `pendingEffects`. The drain
+   also covers a second orphan path the original write-up above didn't anticipate: an
+   offseason-queued `deferred` effect that `enterOffseason` would otherwise drop when it forces
+   `status = "declared"`. Regression guard: `src/engine/pending-flush.test.ts`.
 2. **Offseason `stat` and `snaps` effects write to the previous, already-resolved season.**
    `applyEffect` targets `seasons[seasons.length - 1]`, and during an offseason that's the season
    `enterOffseason` already consumed for development and already ran the washout check against.
    Semantically backwards for any author who doesn't know it. On offseason events, cost `overall`
    instead.
+   **CLOSED (Stage 3e, Task 5).** `validateContent` now rejects offseason-phase `stat`/`snaps`
+   effects for *all* content, not just the six position slices `positions.test.ts` used to police.
+   One live violation existed and was fixed: `milestone-fall-camp`'s `{ kind: "snaps", amount: 40 }`
+   was removed.
 3. **`recoveryPhases: 1` injuries and `phases: 1` suspensions are mechanically inert.** Production
    for a phase runs before that phase's events fire, and the injury/suspension clears at the next
    phase boundary — it never sidelines anyone. `schema.ts` enforces `recoveryPhases >= 1`, one
@@ -139,10 +167,18 @@ unaddressed:
    `bust-drug-test`'s "Suspended two games" (`bust.ts:108`), `bust-arrest`'s `lawyer-up`
    (`bust.ts:149`), and `speeding-georgia`'s one-game suspension (`offfield.ts`, moved into its
    own new file by this branch), all `phases: 1` and therefore still free.
+   **CLOSED (Stage 3e, Task 5).** `validateContent` now rejects `recoveryPhases: 1` and `phases: 1`
+   outright (`>= 2` required). Six live instances were fixed: three injuries (`hamstring`,
+   `concussion`, `turfToe`) and three suspensions (`bust.ts` ×2 — `bust-drug-test` and
+   `bust-arrest`'s `lawyer-up` — and `speeding-georgia` in `offfield.ts`, whose description was
+   reworded from "One-game" to "Two-game" to match the corrected `phases: 2`).
 4. **`timing: "permanent"` and `timing: "immediate"` are applied identically for `overall`
    effects; only `deferred` differs** (`effects.ts:20-28`). All 58 new position-pile events choose
    between two values that behave the same. Either give them distinct behavior or stop
    distinguishing them in the schema/authoring guidance.
+   **CLOSED (Stage 3e, Task 2) — decided deliberately: collapsed.** `EffectTiming` is now
+   `"immediate" | "deferred"`; `"permanent"` no longer exists anywhere in the codebase (66 sites
+   rewritten to `"immediate"`, which is what `"permanent"` already behaved as).
 
 ## The content contract's blind spot
 
@@ -158,36 +194,50 @@ pile; DL is worst, 3× `+1 sacks` at 14% of threshold each, and has the highest
 `allConfRate` at 0.796). Suggested fix: add a "some outcome reduces the award stat" assertion to
 `positions.test.ts` — it would have caught five of six slices at authoring time.
 
-## What is unmeasured
+**Stage 3e (Task 6): the assertion now exists.** `positions.test.ts` asserts, for all six slices,
+that some reachable outcome reduces the bucket's award stat. It's gated by a named, shrink-only
+allowlist: `KNOWN_NO_AWARD_STAT_DOWNSIDE = { QB, OSKILL, DL, DSKILL }`. A slice named in that list
+asserts the property is **absent** (documenting the known gap rather than silently tolerating it);
+an unlisted slice asserts the property is **present**. OL and K were fixed directly and now pass on
+real content (`cadence-trouble`/`guard-or-tackle` for OL; `kickoff-duties-too`/`iced` for K) — that
+is why only four of the original six names remain on the list. The list can only shrink: removing a
+still-listed slice from `KNOWN_NO_AWARD_STAT_DOWNSIDE` without giving it real downside content is
+what the test is designed to catch. **Stage 4 must, for each of QB, OSKILL, DL, and DSKILL, either
+add downside content and drop it from the list, or explicitly ratify the gap and leave it named** —
+this handoff does not decide that for you.
 
-**The balance harness hardcodes `position: "QB"`** (`src/sim/balance.ts:35`). Every number in this
-document's baseline — and every number Stage 4 will look at by running `npm run balance` — is QB
-only. **The other five position slices (oskill, ol, dl, dskill, k) have no committed aggregate
-balance measurement at all.** The only per-position data that exists came from throwaway probe
-scripts during Plan A and lives only in that stage's task reports, not in any committed test or
-ledger entry. Three different sources feed the table below, none of them committed tooling: the
-`Overall-EV mean` column is each slice's own author-reported EV, from
-`.superpowers/sdd/2026-08-08-phase2-stage3d-a-position-pile/task-{2..7}-report.md`; `allConfRate`
-is from the six-way per-position balance run in `.../task-8-report.md:57-63`; `Injury
-exposure/event` and `Character drift/event` are from the whole-branch final review, recorded only
-in `.superpowers/sdd/2026-08-08-phase2-stage3d-a-position-pile/progress.md`'s "STAGE-4 BACKLOG"
-block, not in any task-N report:
+## Per-position balance table
 
-| Bucket | Overall-EV mean (measured) | allConfRate | Injury exposure/event | Character drift/event |
-|---|---|---|---|---|
-| QB | +0.235 | 0.650 | 0 | +0.070 |
-| OSKILL | +0.1925 | 0.512 | 0.053 | — |
-| OL | +0.115 (post-fix) | 0.730 | 0 | −0.107 |
-| DL | +0.135 | 0.796 | 0 | — |
-| DSKILL | +0.1725 | 0.562 | 0.020 | — |
-| K | +0.0175 (post-fix) | 0.492 | 0.025 | +0.257 |
+**Stage 3d's version of this section was titled "What is unmeasured"** and carried a table
+assembled from three separate throwaway-probe sources (author self-reports, a one-off six-way
+run, and progress-log notes), none of them committed tooling, because **the balance harness
+hardcoded `position: "QB"`** (`src/sim/balance.ts:35` at the time). **Stage 3e closed that gap
+(Tasks 7-8): `runBalance(runs, seedPrefix, policy, position = "QB")` now takes a position, and
+`balance.test.ts` asserts structural invariants for all six slices.** The table below replaces the
+old one entirely and is the first per-position balance data this project has ever had behind a
+single committed command.
 
-Treat this table as directional, not verified — it was not re-derived for this handoff, only
-copied from three separate sources in the position-pile ledger, and the brief for this handoff
-explicitly does not require re-running it. **Consider parameterizing `runBalance` by position
-before trusting any per-position conclusion**, and re-run OSKILL/OL/DL/DSKILL/K through the
-harness before tuning any of them — none of the numbers above have a `balance.test.ts` gate behind
-them the way QB's do.
+Measured by `npm run balance -- 500 random all` at Stage 3e close. Reproducible — the seed prefix
+is fixed at `balance`, so this command reproduces these rows exactly. The Stage 3d per-position
+figures this replaces came from throwaway probe scripts.
+
+| position | draftedRate | bustedRate | washoutRate | round1Rate | allConfRate | avgSeasons | avgInjuries | injuredRate | avgFinalCharacter | charUnder55Rate | avgFinalOverall |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| QB | 0.990 | 0.010 | 0 | 0.034 | 0.422 | 3.104 | 0.748 | 0.514 | 53.270 | 0.454 | 73.368 |
+| OSKILL | 0.984 | 0.016 | 0.004 | 0.014 | 0.388 | 3.090 | 1.044 | 0.632 | 53.416 | 0.450 | 72.234 |
+| OL | 0.988 | 0.012 | 0 | 0.010 | 0.586 | 3.082 | 0.790 | 0.524 | 52.358 | 0.490 | 73.280 |
+| DL | 0.990 | 0.010 | 0 | 0.010 | 0.628 | 3.098 | 0.770 | 0.518 | 53.482 | 0.446 | 72.928 |
+| DSKILL | 0.988 | 0.012 | 0 | 0.014 | 0.376 | 3.106 | 0.892 | 0.570 | 53.014 | 0.470 | 72.702 |
+| K | 0.976 | 0.024 | 0.010 | 0 | 0.392 | 3.090 | 0.932 | 0.594 | 54.282 | 0.444 | 68.242 |
+
+At n=500 this is a starting read, not a verdict — re-run at higher n (the controller has separately
+measured 1500/position) before leaning hard on any single cell, especially the rarer-event columns
+like `washoutRate` and `bustedRate`. Two things stand out even at n=500: `washoutRate` is non-zero
+only for OSKILL (0.004) and K (0.010) — the other four slices show zero, consistent with the
+soft-washout path being a K/OSKILL-specific mechanism, not a general one — and K is the only slice
+with `round1Rate = 0`, paired with its lowest `avgFinalOverall` (68.242) and highest `bustedRate`
+(0.024). OL and DL carry the highest `allConfRate` (0.586, 0.628) against QB/OSKILL/DSKILL/K
+clustered around 0.38–0.42, echoing the backlog item below about award-threshold placement.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
@@ -239,8 +289,10 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
 - **Award-stat one-way ratchet still live in qb/oskill/dl/dskill** — no outcome in those four
   slices ever reduces the bucket's award stat (20 free `probability: 1` floors total; DL worst,
   highest `allConfRate` at 0.796). Decide once for all six slices, not piecemeal.
-- **Five of six position slices have no committed balance measurement** — parameterize
-  `runBalance` by position (see "What is unmeasured" above) before trusting anything about them.
+- **Resolved by 3e, no longer open:** "five of six position slices have no committed balance
+  measurement" — `runBalance` now takes a position and all six slices are measured; see
+  "Per-position balance table" above. Re-run at higher n before leaning hard on the rarer-event
+  columns (`washoutRate`, `bustedRate`).
 - **Injury exposure is uneven across the position pile**: OSKILL 0.053/event, K 0.025, DSKILL
   0.020, QB/OL/DL exactly 0. Shows up as OSKILL `undraftedRate` 0.068 + `bustedRate` 0.022 vs DL
   0.016/0 (measured mid-stage, QB-only harness caveat applies to the aggregate framing, per-slice
@@ -335,7 +387,8 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
   Ablation confirmed removing milestones reproduces the pre-3c baseline exactly. Don't audit the
   ladder itself; audit the milestones (below) if `round1Rate`/`draftedRate` need attention.
 - **Milestone overall-EV vs. the development cap.** Three guaranteed fixed events per season each
-  grant `overall: +2 permanent` (plus +2 Senior Day) — up to +6/season of guaranteed-EV overall
+  grant `overall: +2 immediate` (was `timing: "permanent"` before Stage 3e's collapse; same
+  behavior) (plus +2 Senior Day) — up to +6/season of guaranteed-EV overall
   against `devCap: 3`. Because fixed events fire unconditionally, that EV is income, not variance.
   This was the dominant lever behind the 3c-era `round1Rate` jump and is still live — the position
   pile diluted its relative weight in the draw pool but didn't touch the milestones themselves.
@@ -366,10 +419,13 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
   plus per-stage specs. `2026-08-08-phase2-stage3d-content-pile-design.md` §8 is the tuning-lever
   inventory this handoff draws from; its §13 is its own carried-forward list.
 - **Plans:** `docs/superpowers/plans/` (one per stage/sub-stage).
-- **Balance harness:** `src/sim/balance.ts` (`runBalance`, `BalanceReport`) — hardcodes `position:
-  "QB"`, see "What is unmeasured" above. `src/sim/balance.test.ts` carries the `bustedRate > 0`
-  gate. (`round1Rate` has only a near-vacuous `< 1` assertion — no band. That gate was
-  deliberately relaxed to nothing during Plan A; adding a real band is Stage 4's call.)
+- **Balance harness:** `src/sim/balance.ts` (`runBalance(runs, seedPrefix, policy, position =
+  "QB")`, `BalanceReport`) — takes a position as of Stage 3e; see "Per-position balance table"
+  above. `src/sim/balance.test.ts` carries the QB-only `bustedRate > 0` gate (still QB-only,
+  unchanged by Stage 3e) plus structural invariants for all six position slices. (`round1Rate` has
+  only a near-vacuous `< 1` assertion — no band. That gate was deliberately relaxed to nothing
+  during Plan A; adding a real band is Stage 4's call.) CLI: `npm run balance -- <runs> <policy>
+  [position|all]`.
 - **Content:** `src/content/events/{qb,oskill,ol,dl,dskill,k,offfield,universal,bust,
   milestones,recruiting}.ts`. Contract: `src/content/schema.ts` (`validateContent`),
   `src/content/events/positions.test.ts` (position-slice contract — the blind spot lives here),
@@ -382,5 +438,6 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
 - **Engine surfaces content uses:** `src/engine/select-event.ts` (fixed/random selection),
   `src/engine/advance.ts` (loop + hub, including the trap sites `advance.ts:216` and the
   postseason-fires-before-resolver ordering), `src/engine/effects.ts` (effect application,
-  including `pendingEffects` and the `permanent`/`immediate` no-op), `src/engine/postseason.ts`
-  (the six-stat resolver).
+  including `pendingEffects`, now flushed by `flushPendingEffects` at every terminal status — the
+  `permanent`/`immediate` no-op it used to describe is gone; `timing` is `"immediate" | "deferred"`
+  only as of Stage 3e), `src/engine/postseason.ts` (the six-stat resolver).
