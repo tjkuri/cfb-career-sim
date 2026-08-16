@@ -8,12 +8,14 @@ Supersedes `STAGE3D-HANDOFF.md` (deleted — it described 3d, which is now done)
 
 ## Where things stand
 
-- **Branch `stage-3e` is at the tip of `stage-3e`, 9 commits ahead of `main`; this handoff is the
-  9th, its last commit** (the handoff cannot cite its own commit hash) — not yet merged. `main`
-  already carries Stage 3d's handoff plus Stage 3e's design and plan docs (`main` sits at
-  `85dc003`, "docs: Stage 3e implementation plan") — it is no longer "three stages behind" the way
-  an earlier version of this handoff said; only this stage's eight implementation/verification
-  commits plus this handoff commit are unmerged. Merge before or as part of starting Stage 4;
+- **Branch `stage-3e` is at the tip of `stage-3e`, several commits ahead of `main`** (the handoff
+  cannot cite its own commit hash, and a fix wave following the branch's final review adds more
+  after this handoff — don't trust an exact count pinned here; run `git log main..stage-3e --oneline`
+  for the real one) — not yet merged. `main` already carries Stage 3d's handoff plus Stage 3e's
+  design and plan docs (`main` sits at `85dc003`, "docs: Stage 3e implementation plan") — it is no
+  longer "three stages behind" the way an earlier version of this handoff said; only this stage's
+  implementation/verification/fix-wave commits plus this handoff commit are unmerged. Merge before
+  or as part of starting Stage 4;
   nothing about Stage 4 requires the merge first.
 - **324 tests pass (24 files), typecheck clean.** (Up from 266/23 at Stage 3d's close — Stage 3e
   added a regression guard for the postseason-flush trap, structural invariants for all six
@@ -199,9 +201,11 @@ pile; DL is worst, 3× `+1 sacks` at 14% of threshold each, and has the highest
 that some reachable outcome reduces the bucket's award stat. It's gated by a named, shrink-only
 allowlist: `KNOWN_NO_AWARD_STAT_DOWNSIDE = { QB, OSKILL, DL, DSKILL }`. A slice named in that list
 asserts the property is **absent** (documenting the known gap rather than silently tolerating it);
-an unlisted slice asserts the property is **present**. OL and K were fixed directly and now pass on
-real content (`cadence-trouble`/`guard-or-tackle` for OL; `kickoff-duties-too`/`iced` for K) — that
-is why only four of the original six names remain on the list. The list can only shrink: removing a
+an unlisted slice asserts the property is **present**. OL and K already carried downside content
+before this branch (`cadence-trouble`/`guard-or-tackle` for OL; `kickoff-duties-too`/`iced` for K —
+this branch authors no content, only the `permanent` → `immediate` rename touched either file) and
+pass without change — that is why only four of the original six names remain on the list. The list
+can only shrink: removing a
 still-listed slice from `KNOWN_NO_AWARD_STAT_DOWNSIDE` without giving it real downside content is
 what the test is designed to catch. **Stage 4 must, for each of QB, OSKILL, DL, and DSKILL, either
 add downside content and drop it from the list, or explicitly ratify the gap and leave it named** —
@@ -290,7 +294,9 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
   assertion, not a content change.
 - **Award-stat one-way ratchet still live in qb/oskill/dl/dskill** — no outcome in those four
   slices ever reduces the bucket's award stat (20 free `probability: 1` floors total; DL worst,
-  highest `allConfRate` at 0.796). Decide once for all six slices, not piecemeal.
+  highest `allConfRate` at 0.796). Decide once for all six slices, not piecemeal. (That `allConfRate`
+  figure is the Stage 3d probe value; the current measured `allConfRate` for every slice is in the
+  "Per-position balance table" above.)
 - **Resolved by 3e, no longer open:** "five of six position slices have no committed balance
   measurement" — `runBalance` now takes a position and all six slices are measured; see
   "Per-position balance table" above. Re-run at higher n before leaning hard on the rarer-event
@@ -298,10 +304,12 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
 - **Injury exposure is uneven across the position pile**: OSKILL 0.053/event, K 0.025, DSKILL
   0.020, QB/OL/DL exactly 0. Shows up as OSKILL `undraftedRate` 0.068 + `bustedRate` 0.022 vs DL
   0.016/0 (measured mid-stage, QB-only harness caveat applies to the aggregate framing, per-slice
-  numbers are from the throwaway probe).
+  numbers are from the throwaway probe; the current measured `injuredRate`, `undraftedRate`, and
+  `bustedRate` for every slice are in the "Per-position balance table" above).
 - **Character drift by slice**: K +0.257/event vs OL −0.107/event — a 3.3-point spread in final
   character across a career, against the band-2 gate of 55. Plan B tuned only against QB's
-  (+0.070/event).
+  (+0.070/event). (These per-event drift figures are the Stage 3d probe values; the current measured
+  `avgFinalCharacter` and `charUnder55Rate` per slice are in the "Per-position balance table" above.)
 - **`bustedRate` is already non-zero for OSKILL (0.022) and K (0.006) via the soft-washout path**,
   not via bust events — a second mechanism distinct from the character spiral. Worth understanding
   before treating `bustedRate` as a single-cause metric. (These two figures are the Stage 3d probe
@@ -310,10 +318,13 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
 - **All-Conference rates run 0.49–0.80 across positions** (DL 0.796, OL 0.73, QB 0.65). Award
   thresholds sit at ~1 season of baseline production and the position pile's stat grants land on
   top — stat-axis inflation that `round1Rate` is blind to (an award is worth only 3 draft stock,
-  once).
-- **`phases: 1` suspensions are still free**: `bust-drug-test`'s "Suspended two games",
-  `bust-arrest`'s `lawyer-up`, and `speeding-georgia`'s one-game suspension all cost nothing (same
-  mechanism as the `recoveryPhases: 1` trap above).
+  once). (These are the Stage 3d probe values; the current measured `allConfRate` per slice is in
+  the "Per-position balance table" above.)
+- **Resolved by 3e, no longer open:** "`phases: 1` suspensions are still free" — `bust-drug-test`'s
+  "Suspended two games", `bust-arrest`'s `lawyer-up`, and `speeding-georgia`'s one-game suspension
+  all cost nothing (same mechanism as the `recoveryPhases: 1` trap above). All three are now fixed
+  and `schema.ts` rejects `phases: 1` suspensions outright — see the parallel entry in the "Engine
+  traps" section above (item 3, CLOSED).
 - **Agency spread**: DL/DSKILL/K give a real choice in 9 of 10 events; QB/OSKILL in 6 of 10.
 - **All six position slices' `tier` gates are `[1,2]`; none is `[3,4]`** — blueblood careers draw a
   smaller conditional pool. Two bowl-game beats are gated to the programs least likely to reach a
