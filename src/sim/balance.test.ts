@@ -89,6 +89,14 @@ describe("headless balance harness", () => {
     expect(r.charUnder35Rate, "nobody reaches band 3, so no bust event can gate in").toBeGreaterThan(0);
     expect(r.bustedRate, "Stage 3d exit criterion: the busted terminal must be naturally reachable").toBeGreaterThan(0);
   });
+
+  it("actually simulates the position it is given", () => {
+    // Same runs, same seed prefix, same policy — position is the only variable.
+    // A runBalance that ignored its position argument would return identical
+    // reports here, and every per-position assertion above would still pass.
+    expect(runBalance(200, "perpos", randomPolicy, "OL"))
+      .not.toEqual(runBalance(200, "perpos", randomPolicy, "K"));
+  });
 });
 
 describe.each(ALL_POSITIONS)("balance report for %s", (position) => {
