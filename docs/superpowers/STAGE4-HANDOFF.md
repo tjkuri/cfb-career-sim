@@ -8,12 +8,13 @@ Supersedes `STAGE3D-HANDOFF.md` (deleted — it described 3d, which is now done)
 
 ## Where things stand
 
-- **Branch `stage-3e` is at the tip of `stage-3e`, 8 commits ahead of `main`; this handoff is its
-  last commit** (the handoff cannot cite its own commit hash) — not yet merged. `main` already
-  carries Stage 3d's handoff plus Stage 3e's design and plan docs (`main` sits at `85dc003`, "docs:
-  Stage 3e implementation plan") — it is no longer "three stages behind" the way an earlier version
-  of this handoff said; only this stage's eight implementation/verification commits are unmerged.
-  Merge before or as part of starting Stage 4; nothing about Stage 4 requires the merge first.
+- **Branch `stage-3e` is at the tip of `stage-3e`, 9 commits ahead of `main`; this handoff is the
+  9th, its last commit** (the handoff cannot cite its own commit hash) — not yet merged. `main`
+  already carries Stage 3d's handoff plus Stage 3e's design and plan docs (`main` sits at
+  `85dc003`, "docs: Stage 3e implementation plan") — it is no longer "three stages behind" the way
+  an earlier version of this handoff said; only this stage's eight implementation/verification
+  commits plus this handoff commit are unmerged. Merge before or as part of starting Stage 4;
+  nothing about Stage 4 requires the merge first.
 - **324 tests pass (24 files), typecheck clean.** (Up from 266/23 at Stage 3d's close — Stage 3e
   added a regression guard for the postseason-flush trap, structural invariants for all six
   position slices in `balance.test.ts`, and the award-stat-downside assertion in
@@ -223,7 +224,7 @@ figures this replaces came from throwaway probe scripts.
 
 | position | draftedRate | bustedRate | washoutRate | round1Rate | allConfRate | avgSeasons | avgInjuries | injuredRate | avgFinalCharacter | charUnder55Rate | avgFinalOverall |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| QB | 0.990 | 0.010 | 0 | 0.034 | 0.422 | 3.104 | 0.748 | 0.514 | 53.270 | 0.454 | 73.368 |
+| QB | 0.990 | 0.010 | 0 | 0.034 | 0.422 | 3.104 | 0.748 | 0.514 | 53.27 | 0.454 | 73.368 |
 | OSKILL | 0.984 | 0.016 | 0.004 | 0.014 | 0.388 | 3.090 | 1.044 | 0.632 | 53.416 | 0.450 | 72.234 |
 | OL | 0.988 | 0.012 | 0 | 0.010 | 0.586 | 3.082 | 0.790 | 0.524 | 52.358 | 0.490 | 73.280 |
 | DL | 0.990 | 0.010 | 0 | 0.010 | 0.628 | 3.098 | 0.770 | 0.518 | 53.482 | 0.446 | 72.928 |
@@ -237,7 +238,8 @@ only for OSKILL (0.004) and K (0.010) — the other four slices show zero, consi
 soft-washout path being a K/OSKILL-specific mechanism, not a general one — and K is the only slice
 with `round1Rate = 0`, paired with its lowest `avgFinalOverall` (68.242) and highest `bustedRate`
 (0.024). OL and DL carry the highest `allConfRate` (0.586, 0.628) against QB/OSKILL/DSKILL/K
-clustered around 0.38–0.42, echoing the backlog item below about award-threshold placement.
+clustered in the 0.376–0.422 range, echoing the backlog item below about award-threshold
+placement.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
@@ -302,7 +304,9 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
   (+0.070/event).
 - **`bustedRate` is already non-zero for OSKILL (0.022) and K (0.006) via the soft-washout path**,
   not via bust events — a second mechanism distinct from the character spiral. Worth understanding
-  before treating `bustedRate` as a single-cause metric.
+  before treating `bustedRate` as a single-cause metric. (These two figures are the Stage 3d probe
+  values; the current measured `bustedRate` for every slice, including OSKILL and K, is in the
+  "Per-position balance table" above.)
 - **All-Conference rates run 0.49–0.80 across positions** (DL 0.796, OL 0.73, QB 0.65). Award
   thresholds sit at ~1 season of baseline production and the position pile's stat grants land on
   top — stat-axis inflation that `round1Rate` is blind to (an award is worth only 3 draft stock,
