@@ -288,10 +288,10 @@ describe("validateContent", () => {
     expect(validateContent(b)).toEqual([]);
   });
 
-  it("rejects a one-phase suspension as mechanically free", () => {
+  it("rejects a one-phase suspension as never zeroing a snap", () => {
     const b = goodBundle();
     b.events[1]!.options[0]!.positiveOutcome.effects = [{ kind: "suspension", phases: 1 }];
-    expect(validateContent(b).join(" ")).toContain("suspension of 1 phase is mechanically free");
+    expect(validateContent(b).join(" ")).toContain("suspension of 1 phase never zeroes a snap");
   });
 
   it("accepts a two-phase suspension", () => {

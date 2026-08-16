@@ -72,11 +72,20 @@ export function validateContent(bundle: ContentBundle): string[] {
   const knownTrophies = new Set(bundle.trophyIds);
   const knownAwards = new Set(bundle.awardIds);
 
-  // recoveryPhases 1 is fully inert: applyEffect subtracts overallDelta and the
-  // next tickPhaseStart restores it before anything is simulated. 2 is the first
-  // value that actually sidelines anyone.
+  // recoveryPhases: 1 never sidelines anyone — production for its own phase has
+  // already run by the time the injury is applied, and it heals at the start of
+  // the very next phase. It is NOT mechanically inert, though: an injury alive
+  // at the end of a phase is still visible to that phase's boundary checks
+  // before it heals — it can depress the soft-washout overall comparison
+  // (advance.ts), satisfy redshirtOffered's injury clause (advance.ts), depress
+  // deriveDraftStock if the player declares before healing, and gate
+  // requiresActiveInjury content in for the rest of its own phase
+  // (select-event.ts). Those residual effects are real but boundary-only and
+  // too subtle to author against deliberately, which is why the floor is 2, not
+  // 1. See docs/superpowers/STAGE4-HANDOFF.md's medical-redshirt note for the
+  // fullest account of the offseason-hub case.
   for (const [id, inj] of Object.entries(bundle.injuries))
-    if (inj.recoveryPhases < 2) errors.push(`Injury ${id}: recoveryPhases must be >= 2 (1 clears before it can sideline)`);
+    if (inj.recoveryPhases < 2) errors.push(`Injury ${id}: recoveryPhases must be >= 2 (1 never sidelines anyone, but has subtle boundary effects)`);
 
   const ps = bundle.postseason;
   const inRange = (p: number) => p >= 0 && p <= 1;
@@ -179,10 +188,14 @@ export function validateContent(bundle: ContentBundle): string[] {
     if (eff.kind === "trophy" && !knownTrophies.has(eff.id)) out.push(`${where}: unknown trophy "${eff.id}"`);
     if (eff.kind === "award" && !knownAwards.has(eff.id)) out.push(`${where}: unknown award "${eff.id}"`);
     if (eff.kind === "stat" && !knownStats.has(eff.stat)) out.push(`${where}: unknown stat "${eff.stat}"`);
-    // A phases: 1 suspension clears at the next phase boundary, before it can
-    // zero any snaps. Same inert-by-one-off shape as recoveryPhases: 1.
+    // A phases: 1 suspension never zeroes a snap — production for its own
+    // phase has already run and it clears at the next phase boundary, before
+    // any future phase is simulated. Same shape as recoveryPhases: 1, and with
+    // the same caveat: it is not mechanically free. It still satisfies
+    // requiresInjury (select-event.ts) for the rest of its own phase, since a
+    // suspension is pushed into state.injuries alongside real injuries.
     if (eff.kind === "suspension" && eff.phases < 2)
-      out.push(`${where}: suspension of 1 phase is mechanically free`);
+      out.push(`${where}: suspension of 1 phase never zeroes a snap, but still satisfies requiresInjury for the rest of its phase`);
     // In an offseason, applyEffect targets seasons[length - 1] — the PREVIOUS,
     // already-consumed season. Development is spent, the washout check has run,
     // and awards are decided. Pay offseason outcomes in overall instead.
