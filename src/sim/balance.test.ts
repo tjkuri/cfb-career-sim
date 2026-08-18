@@ -92,10 +92,17 @@ describe("headless balance harness", () => {
 
   it("actually simulates the position it is given", () => {
     // Same runs, same seed prefix, same policy — position is the only variable.
-    // A runBalance that ignored its position argument would return identical
-    // reports here, and every per-position assertion above would still pass.
-    expect(runBalance(200, "perpos", randomPolicy, "OL"))
-      .not.toEqual(runBalance(200, "perpos", randomPolicy, "K"));
+    //
+    // Comparing whole reports with .not.toEqual() does NOT catch a runBalance
+    // that ignores `position`: BalanceReport echoes the parameter back verbatim
+    // (balance.ts:76), so two reports built from an identical simulation would
+    // still differ in that one field and the assertion would pass without the
+    // simulation itself ever varying. Strip `position` out and compare only the
+    // measured fields, so a runBalance that ignores its position argument (and
+    // therefore produces identical measured stats) actually fails this test.
+    const { position: _olPosition, ...olMeasured } = runBalance(200, "perpos", randomPolicy, "OL");
+    const { position: _kPosition, ...kMeasured } = runBalance(200, "perpos", randomPolicy, "K");
+    expect(olMeasured).not.toEqual(kMeasured);
   });
 });
 
