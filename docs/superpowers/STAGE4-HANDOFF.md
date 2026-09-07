@@ -222,7 +222,8 @@ hardcoded `position: "QB"`** (`src/sim/balance.ts:35` at the time). **Stage 3e c
 old one entirely and is the first per-position balance data this project has ever had behind a
 single committed command.
 
-Measured by `npm run balance -- 500 random all` at Stage 3e close. Reproducible — the seed prefix
+Measured by `npm run balance -- 500 random all`. K's row was re-measured after the Stage 4
+development fix below; the other five are unchanged from Stage 3e close, to the digit. Reproducible — the seed prefix
 is fixed at `balance`, so this command reproduces these rows exactly. The Stage 3d per-position
 figures this replaces came from throwaway probe scripts.
 
@@ -233,17 +234,65 @@ figures this replaces came from throwaway probe scripts.
 | OL | 0.988 | 0.012 | 0 | 0.010 | 0.586 | 3.082 | 0.790 | 0.524 | 52.358 | 0.490 | 73.280 |
 | DL | 0.990 | 0.010 | 0 | 0.010 | 0.628 | 3.098 | 0.770 | 0.518 | 53.482 | 0.446 | 72.928 |
 | DSKILL | 0.988 | 0.012 | 0 | 0.014 | 0.376 | 3.106 | 0.892 | 0.570 | 53.014 | 0.470 | 72.702 |
-| K | 0.976 | 0.024 | 0.010 | 0 | 0.392 | 3.090 | 0.932 | 0.594 | 54.282 | 0.444 | 68.242 |
+| K | 0.982 | 0.018 | 0.006 | 0.002 | 0.400 | 3.100 | 0.930 | 0.594 | 53.924 | 0.448 | 72.402 |
 
 At n=500 this is a starting read, not a verdict — re-run at higher n (the controller has separately
 measured 1500/position) before leaning hard on any single cell, especially the rarer-event columns
 like `washoutRate` and `bustedRate`. Two things stand out even at n=500: `washoutRate` is non-zero
 only for OSKILL (0.004) and K (0.010) — the other four slices show zero, consistent with the
-soft-washout path being a K/OSKILL-specific mechanism, not a general one — and K is the only slice
-with `round1Rate = 0`, paired with its lowest `avgFinalOverall` (68.242) and highest `bustedRate`
-(0.024). OL and DL carry the highest `allConfRate` (0.586, 0.628) against QB/OSKILL/DSKILL/K
+soft-washout path being a K/OSKILL-specific mechanism, not a general one — and K is still the hardest
+slice — rarest `round1Rate` (0.002), highest `undraftedRate`, joint-highest `bustedRate` (0.018) —
+but no longer a structural outlier. It previously read `round1Rate = 0` with `avgFinalOverall`
+68.242; see "K's development was structurally zeroed" below for why that was a defect rather than
+a property, and what changed. OL and DL carry the highest `allConfRate` (0.586, 0.628) against QB/OSKILL/DSKILL/K
 clustered in the 0.376–0.422 range, echoing the backlog item below about award-threshold
 placement.
+
+## K's development was structurally zeroed (found and fixed in Stage 4)
+
+The first thing the per-position table bought was a defect it made visible. K read `round1Rate = 0`
+across **3000** careers, `undraftedRate` 0.147 against 0.035–0.054 for everyone else, and
+`avgFinalOverall` 68.4 against a 72.4–73.4 pack. That was not variance and not realism — it was one
+root cause charged twice.
+
+`STAT_MODEL` (`engine/simulate.ts`) rolls K at **40–70 snaps a phase**; every other position rolls
+120–220. Measured, that is 125 snaps a season against 332–384. Two constants then punished it:
+
+| | K | others |
+|---|---|---|
+| snaps/season | 125.1 | 331.9–383.6 |
+| `floor(snaps / 180)` → dev points/season | **0.309** | 1.392–1.778 |
+| career snaps | 374 | 995–1164 |
+| `min(15, snaps/200)` → draft production score | **1.87** | 4.98–5.82 |
+
+`snapsPerDevPoint: 180` is calibrated for the 120–220 regime, so at 125 snaps a season `floor()`
+returned **zero** most seasons: a kicker gained about 1 overall across a career where everyone else
+gained 4.5. Then `productionScore` in `draft.ts` charged K again for the same low snap count. The
+combined deficit was ~9.5 draft stock, and it was structural, not statistical: **K's highest
+observed draft stock over 3000 careers was 86, against a round-1 threshold of 91.** Every other
+position hit the clamp at 100. No tuning lever in the section below could have moved it.
+
+**Decision: fix the development half, keep the production half.** Nobody designed "kickers do not
+develop" — a divisor tuned for one snap regime silently zeroed another. But a kicker genuinely does
+contribute fewer snaps, and `productionScore` docking them for it is a real signal worth keeping.
+Normalizing both would have made kickers draft unrealistically well.
+
+`ProgressionConfig` gained `snapsPerDevPointByPosition`; K carries **62** (180 × its ~34% snap
+share). `developmentDelta` now **requires** a position rather than defaulting to the flat divisor —
+a silent fallback is exactly how this survived a full stage of balance work unnoticed.
+
+Result, n=3000: K `avgFinalOverall` 68.41 → **72.53**, `round1Rate` 0 → **0.0040**,
+`undraftedRate` 0.147 → **0.076**, max draft stock 86 → **96**. The other five positions are
+unchanged to the digit. K remains the hardest slice — that part was always intended.
+
+Two guards, both verified to fail with the fix reverted: a unit test pinning K's divisor, and a
+sweep asserting every position earns at least one development point from a full season, which ties
+`STAT_MODEL`'s snap regimes to the progression divisor so a future position with an unusual snap
+budget trips the suite instead of shipping.
+
+**Still open, and deliberately not fixed:** K's `productionScore` handicap (1.87 vs 4.98–5.82)
+stands. If Stage 4 later decides kickers draft too poorly, that is the lever — but it is a design
+choice about realism, not a defect.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
