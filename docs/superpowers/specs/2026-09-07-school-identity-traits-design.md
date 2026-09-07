@@ -151,10 +151,15 @@ Placed in `autoProgress`, on `ON_FIELD_PHASES` only, after the season line is pu
 `isSidelined` check — the cost is lost snaps *and* the `overallDelta`, which is what makes it
 compound. Skipped when the player is already sidelined.
 
-**The draw happens only when the trait is present.** That keeps the change surgical: a career at an
-untraited school consumes exactly the RNG it consumes today and its seeded outcome is unchanged.
-Only `wideOpen` careers diverge. Any test asserting a specific seeded outcome at an untraited school
-therefore still holds.
+**The draw happens only when the trait is present.** That keeps the change surgical: a career that
+never attends a `wideOpen` school consumes exactly the RNG it consumes today, and its seeded outcome
+is unchanged. Only careers that sign with — or transfer into — a `wideOpen` school diverge.
+
+Note this is narrower than "untraited careers are unaffected". A `factory` or `developmental` school
+adds no draw of its own, but it *does* change snap counts, and `resolveAwards` skips its RNG draw
+when a production gate is unmet (`postseason.ts`: "no draw when gate unmet"). So a snap change can
+still shift the downstream stream by changing whether that draw happens. Seeded-outcome stability is
+claimed only for careers that touch no traited school at all.
 
 ## 5. Content contract
 
@@ -250,8 +255,10 @@ Beyond the contract tests the repo already runs:
   school and assert the difference.
 - **Cliff straddle test** for `developmental`: `developmentDelta` at snap counts either side of each
   `floor` boundary, traited and untraited.
-- **Ambient-roll isolation:** a `wideOpen` career and an untraited career on the same seed — assert
-  the untraited career's outcome is byte-identical to today's, proving the draw is conditional.
+- **Ambient-roll isolation:** run a career whose school carries no trait twice on the same seed —
+  once against the real trait table and once against a table with the trait stripped — and assert
+  the two final states are identical. This proves the draw is conditional without needing to pin a
+  literal baseline that would rot on the next content change.
 - **Signing-day safety:** `createCareer` on a state with `schoolId === ""` resolves to no trait.
 - **Distribution test** (§6.1), over realized offer sets across home states.
 - **Content signature test:** every member of the trait vocabulary has at least one gated event and
@@ -276,6 +283,10 @@ expected over-costing is then the only unknown in play.
 
 **Wave 3 — `developmental`.** A table row, two events, the `developmentDelta` multiplier, a
 measurement run. Last because it touches the dev floor, the surface with the worst cliff behaviour.
+
+**Each wave is its own implementation plan.** Wave 1's plan is the large one and is the only one
+written up front; waves 2 and 3 are planned after their predecessor's measurement lands, because
+what the measurement says about over- or under-costing is an input to how the next trait is sized.
 
 ## 10. Out of scope
 
