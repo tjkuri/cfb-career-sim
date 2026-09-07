@@ -453,12 +453,30 @@ DSKILL and K unmoved. Giving the random policy more ways to choose worse lowers 
 slightly, which is the expected direction. Slice mean overall EV stays inside [−0.5, 0.5] for all
 six (max 0.195).
 
-**Also checked and NOT worth doing: the tier-gate item.** The backlog reads "all six position
-slices' `tier` gates are `[1,2]`; none is `[3,4]` — blueblood careers draw a thinner pool." Measured,
-the pools are **33 events at tiers 1–2 against 32 at tiers 3–4** — one event, ~3%. There is no
-thinness problem. The real (unaddressed) version is that no content is *exclusive* to top-tier
-programs, so signing with a blueblood never surfaces its own beats. That is a content-richness
-opportunity, not a balance defect, and it needs authoring rather than re-gating.
+**The tier-gate item, reframed and then done.** The backlog reads "all six position slices' `tier`
+gates are `[1,2]`; none is `[3,4]` — blueblood careers draw a thinner pool." As a *pool-size*
+complaint that was near-meaningless: the pools measured **33 events at tiers 1–2 against 32 at
+tiers 3–4**, one event apart. But the real problem underneath was worse than the backlog said —
+signing with a top program only ever *subtracted* content, because nothing whatsoever fired
+*because* you played somewhere big.
+
+That is now closed. Three position-agnostic events gated `tier: [3, 4]` live in `universal.ts`:
+`blueblood-five-star` (the nation's top recruit lands in your position room),
+`blueblood-playoff-or-bust` (ten wins is a disappointing season here), and
+`blueblood-scouts-at-practice` (eleven clubs at Tuesday's practice). Pools are now **33/33/35/35**
+across tiers 1–4, so a blueblood career gains content instead of losing it.
+`events/index.test.ts` asserts some random event is exclusive to tiers 3–4, so the pile cannot
+drift back to gating only downward.
+
+They are universal rather than per-slice on purpose: the pressure of playing somewhere that expects
+titles is not specific to what you line up as, and a universal event must avoid position stats
+entirely — `passYards` means nothing to a kicker. They pay in `overall`, `character` and `moment`.
+
+**Scope caveat, measured:** only **12.3%** of careers ever reach a tier 3–4 school, which is spec
+§5's "blue-bloods are rare for everyone at the start" working as intended. These fire 0.055 times
+per career across the whole population but ~0.45 times for a career that actually gets there.
+Balance impact is nil (`allConfRate` moved ≤0.004, all noise). This is replay content for a rare
+path — do not expect to see it in the table.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
