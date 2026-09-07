@@ -311,8 +311,13 @@ combined deficit was ~9.5 draft stock, and it was structural, not statistical: *
 observed draft stock over 3000 careers was 86, against a round-1 threshold of 91.** Every other
 position hit the clamp at 100. No tuning lever in the section below could have moved it.
 
-**Decision: fix the development half, keep the production half.** Nobody designed "kickers do not
-develop" — a divisor tuned for one snap regime silently zeroed another. But a kicker genuinely does
+**Decision: fix the development half, keep the production half.** The mechanism was accidental — a
+divisor tuned for one snap regime silently zeroed another — but note the spec did have a view here,
+found only later: the position table marks K "draft ceiling capped by design," and §7 says "kickers
+rarely draft high, so the 'high pick' goal is inherently capped." That intent is preserved rather
+than overturned: K sits at `round1Rate` 0.002 against 0.010-0.033 for everyone else, its ceiling is
+96 against their 100, and the `productionScore` handicap below is deliberately kept. What the spec
+did not intend was the *absoluteness* — a structural zero no lever could reach. But a kicker genuinely does
 contribute fewer snaps, and `productionScore` docking them for it is a real signal worth keeping.
 Normalizing both would have made kickers draft unrealistically well.
 
@@ -376,6 +381,49 @@ trust it to land a rate.
 **This is the first genuine balance change of Stage 4** — unlike the K development fix and the
 award-stat ratchet, both of which were correctness work that barely moved the table. Anything
 re-baselining against the numbers above should start here.
+
+## What "balanced" means — target bands (read before pulling any lever)
+
+Stage 4 inherited ~40 backlog items and **one** stated numeric goal: spec §4's "median character
+above the band-2 gate of 55," which is already met. Everything else in the backlog is an
+*observation* ("rates run 0.49-0.80"), not a target. Tuning against observations is how you move
+numbers without knowing whether you improved anything — so the bands below exist to make "done"
+decidable.
+
+**Sourcing is marked, because it matters.** Spec-derived bands are design intent. Proposed bands
+are a Stage 4 judgment call and should be challenged rather than inherited.
+
+| metric | band | current | in band? | source |
+|---|---|---|---|---|
+| actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.889–0.946 (mean 0.928) | yes | proposed |
+| `round1Rate`, non-K | 0.01–0.05 | 0.010–0.033 | yes | proposed |
+| `round1Rate`, K | strictly below the non-K floor | 0.002 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
+| `bustedRate` | 0.005–0.03, never 0 | 0.007–0.021 | yes | **spec** §7 bust conditions + Stage 3d exit criterion |
+| `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.400–0.488 (1.22x) | yes | proposed, set by the threshold pass above |
+| median final `character` | above the band-2 gate | 56 vs gate 55 | yes | **spec** §4 |
+| `charUnder55Rate` | 0.35–0.50 | 0.448–0.478 | yes | proposed |
+| `avgSeasons` | 3.0–3.5 | 3.088–3.104 | yes | proposed (4 years eligibility, most declare early) |
+
+**Every metric is in band.** That is the finding, and it should redirect the stage: the numeric
+balance work is essentially done, and the remaining backlog value is in **content quality**, not
+tuning. Do not reach for the levers below without first naming which band a change is meant to move
+and why the current value is wrong.
+
+### Two reporting traps in the harness itself
+
+1. **`draftedRate` does not mean "was drafted."** It counts `status === "drafted"`, which includes
+   careers that went **undrafted** — it means "reached the draft rather than busting out." The
+   share actually picked is `draftedRate − undraftedRate`, currently ~0.928, not ~0.99. This is the
+   same shape as the `avgFinalCharacter` mean/median trap below, and it will mislead the same way.
+2. **`avgFinalCharacter` is a mean and the distribution is left-skewed** — see the measurement note
+   above. The median sits above it.
+
+### Choices measurably matter
+
+A sanity check worth keeping: always-take-the-first-option against the random policy, QB, n=1000 —
+`round1Rate` **0.000 vs 0.033**, final overall 70.96 vs 72.94, final character 50.32 vs 54.73. A
+player who never engages with the choices never goes round 1. That is spec §5's "all starting
+variety comes from home state, position, and the choices you make" actually holding.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
