@@ -612,13 +612,37 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
 
 ## Full Stage-4 backlog (ordered by value)
 
+**Reconciled at the end of the Stage 4 content pass.** Items completed during Stage 4 are marked
+**RESOLVED** with their commit and keep their original wording as history; one is marked
+**CHECKED** (measured, deliberately not done). Everything not so marked is genuinely open.
+
+**Start here in a fresh session:** read "What \"balanced\" means — target bands" first — every
+headline metric is in band except one recorded exception, so the remaining value is in **content**,
+not tuning. The six genuinely-open items below are, in my order of value:
+
+1. **The 57-school ladder is mechanically inert** — 57 schools exist and only `tier` does anything,
+   so choosing Alabama over Georgia is cosmetic. The largest untapped content surface in the game.
+2. **Injury exposure is uneven** (OSKILL 1.04 injuries/career vs DL 0.73) — decide whether that is
+   flavour or a defect. Now measurable per position via `avgInjuries`/`injuredRate`.
+3. **Milestone overall-EV vs. the development cap** — three guaranteed fixed events per season
+   against `devCap: 3`.
+4. **Character drift by slice** — the Stage 3d figures are probe values; re-measure before acting.
+5. **Only six stats are read by anything** — the other authored stats are decorative.
+6. **`bustedRate` soft-washout attribution** — stale Stage 3d numbers; `washoutRate` now measures
+   this directly.
+
+
+
 ### From this stage (3d), highest value first
 
-- **Engine traps** — see the dedicated section above; these are correctness bugs, address before
+- **RESOLVED (Stage 3e): engine traps.** All four closed; see the dedicated section above, which
+  keeps the original descriptions as history. Were: correctness bugs to address before
   more content is authored against these paths.
-- **Contract blind spot** — see the dedicated section above; the fix is a `positions.test.ts`
-  assertion, not a content change.
-- **Award-stat one-way ratchet still live in qb/oskill/dl/dskill** — no outcome in those four
+- **RESOLVED (Stage 3e + Stage 4).** The `positions.test.ts` assertion landed in 3e with a gap
+  list; Stage 4 emptied the list with content. See the dedicated section above.
+- **RESOLVED (Stage 4, `3d6d518`): award-stat one-way ratchet.** All six slices now cost award
+  stat on a losing branch and `KNOWN_NO_AWARD_STAT_DOWNSIDE` is deleted. Original finding: no
+  outcome in those four
   slices ever reduces the bucket's award stat (20 free `probability: 1` floors total; DL worst,
   highest `allConfRate` at 0.796). Decide once for all six slices, not piecemeal. (That `allConfRate`
   figure is the Stage 3d probe value; the current measured `allConfRate` for every slice is in the
@@ -641,7 +665,9 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
   before treating `bustedRate` as a single-cause metric. (These two figures are the Stage 3d probe
   values; the current measured `bustedRate` for every slice, including OSKILL and K, is in the
   "Per-position balance table" above.)
-- **All-Conference rates run 0.49–0.80 across positions** (DL 0.796, OL 0.73, QB 0.65). Award
+- **RESOLVED (Stage 4, `010dc2a`, re-placed in `c4687dc`): All-Conference spread.** Thresholds
+  equalized at ~27.5% of seasons cleared; the spread is now 0.403–0.487 (1.21x). See the dedicated
+  section above. Original finding: rates ran 0.49–0.80 across positions (DL 0.796, OL 0.73, QB 0.65). Award
   thresholds sit at ~1 season of baseline production and the position pile's stat grants land on
   top — stat-axis inflation that `round1Rate` is blind to (an award is worth only 3 draft stock,
   once). (These are the Stage 3d probe values; the current measured `allConfRate` per slice is in
@@ -651,11 +677,19 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
   all cost nothing (same mechanism as the `recoveryPhases: 1` trap above). All three are now fixed
   and `schema.ts` rejects `phases: 1` suspensions outright — see the parallel entry in the "Engine
   traps" section above (item 3, CLOSED).
-- **Agency spread**: DL/DSKILL/K give a real choice in 9 of 10 events; QB/OSKILL in 6 of 10.
-- **All six position slices' `tier` gates are `[1,2]`; none is `[3,4]`** — blueblood careers draw a
-  smaller conditional pool. Two bowl-game beats are gated to the programs least likely to reach a
-  good bowl, which reads as backwards.
-- **Near-duplicate beats across slices** (all-star bowl invite ×3, special-teams conscription ×3,
+- **RESOLVED (Stage 4, `155fd08`): agency spread.** Five second options authored; every slice now
+  holds at most 2 single-option events, enforced by `positions.test.ts`. Original finding:
+  DL/DSKILL/K gave a real choice in 9 of 10 events; QB/OSKILL in 6 of 10.
+- **RESOLVED (Stage 4, `68c7215`): tier gating only ever pointed downward.** Three `tier: [3,4]`
+  events added; pools are now 33/33/35/35 across tiers 1-4. See the dedicated section above — the
+  pool-size framing was near-meaningless (33 vs 32) but the underlying problem was real. Original
+  finding: all six slices gate `[1,2]`, none `[3,4]`, and two bowl beats were gated to the programs
+  least likely to reach a good bowl.
+- **CHECKED, deliberately not done (Stage 4): near-duplicate beats.** A player sees exactly one
+  position slice per playthrough, so cross-slice similarity is invisible except on replay, and
+  "bowl" recurring is structural — every slice owes 2 postseason events and postseason is bowl
+  season. Low value; revisit only if replay-facing. Original finding: (all-star bowl invite ×3,
+  special-teams conscription ×3,
   and all 12 offseason position events share one shape). Position gating means no single player
   sees the duplicates, but a content audit would still find them repetitive.
 - **DOC DRIFT**: spec §4 says band-1 character cost is "−5 to −7"; the shipped content (and the
