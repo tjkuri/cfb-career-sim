@@ -158,7 +158,9 @@ export const OSKILL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "They indulge you once, it doesn't hit, and it's straight back to bubble screens.",
           effects: [
-            { kind: "stat", stat: "scrimmageYards", amount: 10 },
+            // Below the guaranteed +35 that staying professional banks: pushing
+            // for more has to be able to leave you behind the safe option.
+            { kind: "stat", stat: "scrimmageYards", amount: -25 },
             { kind: "character", amount: -1 },
           ],
         },

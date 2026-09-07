@@ -215,7 +215,11 @@ export const DSKILL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "He finally gets over the top of you late, and it's the one route all game he wins.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [
+            { kind: "overall", timing: "immediate", amount: -1 },
+            // Shadowing the No. 1 all game means fewer balls near you to make plays on.
+            { kind: "stat", stat: "tackles", amount: -4 },
+          ],
         },
       },
       {

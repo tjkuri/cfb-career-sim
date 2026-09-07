@@ -207,9 +207,47 @@ this branch authors no content, only the `permanent` → `immediate` rename touc
 pass without change — that is why only four of the original six names remain on the list. The list
 can only shrink: removing a
 still-listed slice from `KNOWN_NO_AWARD_STAT_DOWNSIDE` without giving it real downside content is
-what the test is designed to catch. **Stage 4 must, for each of QB, OSKILL, DL, and DSKILL, either
-add downside content and drop it from the list, or explicitly ratify the gap and leave it named** —
-this handoff does not decide that for you.
+what the test is designed to catch. **Decided in Stage 4: all four were fixed with content and the list was deleted.** See
+"Resolved: the award-stat ratchet is closed in all six slices" below for what changed, and for the
+measurement showing the fix is a correctness change rather than a balance lever.
+
+## Resolved: the award-stat ratchet is closed in all six slices (Stage 4)
+
+`KNOWN_NO_AWARD_STAT_DOWNSIDE` is **gone**, and the assertion in `positions.test.ts` now demands
+award-stat downside from all six slices unconditionally. The shrink-only list reached zero, which
+was its designed end state.
+
+The defect was never that the gambles lacked losing branches — they had them. It was that failure
+was always paid in a *different currency*. QB's `third-and-long/go-deep` failing cost 1 overall and
+an interception; `passYards` did not move. OSKILL's `push-for-more` floored at **+10** against the
+**+35** that playing it safe banked outright, so gambling could not put you behind. The award stat
+was monotonically non-decreasing on every path in four of six slices.
+
+One gamble per slice now carries a real award-stat cost on its losing branch, sized at roughly 30%
+of that option's win. The existing losing prose already justified each one, so no descriptions
+changed:
+
+| slice | event / option | win | added to the losing branch |
+|---|---|---|---|
+| QB | `third-and-long/go-deep` | +180 `passYards` | `passYards −60` |
+| OSKILL | `bubble-screen-diet/push-for-more` | +110 | `+10` → **`−25`** (below the safe option's +35) |
+| DL | `double-teamed-all-day/beat-the-double` | +2 `sacks` | `sacks −1` |
+| DSKILL | `travel-with-the-no-1/lock-him-down` | +13 `tackles` | `tackles −4` |
+
+These are `stat` effects only, so the overall-EV budget (≤ +1.0 per event, slice mean in
+[−0.5, 0.5]) and the signature-grant cap are untouched.
+
+**Measured effect: essentially none, and that is the finding.** At n=500, seed `balance`:
+`allConfRate` moved QB −0.004, OSKILL −0.006, DSKILL −0.002, DL +0.002 (noise). The cause is
+firing rate — the four target events fire **0.177–0.573 times per career** against ~21 content
+events per career, so after option choice and failure probability the QB change is worth about
+**−7.7 `passYards` per career** against ~4,000. This is a correctness fix to the risk shape, **not
+a balance lever**, and it should not be mistaken for one.
+
+**What that rules out:** the All-Conference spread (0.374–0.630) is **not** caused by the ratchet.
+Closing it moved nothing. The spread lives in award-threshold placement and the per-position
+production model — see the backlog item on threshold placement, which is now the only remaining
+candidate rather than one of two.
 
 ## Per-position balance table
 

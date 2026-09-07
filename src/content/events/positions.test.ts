@@ -38,14 +38,6 @@ const SIGNATURE: Record<Position, { stat: string; amount: number }> = {
   K: { stat: "fieldGoals", amount: 3 },
 };
 
-// Four slices have no outcome anywhere that reduces their award-bearing stat —
-// 20 free probability: 1 floors across the pile. Whether to fix or ratify that
-// is a Stage 4 content decision; see STAGE4-HANDOFF.md §"The content contract's
-// blind spot". This list may only shrink: the assertion below fails both when a
-// listed slice gains downside (remove it from the list) and when an unlisted
-// slice loses it.
-const KNOWN_NO_AWARD_STAT_DOWNSIDE = new Set<Position>(["QB", "OSKILL", "DL", "DSKILL"]);
-
 function outcomes(ev: GameEvent): Outcome[] {
   return ev.options.flatMap((o) =>
     [o.positiveOutcome, o.negativeOutcome].filter((oc): oc is Outcome => oc !== undefined),
@@ -175,18 +167,12 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
         .filter((e) => e.kind === "stat" && e.stat === sig.stat && e.amount < 0)
         .map(() => ev.id),
     );
-    const hasDownside = reducers.length > 0;
-
-    if (KNOWN_NO_AWARD_STAT_DOWNSIDE.has(position)) {
-      expect(
-        hasDownside,
-        `${position} now reduces ${sig.stat} in ${reducers.join(", ")} — remove it from KNOWN_NO_AWARD_STAT_DOWNSIDE`,
-      ).toBe(false);
-    } else {
-      expect(
-        hasDownside,
-        `${position} has no outcome that reduces ${sig.stat}, so its award stat is a one-way ratchet`,
-      ).toBe(true);
-    }
+    // Every slice must be able to LOSE award-stat ground, not merely gain less
+    // of it. Without this, a slice's award stat is a one-way ratchet and its
+    // gambles risk nothing that the award actually depends on.
+    expect(
+      reducers.length > 0,
+      `${position} has no outcome that reduces ${sig.stat}, so its award stat is a one-way ratchet`,
+    ).toBe(true);
   });
 });

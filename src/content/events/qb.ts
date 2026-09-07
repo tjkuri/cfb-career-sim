@@ -220,6 +220,10 @@ export const QB_EVENTS: GameEvent[] = [
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
             { kind: "stat", stat: "ints", amount: 1 },
+            // The drive dies here, and forcing it downfield all night leaves you
+            // under your own baseline — the gamble has to be able to cost yards,
+            // not merely fail to add them.
+            { kind: "stat", stat: "passYards", amount: -60 },
           ],
         },
       },

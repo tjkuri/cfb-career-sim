@@ -210,7 +210,11 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Two bodies is two bodies, and you spend the game on the ground instead of in the backfield.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [
+            { kind: "overall", timing: "immediate", amount: -1 },
+            // Sacks is a low-count stat; 1 is the smallest unit that means anything.
+            { kind: "stat", stat: "sacks", amount: -1 },
+          ],
         },
       },
       {
