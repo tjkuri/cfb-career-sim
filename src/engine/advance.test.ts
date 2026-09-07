@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { createCareer } from "./create-career";
 import { advance, getDecision, developmentDelta, enterOffseason } from "./advance";
+import { STAT_MODEL } from "./simulate";
+import { ALL_POSITIONS } from "./types";
+
+// nonconf, conference, postseason — the three phases that produce snaps.
+const ON_FIELD_PHASES_PER_SEASON = 3;
 import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
 import type { Setup } from "./types";
@@ -137,10 +142,37 @@ describe("advance / getDecision", () => {
 describe("development curve", () => {
   it("developmentDelta scales with snaps and caps out", () => {
     const cfg = { snapsPerDevPoint: 180, devCap: 3 };
-    expect(developmentDelta(0, cfg)).toBe(0);
-    expect(developmentDelta(200, cfg)).toBe(1);
-    expect(developmentDelta(400, cfg)).toBe(2);
-    expect(developmentDelta(2000, cfg)).toBe(3); // capped
+    expect(developmentDelta(0, cfg, "QB")).toBe(0);
+    expect(developmentDelta(200, cfg, "QB")).toBe(1);
+    expect(developmentDelta(400, cfg, "QB")).toBe(2);
+    expect(developmentDelta(2000, cfg, "QB")).toBe(3); // capped
+  });
+
+  it("scales the snap requirement to the position's own workload", () => {
+    // A kicker plays ~125 snaps a season; a field player plays ~340. A single
+    // absolute divisor of 180 floors K's development to zero for its whole
+    // career, which caps its draft stock below the round-1 threshold outright.
+    // Development measures playing time relative to a FULL WORKLOAD for the
+    // position, so K carries its own, proportionally smaller, divisor.
+    const cfg = CONTENT.progression;
+    expect(developmentDelta(125, cfg, "QB"), "field players keep the 180 divisor").toBe(0);
+    expect(developmentDelta(125, cfg, "K"), "a full kicker season must be worth development").toBeGreaterThan(0);
+  });
+
+  it("earns every position at least one development point for a full season", () => {
+    // The contract between STAT_MODEL's snap regimes and progression's divisor.
+    // K broke it silently: 40-70 snaps/phase against a flat 180 divisor floored
+    // its development to zero for whole careers, which held its draft stock
+    // under the round-1 threshold no tuning lever could reach. Any future
+    // position with an unusual snap regime trips this instead of shipping.
+    for (const position of ALL_POSITIONS) {
+      const model = STAT_MODEL[position];
+      const fullSeason = ((model.snapsMin + model.snapsMax) / 2) * ON_FIELD_PHASES_PER_SEASON;
+      expect(
+        developmentDelta(fullSeason, CONTENT.progression, position),
+        `${position} earns no development from a full ${Math.round(fullSeason)}-snap season`,
+      ).toBeGreaterThanOrEqual(1);
+    }
   });
 
   it("a returning player's overall rises across seasons from playing", () => {
@@ -155,7 +187,7 @@ describe("development curve", () => {
     s.overall = 70;
     s.phase = "offseason";
     s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
-    const expected = 70 + developmentDelta(400, CONTENT.progression); // floor(400/180)=2 -> 72
+    const expected = 70 + developmentDelta(400, CONTENT.progression, setup.position); // floor(400/180)=2 -> 72
     enterOffseason(s, CONTENT, createRng("hub-dev-rng"));
     expect(s.overall).toBe(expected);
   });

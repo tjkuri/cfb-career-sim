@@ -20,6 +20,11 @@ export interface PostseasonConfig {
 }
 export interface ProgressionConfig {
   snapsPerDevPoint: number;
+  // Per-position override of snapsPerDevPoint. Development measures playing
+  // time relative to a full workload for the position, and positions do not
+  // share a snap regime: a kicker's full season is roughly a third of a field
+  // player's. Absent an entry, snapsPerDevPoint applies.
+  snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
   devCap: number;
   washoutOverallFloor: number;
   washoutSnapFloor: number;
@@ -134,6 +139,12 @@ export function validateContent(bundle: ContentBundle): string[] {
 
   const prog = bundle.progression;
   if (prog.snapsPerDevPoint < 1) errors.push("progression.snapsPerDevPoint must be >= 1");
+  for (const [pos, v] of Object.entries(prog.snapsPerDevPointByPosition ?? {})) {
+    if (!knownPositions.has(pos))
+      errors.push(`progression.snapsPerDevPointByPosition: unknown position "${pos}"`);
+    if (v !== undefined && v < 1)
+      errors.push(`progression.snapsPerDevPointByPosition.${pos} must be >= 1`);
+  }
   if (prog.devCap < 0) errors.push("progression.devCap must be >= 0");
   if (prog.washoutConsecutiveSeasons < 1) errors.push("progression.washoutConsecutiveSeasons must be >= 1");
   if (prog.washoutOverallFloor < 0) errors.push("progression.washoutOverallFloor must be >= 0");

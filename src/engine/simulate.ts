@@ -5,7 +5,7 @@ import { isSidelined } from "./effects";
 const ON_FIELD = new Set(["nonconf", "conference", "postseason"]);
 
 // Per-position stat yields per 100 snaps at overall 70, scaled by overall.
-const STAT_MODEL: Record<Position, { snapsMin: number; snapsMax: number; per100: Record<string, number> }> = {
+export const STAT_MODEL: Record<Position, { snapsMin: number; snapsMax: number; per100: Record<string, number> }> = {
   QB: { snapsMin: 120, snapsMax: 200, per100: { passYards: 260, passTds: 2, ints: 1 } },
   OSKILL: { snapsMin: 120, snapsMax: 200, per100: { scrimmageYards: 180, totalTds: 2, receptions: 8 } },
   OL: { snapsMin: 150, snapsMax: 220, per100: { pancakes: 6, sacksAllowed: 2 } },

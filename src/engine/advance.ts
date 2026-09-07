@@ -1,4 +1,4 @@
-import type { GameEvent, GameState } from "./types";
+import type { GameEvent, GameState, Position } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
@@ -163,8 +163,19 @@ function advancePhase(s: GameState): void {
   s.phaseAbs += 1;
 }
 
-export function developmentDelta(seasonSnaps: number, cfg: { snapsPerDevPoint: number; devCap: number }): number {
-  return Math.min(cfg.devCap, Math.floor(seasonSnaps / cfg.snapsPerDevPoint));
+export function developmentDelta(
+  seasonSnaps: number,
+  cfg: {
+    snapsPerDevPoint: number;
+    devCap: number;
+    snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
+  },
+  position: Position,
+): number {
+  // Position is required, not optional: a silent fallback is how K's
+  // development sat at zero for entire careers without anything noticing.
+  const perPoint = cfg.snapsPerDevPointByPosition?.[position] ?? cfg.snapsPerDevPoint;
+  return Math.min(cfg.devCap, Math.floor(seasonSnaps / perPoint));
 }
 
 // The two soft-washout endings. Named so the balance harness can tell this
@@ -182,7 +193,9 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   // Develop from last season's playing time before advancing eligibility.
   const lastSeason = s.seasons[s.seasons.length - 1];
   if (lastSeason) {
-    s.overall = clampOverall(s.overall + developmentDelta(lastSeason.snaps, content.progression));
+    s.overall = clampOverall(
+      s.overall + developmentDelta(lastSeason.snaps, content.progression, s.setup.position),
+    );
   }
 
   // Soft-washout: collapsed overall, or buried (near-zero snaps) for consecutive seasons.

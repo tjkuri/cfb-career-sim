@@ -31,6 +31,11 @@ export const POSTSEASON: PostseasonConfig = {
 
 export const PROGRESSION: ProgressionConfig = {
   snapsPerDevPoint: 180,
+  // A kicker's full season is ~165 snaps against a field player's ~480 (see
+  // STAT_MODEL in engine/simulate.ts), i.e. ~34% of the workload. Against the
+  // flat 180 divisor, floor() zeroed K's development for entire careers and
+  // capped its draft stock below the round-1 threshold outright. 180 x 0.34.
+  snapsPerDevPointByPosition: { K: 62 },
   devCap: 3,
   washoutOverallFloor: 45,
   washoutSnapFloor: 60,
