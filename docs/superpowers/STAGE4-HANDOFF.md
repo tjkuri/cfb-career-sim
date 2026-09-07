@@ -260,18 +260,18 @@ hardcoded `position: "QB"`** (`src/sim/balance.ts:35` at the time). **Stage 3e c
 old one entirely and is the first per-position balance data this project has ever had behind a
 single committed command.
 
-Measured by `npm run balance -- 500 random all`. K's row was re-measured after the Stage 4
-development fix below; the other five are unchanged from Stage 3e close, to the digit. Reproducible — the seed prefix
+Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 award-threshold
+change below. Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
 is fixed at `balance`, so this command reproduces these rows exactly. The Stage 3d per-position
 figures this replaces came from throwaway probe scripts.
 
 | position | draftedRate | bustedRate | washoutRate | round1Rate | allConfRate | avgSeasons | avgInjuries | injuredRate | avgFinalCharacter | charUnder55Rate | avgFinalOverall |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| QB | 0.990 | 0.010 | 0 | 0.034 | 0.422 | 3.104 | 0.748 | 0.514 | 53.27 | 0.454 | 73.368 |
-| OSKILL | 0.984 | 0.016 | 0.004 | 0.014 | 0.388 | 3.090 | 1.044 | 0.632 | 53.416 | 0.450 | 72.234 |
-| OL | 0.988 | 0.012 | 0 | 0.010 | 0.586 | 3.082 | 0.790 | 0.524 | 52.358 | 0.490 | 73.280 |
-| DL | 0.990 | 0.010 | 0 | 0.010 | 0.628 | 3.098 | 0.770 | 0.518 | 53.482 | 0.446 | 72.928 |
-| DSKILL | 0.988 | 0.012 | 0 | 0.014 | 0.376 | 3.106 | 0.892 | 0.570 | 53.014 | 0.470 | 72.702 |
+| QB | 0.990 | 0.010 | 0 | 0.030 | 0.436 | 3.102 | 0.746 | 0.512 | 53.142 | 0.460 | 73.348 |
+| OSKILL | 0.986 | 0.014 | 0.004 | 0.014 | 0.488 | 3.088 | 1.036 | 0.628 | 53.548 | 0.450 | 72.108 |
+| OL | 0.992 | 0.008 | 0 | 0.012 | 0.444 | 3.090 | 0.780 | 0.510 | 52.578 | 0.476 | 73.294 |
+| DL | 0.990 | 0.010 | 0 | 0.010 | 0.488 | 3.088 | 0.758 | 0.516 | 53.416 | 0.448 | 72.786 |
+| DSKILL | 0.990 | 0.010 | 0 | 0.014 | 0.450 | 3.104 | 0.882 | 0.564 | 52.978 | 0.478 | 72.778 |
 | K | 0.982 | 0.018 | 0.006 | 0.002 | 0.400 | 3.100 | 0.930 | 0.594 | 53.924 | 0.448 | 72.402 |
 
 At n=500 this is a starting read, not a verdict — re-run at higher n (the controller has separately
@@ -282,9 +282,10 @@ soft-washout path being a K/OSKILL-specific mechanism, not a general one — and
 slice — rarest `round1Rate` (0.002), highest `undraftedRate`, joint-highest `bustedRate` (0.018) —
 but no longer a structural outlier. It previously read `round1Rate = 0` with `avgFinalOverall`
 68.242; see "K's development was structurally zeroed" below for why that was a defect rather than
-a property, and what changed. OL and DL carry the highest `allConfRate` (0.586, 0.628) against QB/OSKILL/DSKILL/K
-clustered in the 0.376–0.422 range, echoing the backlog item below about award-threshold
-placement.
+a property, and what changed. `allConfRate` now sits in a 0.400–0.488 band (1.22x) after the
+award-threshold pass below; before it, OL and DL carried 0.586 and 0.628 against a 0.374–0.422
+cluster (1.68x). Among the five positions sharing `prob: 0.7` the band is 0.436–0.488; K's 0.400
+is its deliberate `prob: 0.6`.
 
 ## K's development was structurally zeroed (found and fixed in Stage 4)
 
@@ -331,6 +332,50 @@ budget trips the suite instead of shipping.
 **Still open, and deliberately not fixed:** K's `productionScore` handicap (1.87 vs 4.98–5.82)
 stands. If Stage 4 later decides kickers draft too poorly, that is the lever — but it is a design
 choice about realism, not a defect.
+
+## All-Conference thresholds equalized (Stage 4)
+
+Ruling out the award-stat ratchet left threshold placement as the cause of the All-Conference
+spread, and it was: the thresholds had been placed ad hoc against each position's production model,
+not against a common target.
+
+| pos | stat | old | seasons cleared | new | seasons cleared |
+|---|---|---|---|---|---|
+| QB | `passYards` | 1300 | 24.7% | **1282** | 27.5% |
+| OSKILL | `scrimmageYards` | 900 | 18.4% | **844** | 27.5% |
+| OL | `pancakes` | 30 | 40.8% | **34** | 26.0% |
+| DL | `sacks` | 7 | 42.8% | **8** | 27.5% |
+| DSKILL | `tackles` | 60 | 23.0% | **58** | 27.4% |
+| K | `fieldGoals` | 15 | 27.8% | 15 *(unchanged)* | 27.8% |
+
+**K's threshold was already correct** — it cleared 27.8% of seasons, dead on target. Its lower
+career rate comes entirely from `prob: 0.6` against everyone else's `0.7`, an authored difference
+rather than a misplacement, so it was left alone.
+
+**Why equalize:** position is a setup choice here, not a fact about the player, and awards feed
+draft stock directly (`awards.length * 3` in `draft.ts`). An OL clearing 40.8% of seasons against
+an OSKILL clearing 18.4% made the position picker a hidden draft-stock lever.
+
+**The DL constraint is worth knowing before re-tuning.** `sacks` is a low-count stat: threshold 7
+clears 42.8% of seasons and 8 clears 27.5%, with nothing in between. DL cannot be placed anywhere
+else, so it anchors the target — the other five were fitted to it, not the reverse. `pancakes` and
+`fieldGoals` are coarse for the same reason; only `passYards`, `scrimmageYards` and `tackles` tune
+finely.
+
+**Measured, n=500, seed `balance`:** `allConfRate` went from a 0.374–0.630 band (**1.68x**) to
+0.400–0.488 (**1.22x**). Among the five positions sharing `prob: 0.7` it is 0.436–0.488 (1.12x),
+and K's 0.400 is the intended gap. Per-position moves: OL −0.142, DL −0.142, OSKILL +0.106,
+DSKILL +0.076, QB +0.018, K unchanged.
+
+**A caveat on projections.** These thresholds were chosen from a model of
+`1 - (1 - crossRate * prob) ^ 3.1 seasons`, which ran **0.03–0.05 high** for QB and DSKILL. It
+assumes seasons are independent; they are not — a strong player clears repeatedly and a weak one
+never — and partial seasons dilute the average. Use it to pick a direction, then measure. Do not
+trust it to land a rate.
+
+**This is the first genuine balance change of Stage 4** — unlike the K development fix and the
+award-stat ratchet, both of which were correctness work that barely moved the table. Anything
+re-baselining against the numbers above should start here.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
