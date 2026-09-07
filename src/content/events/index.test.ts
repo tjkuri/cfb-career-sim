@@ -36,6 +36,18 @@ describe("events barrel", () => {
     }
   });
 
+  it("gates content to top-tier programs, not only to small ones", () => {
+    // Every tier gate in the position pile is [1,2], so signing with a
+    // blueblood only ever SUBTRACTED content: tiers 1-2 saw 33 random events
+    // against tiers 3-4's 32, and nothing fired because you play somewhere big.
+    const tierGated = EVENTS.filter((e) => e.kind === "random" && e.conditions?.tier);
+    const topOnly = tierGated.filter((e) => e.conditions!.tier!.every((t) => t >= 3));
+    expect(
+      topOnly.length,
+      "no random event is exclusive to tier 3-4 schools, so a blueblood career has no beats of its own",
+    ).toBeGreaterThan(0);
+  });
+
   it("has no duplicate event ids across slices", () => {
     const ids = Object.values(SLICES).flatMap((s) => s.map((e) => e.id));
     expect(new Set(ids).size).toBe(ids.length);
