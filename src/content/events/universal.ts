@@ -201,4 +201,130 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
       },
     ],
   },
+  // ——— Postseason depth. This phase's shared pool was 4 against offseason's 9
+  // and conference's 8, two of those four gated, and it measured the worst
+  // repeat rate of any phase (24%). It is also the phase a player remembers —
+  // bowls, awards, the end of a season — so repeats read loudest here. ———
+  {
+    id: "postseason-coaching-carousel",
+    kind: "random",
+    phase: "postseason",
+    weight: 3,
+    title: "The Carousel Comes for Your Staff",
+    description: "Your head coach takes the job at a bigger place three days into bowl prep. The building empties out in an afternoon, and everyone in your position room is on the phone with somebody.",
+    options: [
+      {
+        id: "hold-the-room",
+        label: "Hold the room together",
+        probability: 0.65,
+        positiveOutcome: {
+          description: "You get the guys to finish the season for each other instead of for a staff that already left. The interim notices, and so does everyone above him.",
+          effects: [
+            { kind: "character", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "Half the room is already gone in their heads. You spend bowl week playing captain to nobody.",
+          effects: [{ kind: "character", amount: -1 }],
+        },
+      },
+      {
+        id: "make-your-calls",
+        label: "Get on the phone yourself",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "You find out exactly what you are worth on the open market, and it is more than you thought.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+        },
+        negativeOutcome: {
+          description: "Word gets back before the bowl does. You practice bowl week with a staff that has stopped investing in you.",
+          effects: [
+            { kind: "character", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -1 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    id: "postseason-awards-banquet",
+    kind: "random",
+    phase: "postseason",
+    weight: 3,
+    conditions: { requiresPlaying: true },
+    title: "The Team Banquet",
+    description: "They hand out the team awards in a hotel ballroom with bad chicken. The one you thought was yours goes to somebody else, and the room claps while the camera stays on your table.",
+    options: [
+      {
+        id: "first-to-stand",
+        label: "Be the first one on your feet",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "You are up before he is out of his chair. Nobody forgets who did that, least of all him.",
+          effects: [
+            { kind: "character", amount: 2 },
+            { kind: "moment", item: "First to his feet when a teammate took the award", icon: "trophy" },
+          ],
+        },
+        negativeOutcome: {
+          description: "You mean it, and it still lands as a guy performing being fine with it.",
+          effects: [],
+        },
+      },
+      {
+        id: "let-it-show",
+        label: "Let it show",
+        probability: 0.4,
+        positiveOutcome: {
+          description: "The staff reads the look on your face as a promise about next season, and they like it.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+        },
+        negativeOutcome: {
+          description: "Somebody films you not clapping. It is on the internet before the dessert plates are cleared.",
+          effects: [{ kind: "character", amount: -3 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "postseason-bowl-practice-window",
+    kind: "random",
+    phase: "postseason",
+    weight: 3,
+    conditions: { requiresPlaying: true },
+    title: "Fifteen Extra Practices",
+    description: "Bowl prep buys the program three weeks of practice it would not otherwise get. For a lot of players it is the most development they see all year — if they treat it that way.",
+    options: [
+      {
+        id: "treat-it-like-spring",
+        label: "Treat it like a second spring ball",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "You come out of bowl prep noticeably further along than you went in.",
+          effects: [
+            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "snaps", amount: 25 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You are running on an empty tank by December and it shows in the game itself.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
+      {
+        id: "get-healthy",
+        label: "Use the three weeks to get healthy",
+        probability: 0.8,
+        positiveOutcome: {
+          description: "You show up to the bowl game feeling better than you have since September.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+        },
+        negativeOutcome: {
+          description: "You come back rusty, and rusty in December looks a lot like slow.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
+    ],
+  },
 ];

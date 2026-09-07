@@ -260,19 +260,19 @@ hardcoded `position: "QB"`** (`src/sim/balance.ts:35` at the time). **Stage 3e c
 old one entirely and is the first per-position balance data this project has ever had behind a
 single committed command.
 
-Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 agency pass
-below (which supersedes the award-threshold measurement). Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
+Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 postseason-depth
+pass below, which is the most recent content change and supersedes every earlier measurement here. Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
 is fixed at `balance`, so this command reproduces these rows exactly. The Stage 3d per-position
 figures this replaces came from throwaway probe scripts.
 
 | position | draftedRate | bustedRate | washoutRate | round1Rate | allConfRate | avgSeasons | avgInjuries | injuredRate | avgFinalCharacter | charUnder55Rate | avgFinalOverall |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| QB | 0.990 | 0.010 | 0 | 0.024 | 0.422 | 3.102 | 0.746 | 0.512 | 53.112 | 0.464 | 73.172 |
-| OSKILL | 0.986 | 0.014 | 0.004 | 0.016 | 0.480 | 3.088 | 1.046 | 0.636 | 54.048 | 0.444 | 71.972 |
-| OL | 0.992 | 0.008 | 0 | 0.012 | 0.434 | 3.088 | 0.784 | 0.512 | 52.632 | 0.476 | 73.172 |
-| DL | 0.990 | 0.010 | 0 | 0.010 | 0.488 | 3.088 | 0.758 | 0.516 | 53.416 | 0.448 | 72.786 |
-| DSKILL | 0.990 | 0.010 | 0 | 0.014 | 0.450 | 3.104 | 0.882 | 0.564 | 52.978 | 0.478 | 72.778 |
-| K | 0.982 | 0.018 | 0.006 | 0.002 | 0.400 | 3.100 | 0.930 | 0.594 | 53.924 | 0.448 | 72.402 |
+| QB | 0.996 | 0.004 | 0 | 0.030 | 0.448 | 3.110 | 0.764 | 0.520 | 54.934 | 0.414 | 73.182 |
+| OSKILL | 0.980 | 0.020 | 0.002 | 0.016 | 0.468 | 3.096 | 0.970 | 0.588 | 55.022 | 0.390 | 72.318 |
+| OL | 0.986 | 0.014 | 0 | 0.016 | 0.456 | 3.082 | 0.788 | 0.520 | 53.768 | 0.448 | 73.310 |
+| DL | 0.994 | 0.006 | 0 | 0.010 | 0.486 | 3.098 | 0.734 | 0.510 | 54.564 | 0.446 | 72.956 |
+| DSKILL | 0.994 | 0.006 | 0 | 0.016 | 0.472 | 3.116 | 0.890 | 0.568 | 54.982 | 0.416 | 73.374 |
+| K | 0.988 | 0.012 | 0.002 | 0.008 | 0.402 | 3.102 | 0.918 | 0.594 | 55.544 | 0.384 | 72.894 |
 
 At n=500 this is a starting read, not a verdict — re-run at higher n (the controller has separately
 measured 1500/position) before leaning hard on any single cell, especially the rarer-event columns
@@ -346,11 +346,11 @@ not against a common target.
 
 | pos | stat | old | seasons cleared | new | seasons cleared |
 |---|---|---|---|---|---|
-| QB | `passYards` | 1300 | 24.7% | **1282** | 27.5% |
-| OSKILL | `scrimmageYards` | 900 | 18.4% | **844** | 27.5% |
-| OL | `pancakes` | 30 | 40.8% | **34** | 26.0% |
+| QB | `passYards` | 1300 | 24.7% | **1240** | 27.6% |
+| OSKILL | `scrimmageYards` | 900 | 18.4% | **821** | 27.5% |
+| OL | `pancakes` | 30 | 40.8% | **33** | 27.5% |
 | DL | `sacks` | 7 | 42.8% | **8** | 27.5% |
-| DSKILL | `tackles` | 60 | 23.0% | **58** | 27.4% |
+| DSKILL | `tackles` | 60 | 23.0% | **57** | 27.8% |
 | K | `fieldGoals` | 15 | 27.8% | 15 *(unchanged)* | 27.8% |
 
 **K's threshold was already correct** — it cleared 27.8% of seasons, dead on target. Its lower
@@ -367,8 +367,9 @@ else, so it anchors the target — the other five were fitted to it, not the rev
 `fieldGoals` are coarse for the same reason; only `passYards`, `scrimmageYards` and `tackles` tune
 finely.
 
-**Measured, n=500, seed `balance`:** `allConfRate` went from a 0.374–0.630 band (**1.68x**) to
-0.400–0.488 (**1.22x**). Among the five positions sharing `prob: 0.7` it is 0.436–0.488 (1.12x),
+**Re-placed once since**, by the postseason-depth pass below — the values in this table are the
+current ones, not the originals. **Measured, n=500, seed `balance`:** `allConfRate` went from a
+0.374–0.630 band (**1.68x**) to 0.402–0.486 (**1.21x**). Among the five positions sharing `prob: 0.7` it is 0.436–0.488 (1.12x),
 and K's 0.400 is the intended gap. Per-position moves: OL −0.142, DL −0.142, OSKILL +0.106,
 DSKILL +0.076, QB +0.018, K unchanged.
 
@@ -477,6 +478,54 @@ entirely — `passYards` means nothing to a kicker. They pay in `overall`, `char
 per career across the whole population but ~0.45 times for a career that actually gets there.
 Balance impact is nil (`allConfRate` moved ≤0.004, all noise). This is replay content for a rare
 path — do not expect to see it in the table.
+
+## Postseason depth (Stage 4)
+
+Measured where a *player* actually experiences thinness rather than counting files. A career draws
+~3.1 random events per phase across its seasons, and the repeat rate — the same card twice in one
+career — was:
+
+| phase | shared pool | repeat rate |
+|---|---|---|
+| conference | 8 | 16% |
+| nonconf | 5 | 18–19% |
+| offseason | 9 | 20–21% |
+| **postseason** | **4** | **24%** |
+
+Postseason was thinnest and repeated worst, and it is the phase a player remembers — bowls, awards,
+the end of a season. Worse, two of its four shared events were gated (`tier: [3,4]` and
+`maxCharacter: 55`), so a healthy tier-1/2 player effectively drew from **2 shared + 2 position**
+events.
+
+Three shared postseason events added to `universal.ts`: `postseason-coaching-carousel` (your head
+coach leaves three days into bowl prep), `postseason-awards-banquet` (the award you expected goes to
+a teammate, on camera), `postseason-bowl-practice-window` (bowl prep's fifteen extra practices —
+develop or get healthy). Postseason repeat rate is now **16%**, matching conference.
+`events/index.test.ts` holds every phase's shared pool to at least 5.
+
+**A note on aim, because the first attempt was wrong.** The shared postseason pool is
+character-*negative* by design (`offfield-bowl-curfew` −2.23, `offfield-ghost-media` −2.40,
+`offfield-exit-interview` −1.78) — that is how the phase applies pressure. The three events as
+first written were overall-positive *and* character-positive (one option at +1.10 overall EV), which
+diluted both: `avgFinalOverall` rose 0.25–0.78 and character rose 1–2 points across every slice.
+They were re-tuned to `ovrEV ≤ 0.50`, max option ≤ 0.65, `charEV ≤ 0`. **When adding to a shared
+pool, measure the pool's existing EV and match it** — the position slices have this discipline
+enforced by `positions.test.ts`, and universal events do not.
+
+**Thresholds had to be re-placed, and this is the expected coupling.** Only one random event fires
+per phase, so a deeper shared pool means proportionally fewer *position-event* draws and therefore
+less award stat: QB's share of postseason draws fell from ~50% to ~29%, and `allConfRate` dropped
+below its band. The band is the goal and thresholds are the knob, so they were re-measured against
+the new baseline: QB 1282→**1240**, OSKILL 844→**821**, OL 34→**33**, DSKILL 58→**57**. DL (8) and
+K (15) stayed — both are low-count stats whose next value down overshoots badly (DL 7 clears 40.7%
+against 8's 25.5%).
+
+Verified at **n=3000** per position, every band holds: `allConfRate` 0.412–0.498 (1.21x),
+`bustedRate` 0.0063–0.0150, `round1Rate` 0.019–0.031 non-K with K at 0.0057, `charUnder55Rate`
+0.371–0.458, `avgSeasons` 3.06–3.07.
+
+**Any future content change that shifts the postseason draw will move `allConfRate` the same way.**
+Re-measure and re-place the thresholds rather than reshaping the content.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 

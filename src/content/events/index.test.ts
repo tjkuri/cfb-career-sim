@@ -48,6 +48,24 @@ describe("events barrel", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("keeps every phase's shared random pool deep enough to avoid obvious repeats", () => {
+    // Shared = not position-gated, so every playthrough draws from it. A career
+    // draws ~3.1 random events per phase across its seasons, so a shallow
+    // shared pool shows up directly as the same card twice. Postseason sat at 4
+    // against offseason's 9 and conference's 8, and measured the worst repeat
+    // rate of any phase (24% vs 16%) — the most dramatic phase repeating most.
+    const PHASES = ["offseason", "nonconf", "conference", "postseason"] as const;
+    for (const phase of PHASES) {
+      const shared = EVENTS.filter(
+        (e) => e.kind === "random" && e.phase === phase && !e.conditions?.position,
+      );
+      expect(
+        shared.length,
+        `${phase} has only ${shared.length} shared random events: ${shared.map((e) => e.id).join(", ")}`,
+      ).toBeGreaterThanOrEqual(5);
+    }
+  });
+
   it("has no duplicate event ids across slices", () => {
     const ids = Object.values(SLICES).flatMap((s) => s.map((e) => e.id));
     expect(new Set(ids).size).toBe(ids.length);

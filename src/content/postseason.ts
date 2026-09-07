@@ -19,7 +19,12 @@ export const POSTSEASON: PostseasonConfig = {
     { id: "heisman", bands: [{ min: 92, prob: 0.5 }, { min: 88, prob: 0.25 }, { min: 84, prob: 0.08 }], teamSuccessBoost: 0.5 },
     { id: "allAmerican", bands: [{ min: 85, prob: 0.6 }, { min: 80, prob: 0.3 }, { min: 75, prob: 0.1 }], teamSuccessBoost: 0.3 },
   ],
-  // All-Conference thresholds are placed at ~27.5% of seasons cleared, so the
+  // All-Conference thresholds are placed at ~27.5% of seasons cleared. Re-placed
+  // once already, when the postseason depth pass added shared events: only one
+  // random event fires per phase, so a deeper shared pool means fewer
+  // position-event draws and less award stat. The band is the goal and these
+  // are the knob — re-measure and re-place them after any content change that
+  // shifts the postseason draw., so the
   // award is worth the same wherever a player chooses to line up: position is a
   // setup choice here, and awards feed draft stock (awards.length * 3 in
   // draft.ts). They were previously placed ad hoc, which left OL and DL clearing
@@ -27,11 +32,11 @@ export const POSTSEASON: PostseasonConfig = {
   // already sat at 27.8% and is deliberately left alone; its lower rate comes
   // from prob 0.6, an authored difference rather than a misplacement.
   production: [
-    { id: "allConference", position: "QB", stat: "passYards", threshold: 1282, prob: 0.7 },
-    { id: "allConference", position: "OSKILL", stat: "scrimmageYards", threshold: 844, prob: 0.7 },
-    { id: "allConference", position: "OL", stat: "pancakes", threshold: 34, prob: 0.7 },
+    { id: "allConference", position: "QB", stat: "passYards", threshold: 1240, prob: 0.7 },
+    { id: "allConference", position: "OSKILL", stat: "scrimmageYards", threshold: 821, prob: 0.7 },
+    { id: "allConference", position: "OL", stat: "pancakes", threshold: 33, prob: 0.7 },
     { id: "allConference", position: "DL", stat: "sacks", threshold: 8, prob: 0.7 },
-    { id: "allConference", position: "DSKILL", stat: "tackles", threshold: 58, prob: 0.7 },
+    { id: "allConference", position: "DSKILL", stat: "tackles", threshold: 57, prob: 0.7 },
     { id: "allConference", position: "K", stat: "fieldGoals", threshold: 15, prob: 0.6 },
   ],
 };
