@@ -260,19 +260,20 @@ hardcoded `position: "QB"`** (`src/sim/balance.ts:35` at the time). **Stage 3e c
 old one entirely and is the first per-position balance data this project has ever had behind a
 single committed command.
 
-Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 postseason-depth
-pass below, which is the most recent content change and supersedes every earlier measurement here. Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
+Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 thriving-depth
+pass below, which is the most recent content change and supersedes every earlier measurement here.
+**n=500 is too small to judge `bustedRate`** — use n=3000 for that column. Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
 is fixed at `balance`, so this command reproduces these rows exactly. The Stage 3d per-position
 figures this replaces came from throwaway probe scripts.
 
 | position | draftedRate | bustedRate | washoutRate | round1Rate | allConfRate | avgSeasons | avgInjuries | injuredRate | avgFinalCharacter | charUnder55Rate | avgFinalOverall |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| QB | 0.996 | 0.004 | 0 | 0.030 | 0.448 | 3.110 | 0.764 | 0.520 | 54.934 | 0.414 | 73.182 |
-| OSKILL | 0.980 | 0.020 | 0.002 | 0.016 | 0.468 | 3.096 | 0.970 | 0.588 | 55.022 | 0.390 | 72.318 |
-| OL | 0.986 | 0.014 | 0 | 0.016 | 0.456 | 3.082 | 0.788 | 0.520 | 53.768 | 0.448 | 73.310 |
-| DL | 0.994 | 0.006 | 0 | 0.010 | 0.486 | 3.098 | 0.734 | 0.510 | 54.564 | 0.446 | 72.956 |
-| DSKILL | 0.994 | 0.006 | 0 | 0.016 | 0.472 | 3.116 | 0.890 | 0.568 | 54.982 | 0.416 | 73.374 |
-| K | 0.988 | 0.012 | 0.002 | 0.008 | 0.402 | 3.102 | 0.918 | 0.594 | 55.544 | 0.384 | 72.894 |
+| QB | 0.998 | 0.002 | 0 | 0.024 | 0.450 | 3.112 | 0.758 | 0.522 | 54.296 | 0.420 | 73.164 |
+| OSKILL | 0.994 | 0.006 | 0 | 0.018 | 0.472 | 3.098 | 0.908 | 0.566 | 55.030 | 0.416 | 72.380 |
+| OL | 0.992 | 0.008 | 0 | 0.014 | 0.466 | 3.100 | 0.730 | 0.520 | 54.038 | 0.442 | 73.792 |
+| DL | 0.996 | 0.004 | 0 | 0.012 | 0.424 | 3.116 | 0.760 | 0.522 | 53.954 | 0.466 | 72.870 |
+| DSKILL | 0.998 | 0.002 | 0 | 0.014 | 0.456 | 3.108 | 0.846 | 0.554 | 54.678 | 0.430 | 73.240 |
+| K | 0.996 | 0.004 | 0.002 | 0.006 | 0.416 | 3.112 | 0.866 | 0.550 | 54.960 | 0.436 | 72.942 |
 
 At n=500 this is a starting read, not a verdict — re-run at higher n (the controller has separately
 measured 1500/position) before leaning hard on any single cell, especially the rarer-event columns
@@ -399,13 +400,13 @@ are a Stage 4 judgment call and should be challenged rather than inherited.
 | actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.889–0.946 (mean 0.928) | yes | proposed |
 | `round1Rate`, non-K | 0.01–0.05 | 0.010–0.033 | yes | proposed |
 | `round1Rate`, K | strictly below the non-K floor | 0.002 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
-| `bustedRate` | 0.005–0.03, never 0 | 0.008–0.018 | yes | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"** — washing out is meant to take some doing, which the current rate satisfies |
+| `bustedRate` | 0.005–0.03, never 0 | 0.0043–0.0120 (n=3000) | **OL marginally under** | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"**. The 0.005 floor is a Stage 4 judgment call, not spec. OL sits at 0.0043 — 13 careers in 3000, two under the floor — after the thriving-depth pass. The spec-derived requirement (reachable, never 0) holds, and the owner intent argues for a low rate, so this was **recorded rather than tuned away**. Revisit the floor before treating it as a defect. |
 | `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.400–0.488 (1.22x) | yes | proposed, set by the threshold pass above |
 | median final `character` | above the band-2 gate | 56 vs gate 55 | yes | **spec** §4 |
 | `charUnder55Rate` | 0.35–0.50 | 0.448–0.478 | yes | proposed |
 | `avgSeasons` | 3.0–3.5 | 3.088–3.104 | yes | proposed (4 years eligibility, most declare early) |
 
-**Every metric is in band.** That is the finding, and it should redirect the stage: the numeric
+**Every metric was in band when these were written**, and all but one still is (see the `bustedRate` row). That was the finding, and it should redirect the stage: the numeric
 balance work is essentially done, and the remaining backlog value is in **content quality**, not
 tuning. Do not reach for the levers below without first naming which band a change is meant to move
 and why the current value is wrong.
@@ -526,6 +527,49 @@ Verified at **n=3000** per position, every band holds: `allConfRate` 0.412–0.4
 
 **Any future content change that shifts the postseason draw will move `allConfRate` the same way.**
 Re-measure and re-place the thresholds rather than reshaping the content.
+
+## The thriving player saw the least content (Stage 4)
+
+The sharpest content finding of the stage, and it was backwards. Most of the shared pool is gated
+behind *being in trouble* — `maxCharacter`, `maxOverall`, `requiresActiveInjury`. Measured, the
+eligible offseason pool by player state:
+
+| player state | eligible offseason events |
+|---|---|
+| freshman, thriving | **4** |
+| thriving (char 70, ovr 70, tier 2, JR) | **5** |
+| blueblood, thriving | 6 |
+| struggling (char 40, ovr 50) | **8** |
+
+**The better your career went, the more repetitive it got.** A player having a good season drew the
+same four or five offseason cards every year, while a player in trouble got the deep pool.
+
+Five events in a new `season-life.ts` — the ordinary rhythm of a season going fine, carrying no
+trouble-gate: `offseason-captain-vote`, `offseason-going-home`, `nonconf-watch-list`,
+`nonconf-blowout-sideline`, `conference-primetime`. They live in their own file rather than
+`universal.ts` (already 330 lines and 8 events, and holding core mechanics like the workout gamble
+and the knee injury) because they are a distinct responsibility. `events/index.test.ts` now asserts
+every phase offers a thriving player at least 5 shared events.
+
+Repeat rates: offseason **20% → 15%**, nonconf 17% → 14%, conference 16% → 13%, postseason 15%.
+
+### The EV lesson, one level deeper than the postseason pass
+
+The postseason pass taught "match the pool's EV." This pass got that wrong *again* in a subtler
+way: I matched the **whole ungated pool** (`charEV` −0.22) when the pool these events actually join
+is the **thriving-visible shared** subset, which is far harsher — offseason −1.50, nonconf −2.35,
+conference −0.58. The new events were gentler than everything around them, so they diluted the
+character pressure: `charUnder55Rate` fell to 0.333–0.407, out the bottom of its band, and
+`bustedRate` followed.
+
+**Match the EV of the events a given player will actually draw alongside yours — not the phase's
+whole roster.** Gated events do not dilute anything for the player who cannot see them. After
+re-deepening the character costs, `charUnder55Rate` is back to 0.396–0.461.
+
+Verified at n=3000 per position: `allConfRate` 0.403–0.487, `charUnder55Rate` 0.396–0.461,
+`round1Rate` 0.017–0.029 non-K with K at 0.0050, `bustedRate` 0.0043–0.0120 (see the band table for
+the OL exception). No threshold re-placement was needed this time — `allConfRate` stayed in band
+because two of the five new events are offseason, where stat effects are forbidden outright.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 

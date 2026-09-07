@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { EVENTS } from "./index";
 import { RECRUITING_EVENTS } from "./recruiting";
 import { UNIVERSAL_EVENTS } from "./universal";
+import { SEASON_LIFE_EVENTS } from "./season-life";
 import { OFFFIELD_EVENTS } from "./offfield";
 import { QB_EVENTS } from "./qb";
 import { OSKILL_EVENTS } from "./oskill";
@@ -15,7 +16,7 @@ import { MILESTONE_EVENTS } from "./milestones";
 // Guards against a slice file being authored but never wired into the barrel —
 // its whole slice would vanish with every other test still green.
 const SLICES = {
-  RECRUITING_EVENTS, UNIVERSAL_EVENTS, OFFFIELD_EVENTS, QB_EVENTS, OSKILL_EVENTS, OL_EVENTS,
+  RECRUITING_EVENTS, UNIVERSAL_EVENTS, SEASON_LIFE_EVENTS, OFFFIELD_EVENTS, QB_EVENTS, OSKILL_EVENTS, OL_EVENTS,
   DL_EVENTS, DSKILL_EVENTS, K_EVENTS, BUST_EVENTS, MILESTONE_EVENTS,
 };
 
@@ -62,6 +63,30 @@ describe("events barrel", () => {
       expect(
         shared.length,
         `${phase} has only ${shared.length} shared random events: ${shared.map((e) => e.id).join(", ")}`,
+      ).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it("gives a thriving player a deep enough shared pool in every phase", () => {
+    // Most of the shared pool is gated behind being in trouble — low character,
+    // low overall, injured. Measured, a thriving player (char 70, ovr 70,
+    // healthy, tier 2) could draw only 4-5 offseason events against a
+    // struggling player's 8, so the better a career went the more repetitive it
+    // got. This counts the shared events with no trouble-gate at all.
+    const PHASES = ["offseason", "nonconf", "conference", "postseason"] as const;
+    for (const phase of PHASES) {
+      const thriving = EVENTS.filter((e) => {
+        if (e.kind !== "random" || e.phase !== phase || e.conditions?.position) return false;
+        const c = e.conditions;
+        if (!c) return true;
+        return (
+          c.maxCharacter === undefined && c.maxOverall === undefined &&
+          !c.requiresActiveInjury && !c.requiresInjury && !c.tier
+        );
+      });
+      expect(
+        thriving.length,
+        `${phase} offers a thriving player only ${thriving.length} shared events: ${thriving.map((e) => e.id).join(", ")}`,
       ).toBeGreaterThanOrEqual(5);
     }
   });
