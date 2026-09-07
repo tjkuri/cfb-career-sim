@@ -163,6 +163,19 @@ export const OL_EVENTS: GameEvent[] = [
           ],
         },
       },
+      {
+        id: "put-the-phone-away",
+        label: "Put the phone away and finish the game",
+        probability: 0.85,
+        positiveOutcome: {
+          description: "You never see the clip until the bus ride, and your assignment grade is clean all four quarters.",
+          effects: [{ kind: "stat", stat: "pancakes", amount: 2 }],
+        },
+        negativeOutcome: {
+          description: "You play the rest of the way flat — nothing bad on the tape, nothing good either.",
+          effects: [{ kind: "stat", stat: "pancakes", amount: -1 }],
+        },
+      },
     ],
   },
   {

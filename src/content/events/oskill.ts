@@ -59,6 +59,19 @@ export const OSKILL_EVENTS: GameEvent[] = [
           effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
+      {
+        id: "stick-to-your-program",
+        label: "Laugh it off and stick to your program",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "You keep doing what got you here, and you report to camp in the same shape you left in.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+        },
+        negativeOutcome: {
+          description: "The staff reads it as ducking a challenge, and it colors how they talk about you.",
+          effects: [{ kind: "character", amount: -2 }],
+        },
+      },
     ],
   },
   {
@@ -232,6 +245,25 @@ export const OSKILL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "The booth finds a blade of grass under the ball. Overturned.",
           effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
+      {
+        id: "wave-it-off",
+        label: "Wave it incomplete before the booth does",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "You tell the official you trapped it. It buys you something that does not show up in the box score.",
+          effects: [
+            { kind: "stat", stat: "scrimmageYards", amount: 10 },
+            { kind: "character", amount: 2 },
+          ],
+        },
+        negativeOutcome: {
+          description: "Replay would have given it to you. You take it off the board yourself.",
+          effects: [
+            { kind: "stat", stat: "scrimmageYards", amount: -20 },
+            { kind: "overall", timing: "immediate", amount: -1 },
+          ],
         },
       },
     ],

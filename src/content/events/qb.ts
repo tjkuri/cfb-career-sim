@@ -147,6 +147,22 @@ export const QB_EVENTS: GameEvent[] = [
           ],
         },
       },
+      {
+        id: "run-whats-called",
+        label: "Just run what's signaled",
+        probability: 0.8,
+        positiveOutcome: {
+          description: "You execute the call as drawn and the drive stays on schedule.",
+          effects: [{ kind: "stat", stat: "passYards", amount: 70 }],
+        },
+        negativeOutcome: {
+          description: "The look was wrong and nobody had the authority to fix it. Three-and-out.",
+          effects: [
+            { kind: "stat", stat: "passYards", amount: -30 },
+            { kind: "overall", timing: "immediate", amount: -1 },
+          ],
+        },
+      },
     ],
   },
   {
@@ -300,6 +316,22 @@ export const QB_EVENTS: GameEvent[] = [
           effects: [
             { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "stat", stat: "ints", amount: 1 },
+          ],
+        },
+      },
+      {
+        id: "play-for-overtime",
+        label: "Take the checkdowns and play for overtime",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "You move the chains methodically, kick it, and steal a possession in overtime.",
+          effects: [{ kind: "stat", stat: "passYards", amount: 90 }],
+        },
+        negativeOutcome: {
+          description: "The clock beats you at the twenty-eight with the field goal unit still on the sideline.",
+          effects: [
+            { kind: "stat", stat: "passYards", amount: -30 },
+            { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
       },

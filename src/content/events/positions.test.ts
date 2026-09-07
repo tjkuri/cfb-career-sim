@@ -151,6 +151,18 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
     expect(mean, `${position} mean overall EV is ${mean.toFixed(2)}, outside [-0.5, 0.5]`).toBeGreaterThanOrEqual(-0.5);
   });
 
+  it("gives the player a real decision in most of its events", () => {
+    // A single-option event is a card you click through: the gamble still
+    // resolves, but you never chose anything. Spec §8 calls the risk/gamble
+    // fork "the core replay driver", and a fork with one prong is not one.
+    // DL, DSKILL and K each carry exactly 1; this holds the pile to that shape.
+    const clickThrough = events.filter((ev) => ev.options.length === 1);
+    expect(
+      clickThrough.length,
+      `${position} has ${clickThrough.length} single-option events (max 2): ${clickThrough.map((e) => e.id).join(", ")}`,
+    ).toBeLessThanOrEqual(2);
+  });
+
   it("holds at most two signature-sized stat grants", () => {
     const sig = SIGNATURE[position];
     const big = events.filter((ev) =>

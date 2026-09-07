@@ -260,16 +260,16 @@ hardcoded `position: "QB"`** (`src/sim/balance.ts:35` at the time). **Stage 3e c
 old one entirely and is the first per-position balance data this project has ever had behind a
 single committed command.
 
-Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 award-threshold
-change below. Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
+Measured by `npm run balance -- 500 random all`, re-run in full after the Stage 4 agency pass
+below (which supersedes the award-threshold measurement). Reproducible — the seed prefix is fixed at `balance`. Reproducible — the seed prefix
 is fixed at `balance`, so this command reproduces these rows exactly. The Stage 3d per-position
 figures this replaces came from throwaway probe scripts.
 
 | position | draftedRate | bustedRate | washoutRate | round1Rate | allConfRate | avgSeasons | avgInjuries | injuredRate | avgFinalCharacter | charUnder55Rate | avgFinalOverall |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| QB | 0.990 | 0.010 | 0 | 0.030 | 0.436 | 3.102 | 0.746 | 0.512 | 53.142 | 0.460 | 73.348 |
-| OSKILL | 0.986 | 0.014 | 0.004 | 0.014 | 0.488 | 3.088 | 1.036 | 0.628 | 53.548 | 0.450 | 72.108 |
-| OL | 0.992 | 0.008 | 0 | 0.012 | 0.444 | 3.090 | 0.780 | 0.510 | 52.578 | 0.476 | 73.294 |
+| QB | 0.990 | 0.010 | 0 | 0.024 | 0.422 | 3.102 | 0.746 | 0.512 | 53.112 | 0.464 | 73.172 |
+| OSKILL | 0.986 | 0.014 | 0.004 | 0.016 | 0.480 | 3.088 | 1.046 | 0.636 | 54.048 | 0.444 | 71.972 |
+| OL | 0.992 | 0.008 | 0 | 0.012 | 0.434 | 3.088 | 0.784 | 0.512 | 52.632 | 0.476 | 73.172 |
 | DL | 0.990 | 0.010 | 0 | 0.010 | 0.488 | 3.088 | 0.758 | 0.516 | 53.416 | 0.448 | 72.786 |
 | DSKILL | 0.990 | 0.010 | 0 | 0.014 | 0.450 | 3.104 | 0.882 | 0.564 | 52.978 | 0.478 | 72.778 |
 | K | 0.982 | 0.018 | 0.006 | 0.002 | 0.400 | 3.100 | 0.930 | 0.594 | 53.924 | 0.448 | 72.402 |
@@ -398,7 +398,7 @@ are a Stage 4 judgment call and should be challenged rather than inherited.
 | actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.889–0.946 (mean 0.928) | yes | proposed |
 | `round1Rate`, non-K | 0.01–0.05 | 0.010–0.033 | yes | proposed |
 | `round1Rate`, K | strictly below the non-K floor | 0.002 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
-| `bustedRate` | 0.005–0.03, never 0 | 0.007–0.021 | yes | **spec** §7 bust conditions + Stage 3d exit criterion |
+| `bustedRate` | 0.005–0.03, never 0 | 0.008–0.018 | yes | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"** — washing out is meant to take some doing, which the current rate satisfies |
 | `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.400–0.488 (1.22x) | yes | proposed, set by the threshold pass above |
 | median final `character` | above the band-2 gate | 56 vs gate 55 | yes | **spec** §4 |
 | `charUnder55Rate` | 0.35–0.50 | 0.448–0.478 | yes | proposed |
@@ -424,6 +424,41 @@ A sanity check worth keeping: always-take-the-first-option against the random po
 `round1Rate` **0.000 vs 0.033**, final overall 70.96 vs 72.94, final character 50.32 vs 54.73. A
 player who never engages with the choices never goes round 1. That is spec §5's "all starting
 variety comes from home state, position, and the choices you make" actually holding.
+
+## Agency spread closed (Stage 4)
+
+QB and OSKILL each carried **4 of 10** single-option events against DL/DSKILL/K's 1 — cards the
+player clicks through with no decision. The gamble still resolved, so there was outcome variance,
+but spec §8 calls the risk/gamble fork "the core replay driver", and a fork with one prong is not
+one. QB is the flagship position and had the worst agency in the pile.
+
+Five second options were authored, each the conservative alternative so the choice is real:
+
+| slice | event | new option |
+|---|---|---|
+| QB | `audible-authority` | `run-whats-called` — defer to the signalled play; less ceiling, no interception risk |
+| QB | `two-minute-drill` | `play-for-overtime` — take the checkdowns and kick it |
+| OSKILL | `the-toe-tap` | `wave-it-off` — call it incomplete yourself; trades yards for character |
+| OSKILL | `weight-room-bet` | `stick-to-your-program` — decline the bet; smaller gain, reads as ducking |
+| OL | `pancake-highlight` | `put-the-phone-away` — ignore the clip and finish the game |
+
+Single-option counts are now QB 4→2, OSKILL 4→2, OL 3→2, and `positions.test.ts` holds every slice
+to **at most 2**. Each new losing branch costs award stat where the phase allows it, consistent with
+the ratchet work above; `weight-room-bet` is an offseason event so it pays in `overall` and
+`character` only, per the offseason `stat`/`snaps` rule.
+
+**Measured, n=500, seed `balance`:** small and in-band. `allConfRate` QB 0.436→0.422, OSKILL
+0.488→0.480, OL 0.444→0.434; `avgFinalOverall` down 0.1–0.2 for the three touched slices; DL,
+DSKILL and K unmoved. Giving the random policy more ways to choose worse lowers the averages
+slightly, which is the expected direction. Slice mean overall EV stays inside [−0.5, 0.5] for all
+six (max 0.195).
+
+**Also checked and NOT worth doing: the tier-gate item.** The backlog reads "all six position
+slices' `tier` gates are `[1,2]`; none is `[3,4]` — blueblood careers draw a thinner pool." Measured,
+the pools are **33 events at tiers 1–2 against 32 at tiers 3–4** — one event, ~3%. There is no
+thinness problem. The real (unaddressed) version is that no content is *exclusive* to top-tier
+programs, so signing with a blueblood never surfaces its own beats. That is a content-richness
+opportunity, not a balance defect, and it needs authoring rather than re-gating.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
