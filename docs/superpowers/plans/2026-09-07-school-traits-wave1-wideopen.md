@@ -1336,7 +1336,11 @@ Target: `allConfRate` 0.40–0.55 with spread ≤ 1.25x across positions. Re-run
 - [ ] **Step 4: Verify the seeded-stability claim**
 
 Run: `npm run play -- demo`
-Expected: plays to a terminal state and prints JSON. If this career's school is untraited at every season, its result should be unchanged from before the wave; check `git stash`-free by comparing against `git show HEAD~8:` output only if the seed's career is genuinely untraited. If it attends a `wideOpen` school, a changed result is correct and expected.
+Expected: plays to a terminal state and prints JSON.
+
+To check the claim properly, add a temporary assertion rather than diffing against an old commit — run a career, compute `traitsExperienced(s)` from `src/sim/trait-probe.ts`, and confirm that for a seed whose set is empty the final `overall`, `character`, `seasons.length` and `draftResult` match a run against a trait-stripped bundle (`{ ...CONTENT, schools: CONTENT.schools.map((x) => ({ ...x, trait: undefined })) }`). That is the same comparison as the ambient-roll isolation test in Task 3, extended to a whole career, and it does not depend on commit distance.
+
+If the seed's career does attend a `wideOpen` school, a changed result is correct and expected — pick a different seed to run the check.
 
 - [ ] **Step 5: Update `docs/superpowers/STAGE4-HANDOFF.md`**
 
