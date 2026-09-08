@@ -24,11 +24,11 @@ cost**, so the tradeoff lives inside one school rather than in bookkeeping acros
 school carries at most one trait; most carry none, and untraited is a legitimate identity — the
 ordinary program.
 
-| trait | benefit | cost | offer hint |
-|---|---|---|---|
-| `wideOpen` | snap bonus in the first season at the school | ambient injury exposure — no one behind you | "the two-deep is thin" |
-| `factory` | draft-stock bonus — scouts know the address | snap penalty in the first season; the room is stacked | "sends more guys to Sundays than anywhere else" |
-| `developmental` | better development per snap | snap penalty across the first two seasons | "takes three-stars and turns them into draft picks" |
+| trait | benefit | cost | scope of both | offer hint |
+|---|---|---|---|---|
+| `wideOpen` | snap bonus | ambient injury exposure — no one behind you | ongoing while enrolled | "the two-deep is thin" |
+| `factory` | draft-stock bonus, accruing per season at the school | snap penalty, front-loaded; the room is stacked | tenure-shaped, opposite directions | "sends more guys to Sundays than anywhere else" |
+| `developmental` | better development per snap | snap penalty across the first two seasons | tenure-shaped, opposite directions | "takes three-stars and turns them into draft picks" |
 
 ### 2.1 Why the costs sit where they do
 
@@ -44,15 +44,45 @@ A trait whose benefit is `overall` and whose cost is flat on one channel **under
 structurally**, not merely by accident of magnitude. So `developmental` pays on the same axis its
 benefit rides — time. Better development per snap, fewer snaps to spend it on.
 
-`factory` is the mirror and is expected to **over-cost**: its cost compounds through the
+`factory` is the mirror and was expected to **over-cost**: its cost compounds through the
 `floor(snaps / 180)` cliff while its benefit is flat *and* clamped by `deriveDraftStock`'s
-`[0, 100]` ceiling for exactly the elite careers it is meant to reward. Size the bonus expecting
-this; verify by measurement.
+`[0, 100]` ceiling for exactly the elite careers it is meant to reward.
+
+That prediction is real but softer than it first looks, because **the draft bonus leaks past the
+draft**. `deriveDraftStock` feeds `eligibleTiers`, which `transfer.ts:24` uses to decide whether to
+offer a move up a tier at all. So the bonus buys earlier access to better programs — a compounding
+second-order benefit that partially offsets the predicted over-cost. Size the bonus expecting a
+smaller net penalty than the first-order analysis suggests; verify by measurement.
 
 `wideOpen` is symmetric — snaps up drives development up, injury drives lost snaps and `overall`
 down — and is the most likely of the three to land near neutral.
 
-### 2.2 Zero-mean is a measurement, never an inference
+### 2.2 Benefit and cost must share a temporal scope
+
+**A trait's benefit and its cost must be collectable only together.** If one is one-shot and the
+other ongoing, some transfer pattern collects the cheap half and skips the other, and the trait
+stops being a decision.
+
+This is not hypothetical. `generateTransferOffers` emits a lateral offer — same tier, different
+school — **every offseason, unconditionally**, already carrying `lateralSnapModifier: 1.1`. The
+game offers the hop annually and mildly rewards it before this pass adds anything.
+
+Applying the rule caught a defect in two of the three traits as first drafted:
+
+- **`wideOpen`** had a first-season snap bonus against permanent injury exposure: over ~3.1 seasons,
+  ~3 phases of benefit against ~9.3 of cost. The optimal line was hopping between `wideOpen` schools
+  for a fresh bonus each year while never accruing tenure cost — "sign here, then leave." Both sides
+  are now **ongoing while enrolled**, which is also the narratively true reading: a thin two-deep
+  means you keep playing *and* keep getting hurt, as long as you are there.
+- **`factory`** had the mirror defect — a one-shot snap cost against a draft bonus that applied
+  whenever stock was computed. The optimal line was transferring *into* a factory for the senior
+  year: pay one season of penalty, collect the full bonus at declaration. The benefit is now
+  **accrued per season at the school** (capped), which is also more plausible: scouts know the guy
+  who has been in the building three years, not the transfer who arrived in June.
+- **`developmental`** already satisfied the rule — pay early in snaps, collect for as long as you
+  stay — and is unchanged.
+
+### 2.3 Zero-mean is a measurement, never an inference
 
 The pipeline is not linear. `developmentDelta` floors, `productionScore` clamps at
 `min(15, snaps/200)`, `deriveDraftStock` clamps `[0, 100]`, and washout is a threshold test. Last
@@ -63,7 +93,7 @@ stage's K defect is the proof: a ~34% snap difference became a **total zero** th
 trait is balanced must come from measured outputs at n=3000/position, never from arithmetic on the
 inputs.
 
-### 2.3 Hidden from the player, never from the suite
+### 2.4 Hidden from the player, never from the suite
 
 The mechanics are not surfaced. Discovery is through replay. Each trait gets a hint in its offer
 label that suggests without stating ("sends more guys to Sundays than anywhere else"), so a player
@@ -91,8 +121,10 @@ All magnitudes live content-side in a new `SCHOOL_TRAITS` table, not in the engi
 
 ```ts
 export interface SchoolTraitConfig {
-  wideOpen: { firstSeasonSnapModifier: number; injuryProbPerPhase: number; injuryTypes: string[] };
-  factory: { firstSeasonSnapModifier: number; draftStockBonus: number };
+  // Both sides ongoing while enrolled (2.2).
+  wideOpen: { snapModifier: number; injuryProbPerPhase: number; injuryTypes: string[] };
+  // Cost front-loaded, benefit accrued per season at the school and capped (2.2).
+  factory: { firstSeasonSnapModifier: number; draftStockBonusPerSeason: number; draftStockBonusCap: number };
   developmental: { snapsPerDevPointMultiplier: number; earlySnapModifier: number; earlySeasons: number };
 }
 ```
@@ -113,9 +145,13 @@ roll in `simulatePhaseProduction`.
 and `enterOffseason` resets it to 1 every year; a trait writing there would make three writers
 contend for one mutable, and the reset would silently eat a multi-season effect.
 
-Keyed on **seasons at the current school** — `state.seasons.filter(s => s.schoolId === current).length`
-— not on `classYear`. A junior who transfers into a `wideOpen` program is new to that depth chart
-and should get the effect; a redshirt sophomore in year three at a `factory` should not.
+Where a trait's snap effect is tenure-shaped, it is keyed on **seasons at the current school** —
+`state.seasons.filter(s => s.schoolId === current).length` — not on `classYear`. A junior who
+transfers into a `factory` is new to that depth chart and should pay the front-loaded cost; a
+redshirt sophomore in year three there should not.
+
+`wideOpen`'s snap bonus is **not** tenure-keyed — per 2.2 it applies for as long as the player is
+enrolled, matching its ongoing cost.
 
 This adds no RNG draw, so it perturbs no seeded stream.
 
@@ -141,6 +177,11 @@ content.
 resolve an empty/unknown school to no trait rather than throwing — otherwise `createCareer` breaks
 before the player has a school at all.
 
+**The bonus deliberately leaks past the draft**, and this is a designed consequence rather than an
+accepted leak: `eligibleTiers` gates `transfer.ts:24`'s move-up offer, so a `factory` player reaches
+better programs sooner. See 2.1 — it offsets part of the trait's expected over-cost, and the probe
+must be read with that in mind.
+
 ### 4.4 Injury — the ambient roll
 
 `wideOpen`'s cost is the one new mechanism in this pass: an ambient injury roll, which the engine
@@ -148,8 +189,29 @@ has never had (injuries have only ever come from event effects).
 
 Placed in `autoProgress`, on `ON_FIELD_PHASES` only, after the season line is pushed and **before**
 `simulatePhaseProduction`, so a fired injury sidelines the player for that phase via the existing
-`isSidelined` check — the cost is lost snaps *and* the `overallDelta`, which is what makes it
-compound. Skipped when the player is already sidelined.
+`isSidelined` check. Skipped when the player is already sidelined.
+
+**One fire costs ~1.67 on-field phases, not one.** `applyEffect` sets `remainingPhases` to the
+injury's `recoveryPhases`; `isSidelined` is `remainingPhases > 0`; `tickPhaseStart` decrements
+*then* heals. So the applying phase and the following one are both lost — and `validateContent`
+enforces `recoveryPhases >= 2`, so this is a floor, not a tuning choice. The on-field cost depends
+on which phase fires, because the offseason absorbs a tick for free:
+
+| fires in | on-field phases lost |
+|---|---|
+| nonconf | 2 (nonconf, conference) |
+| conference | 2 (conference, postseason) |
+| postseason | 1 (postseason only — offseason eats the second tick) |
+
+Mean 5/3 ≈ **1.67 of the 3 on-field phases in a season**, i.e. a fire costs well over half that
+season's snaps. `injuryProbPerPhase` must be sized against that, not against a one-phase
+assumption — a naive reading overstates the affordable probability by roughly 2x.
+
+**The durable cost is the lost snaps, not the overall hit.** `applyEffect` stores `restoreAmount`
+and `tickPhaseStart` gives the `overallDelta` back on heal, so the overall loss is temporary. It
+bites only where it straddles a boundary: `enterOffseason`'s development and washout checks, and
+`deriveDraftStock` if the player declares before healing. The compounding cost is snaps →
+development and snaps → stats → awards.
 
 **The draw happens only when the trait is present.** That keeps the change surgical: a career that
 never attends a `wideOpen` school consumes exactly the RNG it consumes today, and its seeded outcome
@@ -195,11 +257,16 @@ goal; the thresholds are the knob. Re-place them rather than reshaping the conte
 Traits are assigned realism-first, consistent with the ladder's existing house rule ("assigned by
 real program stature ... conferences and states are factual").
 
-**Hard requirement: every tier carries at least two distinct identities including untraited.** If
+**Requirement: every tier carries at least two distinct identities including untraited.** If
 `factory` lived only at tier 4 and `wideOpen` only at tier 1, the trait would be tier wearing a hat
 and the backlog complaint — choosing Alabama over Georgia is cosmetic — would stand unaddressed.
-Realism does bound the spread (`wideOpen` at tier 4 and `factory` at tier 1 are both implausible),
-so the intended shape is:
+
+**Realism wins where the two conflict, and the exemption is declared, not quietly unmet.**
+`schools.test.ts` already sets this precedent with `TWO_PER_STATE_EXEMPTIONS` (Mercer is the only
+plausible FCS program in Georgia, so that cell is exempted in the test rather than satisfied by
+inventing a school). Any tier that cannot carry two identities without giving a program a trait it
+has not earned gets a named entry in an equivalent exemption list, with its reason. The intended
+shape, subject to that:
 
 | tier | identities present |
 |---|---|
@@ -226,9 +293,15 @@ handoff stays directly comparable while trait measurement can sweep states.
 
 Per-trait attribution needs outcomes split by trait, which does not belong in `BalanceReport`.
 
-New `src/sim/trait-probe.ts` plus an npm script: n=3000/position, careers bucketed by the trait of
-the school they spent the most seasons at, reporting the headline metrics per bucket. **Zero-mean is
-a finding from this probe or it is not a finding.**
+New `src/sim/trait-probe.ts` plus an npm script: n=3000/position, reporting the headline metrics per
+bucket. **Zero-mean is a finding from this probe or it is not a finding.**
+
+**Bucket by whether the career ever *received* the effect, not by where it spent the most seasons.**
+Modal-school bucketing mis-attributes exactly the cases the traits are built around: a career that
+takes season 1 at a `wideOpen` school — collecting the full first-year effect — and then transfers
+and plays three seasons elsewhere would bucket as *untraited*, hiding the effect inside the control
+group and biasing both buckets at once. Careers can therefore appear in more than one bucket; the
+probe reports bucket sizes so overlap is visible rather than silent.
 
 Bands to hold, from the handoff's target table:
 
@@ -255,9 +328,11 @@ Beyond the contract tests the repo already runs:
   school and assert the difference.
 - **Cliff straddle test** for `developmental`: `developmentDelta` at snap counts either side of each
   `floor` boundary, traited and untraited.
-- **Ambient-roll isolation:** run a career whose school carries no trait twice on the same seed —
-  once against the real trait table and once against a table with the trait stripped — and assert
-  the two final states are identical. This proves the draw is conditional without needing to pin a
+- **Ambient-roll isolation:** run a career that never attends a traited school twice on the same
+  seed — once against the real trait table and once against a table with the trait stripped — and
+  assert the two final states are identical. The filter must check **every school the career
+  attended**, not just the one it signed with: a career that signs untraited and later transfers
+  into a traited school is not a control. This proves the draw is conditional without needing to pin a
   literal baseline that would rot on the next content change.
 - **Signing-day safety:** `createCareer` on a state with `schoolId === ""` resolves to no trait.
 - **Distribution test** (§6.1), over realized offer sets across home states.
@@ -273,6 +348,8 @@ impossible, and every content pass last stage needed a correction round.
 
 **Wave 1 — `wideOpen`.** Carries all the scaffolding: the type, the schema field, the config table,
 the condition key, `schoolSnapModifier`, the ambient roll, the probe, the distribution test.
+Note that 2.2's rescoping makes wave 1 slightly *smaller*: `wideOpen`'s snap bonus is ongoing, so
+wave 1 does not need the seasons-at-school keying, which arrives with `factory` in wave 2.
 `wideOpen` goes first because it sits at tiers 1–2 where most careers live — a large enough blast
 radius to actually teach us the threshold coupling — both its sides compound, and it rides
 `snapModifier`, an existing lever of known survivable magnitude.
