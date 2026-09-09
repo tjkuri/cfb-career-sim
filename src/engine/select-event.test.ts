@@ -21,6 +21,12 @@ const bundle = (events: GameEvent[]): ContentBundle => ({
   events, injuries: {}, schools: [], positions: {} as any, trophyIds: [], awardIds: [],
   postseason: POSTSEASON, progression: PROGRESSION,
   regions: REGIONS, schoolSampler: SCHOOL_SAMPLER, transfer: TRANSFER, redshirt: REDSHIRT,
+  // Unused by this file's tests (no selection logic reads it); minimal shape only.
+  schoolTraits: {
+    wideOpen: { snapModifier: 1, injuryProbPerPhase: 0, injuryTypes: [] },
+    factory: { firstSeasonSnapModifier: 1, draftStockBonusPerSeason: 0, draftStockBonusCap: 0 },
+    developmental: { snapsPerDevPointMultiplier: 1, earlySnapModifier: 1, earlySeasons: 1 },
+  },
 });
 
 function makeState(overrides: Partial<GameState>): GameState {

@@ -1,5 +1,5 @@
-import type { Effect, GameEvent, Outcome, Phase, Position, Tier } from "../engine/types";
-import { CLASS_ORDER } from "../engine/types";
+import type { Effect, GameEvent, Outcome, Phase, Position, SchoolTrait, Tier } from "../engine/types";
+import { ALL_SCHOOL_TRAITS, CLASS_ORDER } from "../engine/types";
 
 export interface AwardBand { min: number; prob: number }
 export interface PrestigeAward { id: string; bands: AwardBand[]; teamSuccessBoost: number }
@@ -50,10 +50,23 @@ export interface RedshirtConfig {
   sitSnapModifier: number;
 }
 
+// Trait magnitudes. Every trait pairs a benefit with a cost of the SAME
+// temporal scope, so no transfer pattern can collect one without the other —
+// generateTransferOffers emits a lateral offer every offseason unconditionally,
+// so a one-shot benefit against an ongoing cost is farmable by hopping.
+export interface SchoolTraitConfig {
+  // Both sides ongoing while enrolled.
+  wideOpen: { snapModifier: number; injuryProbPerPhase: number; injuryTypes: string[] };
+  // Cost front-loaded, benefit accrued per season at the school and capped.
+  factory: { firstSeasonSnapModifier: number; draftStockBonusPerSeason: number; draftStockBonusCap: number };
+  // Cost front-loaded, benefit ongoing while enrolled.
+  developmental: { snapsPerDevPointMultiplier: number; earlySnapModifier: number; earlySeasons: number };
+}
+
 export interface ContentBundle {
   events: GameEvent[];
   injuries: Record<string, { label: string; overallDelta: number; recoveryPhases: number }>;
-  schools: { id: string; name: string; tier: 1 | 2 | 3 | 4; conference: string; state: string }[];
+  schools: { id: string; name: string; tier: 1 | 2 | 3 | 4; conference: string; state: string; trait?: SchoolTrait }[];
   positions: Record<Position, { label: string; stats: string[] }>;
   trophyIds: string[];
   awardIds: string[];
@@ -63,6 +76,7 @@ export interface ContentBundle {
   schoolSampler: SchoolSamplerConfig;
   transfer: TransferConfig;
   redshirt: RedshirtConfig;
+  schoolTraits: SchoolTraitConfig;
 }
 
 export function validateContent(bundle: ContentBundle): string[] {
@@ -153,6 +167,30 @@ export function validateContent(bundle: ContentBundle): string[] {
   const rs = bundle.redshirt;
   if (rs.successProb < 0 || rs.successProb > 1) errors.push("redshirt.successProb must be in [0,1]");
   if (rs.sitSnapModifier <= 0 || rs.sitSnapModifier > 1) errors.push("redshirt.sitSnapModifier must be in (0,1]");
+
+  const knownTraits = new Set<string>(ALL_SCHOOL_TRAITS);
+  for (const school of bundle.schools)
+    if (school.trait !== undefined && !knownTraits.has(school.trait))
+      errors.push(`School ${school.id}: unknown trait "${school.trait}"`);
+
+  const st = bundle.schoolTraits;
+  // A snap modifier of 0 would zero a whole season's production, so these are
+  // strictly positive — same reasoning as the transfer modifiers above.
+  if (st.wideOpen.snapModifier <= 0) errors.push("schoolTraits.wideOpen.snapModifier must be > 0");
+  if (st.factory.firstSeasonSnapModifier <= 0) errors.push("schoolTraits.factory.firstSeasonSnapModifier must be > 0");
+  if (st.developmental.earlySnapModifier <= 0) errors.push("schoolTraits.developmental.earlySnapModifier must be > 0");
+  if (st.developmental.snapsPerDevPointMultiplier <= 0)
+    errors.push("schoolTraits.developmental.snapsPerDevPointMultiplier must be > 0");
+  if (!inRange(st.wideOpen.injuryProbPerPhase))
+    errors.push("schoolTraits.wideOpen.injuryProbPerPhase must be in [0,1]");
+  if (st.wideOpen.injuryTypes.length === 0)
+    errors.push("schoolTraits.wideOpen.injuryTypes must not be empty");
+  for (const t of st.wideOpen.injuryTypes)
+    if (!knownInjuries.has(t)) errors.push(`schoolTraits.wideOpen: unknown injury "${t}"`);
+  if (st.factory.draftStockBonusPerSeason < 0) errors.push("schoolTraits.factory.draftStockBonusPerSeason must be >= 0");
+  if (st.factory.draftStockBonusCap < 0) errors.push("schoolTraits.factory.draftStockBonusCap must be >= 0");
+  if (!Number.isInteger(st.developmental.earlySeasons) || st.developmental.earlySeasons < 1)
+    errors.push("schoolTraits.developmental.earlySeasons must be an integer >= 1");
 
   const seen = new Set<string>();
   for (const ev of bundle.events) {

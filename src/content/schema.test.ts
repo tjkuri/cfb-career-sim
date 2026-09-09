@@ -25,6 +25,14 @@ function goodBundle(): ContentBundle {
     schoolSampler: SCHOOL_SAMPLER,
     transfer: TRANSFER,
     redshirt: REDSHIRT,
+    // Minimal, not the real content: references only "acl", the one injury
+    // this fixture's injuries table defines, so tests that replace the table
+    // wholesale (keeping acl) don't spuriously trip the unknown-injury check.
+    schoolTraits: {
+      wideOpen: { snapModifier: 1.15, injuryProbPerPhase: 0.06, injuryTypes: ["acl"] },
+      factory: { firstSeasonSnapModifier: 0.8, draftStockBonusPerSeason: 1.5, draftStockBonusCap: 5 },
+      developmental: { snapsPerDevPointMultiplier: 0.85, earlySnapModifier: 0.9, earlySeasons: 2 },
+    },
     events: [
       {
         id: "recruiting",
@@ -355,5 +363,32 @@ describe("schoolSampler validation", () => {
       schoolSampler: { ...CONTENT.schoolSampler, offerCount: 0 },
     };
     expect(validateContent(tooSmall).some((e) => e.includes("offerCount"))).toBe(true);
+  });
+});
+
+describe("schoolTraits validation", () => {
+  it("rejects an unknown trait on a school row", () => {
+    const bundle = goodBundle();
+    // Cast: the point is to catch a bad value arriving from outside the type system.
+    bundle.schools = [{ id: "bama", name: "Alabama", tier: 4, conference: "SEC", state: "AL", trait: "nonsense" as never }];
+    expect(validateContent(bundle).join("\n")).toContain('unknown trait "nonsense"');
+  });
+
+  it("rejects a wideOpen injury probability outside [0,1]", () => {
+    const bundle = goodBundle();
+    bundle.schoolTraits = { ...bundle.schoolTraits, wideOpen: { ...bundle.schoolTraits.wideOpen, injuryProbPerPhase: 1.5 } };
+    expect(validateContent(bundle).join("\n")).toContain("schoolTraits.wideOpen.injuryProbPerPhase must be in [0,1]");
+  });
+
+  it("rejects a wideOpen injury type that is not in the injury table", () => {
+    const bundle = goodBundle();
+    bundle.schoolTraits = { ...bundle.schoolTraits, wideOpen: { ...bundle.schoolTraits.wideOpen, injuryTypes: ["papercut"] } };
+    expect(validateContent(bundle).join("\n")).toContain('schoolTraits.wideOpen: unknown injury "papercut"');
+  });
+
+  it("rejects a zero snap modifier, which would zero out a season", () => {
+    const bundle = goodBundle();
+    bundle.schoolTraits = { ...bundle.schoolTraits, wideOpen: { ...bundle.schoolTraits.wideOpen, snapModifier: 0 } };
+    expect(validateContent(bundle).join("\n")).toContain("schoolTraits.wideOpen.snapModifier must be > 0");
   });
 });

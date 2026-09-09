@@ -1,5 +1,10 @@
 export type Position = "QB" | "OSKILL" | "OL" | "DL" | "DSKILL" | "K";
 export type Tier = 1 | 2 | 3 | 4;
+
+// A school's mechanical identity. Closed vocabulary: 58 schools x combinations
+// is a surface no test can cover, so a school carries at most one, and most
+// carry none. "Untraited" is a legitimate identity — the ordinary program.
+export type SchoolTrait = "wideOpen" | "factory" | "developmental";
 export type ClassYear = "FR" | "SO" | "JR" | "SR";
 export type Phase = "offseason" | "nonconf" | "conference" | "postseason";
 export type Status = "active" | "declared" | "drafted" | "busted";
@@ -7,6 +12,7 @@ export type Status = "active" | "declared" | "drafted" | "busted";
 export const PHASE_ORDER: Phase[] = ["offseason", "nonconf", "conference", "postseason"];
 export const CLASS_ORDER: ClassYear[] = ["FR", "SO", "JR", "SR"];
 export const ALL_POSITIONS: Position[] = ["QB", "OSKILL", "OL", "DL", "DSKILL", "K"];
+export const ALL_SCHOOL_TRAITS: SchoolTrait[] = ["wideOpen", "factory", "developmental"];
 
 export interface Setup {
   lastName: string;
