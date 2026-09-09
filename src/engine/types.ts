@@ -67,6 +67,7 @@ export interface EventConditions {
   requiresPlaying?: boolean;
   maxCharacter?: number;
   maxOverall?: number;
+  schoolTrait?: SchoolTrait[];
 }
 
 export interface GameEvent {

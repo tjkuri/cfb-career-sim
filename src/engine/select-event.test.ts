@@ -105,6 +105,29 @@ describe("eventMatches", () => {
   });
 });
 
+describe("schoolTrait condition", () => {
+  // 11 of 57 schools carry wideOpen, so a real school lookup (rather than an
+  // injected fixture) is enough to exercise both the match and non-match arms.
+  const ev = makeEvent({ conditions: { schoolTrait: ["wideOpen"] } });
+
+  it("matches a player at a school carrying the trait", () => {
+    const wide = CONTENT.schools.find((x) => x.trait === "wideOpen")!;
+    const s = makeState({ school: { schoolId: wide.id, tier: wide.tier } });
+    expect(eventMatches(s, ev)).toBe(true);
+  });
+
+  it("does not match a player at an untraited school", () => {
+    const plain = CONTENT.schools.find((x) => x.trait === undefined)!;
+    const s = makeState({ school: { schoolId: plain.id, tier: plain.tier } });
+    expect(eventMatches(s, ev)).toBe(false);
+  });
+
+  it("does not match at Signing Day, when there is no school", () => {
+    const s = makeState({ school: { schoolId: "", tier: 1 } });
+    expect(eventMatches(s, ev)).toBe(false);
+  });
+});
+
 describe("requiresFinalSeason", () => {
   const ev: GameEvent = {
     id: "senior-day",

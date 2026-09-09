@@ -219,6 +219,8 @@ export function validateContent(bundle: ContentBundle): string[] {
         if (t < 1 || t > 4) errors.push(`Event ${ev.id}: invalid tier "${t}"`);
       if (c.position) for (const p of c.position)
         if (!knownPositions.has(p)) errors.push(`Event ${ev.id}: invalid position "${p}"`);
+      if (c.schoolTrait) for (const t of c.schoolTrait)
+        if (!knownTraits.has(t)) errors.push(`Event ${ev.id}: invalid schoolTrait "${t}"`);
       if (c.maxCharacter !== undefined && (c.maxCharacter < 0 || c.maxCharacter > 100))
         errors.push(`Event ${ev.id}: invalid maxCharacter "${c.maxCharacter}"`);
       if (c.maxOverall !== undefined && (c.maxOverall < 0 || c.maxOverall > 99))
