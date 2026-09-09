@@ -1,4 +1,14 @@
+import type { SchoolTrait } from "../engine/types";
 import type { SchoolTraitConfig } from "./schema";
+
+// Shown in offer labels. Hints, never mechanics: the player discovers what a
+// trait does by replaying, not by reading a stat block at Signing Day. Each
+// suggests the benefit and the cost without naming either.
+export const TRAIT_HINTS: Record<SchoolTrait, string> = {
+  wideOpen: "the two-deep is thin",
+  factory: "sends more guys to Sundays than anywhere else",
+  developmental: "takes three-stars and turns them into draft picks",
+};
 
 // Initial values. Wave 1 measures and calibrates wideOpen (see the wave-1 plan,
 // Task 6); factory and developmental are carried here so the schema and

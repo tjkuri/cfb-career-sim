@@ -6,7 +6,7 @@ import { EVENTS } from "./events/index";
 import { POSTSEASON, PROGRESSION } from "./postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
 import { REDSHIRT } from "./redshirt";
-import { SCHOOL_TRAITS } from "./school-traits";
+import { SCHOOL_TRAITS, TRAIT_HINTS } from "./school-traits";
 
 export const CONTENT: ContentBundle = {
   positions: POSITIONS,
@@ -20,6 +20,7 @@ export const CONTENT: ContentBundle = {
   regions: REGIONS,
   schoolSampler: SCHOOL_SAMPLER,
   schoolTraits: SCHOOL_TRAITS,
+  traitHints: TRAIT_HINTS,
   transfer: TRANSFER,
   redshirt: REDSHIRT,
 };

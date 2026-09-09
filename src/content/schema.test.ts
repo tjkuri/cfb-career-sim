@@ -33,6 +33,7 @@ function goodBundle(): ContentBundle {
       factory: { firstSeasonSnapModifier: 0.8, draftStockBonusPerSeason: 1.5, draftStockBonusCap: 5 },
       developmental: { snapsPerDevPointMultiplier: 0.85, earlySnapModifier: 0.9, earlySeasons: 2 },
     },
+    traitHints: { wideOpen: "hint", factory: "hint", developmental: "hint" },
     events: [
       {
         id: "recruiting",
@@ -390,5 +391,11 @@ describe("schoolTraits validation", () => {
     const bundle = goodBundle();
     bundle.schoolTraits = { ...bundle.schoolTraits, wideOpen: { ...bundle.schoolTraits.wideOpen, snapModifier: 0 } };
     expect(validateContent(bundle).join("\n")).toContain("schoolTraits.wideOpen.snapModifier must be > 0");
+  });
+
+  it("rejects a traitHints table missing an entry for a known trait", () => {
+    const bundle = goodBundle();
+    bundle.traitHints = { ...bundle.traitHints, factory: "" };
+    expect(validateContent(bundle).join("\n")).toContain('traitHints: missing hint for trait "factory"');
   });
 });

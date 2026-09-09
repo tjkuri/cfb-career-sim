@@ -23,9 +23,7 @@ describe("schoolTraitOf", () => {
     expect(schoolTraitOf(s, CONTENT)).toBeUndefined();
   });
 
-  // Skipped: no school carries a trait until Task 4 assigns them. This is the
-  // guard that Task 4 actually happened — un-skip it there.
-  it.skip("returns the trait of the current school", () => {
+  it("returns the trait of the current school", () => {
     const traited = CONTENT.schools.find((x) => x.trait !== undefined);
     expect(traited, "no school carries a trait — Task 4 assigns them").toBeDefined();
     const s = createCareer(SETUP, "trait-lookup");

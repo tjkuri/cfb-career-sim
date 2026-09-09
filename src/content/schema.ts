@@ -77,6 +77,7 @@ export interface ContentBundle {
   transfer: TransferConfig;
   redshirt: RedshirtConfig;
   schoolTraits: SchoolTraitConfig;
+  traitHints: Record<SchoolTrait, string>;
 }
 
 export function validateContent(bundle: ContentBundle): string[] {
@@ -172,6 +173,9 @@ export function validateContent(bundle: ContentBundle): string[] {
   for (const school of bundle.schools)
     if (school.trait !== undefined && !knownTraits.has(school.trait))
       errors.push(`School ${school.id}: unknown trait "${school.trait}"`);
+
+  for (const t of ALL_SCHOOL_TRAITS)
+    if (!bundle.traitHints[t]) errors.push(`traitHints: missing hint for trait "${t}"`);
 
   const st = bundle.schoolTraits;
   // A snap modifier of 0 would zero a whole season's production, so these are

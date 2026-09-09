@@ -27,6 +27,8 @@ const bundle = (events: GameEvent[]): ContentBundle => ({
     factory: { firstSeasonSnapModifier: 1, draftStockBonusPerSeason: 0, draftStockBonusCap: 0 },
     developmental: { snapsPerDevPointMultiplier: 1, earlySnapModifier: 1, earlySeasons: 1 },
   },
+  // Unused by this file's tests (no selection logic reads it); minimal shape only.
+  traitHints: { wideOpen: "", factory: "", developmental: "" },
 });
 
 function makeState(overrides: Partial<GameState>): GameState {

@@ -26,7 +26,7 @@ export function generateRecruitingOffers(
       taken.add(school.id);
       offers.push({
         id: `commit-${school.id}`,
-        label: `Commit to ${school.name}`,
+        label: school.trait ? `Commit to ${school.name} — ${content.traitHints[school.trait]}` : `Commit to ${school.name}`,
         schoolId: school.id,
         tier: school.tier,
         // Fixed at 1 by design: recruiting offers carry no snap penalty/bonus today.
