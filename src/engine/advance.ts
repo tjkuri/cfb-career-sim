@@ -270,7 +270,7 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
           s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
         }
       }
-      simulatePhaseProduction(s, rng);
+      simulatePhaseProduction(s, content, rng);
       s.phaseSimulated = true;
       s.phaseFiredEventIds = [];
       s.phaseRandomDrawn = false;

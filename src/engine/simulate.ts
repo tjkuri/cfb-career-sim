@@ -1,6 +1,8 @@
 import type { GameState, Position } from "./types";
+import type { ContentBundle } from "../content/schema";
 import { rngInt, type Rng } from "./rng";
 import { isSidelined } from "./effects";
+import { schoolSnapModifier } from "./school-effects";
 
 const ON_FIELD = new Set(["nonconf", "conference", "postseason"]);
 
@@ -14,14 +16,14 @@ export const STAT_MODEL: Record<Position, { snapsMin: number; snapsMax: number; 
   K: { snapsMin: 40, snapsMax: 70, per100: { fieldGoals: 9, points: 42, gameWinners: 0.8 } },
 };
 
-export function simulatePhaseProduction(state: GameState, rng: Rng): void {
+export function simulatePhaseProduction(state: GameState, content: ContentBundle, rng: Rng): void {
   if (!ON_FIELD.has(state.phase)) return;
   if (isSidelined(state)) return;
   const season = state.seasons[state.seasons.length - 1];
   if (!season) return;
   const model = STAT_MODEL[state.setup.position];
   const rolled = rngInt(rng, model.snapsMin, model.snapsMax);
-  const snaps = Math.max(0, Math.round(rolled * state.snapModifier));
+  const snaps = Math.max(0, Math.round(rolled * state.snapModifier * schoolSnapModifier(state, content)));
   season.snaps += snaps;
   const skill = state.overall / 70;
   for (const [stat, per100] of Object.entries(model.per100)) {
