@@ -46,8 +46,13 @@ export function runBalance(
   seedPrefix: string,
   policy: Policy,
   position: Position = "QB",
+  // Defaults to TX so every baseline recorded in STAGE4-HANDOFF.md stays
+  // directly comparable. Trait measurement sweeps states instead, because the
+  // sampler's home-state bonus means a TX-only run measures Texas, not the
+  // ladder.
+  homeState: string = "TX",
 ): BalanceReport {
-  const setup: Setup = { lastName: "Player", jerseyNumber: 7, homeState: "TX", position };
+  const setup: Setup = { lastName: "Player", jerseyNumber: 7, homeState, position };
   let drafted = 0, busted = 0, washed = 0, undrafted = 0, round1 = 0, seasons = 0;
   let allConf = 0, injuries = 0, everInjured = 0;
   const characters: number[] = [];

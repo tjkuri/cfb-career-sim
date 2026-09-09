@@ -8,7 +8,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.engine.json && tsc -p tsconfig.json",
     "play": "tsx src/sim/play-headless.ts",
-    "balance": "tsx src/sim/balance.ts"
+    "balance": "tsx src/sim/balance.ts",
+    "traits": "tsx src/sim/trait-probe.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
