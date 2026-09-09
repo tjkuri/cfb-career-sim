@@ -11,6 +11,7 @@ import { runPostseasonResolver } from "./postseason";
 import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
 import { generateTransferOffers } from "./transfer";
+import { rollAmbientInjury } from "./school-effects";
 
 const DECLARE_EVENT_ID = "declare";
 const TRANSFER_EVENT_ID = "transfer";
@@ -269,6 +270,8 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
         if (!last || last.seasonIndex !== s.seasonIndex) {
           s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
         }
+        // Before production, so a fire costs this phase's snaps too.
+        rollAmbientInjury(s, content, rng, injuryOf);
       }
       simulatePhaseProduction(s, content, rng);
       s.phaseSimulated = true;
