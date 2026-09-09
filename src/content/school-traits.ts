@@ -51,13 +51,55 @@ export const TRAIT_HINTS: Record<SchoolTrait, string> = {
 //   avgFinalOverall    -0.21 to -0.48
 //   round1Rate         -0.010 to +0.007 (nil)
 //
-// 1.15 / 0.06 are KEPT UNCHANGED because that is variance without drift, which
-// is the whole design intent: the bonus and the cost land on different currencies
-// and cancel in net — snaps buy all-conference, injuries give back the draft —
-// while every whole-population band holds (`npx tsx src/sim/balance.ts 3000
-// random all`: picked 0.894-0.949, round1 non-K 0.0217-0.0240 with K at 0.0063,
-// busted 0.0143-0.0280, allConf 0.420-0.521 spread 1.24x, charU55 0.397-0.463,
-// avgSeasons 3.056-3.071). Nothing was moved because nothing was off.
+// 1.15 / 0.06 are KEPT UNCHANGED. The bonus and the cost land on different
+// currencies and very nearly cancel — snaps buy all-conference, injuries give
+// back the draft — while every whole-population band holds (`npx tsx
+// src/sim/balance.ts 3000 random all`: picked 0.894-0.949, round1 non-K
+// 0.0217-0.0240 with K at 0.0063, busted 0.0143-0.0280, allConf 0.420-0.521
+// spread 1.24x, charU55 0.397-0.463, avgSeasons 3.056-3.071).
+//
+// State it plainly rather than calling it neutral: avgFinalOverall drifts
+// slightly NEGATIVE in all six positions (-0.21 to -0.48), one-directional, not
+// pure variance. It is small, it is inside every band, and it is the price of a
+// trait whose cost is real — but it is a drift, not noise, and if a later wave
+// adds anything else that shaves overall, this stacks with it.
+//
+// ── Before touching snapModifier, read this ────────────────────────────────
+// Its benefit is a CLIFF, not a slope. Development is
+// `min(devCap 3, floor(seasonSnaps / snapsPerDevPoint))` (engine/advance.ts),
+// an absolute divisor of 180 for field players and 62 for K. Snaps come from
+// `rngInt(snapsMin, snapsMax)` per on-field phase (STAT_MODEL,
+// engine/simulate.ts), so what decides whether the bonus does ANYTHING is
+// whether it lifts mean snaps-per-phase past the divisor. The modifier needed
+// is therefore `divisor / meanSnapsPerPhase`, independent of how many phases a
+// season actually survives:
+//
+//   pos      mean/phase   3-phase season   dev @1.0   dev @1.15   needs >=
+//   QB       160          480              2          3           1.125
+//   OSKILL   160          480              2          3           1.125
+//   DL       165          495              2          3           1.091
+//   DSKILL   165          495              2          3           1.091
+//   K         55          165              2          3           1.127
+//   OL       185          555              3          3           (already over)
+//
+// So 1.15 buys a whole development point — the third, i.e. the devCap — for
+// five of six positions, and clears the boundary by only ~12 snaps at the QB/
+// OSKILL mean (552 vs 540) and ~4 at K's (190 vs 186). Anything at or below
+// 1.125 silently zeroes the trait's entire upside for QB/OSKILL/K while leaving
+// injuryProbPerPhase fully intact — the same shape as the K development defect
+// of the previous stage, where a snap difference was annihilated by Math.floor.
+// **Lowering this is not a small adjustment. There is no gentle trim available.**
+//
+// It is distributional, not a hard cliff per career: per-phase draws span
+// 120-200 (QB/OSKILL), so a healthy season ranges ~360-600 and injuries remove
+// whole phases. Only the MEAN sits just above the boundary — plenty of
+// individual seasons fall short of it, which is what makes the trait read as
+// variance rather than as a flat +1 overall. Waves 2 and 3 sizing `factory`'s
+// and `developmental`'s snap modifiers must size against this same table; note
+// OL is already above the divisor unmodified and so is insensitive to small
+// snap bonuses, while K's 62 divisor gives it its own boundary entirely.
+//
+// Nothing was moved because nothing was off.
 export const SCHOOL_TRAITS: SchoolTraitConfig = {
   wideOpen: {
     snapModifier: 1.15,
