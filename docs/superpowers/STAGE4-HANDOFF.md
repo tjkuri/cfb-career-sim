@@ -571,6 +571,110 @@ Verified at n=3000 per position: `allConfRate` 0.403–0.487, `charUnder55Rate` 
 the OL exception). No threshold re-placement was needed this time — `allConfRate` stayed in band
 because two of the five new events are offseason, where stat effects are forbidden outright.
 
+## School traits — wave 1 (`wideOpen`)
+
+**What shipped:** 11 of 57 schools (all sitting at tiers 1–2 — the group of programs whose two-deep
+is thin) now carry `SchoolTrait: "wideOpen"`, a config pair (`src/content/school-traits.ts`) rather
+than a single knob: an ongoing `snapModifier` of 1.15 applied to every on-field phase's snap roll,
+paired with an ongoing ambient `injuryProbPerPhase` of 0.06 (soft-tissue/lower-body only —
+`hamstring`, `ankle`, `turfToe`; `acl` deliberately excluded, it stays reserved as the heaviest
+lever in the tuning-lever list above). Two trait-gated random events ship alongside it
+(`wideopen-next-man-up`, conference; `wideopen-two-deep`, nonconf) — events now support a `tier` OR
+a `trait` gate, not both. This **partially resolves backlog item 1** below ("the 57-school ladder is
+mechanically inert"): the ladder is now load-bearing at tiers 1–2 via `wideOpen`. Tiers 3–4 stay
+purely cosmetic — no school there carries a trait yet — until wave 2 (`factory`) ships.
+
+**The measured causal effect — and the method, because the naive read is wrong.** The obvious
+comparison is "careers that ever attended a `wideOpen` school" vs. "careers that never did," and on
+that raw bucket split `wideOpen` looks like it needs a nerf: +1.7 to +2.3 `avgFinalOverall` and
++0.16 `allConfRate` for the wideOpen side. **Both numbers are confounded, not causal.** The bucket
+is self-selected on two axes that have nothing to do with the trait: it is enriched in long careers
+(`avgSeasons` 3.18 vs 2.80 — a longer career gets more chances to land at one of only 11 schools),
+and all 11 `wideOpen` schools sit at tiers 1–2, where all-conference is easier to win regardless of
+trait. Conditioning on career length alone collapses most of the overall gap (at 3 seasons, 72.17 vs
+72.35).
+
+The fix is a **paired null-trait A/B**: re-run the identical probe (same seeds, same schools, same
+bucket) with the trait's magnitudes nulled (`snapModifier: 1.0`, `injuryProbPerPhase: 0` — both
+schema-legal) and diff the two runs rather than the two buckets. On `avgFinalOverall` the direction
+**inverts** under this method — raw bucket gap +2, true causal effect **−0.3**. The true causal
+effects, ranges across the six positions:
+
+| metric | causal effect |
+|---|---|
+| `avgInjuries` | +0.27 to +0.35 (the cost lands, unambiguously) |
+| `allConfRate` | +0.05 to +0.11 (the snap bonus buys in-season honors) |
+| `actuallyPickedRate` | −0.016 to −0.053 (injuries take some of the draft outcome back) |
+| `avgFinalOverall` | −0.21 to −0.48, **negative in all six positions** |
+| `round1Rate` | −0.010 to +0.007 (nil) |
+
+The `avgFinalOverall` drift is one-directional, not pure variance, even though it is small and
+stays inside every band — it is the honest price of a trait whose injury cost is real. **Waves 2
+and 3 must size their own traits against this same paired null-trait A/B, not against raw bucket
+gaps** — `factory` especially, since it touches draft stock directly
+(`draftStockBonusPerSeason`/`draftStockBonusCap`) and the draft metrics above (`allConfRate`,
+`actuallyPickedRate`) showed the largest confound of the four measured here.
+
+**The dev-cliff map** (also documented at length in `src/content/school-traits.ts`'s header
+comment — that copy is closer to the code, this copy is closer to where the next person will look
+first). `snapModifier`'s benefit is not a slope, it is a **cliff**: development is
+`min(devCap 3, floor(seasonSnaps / snapsPerDevPointByPosition))`, so the only thing a snap
+multiplier can do is push mean snaps-per-phase across that divisor. The boundary is
+`divisor / meanSnapsPerPhase`:
+
+| position | mean snaps/phase | divisor | boundary multiplier | 1.15 clears by |
+|---|---|---|---|---|
+| QB / OSKILL | 160 | 180 | ≥1.125 | 12 snaps |
+| DL / DSKILL | 165 | 180 | ≥1.091 | 29.2 snaps |
+| K | 55 | 62 | ≥1.127 | **3.7 snaps — the tightest margin of the five** |
+| OL | 185 | 180 | already over `devCap` unmodified | any bonus does nothing |
+
+1.15 sits on a plateau: below ~1.125 the trait's entire upside silently vanishes for QB/OSKILL/K
+(same failure shape as the K development defect from earlier in Stage 4, where `Math.floor`
+annihilated a snap-count difference); above the boundary, the point being bought is the *third*
+dev point == `devCap`, so raising the multiplier further buys nothing more. **If a future wave ever
+needs to trim `snapModifier`, K breaks first** — its margin is roughly a third of QB/OSKILL's and a
+ninth of DL/DSKILL's.
+
+**`bustedRate` roughly doubled wave-wide** — from 0.0050–0.0130 (the pre-wave baseline measured
+just above) to ~0.0150–0.0267 now. That is the ambient injury roll working exactly as designed
+(more injuries, more soft-washouts) and every position stays inside the 0.005–0.03 band, but it
+means **the injury budget for waves 2–3 is materially tighter than it was** — there is roughly
+0.003–0.015 of headroom left before K, the tightest position, hits the ceiling. Concretely: the
+plan's original `wideopen-two-deep` event stacked a `hamstring` injury on top of the ambient roll
+and measured K at 0.0280 against the 0.03 ceiling during authoring. It was rewritten to drop the
+injury and pay its cost in `character` instead (see task-8's report for the EV rework); the shipped
+version measures inside band with room to spare. Any wave-2/3 event that inflicts an injury on a
+population that already carries an ambient roll needs this same check before it ships.
+
+**A correction to the project's own displacement rule.** Two previous content passes this stage
+(the postseason-depth pass and the thriving-content pass) both found "adding shared content lowers
+`allConfRate` and needs thresholds re-placed," and the wave-1 plan budgeted a re-placement on that
+precedent. It did not hold here: `allConfRate` came in essentially flat (0.4253–0.5213 against
+0.420–0.521 pre-wave) and the spread **tightened** to 1.2257x from 1.240x. **Nothing was
+re-placed** — the `production` thresholds in `src/content/postseason.ts` are unchanged from the
+values in the "All-Conference thresholds equalized" table above. The reason the rule didn't fire
+this time: only one random event draws per phase, so two new events compete for a share of the draw
+pool — and by wave 1 that pool is 102 random events deep (94 before this wave), a far smaller
+share than earlier passes displaced when the pool was thinner. **The rule's magnitude depends on
+the size of the pool being added to, so it needs re-checking each time, not assumed.**
+
+**Waves 2 and 3 status: deferred pending Phase 3** (the React/Vite front end), not cancelled.
+`factory` and `developmental` are already fully configured in `src/content/school-traits.ts`
+(`firstSeasonSnapModifier`/`draftStockBonusPerSeason`/`draftStockBonusCap` and
+`snapsPerDevPointMultiplier`/`earlySnapModifier`/`earlySeasons` respectively), but their magnitudes
+are **unmeasured placeholders** and **no school carries either trait** — both are completely inert
+in the shipped game right now. Whoever picks this up must calibrate them against their own probe
+runs (`src/sim/trait-probe.ts`) using the paired null-trait A/B method above, not the raw-bucket
+method. One more thing to carry forward: **both future traits will move seeded outcomes even
+though neither trait adds an RNG draw of its own** — they change snap counts, and
+`resolveAwards`/`postseason.ts` skip their award draw entirely when the production gate isn't met
+("no draw when gate unmet"), so a snap change can shift whether that draw happens at all, which
+shifts every RNG draw downstream of it in the same career. This is exactly the seeded-stability
+trap Task 3's ambient-roll isolation test and Task 9's whole-career isolation check both guard
+against for `wideOpen` — the same guard will need extending to cover `factory`/`developmental` once
+either ships.
+
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 
 The knobs to reach for if `bustedRate` or the character distribution needs to move again:
@@ -620,8 +724,12 @@ so the spiral's effect on draft outcomes is inherently small. **Its main effect 
 headline metric is in band except one recorded exception, so the remaining value is in **content**,
 not tuning. The six genuinely-open items below are, in my order of value:
 
-1. **The 57-school ladder is mechanically inert** — 57 schools exist and only `tier` does anything,
-   so choosing Alabama over Georgia is cosmetic. The largest untapped content surface in the game.
+1. **PARTIALLY RESOLVED (school-traits wave 1, `wideOpen`): the 57-school ladder is mechanically
+   inert.** It no longer is, at tiers 1–2 — 11 schools there now carry `wideOpen`, a load-bearing
+   snap/injury pairing. Tiers 3–4 remain cosmetic; `tier` is still the only load-bearing field for
+   those 46 schools until wave 2 (`factory`) ships. See "School traits — wave 1 (`wideOpen`)" above
+   for the measured causal effect (and why the raw bucket comparison is wrong), the dev-cliff map,
+   and what waves 2–3 need to carry forward. Waves 2–3 are deferred pending Phase 3, not cancelled.
 2. **Injury exposure is uneven** (OSKILL 1.04 injuries/career vs DL 0.73) — decide whether that is
    flavour or a defect. Now measurable per position via `avgInjuries`/`injuredRate`.
 3. **Milestone overall-EV vs. the development cap** — three guaranteed fixed events per season

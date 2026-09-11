@@ -5,7 +5,7 @@ ladder is mechanically inert.**
 
 ## 1. The problem, stated precisely
 
-`SCHOOLS` carries 58 rows of `{ id, name, tier, conference, state }`. Consumption is narrow:
+`SCHOOLS` carries 57 rows of `{ id, name, tier, conference, state }`. Consumption is narrow:
 
 | field | read by |
 |---|---|
@@ -369,6 +369,6 @@ what the measurement says about over- or under-costing is an input to how the ne
 
 - `conference` remains decorative. Making conference load-bearing (strength-of-schedule, per-league
   All-Conference thresholds) is a separate pass with its own balance surface.
-- No school gets more than one trait. 58 schools × combinations is a surface no test can cover.
+- No school gets more than one trait. 57 schools × combinations is a surface no test can cover.
 - The deferred `acl` emission (handoff lever 7) stays deferred. The ambient roll here is a
   trait-scoped mechanism, not the general injury lever, and should not be conflated with it.

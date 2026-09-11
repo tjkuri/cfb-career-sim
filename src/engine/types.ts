@@ -1,7 +1,7 @@
 export type Position = "QB" | "OSKILL" | "OL" | "DL" | "DSKILL" | "K";
 export type Tier = 1 | 2 | 3 | 4;
 
-// A school's mechanical identity. Closed vocabulary: 58 schools x combinations
+// A school's mechanical identity. Closed vocabulary: 57 schools x combinations
 // is a surface no test can cover, so a school carries at most one, and most
 // carry none. "Untraited" is a legitimate identity — the ordinary program.
 export type SchoolTrait = "wideOpen" | "factory" | "developmental";
