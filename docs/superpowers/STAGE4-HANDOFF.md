@@ -395,21 +395,25 @@ decidable.
 **Sourcing is marked, because it matters.** Spec-derived bands are design intent. Proposed bands
 are a Stage 4 judgment call and should be challenged rather than inherited.
 
-| metric | band | current | in band? | source |
+| metric | band | current (wave 1, n=3000, `npx tsx src/sim/balance.ts 3000 random all`) | in band? | source |
 |---|---|---|---|---|
-| actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.889–0.946 (mean 0.928) | yes | proposed |
-| `round1Rate`, non-K | 0.01–0.05 | 0.010–0.033 | yes | proposed |
-| `round1Rate`, K | strictly below the non-K floor | 0.002 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
-| `bustedRate` | 0.005–0.03, never 0 | 0.0043–0.0120 (n=3000) | **OL marginally under** | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"**. The 0.005 floor is a Stage 4 judgment call, not spec. OL sits at 0.0043 — 13 careers in 3000, two under the floor — after the thriving-depth pass. The spec-derived requirement (reachable, never 0) holds, and the owner intent argues for a low rate, so this was **recorded rather than tuned away**. Revisit the floor before treating it as a defect. |
-| `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.400–0.488 (1.22x) | yes | proposed, set by the threshold pass above |
-| median final `character` | above the band-2 gate | 56 vs gate 55 | yes | **spec** §4 |
-| `charUnder55Rate` | 0.35–0.50 | 0.448–0.478 | yes | proposed |
-| `avgSeasons` | 3.0–3.5 | 3.088–3.104 | yes | proposed (4 years eligibility, most declare early) |
+| actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.8963–0.9500 (mean 0.927) | **OL exactly at the 0.9500 ceiling, zero headroom** | proposed |
+| `round1Rate`, non-K | 0.01–0.05 | 0.0217–0.0283 | yes | proposed |
+| `round1Rate`, K | strictly below the non-K floor | 0.0063 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
+| `bustedRate` | 0.005–0.03, never 0 | 0.0150–0.0267 (n=3000) | yes | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"**. The 0.005 floor is a Stage 4 judgment call, not spec. This row previously flagged OL as marginally under the floor; wave 1's `wideOpen` ambient injury roll (see "School traits — wave 1" below) roughly doubled `bustedRate` wave-wide and OL is now comfortably inside band at 0.0150. (Note: this row's pre-wave figure had drifted to 0.0043–0.0120 by the time it was last written here; the actual pre-wave-1 baseline, re-measured immediately before this wave on `f554bc0`, was 0.0050–0.0130 — small pre-existing drift, not caused by wave 1, not investigated further. Use 0.0050–0.0130 as the "before" reference.) |
+| `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.4253–0.5213 (1.2257x) | yes | proposed, set by the threshold pass above |
+| median final `character` | above the band-2 gate | 56 vs gate 55 | yes | **spec** §4 — not re-measured this wave; `wideOpen`'s mechanics (`snapModifier`, `injuryProbPerPhase`) don't touch `character` |
+| `charUnder55Rate` | 0.35–0.50 | 0.4033–0.4607 | yes | proposed |
+| `avgSeasons` | 3.0–3.5 | 3.0563–3.0703 | yes | proposed (4 years eligibility, most declare early) |
 
-**Every metric was in band when these were written**, and all but one still is (see the `bustedRate` row). That was the finding, and it should redirect the stage: the numeric
-balance work is essentially done, and the remaining backlog value is in **content quality**, not
-tuning. Do not reach for the levers below without first naming which band a change is meant to move
-and why the current value is wrong.
+**Every metric is in band as of wave 1**, but one case now deserves the same flag this table used
+to give `bustedRate`, not a clean pass: **OL's picked rate sits exactly at 0.9500, the band's
+ceiling, with zero headroom** — up from 0.946 pre-wave. The next content or trait change that
+raises OL's draft outcomes will push it out of band immediately, not gradually; see "School traits
+— wave 1" below for what moved this pass. That was the finding, and it should redirect the stage:
+the numeric balance work is essentially done, and the remaining backlog value is in **content
+quality**, not tuning. Do not reach for the levers below without first naming which band a change
+is meant to move and why the current value is wrong.
 
 ### Two reporting traps in the harness itself
 
@@ -636,8 +640,11 @@ dev point == `devCap`, so raising the multiplier further buys nothing more. **If
 needs to trim `snapModifier`, K breaks first** — its margin is roughly a third of QB/OSKILL's and a
 ninth of DL/DSKILL's.
 
-**`bustedRate` roughly doubled wave-wide** — from 0.0050–0.0130 (the pre-wave baseline measured
-just above) to ~0.0150–0.0267 now. That is the ambient injury roll working exactly as designed
+**`bustedRate` roughly doubled wave-wide** — from 0.0050–0.0130 (the actual pre-wave-1 baseline,
+re-measured immediately before this wave on `f554bc0`; this differs slightly from the 0.0043–0.0120
+recorded a few sections up in "The thriving player saw the least content," a small pre-existing
+drift unrelated to wave 1 — see the `bustedRate` row of the target-bands table above for the note)
+to ~0.0150–0.0267 now. That is the ambient injury roll working exactly as designed
 (more injuries, more soft-washouts) and every position stays inside the 0.005–0.03 band, but it
 means **the injury budget for waves 2–3 is materially tighter than it was** — there is roughly
 0.003–0.015 of headroom left before K, the tightest position, hits the ceiling. Concretely: the
