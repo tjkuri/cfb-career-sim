@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { EVENTS } from "./index";
+import { CONTENT } from "../index";
 import { RECRUITING_EVENTS } from "./recruiting";
 import { UNIVERSAL_EVENTS } from "./universal";
 import { SEASON_LIFE_EVENTS } from "./season-life";
+import { SCHOOL_LIFE_EVENTS } from "./school-life";
 import { OFFFIELD_EVENTS } from "./offfield";
 import { QB_EVENTS } from "./qb";
 import { OSKILL_EVENTS } from "./oskill";
@@ -16,7 +18,7 @@ import { MILESTONE_EVENTS } from "./milestones";
 // Guards against a slice file being authored but never wired into the barrel —
 // its whole slice would vanish with every other test still green.
 const SLICES = {
-  RECRUITING_EVENTS, UNIVERSAL_EVENTS, SEASON_LIFE_EVENTS, OFFFIELD_EVENTS, QB_EVENTS, OSKILL_EVENTS, OL_EVENTS,
+  RECRUITING_EVENTS, UNIVERSAL_EVENTS, SEASON_LIFE_EVENTS, SCHOOL_LIFE_EVENTS, OFFFIELD_EVENTS, QB_EVENTS, OSKILL_EVENTS, OL_EVENTS,
   DL_EVENTS, DSKILL_EVENTS, K_EVENTS, BUST_EVENTS, MILESTONE_EVENTS,
 };
 
@@ -94,5 +96,17 @@ describe("events barrel", () => {
   it("has no duplicate event ids across slices", () => {
     const ids = Object.values(SLICES).flatMap((s) => s.map((e) => e.id));
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("gives every trait that any school carries at least one gated event", () => {
+    // A trait that is only a rate shift is undiscoverable: a player samples
+    // 10-50 careers, and last stage's shipped effects needed n=3000 to detect.
+    // This is the guard that a trait cannot ship mechanically inert -- which is
+    // the exact defect the school-trait work exists to fix.
+    const carried = new Set(CONTENT.schools.map((s) => s.trait).filter(Boolean));
+    for (const trait of carried) {
+      const gated = EVENTS.filter((e) => e.conditions?.schoolTrait?.includes(trait as never));
+      expect(gated.length, `trait "${trait}" is carried by a school but gates no event`).toBeGreaterThan(0);
+    }
   });
 });

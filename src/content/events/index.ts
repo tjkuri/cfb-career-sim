@@ -2,6 +2,7 @@ import type { GameEvent } from "../../engine/types";
 import { RECRUITING_EVENTS } from "./recruiting";
 import { UNIVERSAL_EVENTS } from "./universal";
 import { SEASON_LIFE_EVENTS } from "./season-life";
+import { SCHOOL_LIFE_EVENTS } from "./school-life";
 import { OFFFIELD_EVENTS } from "./offfield";
 import { QB_EVENTS } from "./qb";
 import { OSKILL_EVENTS } from "./oskill";
@@ -21,6 +22,7 @@ export const EVENTS: GameEvent[] = [
   ...RECRUITING_EVENTS,
   ...UNIVERSAL_EVENTS,
   ...SEASON_LIFE_EVENTS,
+  ...SCHOOL_LIFE_EVENTS,
   ...OFFFIELD_EVENTS,
   ...QB_EVENTS,
   ...OSKILL_EVENTS,
