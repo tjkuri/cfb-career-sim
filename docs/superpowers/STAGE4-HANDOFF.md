@@ -395,24 +395,43 @@ decidable.
 **Sourcing is marked, because it matters.** Spec-derived bands are design intent. Proposed bands
 are a Stage 4 judgment call and should be challenged rather than inherited.
 
-| metric | band | current (wave 1, n=3000, `npx tsx src/sim/balance.ts 3000 random all`) | in band? | source |
+| metric | band | current (post fix-wave, n=3000, `npx tsx src/sim/balance.ts 3000 random all`) | in band? | source |
 |---|---|---|---|---|
-| actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.8963–0.9500 (mean 0.927) | **OL exactly at the 0.9500 ceiling, zero headroom** | proposed |
-| `round1Rate`, non-K | 0.01–0.05 | 0.0217–0.0283 | yes | proposed |
-| `round1Rate`, K | strictly below the non-K floor | 0.0063 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
-| `bustedRate` | 0.005–0.03, never 0 | 0.0150–0.0267 (n=3000) | yes | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"**. The 0.005 floor is a Stage 4 judgment call, not spec. This row previously flagged OL as marginally under the floor; wave 1's `wideOpen` ambient injury roll (see "School traits — wave 1" below) roughly doubled `bustedRate` wave-wide and OL is now comfortably inside band at 0.0150. (Note: this row's pre-wave figure had drifted to 0.0043–0.0120 by the time it was last written here; the actual pre-wave-1 baseline, re-measured immediately before this wave on `f554bc0`, was 0.0050–0.0130 — small pre-existing drift, not caused by wave 1, not investigated further. Use 0.0050–0.0130 as the "before" reference.) |
-| `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.4253–0.5213 (1.2257x) | yes | proposed, set by the threshold pass above |
+| actually picked (`draftedRate − undraftedRate`) | 0.85–0.95 | 0.8997–0.9533 (mean 0.931) | **NO — OL at 0.9533, pre-existing (see below)** | proposed |
+| `round1Rate`, non-K | 0.01–0.05 | 0.0203–0.0293 | yes | proposed |
+| `round1Rate`, K | strictly below the non-K floor | 0.0057 | yes | **spec** — "kickers rarely draft high"; "draft ceiling capped by design" |
+| `bustedRate` | 0.005–0.03, never 0 | 0.0127–0.0253 (n=3000) | yes | **spec** §7 bust conditions + Stage 3d exit criterion; **owner intent: "it should be a little difficult to wash out"**. The 0.005 floor is a Stage 4 judgment call, not spec. This row previously flagged OL as marginally under the floor pre-wave-1; wave 1's `wideOpen` ambient injury roll (see "School traits — wave 1" below) roughly doubled `bustedRate` wave-wide to 0.0150–0.0267. The pre-merge fix wave (below) then closed the redshirt-season injury leak (findings 2 and 3), which pulled `bustedRate` back down to 0.0127–0.0253 — still comfortably in band, still nonzero. (Note: the pre-wave-1 baseline, re-measured immediately before wave 1 on `f554bc0`, was 0.0050–0.0130. Use that as the "before wave 1" reference; 0.0150–0.0267 is "after wave 1, before the fix wave"; 0.0127–0.0253 is current.) |
+| `allConfRate` | 0.40–0.55, spread ≤ 1.25x | 0.4270–0.5197 (1.2170x) | yes | proposed, set by the threshold pass above |
 | median final `character` | above the band-2 gate | 56 vs gate 55 | yes | **spec** §4 — not re-measured this wave; `wideOpen`'s mechanics (`snapModifier`, `injuryProbPerPhase`) don't touch `character` |
-| `charUnder55Rate` | 0.35–0.50 | 0.4033–0.4607 | yes | proposed |
-| `avgSeasons` | 3.0–3.5 | 3.0563–3.0703 | yes | proposed (4 years eligibility, most declare early) |
+| `charUnder55Rate` | 0.35–0.50 | 0.4017–0.4637 | yes | proposed |
+| `avgSeasons` | 3.0–3.5 | 3.0587–3.0717 | yes | proposed (4 years eligibility, most declare early) |
 
-**Every metric is in band as of wave 1**, but one case now deserves the same flag this table used
-to give `bustedRate`, not a clean pass: **OL's picked rate sits exactly at 0.9500, the band's
-ceiling, with zero headroom** — up from 0.946 pre-wave. The next content or trait change that
-raises OL's draft outcomes will push it out of band immediately, not gradually; see "School traits
-— wave 1" below for what moved this pass. That was the finding, and it should redirect the stage:
-the numeric balance work is essentially done, and the remaining backlog value is in **content
-quality**, not tuning. Do not reach for the levers below without first naming which band a change
+**One metric is out of band: OL's picked rate — and it is a PRE-EXISTING exception, not one wave 1
+or the fix wave introduced.** An earlier draft of this document claimed OL sat "exactly at the
+0.9500 ceiling" post-wave-1, "up from 0.946 pre-wave" — that pre-wave figure was stale. The actual
+pre-wave-1 baseline (measured on `f554bc0`, before `wideOpen` existed at all, saved at
+`.superpowers/sdd/2026-09-07-school-traits-wave1-wideopen/baseline-n3000-before.json`) has OL's
+picked rate at **0.9617** (range across positions 0.9030–0.9617, mean 0.9358) — already 0.0117
+over the 0.9500 ceiling, before this feature shipped anything. Wave 1's `wideOpen` ambient injury
+roll happened to pull OL *down* to 0.9500 (coincidentally landing right on the ceiling, which is
+why it read as "zero headroom" rather than "already over"). The pre-merge fix wave's findings 2 and
+3 (see "Fix wave — pre-merge review" below) then closed the redshirt-season injury/overall leak —
+correctness fixes, not balance tuning — which nudged `draftedRate` up and `undraftedRate` down
+slightly across every position, carrying OL to 0.9533. That is still **below its own pre-wave-1
+value of 0.9617** — the fix wave partially re-exposed a pre-existing condition, it did not create
+one.
+
+**This is reported, not tuned away.** `snapModifier` and `injuryProbPerPhase` stay at 1.15/0.06 per
+`school-traits.ts`'s own rule — trimming a `wideOpen` magnitude would move the wrong knob, since the
+breach predates the trait and persists (mostly) independent of it. If OL's picked rate needs to
+come down, the honest levers are backlog item 3 (milestone overall-EV vs. the development cap:
+three guaranteed fixed events per season against `devCap: 3`) or the position pile's overall-EV
+budget (spec §5.3, referenced elsewhere in this document as a `round1Rate` lever, and it touches
+`draftedRate`/`undraftedRate` too) — both are content/EV decisions for a human to make deliberately,
+not something to infer from this band breach alone. Everything else stays essentially the finding
+from wave 1: the numeric balance work is otherwise done, and the remaining backlog value is in
+**content quality**, not tuning. Do not reach for the levers below without first naming which band a
+change
 is meant to move and why the current value is wrong.
 
 ### Two reporting traps in the harness itself
@@ -647,7 +666,11 @@ drift unrelated to wave 1 — see the `bustedRate` row of the target-bands table
 to ~0.0150–0.0267 now. That is the ambient injury roll working exactly as designed
 (more injuries, more soft-washouts) and every position stays inside the 0.005–0.03 band, but it
 means **the injury budget for waves 2–3 is materially tighter than it was** — there is roughly
-0.003–0.015 of headroom left before K, the tightest position, hits the ceiling. Concretely: the
+0.003–0.015 of headroom left before K, the tightest position, hits the ceiling. (Updated by the
+pre-merge fix wave: findings 2 and 3 stopped the ambient roll from firing during redshirt seasons
+— a real defect, not a re-tuning — which pulled `bustedRate` back down to 0.0127–0.0253. The
+headroom before K's ceiling is correspondingly a little wider now; see "Fix wave — pre-merge
+review" below and the target-bands table's `bustedRate` row for the current figure.) Concretely: the
 plan's original `wideopen-two-deep` event stacked a `hamstring` injury on top of the ambient roll
 and measured K at 0.0280 against the 0.03 ceiling during authoring. It was rewritten to drop the
 injury and pay its cost in `character` instead (see task-8's report for the EV rework); the shipped
@@ -678,9 +701,67 @@ though neither trait adds an RNG draw of its own** — they change snap counts, 
 `resolveAwards`/`postseason.ts` skip their award draw entirely when the production gate isn't met
 ("no draw when gate unmet"), so a snap change can shift whether that draw happens at all, which
 shifts every RNG draw downstream of it in the same career. This is exactly the seeded-stability
-trap Task 3's ambient-roll isolation test and Task 9's whole-career isolation check both guard
-against for `wideOpen` — the same guard will need extending to cover `factory`/`developmental` once
-either ships.
+trap Task 3's ambient-roll isolation test (`src/engine/school-effects.test.ts`) and the whole-career
+isolation check (`src/sim/trait-probe.test.ts`, "whole-career seeded stability" — committed by the
+pre-merge fix wave's finding 4; it existed only as a hand-run check before that, never as a test)
+both guard against for `wideOpen` — the same guard will need extending to cover
+`factory`/`developmental` once either ships.
+
+## Fix wave — pre-merge review
+
+A final whole-branch review of `stage4-school-traits` before merge found five findings against the
+`wideOpen` ship above. All five are fixed; this section is the record.
+
+1. **(Important) The trait could be silently unwired from the engine and 357/357 tests still
+   passed.** Deleting the `schoolSnapModifier(...)` factor from `simulate.ts` and, separately,
+   commenting out the `rollAmbientInjury(...)` call in `advance.ts` both left the full suite green,
+   because every existing test called those two functions directly rather than through the engine's
+   actual call path. Fixed by adding two tests in `src/engine/advance.test.ts`
+   ("wideOpen wiring is actually called by the engine, not just callable") that drive real careers
+   through `advance()`/`createCareer()` with a pinned Signing-Day offer and assert on the resulting
+   state — an ambient injury firing (`careerInjuries > 0`) with the firing phase's snaps at exactly
+   0, and a wideOpen school's season snaps exceeding an untraited school's from the same seed by
+   roughly the 1.15x `snapModifier`. Verified by actually deleting each wiring, confirming the
+   corresponding new test went red, then restoring — see the fix-wave report for the transcript.
+2. **(Important) The ambient injury cost fired during redshirt seasons, where the benefit is
+   zero.** `rollAmbientInjury` gated on `ON_FIELD_PHASES` but not on `state.redshirtSeasonActive`;
+   during a sit season `snapModifier` drops to `sitSnapModifier` (0.05) and the dev-point math
+   floors identically whether or not `wideOpen`'s bonus is applied, so the snap bonus buys nothing
+   while the injury cost still landed in full (measured ~2.7x more ambient injuries in `wideOpen`
+   redshirt seasons than untraited ones). This breaks spec §2.2's shared-temporal-scope rule in the
+   player-hostile direction. **Ruling: skip the roll when `state.redshirtSeasonActive` is true** — a
+   redshirt is precisely not "playing" in the trait's own narrative sense. Fixed in
+   `src/engine/school-effects.ts`'s `rollAmbientInjury`, with a test in
+   `src/engine/school-effects.test.ts` asserting no injury fires at `injuryProbPerPhase: 1` during a
+   redshirt season.
+3. **(Important) Both trait-gated events were missing `requiresPlaying: true`.** The house
+   convention (documented at `milestones.ts:6`, followed by all 12 previously-shipped gated events)
+   is that player-facing beats never fire during a redshirt sit season. `wideopen-next-man-up` and
+   `wideopen-two-deep` in `src/content/events/school-life.ts` did not follow it, so a redshirting
+   player could draw "The Two-Deep" and collect `+2 overall` for reps never taken. Fixed by adding
+   `requiresPlaying: true` to both events' `conditions` (this gate is structural in
+   `select-event.ts`'s `eventMatches`, not something either event had to implement itself).
+4. **(Important) The handoff claimed a test guard existed that had never been committed.** This
+   document's wave-1 section referred to "Task 9's whole-career isolation check" as an existing
+   guard; it had been run once by hand (seed `iso-check-0`) during Task 9's review round and never
+   turned into a committed test. Fixed by committing it: `src/sim/trait-probe.test.ts`, "whole-career
+   seeded stability," runs a career (seed `iso-check-0`, confirmed via `traitsExperienced` to attend
+   no traited school) against the real content bundle and again against a bundle with every school's
+   `trait` stripped, and asserts the two final states are `toEqual`. `playCareer` (`play-headless.ts`)
+   picked up an optional `content` parameter (default `CONTENT`) to make this possible — it had no
+   way to inject a content bundle before. This sentence in the wave-1 section above is now accurate.
+5. **(Minor) Stale figures in `school-traits.ts`'s header comment.** The `round1Rate`-non-K and
+   `bustedRate` ranges cited there predated even wave 1's own final measurement. Since findings 2 and
+   3 change measured behavior, the header was updated with the freshly re-measured post-fix-wave
+   figures (see below), not the intermediate ones — with a note explaining why the numbers moved and
+   pointing at this section.
+
+**Re-measured after all five fixes, n=3000, `npx tsx src/sim/balance.ts 3000 random all`:** every
+band holds except OL's picked rate, which is a **pre-existing** exception (see "What \"balanced\"
+means" above for the full explanation — it predates this feature and the fix wave partially
+re-exposed rather than created it). `snapModifier` (1.15) and `injuryProbPerPhase` (0.06) were not
+touched; nothing here is a tuning change. Full before/after table and the finding-1 red/green proof
+are in `.superpowers/sdd/2026-09-07-school-traits-wave1-wideopen/fix-wave-report.md`.
 
 ## Tuning levers (spec §8.1, ordered — cheapest/safest first)
 

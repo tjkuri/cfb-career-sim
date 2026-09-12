@@ -53,10 +53,29 @@ export const TRAIT_HINTS: Record<SchoolTrait, string> = {
 //
 // 1.15 / 0.06 are KEPT UNCHANGED. The bonus and the cost land on different
 // currencies and very nearly cancel — snaps buy all-conference, injuries give
-// back the draft — while every whole-population band holds (`npx tsx
-// src/sim/balance.ts 3000 random all`: picked 0.894-0.949, round1 non-K
-// 0.0217-0.0240 with K at 0.0063, busted 0.0143-0.0280, allConf 0.420-0.521
-// spread 1.24x, charU55 0.397-0.463, avgSeasons 3.056-3.071).
+// back the draft — while every whole-population band holds except one
+// pre-existing exception noted below (`npx tsx src/sim/balance.ts 3000 random
+// all`: picked 0.900-0.953 [OL's 0.953 is out of the 0.85-0.95 band, see
+// below], round1 non-K 0.0203-0.0293 with K at 0.0057, busted 0.0127-0.0253,
+// allConf 0.427-0.520 spread 1.217x, charU55 0.402-0.464, avgSeasons
+// 3.059-3.072).
+//
+// UPDATED by the pre-merge fix wave (findings 2 and 3 of the whole-branch
+// review, both wave-1 defects): rollAmbientInjury now skips redshirt seasons
+// entirely (the benefit was already zero there, so charging the cost broke
+// the spec's shared-temporal-scope rule — see the WHY comment on that
+// function in school-effects.ts), and both trait-gated school-life.ts events
+// picked up the missing requiresPlaying gate. Both changes remove injury/
+// overall exposure that had no business firing on a sitting player, so
+// bustedRate fell wave-wide (was 0.0150-0.0267) and picked rose slightly
+// wave-wide — including OL, to 0.9533. That is NOT a fix-wave regression: OL's
+// picked rate was ALREADY over the 0.9500 ceiling before wideOpen ever
+// existed (0.9617, measured pre-wave-1 on f554bc0 — see the handoff's target-
+// bands table). Wave 1 happened to pull it down to exactly 0.9500; this fix
+// wave partially undid that, back toward its pre-existing value. Reported as
+// a pre-existing exception, not tuned away — 1.15/0.06 stay unchanged per
+// this file's own rule below, and the fix-wave report has the full
+// before/after table.
 //
 // State it plainly rather than calling it neutral: avgFinalOverall drifts
 // slightly NEGATIVE in all six positions (-0.21 to -0.48), one-directional, not

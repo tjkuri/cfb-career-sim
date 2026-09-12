@@ -54,6 +54,18 @@ export function rollAmbientInjury(
   injuryOf: InjuryLookup,
 ): void {
   if (schoolTraitOf(state, content) !== "wideOpen") return;
+  // Spec §2.2's shared-temporal-scope rule: a trait's benefit and its cost
+  // must be collectable only together, or some pattern farms the cheap half.
+  // During a redshirt, snapModifier drops to sitSnapModifier (0.05) and the
+  // dev-point math floors both the 1.0 and 1.15 cases to the same result, so
+  // the benefit is already zero — this player is not "playing," in the
+  // trait's own narrative sense ("a thin two-deep means you keep playing and
+  // keep getting hurt"). Charging the ambient cost anyway breaks the rule in
+  // the player-hostile direction: full injury exposure for a snap bonus that
+  // buys nothing. Skip the roll entirely, same as an untraited school — no
+  // RNG consumed, so a career whose redshirt season is otherwise unaffected
+  // stays bit-for-bit unchanged.
+  if (state.redshirtSeasonActive) return;
   if (isSidelined(state)) return;
   const cfg = content.schoolTraits.wideOpen;
   if (!rngChance(rng, cfg.injuryProbPerPhase)) return;

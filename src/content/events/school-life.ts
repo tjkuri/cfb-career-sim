@@ -26,7 +26,11 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { schoolTrait: ["wideOpen"] },
+    // requiresPlaying: true, per the house convention (milestones.ts:6) — a
+    // redshirt is sitting the season, so "the guy in front of you goes down
+    // and there is nobody behind him" and the +2 overall for playing through
+    // it cannot fire for reps a sitting player never took.
+    conditions: { schoolTrait: ["wideOpen"], requiresPlaying: true },
     title: "Next Man Up",
     description: "The guy in front of you goes down in warmups and there is nobody behind him. The position coach does not so much tell you as look at you.",
     options: [
@@ -69,7 +73,10 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { schoolTrait: ["wideOpen"] },
+    // requiresPlaying: true, per the house convention (milestones.ts:6) — "the
+    // depth chart goes up Monday" only means something to a player who is on
+    // it that week; a sitting redshirt cannot take reps he isn't taking.
+    conditions: { schoolTrait: ["wideOpen"], requiresPlaying: true },
     title: "The Two-Deep",
     description: "The depth chart goes up Monday. Your name is on it, and under your name there is a walk-on and a blank line.",
     options: [

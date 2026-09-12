@@ -127,4 +127,27 @@ describe("rollAmbientInjury", () => {
     rollAmbientInjury(s, content, createRng("ambient"), injuryOf);
     expect(s.injuries).toHaveLength(1);
   });
+
+  // Finding 2 (fix-wave review): rollAmbientInjury gated on ON_FIELD_PHASES
+  // but not on redshirtSeasonActive, so the cost fired during a sit season
+  // where the benefit (snapModifier) is already near-zero (sitSnapModifier
+  // 0.05) and buys zero development points either way. That breaks spec
+  // §2.2's shared-temporal-scope rule -- a trait's benefit and cost must be
+  // collectable only together -- in the player-hostile direction: full
+  // injury exposure for a snap bonus that does nothing. A redshirt is
+  // precisely the case where the player is not "playing" in the trait's own
+  // narrative ("a thin two-deep means you keep playing and keep getting
+  // hurt"), so the roll must skip it entirely, the same as an untraited
+  // school -- no draw, bit-for-bit unchanged.
+  it("never fires during a redshirt season, even at probability 1", () => {
+    const wide = wideContent.schools.find((x) => x.id === WIDE_ID)!;
+    const s = createCareer(SETUP, "ambient");
+    s.school = { schoolId: wide.id, tier: wide.tier };
+    s.redshirtSeasonActive = true;
+    const content = { ...wideContent, schoolTraits: { ...wideContent.schoolTraits, wideOpen: { ...wideContent.schoolTraits.wideOpen, injuryProbPerPhase: 1 } } };
+    const rng = createRng("ambient");
+    rollAmbientInjury(s, content, rng, injuryOf);
+    expect(rng.cursor).toBe(0);
+    expect(s.injuries).toHaveLength(0);
+  });
 });

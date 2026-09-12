@@ -5,6 +5,9 @@ import type { GameState, Setup } from "../engine/index";
 // SeasonLine is not re-exported by the engine barrel; content modules import
 // straight from ./types for the same reason.
 import type { SeasonLine } from "../engine/types";
+import { playCareer } from "./play-headless";
+import { randomPolicy } from "./policies";
+import { CONTENT } from "../content/index";
 
 const setup: Setup = { lastName: "P", jerseyNumber: 1, homeState: "TX", position: "QB" };
 
@@ -49,5 +52,27 @@ describe("traitsExperienced", () => {
 
   it("returns an empty set for a career with no seasons at all", () => {
     expect(traitsExperienced(careerWithSeasons([])).size).toBe(0);
+  });
+});
+
+// Finding 4 / spec §8's whole-career isolation check. The handoff cited this
+// as an existing guard ("Task 9's whole-career isolation check"); it had only
+// ever been run once by hand (seed "iso-check-0", never committed) — this is
+// that check, committed. It must filter on every school the career attended,
+// not just the one it signed with, which is exactly what traitsExperienced
+// does (it walks the whole season history, not just seasons[0]).
+describe("whole-career seeded stability (Finding 4)", () => {
+  it("produces an identical final state against a trait-stripped bundle, for a career that never attends a traited school", () => {
+    const isoSetup: Setup = { lastName: "Iso", jerseyNumber: 1, homeState: "TX", position: "QB" };
+    const seed = "iso-check-0";
+    const real = playCareer(isoSetup, seed, randomPolicy);
+    // Confirms the premise rather than assuming it: if content ever shifts so
+    // this seed's career DOES attend a wideOpen school, the test should fail
+    // loudly, not silently compare two runs that were never isolated at all.
+    expect(traitsExperienced(real).size).toBe(0);
+
+    const stripped = { ...CONTENT, schools: CONTENT.schools.map((s) => ({ ...s, trait: undefined })) };
+    const strippedRun = playCareer(isoSetup, seed, randomPolicy, stripped);
+    expect(strippedRun).toEqual(real);
   });
 });

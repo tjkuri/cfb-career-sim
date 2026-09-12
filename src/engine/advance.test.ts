@@ -8,7 +8,8 @@ import { ALL_POSITIONS } from "./types";
 const ON_FIELD_PHASES_PER_SEASON = 3;
 import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
-import type { Setup } from "./types";
+import type { ContentBundle } from "../content/schema";
+import type { GameState, Setup } from "./types";
 
 const setup: Setup = { lastName: "Allen", jerseyNumber: 7, homeState: "MT", position: "QB" };
 
@@ -511,5 +512,73 @@ describe("recruiting offers are generated once", () => {
     const s = createCareer(rSetup, "clear");
     const next = advance(s, getDecision(s)!.options[0]!.id);
     expect(next.pendingOptions).toBeUndefined();
+  });
+});
+
+// Finding 1 (fix-wave review): a reviewer deleted the schoolSnapModifier(...)
+// factor from simulate.ts and, separately, commented out the
+// rollAmbientInjury(...) call in advance.ts, and the full suite still passed
+// 357/357 both times — every existing test exercises those two functions in
+// isolation (school-effects.test.ts) rather than through the engine's actual
+// call path. These tests drive real careers through advance() itself and must
+// fail if either wiring is removed; see fix-wave-report.md for the
+// removal-and-restore proof that they do.
+describe("wideOpen wiring is actually called by the engine, not just callable", () => {
+  // Content with every random/fixed event stripped except recruiting, mirroring
+  // NO_EVENTS above: the point is to isolate the ambient roll and the snap
+  // math from any *content* effect (e.g. milestone-opener's `{ kind: "snaps" }`
+  // bonus) that would otherwise add noise on top of what we're measuring.
+  const STRIPPED = { ...CONTENT, events: CONTENT.events.filter((e) => e.id === "recruiting") };
+
+  // Pins Signing Day to a specific school by overwriting the sampled offer
+  // list with a single hand-built one, then commits to it through the real
+  // advance() entry point — applyRecruitingChoice and everything downstream
+  // (tickPhaseStart, rollAmbientInjury, simulatePhaseProduction) runs for
+  // real. This is the engine-level equivalent of school-effects.test.ts's
+  // `applyRecruitingChoice(s, id, CONTENT)` pin, one layer higher.
+  function commitTo(schoolId: string, seed: string, content: ContentBundle): GameState {
+    const school = content.schools.find((x) => x.id === schoolId)!;
+    const s = createCareer(setup, seed, content);
+    s.pendingOptions = [{ id: `commit-${school.id}`, label: "x", schoolId: school.id, tier: school.tier, snapModifier: 1 }];
+    return advance(s, `commit-${school.id}`, content);
+  }
+
+  it("rolls an ambient injury through advance() at a wideOpen school, and the season stays at 0 snaps while it does", () => {
+    const wideSchool = STRIPPED.schools.find((x) => x.id === "unt")!;
+    expect(wideSchool.trait, "unt is expected to carry wideOpen in the real ladder").toBe("wideOpen");
+    const content = {
+      ...STRIPPED,
+      schoolTraits: { ...STRIPPED.schoolTraits, wideOpen: { ...STRIPPED.schoolTraits.wideOpen, injuryProbPerPhase: 1 } },
+    };
+    // With every content event stripped, autoProgress runs uninterrupted
+    // through all three on-field phases of season 0 and pauses at the
+    // redshirt hub at the start of season 1 — so season 0's line reflects
+    // only the ambient roll + production, nothing else.
+    const s = commitTo("unt", "wiring-injury", content);
+    expect(s.currentEventId).toBe("redshirt");
+    expect(s.careerInjuries).toBeGreaterThan(0);
+    expect(s.seasons[0]!.snaps).toBe(0);
+  });
+
+  it("scales snaps by the school's snapModifier, observed only through advance() — a wideOpen school outproduces an untraited one from the same seed", () => {
+    // injuryProbPerPhase 0 so the ambient roll can't shrink snaps and muddy
+    // the comparison; probability 0 also consumes no RNG draw (documented in
+    // school-effects.ts), so the production roll that follows is bit-for-bit
+    // identical between the two runs below.
+    const content = {
+      ...STRIPPED,
+      schoolTraits: { ...STRIPPED.schoolTraits, wideOpen: { ...STRIPPED.schoolTraits.wideOpen, injuryProbPerPhase: 0 } },
+    };
+    const wide = commitTo("unt", "wiring-snaps", content); // wideOpen, 1.15x
+    const plain = commitTo("mont", "wiring-snaps", content); // untraited, 1.0x
+    const wideSnaps = wide.seasons[0]!.snaps;
+    const plainSnaps = plain.seasons[0]!.snaps;
+    expect(wideSnaps).toBeGreaterThan(plainSnaps);
+    // The exact ratio is 1.15 before per-phase Math.round noise (3 rounds
+    // summed, not one round of the total), so assert a band around it rather
+    // than an exact product.
+    const ratio = wideSnaps / plainSnaps;
+    expect(ratio).toBeGreaterThan(1.1);
+    expect(ratio).toBeLessThan(1.2);
   });
 });

@@ -1,17 +1,23 @@
 import { createCareer, advance, getDecision, type GameState, type Setup } from "../engine/index";
 import { createRng } from "../engine/rng";
+import type { ContentBundle } from "../content/schema";
+import { CONTENT } from "../content/index";
 import { firstOptionPolicy, randomPolicy, type Policy } from "./policies";
 
-export function playCareer(setup: Setup, seed: string, policy: Policy): GameState {
-  let s = createCareer(setup, seed);
+// content defaults to CONTENT (mirrors createCareer/advance's own default),
+// but is threaded through explicitly so a caller can swap the bundle -- e.g.
+// the whole-career seeded-stability check, which reruns an identical seed
+// against a trait-stripped bundle and diffs the two final states.
+export function playCareer(setup: Setup, seed: string, policy: Policy, content: ContentBundle = CONTENT): GameState {
+  let s = createCareer(setup, seed, content);
   // A dedicated policy rng, seeded separately so policy choices don't disturb engine determinism.
   const policyRng = createRng(seed + ":policy");
   let guard = 0;
   while (s.status === "active" && guard++ < 1000) {
-    const decision = getDecision(s);
+    const decision = getDecision(s, content);
     if (!decision) break;
     const choice = policy(s, decision.options, policyRng);
-    s = advance(s, choice);
+    s = advance(s, choice, content);
   }
   return s;
 }
