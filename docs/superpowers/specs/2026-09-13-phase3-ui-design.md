@@ -201,8 +201,15 @@ A list of completed careers, reachable from Creation and Summary.
 
 ## 6. What the player sees of progression
 
-Mid-career the player reads a **qualitative band**, never an integer. The raw OVR is revealed once,
-on the summary. Nothing to optimize against turn by turn; the share card still carries a number.
+> **Reversed after playtesting.** This section originally specified bands only, with the raw OVR
+> hidden until the summary. Measurement killed it — see §15. `overall` is now shown as an integer
+> throughout, with the band phrase kept as its gloss. `character` remains qualitative-only, which is
+> where the argument actually held. The band table below still stands; it is the gloss, not a
+> replacement for the number.
+
+Mid-career the player reads **the OVR integer, glossed by a qualitative band** ("74 · a week-one
+starter"). The number is the genre's native language and the player's own progression stat; the
+phrase says what that number means in football terms.
 
 Bands are anchored on thresholds that already exist in the content, not invented:
 
@@ -271,8 +278,13 @@ interface CareerView {
 }
 ```
 
-Explicitly **not** present at any point: `tier`, `draftStock`, `overall` (outside `CareerSummary`),
-`character`, `snapModifier`, trait names, probabilities, weights.
+Explicitly **not** present at any point: `tier`, `draftStock`, `character` (as a number),
+`snapModifier`, trait names, probabilities, weights.
+
+`overall` **is** present, deliberately (§15). The asymmetry with `character` is the whole point:
+overall is the stat the player is building and it carries ~82 points of draft-stock range, while
+character carries ±7.5 — rendering both as integers would misrepresent character's influence by an
+order of magnitude.
 
 **The test:** walk a full career through the reducer across several seeds, serialize every
 `CareerView` produced, and assert the output never contains `draftStock`, `probability`, `weight`,
@@ -360,7 +372,7 @@ school-trait waves 2 and 3; any balance tuning.
 | Question | Decision |
 |---|---|
 | How does the UI get outcome narration? | Additive `lastOutcome` on `GameState`; API stays five exports |
-| How are `overall` / `character` shown? | Qualitative bands mid-career; raw OVR revealed once on the summary |
+| How are `overall` / `character` shown? | **OVR as an integer throughout, glossed by a band phrase; `character` qualitative-only** (revised — §15) |
 | Loop shape | Resolve in place on the same card; one-option beats skip the outcome step |
 | Persistence scope | Resume in-progress **and** a capped local career log |
 | Share mechanism | Copy-as-text including the seed; no rasterizer |
@@ -412,3 +424,37 @@ The brief fixed dark, sans, card-based; the free axes went to:
   carrying the draft pick on the summary. Everything else stays quiet.
 - **Options are depth-chart rows**, not identical pill cards: a flat row whose left edge lights amber
   on hover and focus.
+
+## 15. Revision: the OVR display was reversed
+
+The original decision (§6, §13) hid `overall` behind qualitative bands until the summary, on the
+argument that a visible integer invites reload-and-compare optimization play. Playtesting and then
+measurement showed that was wrong on both halves.
+
+**The feedback cost was far larger than estimated.** Over 300 random-policy careers, 7,926 decisions:
+
+| | |
+|---|---|
+| Decisions where `overall` moved | 3,525 (**44.5%**) |
+| Decisions where the *band* moved | 966 (**12.2%**) |
+| Band changes per career | median **3** |
+| Careers with **zero** band change | 19 / 300 (**6%**) |
+
+The bands absorbed roughly **three quarters of all progression feedback**. A player could take four
+consecutive good outcomes, climb 60 → 65, and watch the interface say "in the rotation" the entire
+time. One career in sixteen showed no progression signal at all from Signing Day to the draft.
+
+**The optimization argument does not apply to this game.** It assumes cheap retries. There is no
+undo, choices commit on click, and the career persists immediately — save-scumming a single decision
+would mean clearing `localStorage` and replaying a median 24 decisions from the start. The pressure
+being guarded against barely exists here.
+
+**What survived.** The same argument applied to `character` still holds and is unchanged: it moves
+draft stock by about ±7.5 against overall's ~82, so an integer would overstate it roughly tenfold.
+Character stays words-only, and `view-model.test.ts` asserts it is never exposed as a number.
+
+**What changed in code.** `CareerView` gained `overall: number`; `"overall"` came off the boundary
+test's forbidden list and `"character"` stayed on it, with both facts asserted explicitly rather than
+left implicit; the career screen leads with the numeral and sets the band phrase beneath it as a
+gloss. The reference soccer game — which this project reinterprets, and which shows a running
+overall — was right about this.

@@ -47,6 +47,9 @@ export interface CareerView {
   schoolName: string | null;
   classYear: ClassYear;
   seasonRecord: string | null;
+  /** The live OVR. Shown as an integer: see the spec's §6 note on why the
+      qualitative-only treatment was reversed. */
+  overall: number;
   standing: string;
   trust: string;
   status: Status;

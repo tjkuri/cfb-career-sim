@@ -17,8 +17,13 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
         {view.seasonRecord && <span className="rail-record">{view.seasonRecord}</span>}
       </div>
 
-      <p className="standing">You are {view.standing}.</p>
-      <p className="trust">{view.trust}</p>
+      <div className="standing">
+        <span className="ovr-number">{view.overall}</span>
+        <span className="ovr-gloss">
+          <span className="ovr-band">{view.standing}</span>
+          <span className="trust">{view.trust}</span>
+        </span>
+      </div>
 
       {resolved ? (
         <section className="card fade-in" aria-live="polite">

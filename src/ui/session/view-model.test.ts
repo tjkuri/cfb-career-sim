@@ -16,7 +16,8 @@ const FORBIDDEN_KEYS = [
   "snapModifier",
   "trait",
   "schoolTrait",
-  "overall",
+  // "overall" is deliberately absent: it is the player's own progression stat
+  // and IS rendered. "character" stays forbidden as a number -- see below.
   "character",
   "rngCursor",
   "pendingEffects",
@@ -62,13 +63,33 @@ describe("CareerView boundary", () => {
           };
           walk(view);
           for (const forbidden of FORBIDDEN_KEYS) {
-            // `finalOverall` on the summary is the one deliberate reveal, and
-            // it is a distinct key -- a bare `overall` must never appear.
             expect(keys.has(forbidden), `${forbidden} leaked for ${position}`).toBe(false);
           }
+          // `character` is deliberately NOT exposed as a number -- it moves
+          // draft stock by about ±7.5 against overall's ~82, so an integer
+          // would overstate it by an order of magnitude. The band phrase is
+          // the only character read a screen can render.
+          expect(keys.has("character")).toBe(false);
+          expect(typeof view.trust).toBe("string");
         }
       }
     }
+  });
+
+  it("exposes overall as a number — the player's own progression stat", () => {
+    // Deliberate, and the inverse of `character`. Hiding it behind bands
+    // suppressed ~3/4 of progression feedback; see view-model.ts's note.
+    const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+    const view = buildView(createCareer(setup, "vm-ovr"));
+    expect(typeof view.overall).toBe("number");
+    expect(view.overall).toBeGreaterThan(0);
+  });
+
+  it("keeps the band phrase as a gloss on the number, not a replacement", () => {
+    const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+    const view = buildView(createCareer(setup, "vm-gloss"));
+    expect(view.standing.length).toBeGreaterThan(0);
+    expect(view.standing).not.toContain(String(view.overall));
   });
 
   it("never names a school trait in rendered text", () => {

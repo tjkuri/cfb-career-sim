@@ -79,14 +79,38 @@ body {
 
 .rail-record { margin-left: auto; font-variant-numeric: tabular-nums; }
 
+/* The number leads and the band phrase glosses it: 74 means nothing to someone
+   who does not know the scale, and "week-one starter" means nothing precise to
+   someone who does. Character stays words-only on purpose. */
 .standing {
-  margin: 0.85rem 0 0;
-  font-size: 1.02rem;
+  margin: 0.9rem 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+}
+
+.ovr-number {
+  font-variation-settings: "wdth" 68;
+  font-weight: 800;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--chalk);
+  font-variant-numeric: tabular-nums;
+}
+
+.ovr-gloss {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ovr-band {
+  font-variation-settings: "wdth" 82;
+  font-size: 1rem;
   color: var(--chalk);
 }
 
 .trust {
-  margin: 0.15rem 0 0;
   font-size: 0.88rem;
   color: var(--chalk-faint);
 }

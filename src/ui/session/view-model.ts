@@ -8,6 +8,13 @@ import type { CareerSummaryView, CareerView, MomentView, SeasonView } from "./ty
 // CareerView and therefore cannot render tier, draftStock, probability, weight,
 // snapModifier or trait names, because those values are never copied across.
 // view-model.test.ts asserts that property over a full career.
+//
+// `overall` IS copied across, deliberately. It is the player's own progression
+// number and the genre's native language; hiding it behind bands suppressed
+// roughly three quarters of all progression feedback (measured: OVR moves on
+// 44.5% of decisions, the band on 12.2%, and 6% of careers never change band
+// at all). `character` stays qualitative -- it swings draft stock by about
+// ±7.5 against overall's ~82, so an integer would overstate it tenfold.
 
 const SCHOOL_NAMES: Record<string, string> = Object.fromEntries(
   CONTENT.schools.map((s) => [s.id, s.name]),
@@ -110,6 +117,7 @@ export function buildView(state: GameState): CareerView {
     schoolName: currentSchoolName(state),
     classYear: state.eligibility.classYear,
     seasonRecord: currentRecord(state),
+    overall: state.overall,
     standing: standingPhrase(state.overall),
     trust: trustPhrase(state.character),
     status: state.status,
