@@ -87,6 +87,9 @@ export function advance(state: GameState, choiceId: string, content: ContentBund
   const s = clone(state);
   const rng = createRng(s.seed, s.rngCursor);
   const injuryOf = injuryLookup(content);
+  // Cleared before the choice resolves, so an outcome can never outlive the
+  // decision that produced it and surface against an unrelated later card.
+  delete s.lastOutcome;
 
   applyChoice(s, choiceId, content, rng, injuryOf);
   if (s.status === "active") autoProgress(s, content, rng, injuryOf);
@@ -136,6 +139,7 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     const cfg = content.redshirt;
     const success = rngChance(rng, cfg.successProb);
     applyEffect(s, { kind: "overall", timing: "immediate", amount: success ? cfg.bumpOverall : cfg.sinkOverall }, injuryOf);
+    s.lastOutcome = { description: success ? cfg.bumpDescription : cfg.sinkDescription };
     s.eligibility.redshirtUsed = true;
     s.snapModifier = cfg.sitSnapModifier;
     s.redshirtSeasonActive = true;
@@ -147,6 +151,7 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
   const opt = ev.options.find((o) => o.id === choiceId);
   if (!opt) throw new Error(`Invalid choice ${choiceId} for event ${ev.id}`);
   const outcome = resolveOutcome(opt, rng);
+  s.lastOutcome = { description: outcome.description };
   for (const eff of outcome.effects) applyEffect(s, eff, injuryOf);
   if (ev.kind === "fixed") s.phaseFiredEventIds.push(ev.id);
   s.currentEventId = null;

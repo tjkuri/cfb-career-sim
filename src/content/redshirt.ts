@@ -8,4 +8,8 @@ export const REDSHIRT: RedshirtConfig = {
   bumpOverall: 5,
   sinkOverall: -3,
   sitSnapModifier: 0.05,
+  bumpDescription:
+    "A year in the weight room and the scout-team huddle with nobody watching. You come back bigger, and the coaches notice in the first padded practice.",
+  sinkDescription:
+    "A year of reps you did not get. The game looks a half-step faster when you finally line up again, and everyone who redshirted with you looks further along.",
 };

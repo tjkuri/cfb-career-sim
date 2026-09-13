@@ -367,3 +367,48 @@ school-trait waves 2 and 3; any balance tuning.
 | Where does logic live? | Pure reducer + view-model; thin components |
 | Test strategy | Headless Vitest on the session module; no jsdom/RTL |
 | Styling | Plain CSS with custom properties |
+
+## 14. Implementation notes — where the build diverged from this spec
+
+Recorded at MVP completion. Each of these is a deliberate change, not drift.
+
+**Moment icons are emoji, not inline SVG (§6).** Twenty-two hand-authored SVG paths is a lot of
+invented geometry to get right for an MVP, and badly drawn glyphs would read worse than none. The
+design point survives intact: `iconGlyph()` is the only thing that knows, so swapping in an SVG set
+later touches `labels.ts` and nothing else. The fallback behaviour is unchanged.
+
+**One stylesheet, not per-screen files (§3).** `src/ui/styles/app.css` covers all four screens. At
+this size, splitting it would spread four screens' spacing rules across four files and make the
+cancel-each-other-out selector problems more likely, not less.
+
+**`ClassYear` and `Status` were added to the engine's type exports.** The UI needs both, and the rule
+is that nothing imports from `src/engine/**` except `index.ts`. Adding two type exports respects that
+rule; deep-importing `./types` would have broken it. `bands.test.ts` likewise reads starting values
+off a real `createCareer` result rather than deep-importing `STARTING_OVERALL`.
+
+**`CareerView.schoolName` is `string | null`.** Found by playing it: before Signing Day the career
+carries `schoolId: ""`, which rendered as a blank gap in the context rail. An uncommitted recruit is
+a real state, so the rail names it ("Uncommitted") rather than showing an empty slot.
+
+### Verified at completion
+
+- `npm test` — **428 passing** across 34 files (361 pre-existing, 10 new engine tests for
+  `lastOutcome`, 57 new session tests).
+- `npm run typecheck` — both passes exit 0.
+- `npm run build` — clean; 109 kB gzipped.
+- Played end-to-end in the browser: creation → Signing Day → decisions with resolve-in-place →
+  draft summary → share text → career log → reload-resume. No console errors, no horizontal
+  overflow at 400px.
+
+### Aesthetic decisions made during the build
+
+The brief fixed dark, sans, card-based; the free axes went to:
+
+- **Palette** — a night-game ground: turf green-black (`#0c1712`), lifted card (`#16241d`), chalk
+  rules, and a single scoreboard-amber accent (`#f0b429`).
+- **Type** — one variable family, Archivo, worked across its *width* axis: condensed for headlines,
+  numerals and the rail, normal width for prose.
+- **The one bold element** — the jersey numeral, oversized on creation, with the same treatment
+  carrying the draft pick on the summary. Everything else stays quiet.
+- **Options are depth-chart rows**, not identical pill cards: a flat row whose left edge lights amber
+  on hover and focus.

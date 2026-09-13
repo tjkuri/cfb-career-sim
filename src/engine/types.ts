@@ -152,6 +152,13 @@ export interface GameState {
   injuries: ActiveInjury[];
   careerInjuries: number; // career-long tally; state.injuries is emptied on heal
 
+  // The authored prose for the outcome the last choice resolved to. Set by
+  // applyChoice, cleared at the top of every advance, and deliberately carrying
+  // no positive/negative flag -- a UI that colours an outcome by branch is
+  // leaking the option's probability. Undefined after hub choices (recruiting,
+  // transfer, declare), whose result is the next screen rather than prose.
+  lastOutcome?: { description: string };
+
   status: Status;
   endingReason?: string;
   draftResult?: DraftResult;

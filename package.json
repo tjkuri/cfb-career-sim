@@ -9,12 +9,23 @@
     "typecheck": "tsc -p tsconfig.engine.json && tsc -p tsconfig.json",
     "play": "tsx src/sim/play-headless.ts",
     "balance": "tsx src/sim/balance.ts",
-    "traits": "tsx src/sim/trait-probe.ts"
+    "traits": "tsx src/sim/trait-probe.ts",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "tsx": "^4.0.0",
     "typescript": "^5.5.0",
+    "vite": "^5.4.21",
     "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   }
 }

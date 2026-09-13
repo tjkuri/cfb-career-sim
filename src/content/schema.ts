@@ -48,6 +48,10 @@ export interface RedshirtConfig {
   bumpOverall: number;
   sinkOverall: number;
   sitSnapModifier: number;
+  // Prose for the two branches. The redshirt is the one gamble whose result the
+  // player would otherwise never be told -- a whole season sat on a 60/40 roll.
+  bumpDescription: string;
+  sinkDescription: string;
 }
 
 // Trait magnitudes. Every trait pairs a benefit with a cost of the SAME
@@ -168,6 +172,8 @@ export function validateContent(bundle: ContentBundle): string[] {
   const rs = bundle.redshirt;
   if (rs.successProb < 0 || rs.successProb > 1) errors.push("redshirt.successProb must be in [0,1]");
   if (rs.sitSnapModifier <= 0 || rs.sitSnapModifier > 1) errors.push("redshirt.sitSnapModifier must be in (0,1]");
+  if (!rs.bumpDescription) errors.push("redshirt.bumpDescription must be a non-empty string");
+  if (!rs.sinkDescription) errors.push("redshirt.sinkDescription must be a non-empty string");
 
   const knownTraits = new Set<string>(ALL_SCHOOL_TRAITS);
   for (const school of bundle.schools)
