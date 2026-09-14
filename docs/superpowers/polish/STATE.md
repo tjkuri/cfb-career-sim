@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 9 in flight (022, 023) · **PM session:** 4
+**Last updated:** 2026-09-14 · **Wave:** 9 complete and committed · **PM session:** 4 (handing off)
 
 ---
 
@@ -535,12 +535,12 @@ design — the two-column shell is the decision screen only.)
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| B23 | **Structural choices produce no resolution screen and no delta.** "Stay at Baylor" ran 75 → 82 **in the gap between two clicks.** Transfer, Declare and Stay show nothing; transferring UTSA → Baylor was *"acknowledged by one word changing in the header"* | todo — **high value** | This is B16, now quantified. The machinery exists: *taking* the redshirt does get a resolution and a loud `+10 OVR`. It is wired to one of four |
+| B23 | ~~Structural choices produce no resolution screen and no delta~~ **DONE** (wave 9, `f6df3d1`). "Stay at Baylor" ran 75 → 82 **in the gap between two clicks.** Transfer, Declare and Stay show nothing; transferring UTSA → Baylor was *"acknowledged by one word changing in the header"* | todo — **high value** | This is B16, now quantified. The machinery exists: *taking* the redshirt does get a resolution and a loud `+10 OVR`. It is wired to one of four |
 | B24 | **Position is a costume everywhere except the in-season cards.** All six open at OVR 60, "in the rotation" (not a thing kickers are in), identical offseason block. *"My kicker was voted team captain — in his redshirt year."* About 1 card in 4 is position-specific, and those were the only cards still being read by career 3 | todo | The position cards are praised as the best writing in the game. The finding is that there are too few of them, not that they are wrong |
-| B25 | **"Declare for the Draft?" carries zero information and is the most consequential card in the game.** *"A coin flip dressed as a decision."* It is also where the playtester worked out failure was impossible — the game let a 61-OVR FCS lineman declare after two seasons **with no comment** | todo — **tension with DECISION 025** | 025 refused `draftStock` by name. A second playtester has now independently asked for the same thing. The ledger column is a partial answer and was used exactly this way. Needs a call that does not leak the number |
-| B26 | **Nothing tells you the end is coming.** Career 1 ended after season 4 with no warning, on a resolution Continue that turned out to be the last click | todo | Distinct from B22: the *shape* is now clear, the *ending* is not |
+| B25 | **PARTLY DONE** (wave 9). The card now states that eligibility remains; DECISION 025 untouched. **"Declare for the Draft?" carries zero information and is the most consequential card in the game.** *"A coin flip dressed as a decision."* It is also where the playtester worked out failure was impossible — the game let a 61-OVR FCS lineman declare after two seasons **with no comment** | todo — **tension with DECISION 025** | 025 refused `draftStock` by name. A second playtester has now independently asked for the same thing. The ledger column is a partial answer and was used exactly this way. Needs a call that does not leak the number |
+| B26 | **DROPPED with evidence** (wave 9) — 100% of eligibility-exhaustion careers already see `One season of eligibility remains`. ~~Nothing tells you the end is coming.~~ Career 1 ended after season 4 with no warning, on a resolution Continue that turned out to be the last click | todo | Distinct from B22: the *shape* is now clear, the *ending* is not |
 | B27 | **The Moments reel is a repetition log.** Career 1 printed "Carried the team through bowl season" **three times out of six entries**; career 3's four entries are two lines repeated | todo — content-caused | The reel is *"the single best thing on the end screen"* and *"the part a player would screenshot."* The grouping (B6/011) is right; the strings repeat |
-| B28 | **`FG -1` — negative field goals**, printed in the rail and permanently on the summary. Caused by taking the redshirt | todo — **engine bug**, needs a proposal | Folded into 020's report as a diagnosis-only task |
+| B28 | **DONE** (wave 9, `60126d9`), and `snaps` with it. ~~`FG -1` — negative field goals~~, printed in the rail and permanently on the summary. Caused by taking the redshirt | todo — **engine bug**, needs a proposal | Folded into 020's report as a diagnosis-only task |
 | B29 | **Wide-viewport emptiness.** Right third and bottom half empty at 1456px | todo | B1 at a measured width |
 
 **The single change the playtester would make, in their words:** *"The three cards after a transfer
@@ -592,7 +592,7 @@ suite total is not a per-lane signal.** Count the diff.
 - **`FG -1` is `effects.ts` applying an authored negative `stat` effect with no floor**, not stat
   generation. Six careers in 1,500, all six redshirted.
 
-## Wave 9 — in flight (PM session 4)
+## Wave 9 — complete and committed (PM session 4)
 
 | Brief | What | Owns |
 |---|---|---|
@@ -604,6 +604,49 @@ is bit-identity against 018's measured tables. Content changes move event select
 those numbers, which makes the leak check unverifiable. **The content pilot goes in wave 10, after
 022's bit-identity is banked** — not because of a file conflict but because of a measurement one.
 That distinction is worth keeping: file-disjointness is not the only kind.
+
+### What shipped
+
+```
+f6df3d1 feat(ui): the biggest choices in the game stop happening between two clicks
+60126d9 feat(engine): declaring early costs you, and two impossible values stop being stored
+4be7ced test(sim): the failure probe, and a policy that plays badly on purpose
+```
+
+**578 tests green, both typecheck passes exit 0, build clean.** The engine freeze is back on: 029's
+lift was for B18/B19, 039's and 040's for three named defects, and all of it is spent.
+
+**The acceptance test held.** All nine full-eligibility profiles identical on every field; round-1
+rates unmoved for everyone; the five predicted movers on their predicted figures. `lazyEarly` — the
+014 playtester's career — goes **89.2% → 56.3% drafted**, mean stock 42.926 → exactly 34.926. Two
+standing guard tests now fail if the penalty ever migrates into `deriveDraftStock`.
+
+**Three things the agents found that their briefs and my decisions had wrong:**
+
+- **DECISION 039's proposal named one `SeasonLine` write site and there are two.** `recruiting.ts`
+  creates the freshman line at Signing Day and `autoProgress` skips season 0, so the approved
+  proposal as written would have left **12,000 of 12,000 careers with an undefined freshman row.**
+- **DECISION 040's magnitude clause was wrong** — see DECISION **041**. ≤1 stock point predicted,
+  ≤2 measured, because `snaps` also feed `developmentDelta`, whose floor division goes negative. All
+  movement upward; the bug was docking players twice for having redshirted.
+- **B26 did not need building.** 100% of careers that end on exhausted eligibility already pass a
+  card reading `One season of eligibility remains`. 023 dropped the task with evidence rather than
+  inventing a signal — the DECISION 033 mistake, correctly not repeated.
+
+**Three of the four hubs were proved to deserve silence** rather than assumed to: Signing Day moves
+`overall` 0/3,000, "return to school" 0/4,903, and declaring is terminal. Transfer is the only hub
+that carries anything (50% of transfer hubs, ~1.1 cards per career) — which is also the fix for
+DECISION 037.
+
+### Open, small, and deliberately not done
+
+- `view-model.ts` imports `CLASS_ORDER` from `engine/types` rather than the barrel, which does not
+  re-export it. Tidiness, not a boundary violation — the hidden-mechanics rule is about reading
+  `GameState`, which is unchanged. Fixing it touches a re-frozen engine file for no functional gain.
+- The **new baseline** for any future engine measurement is `reports/022` **§8**, not §1 and not
+  `reports/018` §4. §1 is the banked leak-check record and must stay readable as it was. Anyone
+  comparing to the older tables after DECISION 040 will see a difference that is a decision, not a
+  regression.
 
 ### Queued, deliberately not dispatched
 
@@ -633,7 +676,41 @@ reasoning but is no longer an open ask.** Logged as DECISIONS 029, 030 and 031.
   Do not let a stage-1 agent roll on into implementing its own proposal.
 
 
-## Next actions
+## Next actions — for PM session 5, in order
+
+**Read this section, `DECISIONS.md` 037–041, and the wave 7 and 9 sections above. Nothing else.**
+
+1. **Dispatch the content pilot.** It is the only thing left that addresses the *named* cause of
+   both playtesters stopping, and it has been queued through two waves for reasons that no longer
+   apply. DECISIONS **030** and **036** define it; 036 changed the target selection and kept the
+   gate. `milestone-opener` only, then re-run the 008 harness and **confirm the first-repeat
+   decision number actually moves** before a word of the other seven is written. Folded into its
+   scope: the four text defects in 036 (third person, the FCS-blind "ninety thousand people", the
+   bowl line awarded as a warm memory to a player tanking on purpose).
+   **The PM reads every line of prose before it is committed** — the user chose agent-written, which
+   moves the voice constraint onto you, and both playtesters named the writing as the best asset in
+   the game.
+2. **Then a playtest, and make it the fourth-career one.** Wave 9 changed the two things both
+   playtesters complained about that were *not* content: you can now lose (`lazyEarly` 89% → 56%
+   drafted), and the transfer that silently cost you overall now says so. Neither has met a player.
+   Use `briefs/017` as the shape. **Serial — one browser agent at a time.**
+   Questions it must carry: does the early-declare gamble read as a gamble or as a trap? Does the
+   transfer resolution change how the offseason feels? And 041's: eight careers changed round —
+   does anything feel different at the draft?
+3. **Do not queue more UI waves against B29 or B24 before that playtest.** B29 (wide-viewport
+   emptiness) is real but was measured by someone who also said the page *"never felt like it was
+   using the room it had"* while calling the ledger the wave's best work — the emptiness may be the
+   absence of B10's imagery, which is a user decision already shaped by DECISION 031.
+4. **B24 is the biggest unaddressed item and it is mostly content.** Position is a costume
+   everywhere except the in-season cards — all six start at OVR 60, "in the rotation" (not a thing
+   kickers are in), identical offseason block. ~1 card in 4 is position-specific, and those were the
+   only cards still being read by career 3. If the pilot in (1) proves out, this is the natural
+   second authoring target, and it is a **user** decision under DECISION 030's shape.
+5. The engine is **re-frozen.** 029's lift was for B18/B19, 039/040's for three named defects, and
+   all of it is spent. A further change writes a proposal and asks.
+6. Increment the **PM session** counter at the top of this file when you take over.
+
+## Next actions — the older list, kept for anything unstruck
 
 1. ~~**Re-dispatch wave 4**~~ — **done and committed** as three commits. See the wave 4 section.
 2. ~~**Then wave 5: `briefs/014`, the playtest.**~~ **Dispatched, in flight.** Then decide what is left from what it says, not from

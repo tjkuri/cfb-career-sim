@@ -1004,3 +1004,73 @@ playtest question attached**: the 017 playtester read the uncaptioned dashed rul
 help, so adding words back is not self-evidently an improvement.
 
 **What would change our mind.** On (1), nothing outstanding. On (2), nothing — it is a bug.
+
+## 040 — The `snaps` floor is approved, and the bit-identity baseline moves with it
+
+**Date:** 2026-09-14 · **Made by:** the user, asked by PM session 4 · **Extends:** 039 item 2 · **Evidence:** `reports/022-engine-stage-two.md` §4
+
+`applyEffect` does `s.snaps += effect.amount` with no lower bound, and content authors three negative
+snap effects (−15, −20, −8). In a redshirt season, where `sitSnapModifier: 0.05` leaves single-digit
+snaps, the result goes negative: **15 careers in 9,000, all 15 redshirted.** Mechanically the
+identical bug to the `FG -1` one 039 already approved.
+
+**The 022 agent did not fix it and was right not to.** Same *mechanism*, different *change*: `snaps`
+is not a display value. `productionScore` sums `seasons[].snaps` across a career and feeds
+`deriveDraftStock`, so clamping it moves draft stock — including for full-eligibility five-season
+careers, which are precisely the rows DECISION 038's acceptance test requires to come back
+bit-identical. Fixing it inside 022 would have confounded the one test that proves the early-declare
+penalty did not leak. Stopping at a measured carve-out instead of quietly bundling it is the
+behaviour we want from an agent holding a freeze.
+
+**Approved: `s.snaps = Math.max(0, s.snaps + effect.amount)`.** Magnitude, measured and bounded: at
+most **1 draft-stock point** (≤20 snaps against 200 snaps per point), on **0.17%** of careers.
+
+**The consequence that matters more than the fix.** The full-eligibility rows in `reports/018` §4 and
+`reports/022` §1 **stop being the reference numbers.** They were the baseline for "the penalty did
+not leak", and that test has now passed and is banked. A fresh probe run, taken *after* this clamp,
+becomes the baseline any future engine change is measured against. **Anyone comparing to 018's table
+after this point will see a difference that is this decision, not a regression.**
+
+**Why not "leave it, document it".** A physically impossible value in stored state is invisible only
+until something displays it. The ledger already prints season snaps, and `FG -1` reached a player's
+screen by exactly this route — a negative that nothing was expected to surface, until it was.
+
+**What would change our mind.** The re-run showing movement larger than the predicted ≤1 stock point
+on ≤0.2% of careers, which would mean the reasoning above is wrong about magnitude.
+
+## 041 — DECISION 040's magnitude clause was wrong. The bound is 2 points, and the reason makes the fix more clearly right
+
+**Date:** 2026-09-14 · **Made by:** PM session 4 · **Supersedes the magnitude clause of:** 040 · **Evidence:** `reports/022-engine-stage-two.md` §8
+
+040 approved the `snaps` clamp and predicted the movement at **≤1 draft-stock point on ≤0.2% of
+careers**, and named a larger movement as the thing that would change our mind. Measured
+career-by-career on identical seeds against a pre-clamp copy of the engine (n=60,000):
+
+- Share of careers affected: **0.1017%** — within bound.
+- Per-career draft stock: **up to 2 points** (+1 on 39 careers, +2 on 22) — **over the bound.**
+- Eight careers changed round; one went `undrafted → round 7`.
+
+**Why the prediction was low.** 040 traced one path — `snaps` into `productionScore` into
+`deriveDraftStock`, worth 0.005 stock per snap, so ≤20 snaps is ≤0.1 points. It missed a second:
+`snaps` also feed `developmentDelta`, whose `Math.floor(seasonSnaps / perPoint)` goes **negative** on
+negative snaps. The bug was therefore also docking the player an overall point, worth ~1.4 stock at
+`overall`'s ×1.4 weight. **54 careers changed final overall, all +1, none −1.**
+
+**The decision stands, and is strengthened rather than weakened.** Every movement is upward: the
+clamp takes nothing from anyone. The bug was strictly punishing a small number of players twice over
+— once in production and once in development — for having taken a redshirt. Headline rates
+(`picked`, `round 1`, `undrafted`, `busted`) are unchanged for every full-eligibility *and* every
+early profile, so DECISION 038's result is intact.
+
+**What is being corrected is our estimate, not our choice.** 040's ≤1-point clause is superseded by
+**≤2 points, via two paths, all movement upward.**
+
+**Why this entry exists at all.** The 022 agent hit its own instruction's falsifier, reported it
+plainly instead of quietly shipping inside the bound it had been given, and explicitly declined to
+edit the decision file to match its findings. That is the behaviour the "would change our mind"
+convention exists to produce, and it is worth more than the estimate being right first time.
+DECISIONS are superseded, never rewritten — 040's text stays as it was written.
+
+**What would change our mind.** A third path from `snaps` into the draft, which would mean the bound
+is still wrong. None was found: `overall` and `injury` clamp through `clampOverall`, `character`
+through `clampCharacter`, `trophy` only increments.
