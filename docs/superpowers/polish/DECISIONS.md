@@ -690,3 +690,76 @@ habit says a number or a player's reaction beats a PM's taste.
    strings as a **proposal**, correctly, since `src/content/**` is frozen. Not urgent now that the
    colour is under control.
 
+
+## 029 — The engine comes unfrozen for one scoped balance pass. Numbers are approved before code moves
+
+**Date:** 2026-09-13 · **Made by:** the user, asked by PM session 4 · **Amends:** the `src/engine/**` freeze · **Evidence:** `reports/014-post-wave4-playtest.md` (B18, B19)
+
+The 014 playtester played deliberately badly — skipped the install, ghosted the media twice, played
+hurt, declared after two seasons at **OVR 65 on a 5-7 record** — and was drafted **Round 7, Pick 2**.
+*"I could not lose."* They had separately worked out that transferring up every offseason is free
+OVR, so *"the offseason stopped being a decision."*
+
+**Approved: a proposal-first balance pass.** The freeze is lifted for B18 and B19 only, in two
+stages that must not be collapsed into one:
+
+1. **Measure and propose.** An agent measures the current draft-outcome distribution and the
+   offseason's option space over hundreds of careers and writes a proposal naming **specific
+   numbers** — where an undrafted floor would sit, what a transfer should cost. It edits nothing.
+2. **The user approves the numbers.** Only then does anyone touch `src/engine/**`.
+
+**Why the two stages matter.** The engine is finished and good, and the failure mode here is not a
+bad idea, it is a plausible idea applied at the wrong magnitude. A PM eyeballing "make it harder"
+can quietly destroy a system that works. DECISION 003 and 006 are the house precedent: measure, then
+decide.
+
+**What stays frozen.** Everything in `src/engine/**` that is not B18 or B19. This is not a general
+licence, and a later wave wanting an unrelated engine change still writes a proposal and asks.
+
+**What would change our mind.** The 017 playtester reporting that failure *does* feel reachable —
+in which case B18 is a presentation problem after all and stage 2 is cancelled, with stage 1's
+measurement kept.
+
+## 030 — The content freeze is lifted for one pilot event, and the pilot must prove itself on a number
+
+**Date:** 2026-09-13 · **Made by:** the user, asked by PM session 4 · **Amends:** the `src/content/**` freeze · **Evidence:** DECISION 017, `reports/014-post-wave4-playtest.md`
+
+Measured: roughly eight events fire every season and make up ~40% of a career; the first word-for-word
+repeat lands at decision 12–13 in 99%+ of careers. Its cost is **indirect and worse than boredom** —
+by career 3 the 014 playtester was skimming *every* card body, including brand-new ones they had
+never seen. Repetition trains the player out of reading, and the prose is this game's best asset.
+
+**Approved: per-season variants for `milestone-opener` only, agent-written.** It is 62% of first
+repeats. Then re-run the 008 harness and **confirm the first-repeat decision number actually moves**
+before a word of the other seven events is written.
+
+**Why one event and not eight.** The assumption under this work — that variants fix the *skimming*,
+not merely the repeated cards — is untested. One event is cheap to abandon and the harness gives a
+yes/no on it. Writing all eight first would be spending the phase's largest authoring budget on an
+unvalidated premise.
+
+**On voice.** The user was offered the writing and chose agent-written. So the brief must carry the
+voice constraint explicitly and the PM reads every line before it is committed — the 014 playtester
+praised the prose by name, and the one thing this pilot must not do is dilute it.
+
+**What would change our mind.** The harness showing the first-repeat number barely moves. The
+conclusion then is that variants are not the lever and the remaining seven are not written.
+
+## 031 — Imagery, if it happens, is per-category and reusable. Not per-event, not per-outcome
+
+**Date:** 2026-09-13 · **Made by:** the user, asked by PM session 4 · **Evidence:** `reports/002-reference-teardown.md` §6
+
+The reference gives every option a picture at ~50% of the option card. We have none, and 002 found
+the scale problem: ~102 events, ~330 outcomes, 39 photos in the original.
+
+**Approved: a per-category set of roughly 12–20 flat vector pieces** in the turf/chalk palette —
+practice, game day, injury, off-field, academics — reused across events. Per-event (~102) and
+per-outcome (~330) are both rejected on cost.
+
+**Not yet scheduled, and deliberately so.** This is a sourcing decision with a real cost in money or
+the user's time, and it is the one item on the board that the remaining UI waves do not block on.
+The shape is now settled so that nobody re-opens it; *when* is still open.
+
+**What would change our mind.** A playtester reporting the screens read as deliberately typographic
+rather than empty — in which case no art at all becomes a live option, and the honest move is to
+commit to the broadcast-graphic register instead of half-filling it.

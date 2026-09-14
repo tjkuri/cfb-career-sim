@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 6 complete and committed · **PM session:** 3 (handing off)
+**Last updated:** 2026-09-13 · **Wave:** 7 (the 017 playtest) in flight · **PM session:** 4
 
 ---
 
@@ -456,6 +456,58 @@ the leak check (DECISION 012's own "would change our mind") and whether a dimmed
 headline reads as congratulatory (DECISION 021's). Playtesting is **serial** — one browser agent at
 a time, they share a `localStorage` origin.
 
+## Wave 7 — in flight (PM session 4)
+
+`briefs/017-post-wave6-playtest.md` dispatched 2026-09-13, one playtester, **serial** — it owns the
+browser and the `localStorage` origin for its duration. Do not dispatch a second browser agent or a
+dev agent touching `CareerScreen.tsx` / `SummaryScreen.tsx` until it returns.
+
+It is the north-star re-check after wave 6, and it carries the four questions DECISIONS 023, 026,
+027 and 028 each named as their own "would change our mind":
+
+- **026** — can you rank two *drafted* endings at a glance? If not, the lever is the scale spread
+  (1.12 → 0.72), **not** a second hue.
+- **027** — does `Also earned` read as a consolation prize? If so the fix is the heading's wording,
+  not restoring a block that fired on 70% of careers.
+- **023** — do the two quietest greys still separate at a normal glance?
+- **028** — does `FINAL OVERALL` differing from the last ledger row read as a contradiction?
+
+Plus two the wave-6 build has never had a player on: **what a cold player thinks the dashed fifth
+ledger row means**, and whether the ledger gets *used* or becomes wallpaper. And it is told to play
+career 3 **deliberately badly**, so B18 gets a second independent read.
+
+**Deliberately not carried:** claim 3 from 014 (OVR delta magnitude) — confirmed, and 014's own
+warning was not to over-correct.
+
+**Running alongside it: `briefs/018-failure-and-the-offseason-measured.md`** — stage 1 of DECISION
+029. Measurement and a written proposal only; it edits `src/sim/**` and its report and nothing else.
+It is parallel-safe with the playtest **by construction**: no browser, no `src/ui/**`, no
+`src/content/**`, no dev server. If you dispatch anything else while a playtest is live, it must
+clear the same bar — a content or UI edit changes the game under the playtester and destroys their
+session.
+
+## The user's answers — all four standing escalations are now closed
+
+Asked and answered 2026-09-13 by PM session 4. **The "For the user" section below is kept for its
+reasoning but is no longer an open ask.** Logged as DECISIONS 029, 030 and 031.
+
+| Ask | Answer | Now |
+|---|---|---|
+| **B18/B19** — unfreeze the engine for balance? | **Yes, proposal-first.** Measure and propose numbers; user approves before any engine edit | **DECISION 029.** Stage 1 dispatched as 018. Stage 2 needs a user approval round |
+| **B11 item 3** — author content variants? | **Yes — pilot `milestone-opener` only, agent-written** | **DECISION 030.** Queued, not dispatched: it edits `src/content/**`, which would change the game under the live playtester. Dispatch when 017 returns |
+| **B10** — imagery scope? | **Per-category, ~12–20 reusable flat vector pieces** | **DECISION 031.** Shape settled so nobody reopens it; *when* is still open and it blocks nothing |
+| **Desktop ≥1024px** — the unverified media query | User is checking a real maximised window by hand | Answer pending. Record it here when it lands and strike the verification gap above |
+
+**Two notes a fresh PM should not have to rediscover:**
+
+- DECISION 030 was offered to the user as "you write it" and they chose agent-written. The voice
+  constraint therefore moves onto the PM: **read every line of pilot prose before it is committed.**
+  The 014 playtester praised the writing by name, and diluting it is the one outcome that would make
+  this pilot a net loss.
+- DECISION 029 stage 2 is **not** automatically approved by 029. The user approves *the numbers*.
+  Do not let a stage-1 agent roll on into implementing its own proposal.
+
+
 ## Next actions
 
 1. ~~**Re-dispatch wave 4**~~ — **done and committed** as three commits. See the wave 4 section.
@@ -478,7 +530,8 @@ a time, they share a `localStorage` origin.
    listed in the wave 4 section: labelled rail cells (needs markup), a `title` on clamped options,
    and a 1px `.standing` height shift.
 5. ~~**When wave 6 returns**~~ — verified and committed as three commits; see the wave 6 section.
-6. **Next: a playtest.** This is now the top action, and this time the question is narrower than 014's: did the ending
+6. ~~**Next: a playtest.**~~ **Dispatched as wave 7 — `briefs/017-post-wave6-playtest.md`.** Original note kept below.
+   This is now the top action, and this time the question is narrower than 014's: did the ending
    gaining a range, and the ledger appearing, change the *third*-career answer? Use
    `briefs/014-post-wave4-playtest.md` as the shape — it is the best brief written in this phase and
    it got refutations, not validation. Playtesting is **serial**.
@@ -498,7 +551,10 @@ a time, they share a `localStorage` origin.
    reading.
 8. Increment the **PM session** counter at the top of this file when you take over.
 
-## For the user — the phase's outcome now depends on these
+## For the user — ANSWERED 2026-09-13, kept for the reasoning
+
+**These are no longer open asks.** See "The user's answers" above and DECISIONS 029/030/031. The
+sections below record *why* each was escalated; do not re-ask them.
 
 **Three of these are new and they are the reason the north star is not reachable by UI work alone.**
 
