@@ -75,6 +75,59 @@
      not own. Re-point this token, not .ovr-number. */
   --ovr: var(--chalk);
 
+  /* ---------- type: six steps, one register ----------
+     DECISION 008. The reference runs 125 of 156 size declarations at <=12px,
+     112 of 142 weights at >=700, and `leading-none` 43 times against
+     `leading-tight` 8. We adopt its RATIO, WEIGHT and LEADING and raise its
+     floor: their 4/6/7/8/9px tier is a rendering artefact, not a design, and
+     11px is the smallest thing this interface will print.
+
+     Sizes are in rem and `html` deliberately sets no font-size, so the whole
+     scale tracks the reader's own browser text size. (This is the resolution
+     of audit Bug 3: `body { font-size: 17px }` with an unset root meant every
+     rem in the codebase silently measured against 16px instead. The 17px is
+     gone; body now takes --t-body and 1rem means what it says.)
+
+     The steps are tight at the bottom and open at the top on purpose: the
+     bottom three are interface chrome, which wants one texture, and the top
+     two are numerals, which are the only things allowed to be loud. */
+  --t-micro: 0.6875rem;   /* 11px - column heads, eyebrows, stat lines */
+  --t-meta:  0.75rem;     /* 12px - rail lines, captions, buttons */
+  --t-body:  0.8125rem;   /* 13px - prose */
+  --t-label: 0.9375rem;   /* 15px - option rows, names, the outcome */
+  --t-title: 1.125rem;    /* 18px - the decision headline */
+  --t-hero:  2.125rem;    /* 34px - the OVR, the loudest delta */
+
+  /* Two sizes derived from the scale rather than added to it.
+     --t-figure is the mid numeral (the reference's 24px rail value): a season
+     OVR is a number, but it is not THE number. --t-display is the one fluid
+     size, for the two screens that hold a single object and nothing else --
+     the title card and the verdict. */
+  --t-figure: calc(var(--t-hero) * 0.72);        /* ~24.5px */
+  --t-display: clamp(var(--t-hero), 7vw, 3rem);  /* 34 -> 48px */
+
+  /* Weight carries what hue is forbidden to carry (DECISION 012). Prose stays
+     at 500; 900 is reserved for numerals, and is a real master on the Archivo
+     axis since wave 2 rather than a synthetic bold. */
+  --w-prose: 500;
+  --w-ui: 700;
+  --w-title: 800;
+  --w-figure: 900;
+
+  /* leading-none on numbers, tight on headlines, and one honest concession on
+     prose: the reference clamps its description to two lines and can afford
+     1.0 on them. Ours runs to four or five, at ~66 characters, and 1.2 on a
+     five-line paragraph is a wall. 1.45 is still a long way under the 1.55
+     this file inherited. */
+  --lh-none: 1;
+  --lh-tight: 1.2;
+  --lh-prose: 1.45;
+
+  /* Tracking is polarised, not graduated: wide on small uppercase labels,
+     negative on large numerals. Nothing in between gets tracked at all. */
+  --track-label: 0.16em;
+  --track-tight: -0.01em;
+
   /* ---------- radius ---------- */
   --radius-card: 5px;      /* the card, the only large surface */
   --radius-control: 2px;   /* anything you click or type into */
@@ -96,7 +149,15 @@
   --dur-enter: 220ms;   /* content arriving on screen */
 
   --sans: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --measure: 34rem;
+
+  /* 34rem was the measure for 17px prose. At 13px the same 544px column runs
+     ~86 characters a line, well past the point where the eye loses the return
+     sweep. 30rem holds it at ~66, and lands the card's inner width on 411px --
+     which is, by coincidence worth noting, exactly the decision column the
+     reference measures at. Measure is a function of type size, so it moves
+     with the type: this is one token to put back if the layout brief wants
+     the width for something else. */
+  --measure: 30rem;
 
   color-scheme: dark;
 }

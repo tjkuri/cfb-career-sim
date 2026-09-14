@@ -1,5 +1,14 @@
 * { box-sizing: border-box; }
 
+/* `html` sets no font-size on purpose. Audit Bug 3 was `body { font-size:
+   17px }` over an unset root: every rem in the codebase measured against the
+   browser's 16px while the text it sat next to measured 17px, so no rem
+   spacing value meant what its author thought it meant. Resolved by deleting
+   the 17px rather than by pinning the root -- pinning it would have thrown
+   away the reader's own browser text-size setting, which is the one thing a
+   type pass this small must not do. Nothing but the type moved: the root is
+   still 16px for anyone who has not changed it, so every existing rem spacing
+   literal computes to exactly what it computed to before. */
 html, body, #root { height: 100%; }
 
 body {
@@ -8,9 +17,14 @@ body {
   color: var(--chalk);
   font-family: var(--sans);
   font-variation-settings: "wdth" 100;
-  font-size: 17px;
-  line-height: 1.55;
+  font-size: var(--t-body);
+  font-weight: var(--w-prose);
+  line-height: var(--lh-prose);
   -webkit-font-smoothing: antialiased;
+  /* No authored string has an unbreakable 40-character token in it, but a
+     school name is engine-built and the layout has no horizontal scroll to
+     absorb one. */
+  overflow-wrap: break-word;
 }
 
 /* Condensed: headlines, numerals, the rail. */

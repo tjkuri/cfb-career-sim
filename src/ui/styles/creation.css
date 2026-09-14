@@ -1,12 +1,16 @@
 /* ---------- creation ---------- */
 
+/* One of the two roles on --t-display: a screen holding a single object.
+   Halved against the old clamp(2.6rem, 11vw, 4rem) -- at 64px it was more
+   than 3x the decision headline it was supposed to be preparing you for. */
 .creation-head {
-  margin: 0 0 2rem;
+  margin: 0 0 1.6rem;
   font-variation-settings: "wdth" 68;
-  font-weight: 800;
-  font-size: clamp(2.6rem, 11vw, 4rem);
+  font-weight: var(--w-title);
+  font-size: var(--t-display);
   line-height: 0.95;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--track-tight);
+  text-wrap: balance;
 }
 
 .field { margin-bottom: 1.4rem; }
@@ -14,21 +18,31 @@
 .field > label {
   display: block;
   font-variation-settings: "wdth" 76;
-  font-size: 0.9rem;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
   color: var(--chalk-dim);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 
 .input,
 .select {
   width: 100%;
   font: inherit;
+  font-size: var(--t-label);
+  font-weight: var(--w-ui);
   color: var(--chalk);
   background: var(--input);
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
   padding: 0.65rem 0.8rem;
 }
+
+/* The field is set at UI weight because a typed-in name is a nameplate. A
+   placeholder is not a name, so it drops back to prose weight rather than
+   reading as something the player already entered. */
+.input::placeholder { font-weight: var(--w-prose); color: var(--chalk-faint); }
 
 .input:focus, .select:focus {
   outline: none;
@@ -42,21 +56,24 @@
   gap: var(--gap-1);
 }
 
+/* A step below the number, not level with it: the hash is punctuation and
+   the number is the identity. */
 .jersey-hash {
   font-variation-settings: "wdth" 68;
-  font-size: 3rem;
-  font-weight: 700;
+  font-size: var(--t-figure);
+  font-weight: var(--w-ui);
   color: var(--chalk-faint);
-  line-height: 1;
+  line-height: var(--lh-none);
 }
 
 .jersey-input {
   width: 2.6ch;
   font-family: var(--sans);
   font-variation-settings: "wdth" 68;
-  font-weight: 800;
-  font-size: clamp(3.5rem, 16vw, 5.5rem);
-  line-height: 1;
+  font-weight: var(--w-figure);
+  font-size: var(--t-display);
+  line-height: var(--lh-none);
+  letter-spacing: var(--track-tight);
   color: var(--identity);
   background: none;
   border: none;
@@ -75,7 +92,7 @@
 
 .seed-note {
   margin-top: 1.6rem;
-  font-size: 0.85rem;
+  font-size: var(--t-micro);
   color: var(--chalk-faint);
   font-variation-settings: "wdth" 76;
 }
@@ -85,8 +102,10 @@
   width: 100%;
   font: inherit;
   font-variation-settings: "wdth" 76;
-  font-weight: 700;
-  font-size: 1.05rem;
+  font-weight: var(--w-title);
+  font-size: var(--t-meta);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
   color: var(--action-ink);
   background: var(--action);
   border: none;
@@ -100,6 +119,10 @@
 .ghost {
   font: inherit;
   font-variation-settings: "wdth" 76;
+  font-size: var(--t-meta);
+  font-weight: var(--w-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
   color: var(--chalk-dim);
   background: none;
   border: 1px solid var(--line);

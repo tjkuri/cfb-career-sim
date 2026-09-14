@@ -17,6 +17,11 @@
   border-bottom: 1px solid var(--line);
   font-variation-settings: "wdth" 76;
   color: var(--chalk-dim);
+  /* Declared once for the whole strip rather than per numeric cell: every
+     value in here changes in place as the season runs, and a digit that
+     shifts width while it counts is the thing tabular figures exist to
+     stop. */
+  font-variant-numeric: tabular-nums;
 }
 
 /* Each line is nowrap on purpose: wrapping is the reflow this slot exists to
@@ -36,18 +41,18 @@
   min-width: 0;
 }
 
-.rail-id { line-height: 1.6rem; min-height: 1.6rem; font-size: 1.05rem; }
-.rail-where { line-height: 1.35rem; min-height: 1.35rem; font-size: 0.88rem; }
+.rail-id { line-height: 1.4rem; min-height: 1.4rem; font-size: var(--t-label); }
+.rail-where { line-height: 1.15rem; min-height: 1.15rem; font-size: var(--t-meta); }
 .rail-stats {
-  line-height: 1.3rem;
-  min-height: 1.3rem;
-  font-size: 0.82rem;
+  line-height: 1.1rem;
+  min-height: 1.1rem;
+  font-size: var(--t-micro);
   color: var(--chalk-faint);
 }
 
 .rail-school {
   color: var(--chalk);
-  font-weight: 600;
+  font-weight: var(--w-ui);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -63,15 +68,18 @@
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: 0.88rem;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .rail-class {
   color: var(--chalk);
   font-variation-settings: "wdth" 68;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: var(--w-ui);
+  letter-spacing: 0.08em;
 }
 
 .rail-player {
@@ -91,12 +99,10 @@
   min-width: 2.75rem;
   text-align: right;
   color: var(--chalk);
-  font-variant-numeric: tabular-nums;
 }
 
 .rail-snaps {
   flex: none;
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -107,7 +113,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 /* The number leads and the band phrase glosses it: 74 means nothing to someone
@@ -122,9 +127,10 @@
 
 .ovr-number {
   font-variation-settings: "wdth" 68;
-  font-weight: 800;
-  font-size: 2.6rem;
-  line-height: 1;
+  font-weight: var(--w-figure);
+  font-size: var(--t-hero);
+  line-height: var(--lh-none);
+  letter-spacing: var(--track-tight);
   color: var(--ovr);
   font-variant-numeric: tabular-nums;
 }
@@ -137,13 +143,22 @@
 
 .ovr-band {
   font-variation-settings: "wdth" 82;
-  font-size: 1rem;
+  font-size: var(--t-label);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
   color: var(--chalk);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .trust {
-  font-size: 0.88rem;
+  font-size: var(--t-meta);
+  line-height: var(--lh-tight);
   color: var(--chalk-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- the card ---------- */
@@ -156,18 +171,40 @@
   padding: clamp(1.35rem, 4vw, 2.1rem);
 }
 
+/* Clamps, here and below. Every one is sized so the LONGEST AUTHORED STRING
+   still renders whole -- measured off the loaded bundle, not off whatever is
+   on screen. They are an overflow ceiling, never an editorial cut: an event
+   description the player cannot finish reading is a worse bug than a card
+   that grows. What they stop is a string longer than anything in the game
+   today, which is what a height-locked shell will need. */
 .card-title {
   margin: 0;
-  font-variation-settings: "wdth" 70;
-  font-weight: 700;
-  font-size: clamp(1.75rem, 6vw, 2.4rem);
-  line-height: 1.08;
-  letter-spacing: -0.005em;
+  /* Widened from 70. At 18px the headline has to out-weigh 13px prose set at
+     wdth 100 beneath it, and a condensed face loses that contest on visual
+     width even while it wins on point size -- the hierarchy read backwards
+     until this moved. */
+  font-variation-settings: "wdth" 84;
+  font-weight: var(--w-title);
+  font-size: var(--t-title);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  /* 34 chars max: one line at 411px, two at 360px. Clamped at three, not
+     two -- the worst title already fills two, and a fallback face while
+     Archivo is still loading is wider than Archivo. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 .card-body {
-  margin: 1rem 0 0;
+  margin: 0.7rem 0 0;
   color: var(--chalk-soft);
+  /* 194 chars max: 4 lines at 411px, 5 at 360px. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 .options {
@@ -193,7 +230,18 @@
   width: 100%;
   text-align: left;
   font: inherit;
+  font-size: var(--t-label);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
   color: var(--chalk);
+  /* The engine builds this label, and it is longer than anything authored:
+     76 chars today, 107 if `factory`/`developmental` are ever assigned to a
+     school. Measured in the browser, 107 is 2 lines at 411px and 4 at 360px
+     -- not the 3 the arithmetic suggested, which is why the clamp is 5. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
   background: var(--card-raised);
   border: 1px solid var(--card-edge);
   border-left: 3px solid var(--select-dim);
@@ -217,11 +265,19 @@
 
 /* ---------- outcome, resolved in place ---------- */
 
+/* The title lost 20px of height in this pass, so the gap it used to imply
+   between itself and this line had to be declared. */
 .resolved-choice {
-  margin: 0 0 0.9rem;
+  margin: 0.5rem 0 1.1rem;
   font-variation-settings: "wdth" 76;
-  font-size: 0.92rem;
+  font-size: var(--t-meta);
+  line-height: var(--lh-tight);
   color: var(--chalk-faint);
+  /* "You chose: " + a 107-char label: 118 chars, 4 lines at 360px. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
 }
 
 /* A one-option card is one card, but it is two beats: the setup, then what it
@@ -233,9 +289,15 @@
   padding-bottom: 0.85rem;
   border-bottom: 1px solid var(--line);
   font-variation-settings: "wdth" 70;
-  font-weight: 600;
-  font-size: 1.02rem;
+  font-weight: var(--w-ui);
+  font-size: var(--t-label);
+  line-height: var(--lh-tight);
   color: var(--chalk);
+  /* The same engine-built label, uncaptioned: 4 lines at 360px. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
 }
 
 /* DECISION 012's attachment point. The rule width and the delta's size, weight
@@ -249,8 +311,8 @@
    something when it fires. */
 .consequence {
   --rule: 3px;
-  --delta-size: 1.05rem;
-  --delta-weight: 600;
+  --delta-size: var(--t-title);
+  --delta-weight: var(--w-ui);
   --delta-lift: 3px;
 
   border-left: var(--rule) solid var(--emphasis);
@@ -262,22 +324,30 @@
 
 .consequence[data-magnitude="2"] {
   --rule: 5px;
-  --delta-size: 1.6rem;
-  --delta-weight: 700;
+  --delta-size: var(--t-figure);
+  --delta-weight: var(--w-title);
   --delta-lift: 6px;
 }
 
 .consequence[data-magnitude="3"] {
   --rule: 8px;
-  --delta-size: 2.35rem;
-  --delta-weight: 800;
+  --delta-size: var(--t-hero);
+  --delta-weight: var(--w-figure);
   --delta-lift: 10px;
 }
 
+/* The payoff prose sits one step above the setup prose: the description asks
+   the question at --t-body, the outcome answers it at --t-label. Same 500
+   weight -- the tone is in the words (DECISION 001), not in the boldness. */
 .outcome {
   margin: 0;
-  font-size: 1.12rem;
-  line-height: 1.6;
+  font-size: var(--t-label);
+  line-height: var(--lh-prose);
+  /* 241 chars max: 5 lines at 411px, 7 at 360px. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 8;
+  overflow: hidden;
 }
 
 .delta {
@@ -285,8 +355,8 @@
   font-variation-settings: "wdth" 68;
   font-size: var(--delta-size);
   font-weight: var(--delta-weight);
-  line-height: 1;
-  letter-spacing: -0.01em;
+  line-height: var(--lh-none);
+  letter-spacing: var(--track-tight);
   color: var(--emphasis);
   font-variant-numeric: tabular-nums;
   animation: delta-in var(--dur-enter) ease both;
@@ -305,7 +375,10 @@
   margin-top: 1.9rem;
   font: inherit;
   font-variation-settings: "wdth" 76;
-  font-weight: 600;
+  font-size: var(--t-meta);
+  font-weight: var(--w-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
   color: var(--chalk);
   background: transparent;
   border: 1px solid var(--line);

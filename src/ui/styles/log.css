@@ -7,12 +7,33 @@
   gap: 0.25rem 0.9rem;
   padding: 0.85rem 0;
   border-top: 1px solid var(--line);
+  /* A ledger: the round, the pick and the overall all change row to row and
+     all have to read down the column. */
+  font-variant-numeric: tabular-nums;
 }
 
-.log-name { font-variation-settings: "wdth" 76; font-weight: 600; }
-.log-headline { margin-left: auto; color: var(--milestone); font-variation-settings: "wdth" 76; }
+.log-name {
+  font-variation-settings: "wdth" 76;
+  font-weight: var(--w-ui);
+  font-size: var(--t-label);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-headline {
+  margin-left: auto;
+  color: var(--milestone);
+  font-variation-settings: "wdth" 76;
+  font-weight: var(--w-ui);
+  font-size: var(--t-meta);
+  white-space: nowrap;
+}
+
 .log-headline.quiet { color: var(--chalk-faint); }
-.log-meta { width: 100%; color: var(--chalk-faint); font-size: 0.88rem; }
+
+.log-meta { width: 100%; color: var(--chalk-faint); font-size: var(--t-micro); }
 
 .empty {
   padding: 2.5rem 0;
