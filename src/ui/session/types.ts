@@ -1,4 +1,5 @@
 import type { ClassYear, DraftResult, PendingDecision, Position, Setup, Status } from "../../engine/index";
+import type { LedgerRow } from "./ledger";
 
 export type Screen = "creation" | "career" | "summary" | "log";
 
@@ -140,15 +141,59 @@ export interface MomentView {
   count: number;
 }
 
+// How rare the distinction is, measured over 600 random-policy careers rather
+// than assumed: heisman 0.7% and cfpTitle 0.0% (3), allAmerican 5.8% and
+// confTitle 2.7% (2), allConference 50.5% and bowlWin 45.3% (1).
+// The bottom step is the finding: an "HONORS" block fired on 70.5% of careers
+// and in 17.8% of them its entire content was `Bowl Win`. A routine result is
+// still a fact and is still shown -- it is not shown as an honour.
+//
+// An id with no entry in the table is deliberately treated as a distinction,
+// not as routine: new content should arrive loud and be demoted on evidence.
+//
+// Named `rarity` and not `tier` on purpose. `tier` is a FORBIDDEN_KEY -- the
+// school's hidden tier -- and view-model.test.ts walks the whole view object
+// looking for the name. This has nothing to do with schools, and the blanket
+// key rule is worth more than the better word; the test caught it.
+export type HonorRarity = 1 | 2 | 3;
+
+export interface HonorView {
+  /** The engine id, so the rarity table keys off data and not off a label. */
+  id: string;
+  label: string;
+  count: number;
+  rarity: HonorRarity;
+}
+
+// The draft result as a magnitude, on the one axis the result already has:
+// round. 5 = round 1, 4 = rounds 2-3, 3 = rounds 4-5, 2 = rounds 6-7, 1 =
+// undrafted or a career that ended before the draft -- the extreme of the same
+// axis, not a separate state and emphatically not a separate colour.
+// Cut on the measured distribution (n=600): R1 2.7%, R2-3 12.5%, R4-5 39.0%,
+// R6-7 40.0%, no call 5.9%.
+//
+// DECISION 012 governs what may read this: scale, weight and motion, never
+// hue. It discloses nothing -- the round is printed in the headline beside it.
+export type VerdictMagnitude = 1 | 2 | 3 | 4 | 5;
+
 export interface CareerSummaryView {
   headline: string; // "Round 3, Pick 19" | "Undrafted" | the ending reason
   subhead: string | null; // "#83 overall" etc.
+  /** How loudly the headline is set. See `VerdictMagnitude`. */
+  verdictMagnitude: VerdictMagnitude;
   finalOverall: number; // the one place a raw integer is shown
   seed: string;
   schoolPath: string[];
   seasons: SeasonView[];
+  /** Kept in their original shapes because `share.ts` (DECISION 005 freezes
+      its text) and `reducer.ts`'s log entry both read them. The summary screen
+      renders `honors` instead. */
   trophies: { label: string; count: number }[];
   awards: string[];
+  /** Awards and trophies as one rarity-sorted list. The screen needs to know
+      which of these is a distinction and which is a routine result, and
+      neither of the two shapes above can say. */
+  honors: HonorView[];
   moments: MomentView[];
   wasDrafted: boolean;
 }
@@ -177,6 +222,12 @@ export interface CareerView {
       -- which is exactly where the redshirt, transfer and declare cards ask for
       it (DECISION 013). Null until the first on-field phase of the career. */
   season: SeasonLineView | null;
+  /** The career ledger: always exactly five rows, whatever has happened
+      (DECISIONS 007/010). Slot 5 is the redshirt slot and carries its own
+      `redshirtSlot` / `tentative` flags, so a renderer never re-derives it.
+      Rows are labelled by sequence, not class year -- DECISION 015 chose
+      option 2 after the redshirt inference measured unusable (report 010). */
+  ledger: LedgerRow[];
   /** The live OVR. Shown as an integer: see the spec's §6 note on why the
       qualitative-only treatment was reversed. */
   overall: number;

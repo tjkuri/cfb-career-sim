@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type Setup } from "../../engine/index";
-import { buildView, railView } from "./view-model";
+import { buildSummary, buildView, railView } from "./view-model";
 import { reducer, INITIAL_STATE } from "./reducer";
 import type { CareerView, RailView, UiState } from "./types";
 
@@ -569,5 +569,115 @@ describe("the rail describes one moment, not two", () => {
     expect(stamped.season).toBeNull();
     expect(stamped.school).toBe("Uncommitted");
     expect(stamped.phaseLabel).toBe("Offseason");
+  });
+});
+
+// The ending must be able to tell a good career from a bad one. A playtester
+// drew Round 7 Pick 2 off a deliberately-bad career and reported "the ending
+// is a gold headline regardless of what I did"; #69 and #194 printed
+// identically. `verdictMagnitude` is the fix's data half.
+describe("the verdict has a range", () => {
+  // Constructed rather than played: reaching round 1 and reaching Undrafted
+  // from the same harness would need thousands of careers, and the mapping is
+  // the thing under test, not the engine's distribution.
+  function summaryWith(draft: { round: number; pick: number; undrafted: boolean }) {
+    const base = createCareer({ lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" }, "vm-mag");
+    return buildSummary({
+      ...base,
+      // An undrafted career still reaches the draft; `Status` has no
+      // "undrafted" member and the flag on `draftResult` is what says so.
+      status: "drafted" as const,
+      draftResult: {
+        undrafted: draft.undrafted,
+        round: draft.round,
+        pick: draft.pick,
+        overallPick: draft.undrafted ? 0 : (draft.round - 1) * 32 + draft.pick,
+        draftStock: 50,
+      },
+    });
+  }
+
+  it("maps the draft round onto five steps, with no call at the far end", () => {
+    expect(summaryWith({ round: 1, pick: 4, undrafted: false }).verdictMagnitude).toBe(5);
+    expect(summaryWith({ round: 2, pick: 4, undrafted: false }).verdictMagnitude).toBe(4);
+    expect(summaryWith({ round: 3, pick: 4, undrafted: false }).verdictMagnitude).toBe(4);
+    expect(summaryWith({ round: 4, pick: 4, undrafted: false }).verdictMagnitude).toBe(3);
+    expect(summaryWith({ round: 5, pick: 4, undrafted: false }).verdictMagnitude).toBe(3);
+    expect(summaryWith({ round: 6, pick: 4, undrafted: false }).verdictMagnitude).toBe(2);
+    expect(summaryWith({ round: 7, pick: 4, undrafted: false }).verdictMagnitude).toBe(2);
+    expect(summaryWith({ round: 0, pick: 0, undrafted: true }).verdictMagnitude).toBe(1);
+  });
+
+  it("separates the two picks the playtester could not tell apart", () => {
+    // #69 overall is Round 3 Pick 5; #194 is Round 7 Pick 2.
+    const good = summaryWith({ round: 3, pick: 5, undrafted: false });
+    const bad = summaryWith({ round: 7, pick: 2, undrafted: false });
+    expect(good.subhead).toBe("#69 overall");
+    expect(bad.subhead).toBe("#194 overall");
+    expect(good.verdictMagnitude).not.toBe(bad.verdictMagnitude);
+  });
+
+  it("gives a career that ended before the draft the quietest step", () => {
+    const base = createCareer({ lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" }, "vm-mag-bust");
+    const busted = buildSummary({ ...base, status: "busted", endingReason: "Career-ending injury" });
+    expect(busted.verdictMagnitude).toBe(1);
+    expect(busted.wasDrafted).toBe(false);
+  });
+
+  it("is a real step on every career the harness plays", () => {
+    let seen = 0;
+    for (const position of ALL_POSITIONS) {
+      for (const ui of playThrough(`vm-mag-${position}`, position)) {
+        const summary = ui.state ? buildView(ui.state).summary : null;
+        if (!summary) continue;
+        expect([1, 2, 3, 4, 5]).toContain(summary.verdictMagnitude);
+        seen++;
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+});
+
+// A 7-5 / 5-7 two-season career was given an HONORS block reading "Bowl Win".
+// Measured over 600 careers, bowlWin lands on 45.3% and allConference on
+// 50.5%: the block fired on 70.5% of all careers. Rarity is what lets the
+// screen stop calling a coin-flip result an honour without deleting the fact.
+describe("honors are separated from routine results", () => {
+  function honorsFor(trophies: Record<string, number>, awards: string[]) {
+    const base = createCareer({ lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" }, "vm-honors");
+    return buildSummary({ ...base, status: "drafted", trophies: { ...base.trophies, ...trophies }, awards: awards as never[] }).honors;
+  }
+
+  it("files a bowl win and an all-conference nod below a distinction", () => {
+    const honors = honorsFor({ bowlWin: 2 }, ["allConference", "heisman"]);
+    const byId = Object.fromEntries(honors.map((h) => [h.id, h.rarity]));
+    expect(byId.heisman).toBe(3);
+    expect(byId.allConference).toBe(1);
+    expect(byId.bowlWin).toBe(1);
+    // Rarest first, so the screen never has to sort.
+    expect(honors.map((h) => h.rarity)).toEqual([...honors.map((h) => h.rarity)].sort((a, b) => b - a));
+    expect(honors.find((h) => h.id === "bowlWin")?.count).toBe(2);
+  });
+
+  it("leaves the deliberately-bad career with nothing a screen can call an honour", () => {
+    const honors = honorsFor({ bowlWin: 1 }, ["allConference"]);
+    expect(honors.length).toBe(2);
+    expect(honors.every((h) => h.rarity === 1)).toBe(true);
+  });
+
+  it("does not invent an entry for a trophy nobody won (DECISION 014)", () => {
+    expect(honorsFor({ bowlWin: 0, confTitle: 0 }, [])).toEqual([]);
+  });
+
+  it("treats an unknown id as a distinction rather than silently filing it away", () => {
+    const honors = honorsFor({ someNewTrophy: 1 }, []);
+    expect(honors[0]?.rarity).toBe(2);
+  });
+
+  it("leaves `awards` and `trophies` untouched for share.ts and the log", () => {
+    const base = createCareer({ lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" }, "vm-honors-compat");
+    const summary = buildSummary({ ...base, status: "drafted", trophies: { ...base.trophies, bowlWin: 1 }, awards: ["allConference"] as never[] });
+    expect(summary.awards).toEqual(["All-Conference"]);
+    expect(summary.trophies).toEqual([{ label: "Bowl Win", count: 1 }]);
   });
 });

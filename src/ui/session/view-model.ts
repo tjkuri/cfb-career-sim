@@ -1,10 +1,13 @@
 import { getDecision, WASHOUT_REASONS, type GameState } from "../../engine/index";
 import { CONTENT } from "../../content/index";
 import { standingPhrase, trustPhrase } from "./bands";
+import { buildLedger } from "./ledger";
 import { awardLabel, iconGlyph, phaseLabel, statLabel, trophyLabel } from "./labels";
 import type {
   CareerSummaryView,
   CareerView,
+  HonorRarity,
+  HonorView,
   MomentView,
   RailView,
   Resolved,
@@ -12,6 +15,7 @@ import type {
   SeasonStamp,
   SeasonView,
   StatView,
+  VerdictMagnitude,
 } from "./types";
 
 // THE boundary. This is the only module that reads GameState. Screens receive a
@@ -221,30 +225,112 @@ function schoolPath(state: GameState): string[] {
   return path;
 }
 
-function headline(state: GameState): { headline: string; subhead: string | null; wasDrafted: boolean } {
+// The single sentence a whole career resolves into, and until now the one with
+// no range: measured on our own screens, `#69 overall` (round 3) and
+// `#194 overall` (round 7) printed in the same hue at the same size and weight,
+// and a playtester reported "the ending is a gold headline regardless of what
+// I did".
+//
+// Round is the magnitude axis, and it is the right one: it is ordinal, it is
+// already printed in the headline (so emphasising it discloses nothing new --
+// DECISION 012's test), and `undrafted` sits at its far end rather than off to
+// one side. Cuts follow the measured distribution over 600 random-policy
+// careers: R1 2.7% | R2-3 12.5% | R4-5 39.0% | R6-7 40.0% | no call 5.9%.
+//
+// What reads the number is scale, weight, width and entrance travel. Never
+// hue: tier 5 and tier 1 are both `--milestone`, which is the whole point of
+// DECISIONS 012 and 021 and is asserted in summary.css.
+function verdictMagnitude(draft: GameState["draftResult"]): VerdictMagnitude {
+  if (!draft || draft.undrafted) return 1;
+  if (draft.round <= 1) return 5;
+  if (draft.round <= 3) return 4;
+  if (draft.round <= 5) return 3;
+  return 2;
+}
+
+function headline(state: GameState): {
+  headline: string;
+  subhead: string | null;
+  wasDrafted: boolean;
+  verdictMagnitude: VerdictMagnitude;
+} {
   const draft = state.draftResult;
+  const magnitude = verdictMagnitude(draft);
   if (draft && !draft.undrafted) {
     return {
       headline: `Round ${draft.round}, Pick ${draft.pick}`,
       subhead: `#${draft.overallPick} overall`,
       wasDrafted: true,
+      verdictMagnitude: magnitude,
     };
   }
   if (draft && draft.undrafted) {
-    return { headline: "Undrafted", subhead: "No team called.", wasDrafted: false };
+    return {
+      headline: "Undrafted",
+      subhead: "No team called.",
+      wasDrafted: false,
+      verdictMagnitude: magnitude,
+    };
   }
   // Busted. endingReason is not limited to the two WASHOUT_REASONS strings --
   // content `ending` effects supply their own ("Career-ending injury",
   // "Academically ineligible") -- so render the field, never match a known set.
   const reason = state.endingReason ?? WASHOUT_REASONS.overall;
-  return { headline: reason, subhead: "The career ended here.", wasDrafted: false };
+  return {
+    headline: reason,
+    subhead: "The career ended here.",
+    wasDrafted: false,
+    verdictMagnitude: magnitude,
+  };
+}
+
+// Rarity, measured rather than assumed, over 600 random-policy careers across
+// all six positions: heisman 0.7%, cfpTitle 0.0% | allAmerican 5.8%,
+// confTitle 2.7% | allConference 50.5%, bowlWin 45.3%.
+//
+// The bottom tier is the finding behind this table. An "HONORS" heading fired
+// on 70.5% of careers, and on 17.8% of them its entire content was `Bowl Win`
+// -- a playtester's deliberately-bad 7-5 / 5-7 career among them. A result
+// that half the league gets is not an honour, and a screen that says otherwise
+// congratulates every input. Both facts are still rendered; only the routine
+// ones stop being rendered as distinctions.
+//
+// An unknown id is treated as a distinction, not as routine: content that adds
+// an award should arrive loud and be demoted on evidence, never silently
+// filed under "also".
+const HONOR_RARITY: Record<string, HonorRarity> = {
+  heisman: 3,
+  cfpTitle: 3,
+  allAmerican: 2,
+  confTitle: 2,
+  allConference: 1,
+  bowlWin: 1,
+};
+
+function honorRarity(id: string): HonorRarity {
+  return HONOR_RARITY[id] ?? 2;
+}
+
+// Rarest first, and stable within a tier: awards before trophies, each in the
+// order the engine holds them. Sorting here rather than in the screen keeps the
+// screen from having to know what any id means.
+function honorViews(state: GameState): HonorView[] {
+  const out: HonorView[] = [];
+  for (const id of state.awards) {
+    out.push({ id, label: awardLabel(id), count: 1, rarity: honorRarity(id) });
+  }
+  for (const [id, count] of Object.entries(state.trophies)) {
+    if (count > 0) out.push({ id, label: trophyLabel(id), count, rarity: honorRarity(id) });
+  }
+  return out.sort((a, b) => b.rarity - a.rarity);
 }
 
 export function buildSummary(state: GameState): CareerSummaryView {
-  const { headline: h, subhead, wasDrafted } = headline(state);
+  const { headline: h, subhead, wasDrafted, verdictMagnitude: magnitude } = headline(state);
   return {
     headline: h,
     subhead,
+    verdictMagnitude: magnitude,
     finalOverall: state.overall,
     seed: state.seed,
     schoolPath: schoolPath(state),
@@ -253,6 +339,11 @@ export function buildSummary(state: GameState): CareerSummaryView {
       .filter(([, count]) => count > 0)
       .map(([id, count]) => ({ label: trophyLabel(id), count })),
     awards: state.awards.map(awardLabel),
+    // The same facts as `awards` + `trophies`, carrying the one thing those
+    // two shapes cannot: how rare each is. `awards` and `trophies` stay
+    // exactly as they are because `share.ts` and `reducer.ts` read them and
+    // DECISION 005 freezes the share text.
+    honors: honorViews(state),
     moments: momentViews(state),
     wasDrafted,
   };
@@ -269,6 +360,16 @@ export function buildView(state: GameState): CareerView {
     phaseLabel: phaseLabel(state.phase),
     seasonNumber: state.seasonIndex + 1,
     season: currentSeasonLine(state),
+    // The fixed five-row table DECISIONS 007/010 commit us to, built by the
+    // pure module rather than here: `seasonViews` has already applied the
+    // view-model's honesty rules (no `0-0` mid-season, null on a pre-009
+    // save), so the ledger inherits them instead of reimplementing them.
+    ledger: buildLedger({
+      seasons: seasonViews(state),
+      currentSeasonIndex: state.seasonIndex,
+      redshirtUsed: state.eligibility.redshirtUsed,
+      active: !terminal,
+    }),
     overall: state.overall,
     standing: standingPhrase(state.overall),
     trust: trustPhrase(state.character),
