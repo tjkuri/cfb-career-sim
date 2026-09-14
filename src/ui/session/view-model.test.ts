@@ -301,3 +301,158 @@ describe("where in the season", () => {
     }
   });
 });
+
+// DECISION 009 crossed the frozen-engine line for one read: the OVR each
+// season finished at, so the summary can draw the career arc. The field is on
+// `SeasonLine`; these assert the view-model actually carries it across, and
+// that a save written before it existed renders as an absence rather than a
+// `NaN`.
+describe("the career arc", () => {
+  it("carries the stored per-season overall into the summary", () => {
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      for (const ui of playThrough(`vm-arc-${position}`, position)) {
+        if (!ui.state) continue;
+        const summary = buildView(ui.state).summary;
+        if (!summary) continue;
+        expect(summary.seasons.length).toBeGreaterThan(0);
+        summary.seasons.forEach((season, i) => {
+          const line = ui.state!.seasons[i]!;
+          expect(season.overall).toBe(line.overall);
+          expect(season.overall).not.toBeNull();
+          expect(Number.isFinite(season.overall!)).toBe(true);
+          checked++;
+        });
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it("labels a row with the year it was PLAYED as, not one counted backwards", () => {
+    // The whole reason 009 stored it: `enterOffseason` advances the class year
+    // on every boundary, so deriving it from the row index is wrong exactly
+    // where a redshirt has been taken.
+    let checked = 0;
+    for (const ui of playThrough("vm-arc-class", "QB")) {
+      if (!ui.state) continue;
+      const summary = buildView(ui.state).summary;
+      if (!summary) continue;
+      summary.seasons.forEach((season, i) => {
+        expect(season.classYear).toBe(ui.state!.seasons[i]!.classYear);
+        expect(season.classYear).not.toBeNull();
+        checked++;
+      });
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it("renders a pre-DECISION-009 save with a null OVR, never NaN or undefined", () => {
+    // `localStorage` holds serialized GameStates written before the two fields
+    // existed. Strip them from a real terminal career and the rows must still
+    // build -- with nothing in the arc column, not a zero and not a guess.
+    const terminal = playThrough("vm-arc-oldsave", "QB")
+      .map((ui) => ui.state)
+      .filter((s): s is NonNullable<typeof s> => s !== null)
+      .find((s) => s.status !== "active");
+    expect(terminal).toBeDefined();
+
+    const legacy = structuredClone(terminal!) as unknown as Record<string, unknown>;
+    for (const line of legacy.seasons as Record<string, unknown>[]) {
+      delete line.overall;
+      delete line.classYear;
+    }
+    const summary = buildView(legacy as unknown as typeof terminal & object)!.summary!;
+    expect(summary.seasons.length).toBeGreaterThan(0);
+    for (const season of summary.seasons) {
+      expect(season.overall).toBeNull();
+      expect(season.classYear).toBeNull();
+      expect(Number.isNaN(season.overall as unknown as number)).toBe(false);
+      expect(season.overall).not.toBeUndefined();
+      // Everything the old save DID store still renders.
+      expect(typeof season.schoolName).toBe("string");
+      expect(typeof season.snaps).toBe("number");
+    }
+    // And the career's final number, which lives on the state and not on the
+    // line, is untouched by the absence.
+    expect(typeof summary.finalOverall).toBe("number");
+  });
+
+  it("survives a stored overall that serialized to a non-number", () => {
+    const terminal = playThrough("vm-arc-nan", "QB")
+      .map((ui) => ui.state)
+      .filter((s): s is NonNullable<typeof s> => s !== null)
+      .find((s) => s.status !== "active")!;
+    const broken = structuredClone(terminal) as unknown as Record<string, unknown>;
+    const lines = broken.seasons as Record<string, unknown>[];
+    lines[0]!.overall = Number.NaN;
+    if (lines[1]) lines[1]!.overall = null;
+    const summary = buildView(broken as unknown as typeof terminal & object)!.summary!;
+    expect(summary.seasons[0]!.overall).toBeNull();
+    if (summary.seasons[1]) expect(summary.seasons[1]!.overall).toBeNull();
+  });
+});
+
+// Measured over 700 careers (300 full four-year, 400 `random`): every repeated
+// moment string is the same moment earned in a different season, and no repeat
+// ever shares a season index or is pushed twice by one `advance()`. So the
+// timeline groups rather than dedupes -- and the one shape that WOULD be a bug
+// collapses into a count.
+describe("the moments timeline", () => {
+  it("keeps a moment earned again in a later season as its own entry", () => {
+    let sawARealRepeat = false;
+    for (const position of ALL_POSITIONS) {
+      for (const ui of playThrough(`vm-moments-${position}`, position)) {
+        if (!ui.state) continue;
+        const summary = buildView(ui.state).summary;
+        if (!summary) continue;
+        const byItem = new Map<string, number[]>();
+        for (const m of summary.moments) {
+          byItem.set(m.item, [...(byItem.get(m.item) ?? []), m.seasonIndex]);
+        }
+        for (const [, seasons] of byItem) {
+          if (seasons.length > 1) {
+            sawARealRepeat = true;
+            // Every entry that survived is in a season of its own.
+            expect(new Set(seasons).size).toBe(seasons.length);
+          }
+        }
+        // Nothing is lost: the engine's moments and the view's total agree.
+        const total = summary.moments.reduce((n, m) => n + m.count, 0);
+        expect(total).toBe(ui.state.moments.length);
+      }
+    }
+    expect(sawARealRepeat).toBe(true);
+  });
+
+  it("collapses the same moment recorded twice inside one season into a count", () => {
+    const terminal = playThrough("vm-moments-dup", "QB")
+      .map((ui) => ui.state)
+      .filter((s): s is NonNullable<typeof s> => s !== null)
+      .find((s) => s.status !== "active" && s.moments.length > 0)!;
+    const doubled = structuredClone(terminal);
+    const first = doubled.moments[0]!;
+    doubled.moments.splice(1, 0, { ...first });
+    const summary = buildView(doubled).summary!;
+    const entry = summary.moments.find((m) => m.item === first.item && m.seasonIndex === first.seasonIndex)!;
+    expect(entry.count).toBe(2);
+    // One row, not two, and the count still totals the engine's list.
+    expect(summary.moments.filter((m) => m.item === first.item && m.seasonIndex === first.seasonIndex)).toHaveLength(1);
+    expect(summary.moments.reduce((n, m) => n + m.count, 0)).toBe(doubled.moments.length);
+  });
+
+  it("keeps the season each moment belongs to, so the timeline can group by it", () => {
+    let checked = 0;
+    for (const ui of playThrough("vm-moments-season", "OSKILL")) {
+      if (!ui.state) continue;
+      const summary = buildView(ui.state).summary;
+      if (!summary) continue;
+      for (const m of summary.moments) {
+        expect(Number.isInteger(m.seasonIndex)).toBe(true);
+        expect(m.seasonIndex).toBeGreaterThanOrEqual(0);
+        expect(m.glyph.length).toBeGreaterThan(0);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+});
