@@ -601,3 +601,50 @@ describe("wideOpen wiring is actually called by the engine, not just callable", 
     expect(ratio).toBeLessThan(1.2);
   });
 });
+
+// DECISION 039 item 1. The redshirt is recorded on the season line because it
+// is not recoverable from stored data (report 010): `eligibility.redshirtUsed`
+// says a redshirt was taken but not WHEN. Additive only -- see the byte-identity
+// check in report 022.
+describe("SeasonLine.redshirt", () => {
+  it("marks exactly the season that was sat out, and only that one", () => {
+    const s = autoplayAlwaysReturn("always-return");
+    expect(s.eligibility.redshirtUsed).toBe(true);
+    const flagged = s.seasons.filter((l) => l.redshirt === true);
+    expect(flagged.length).toBe(1);
+    // The redshirt is offered from SO, and the sat season is never the FR year
+    // for this policy.
+    expect(flagged[0]!.seasonIndex).toBeGreaterThan(0);
+  });
+
+  it("is written on every line a live career records, including the FR line created at Signing Day", () => {
+    // `applyRecruitingChoice` pushes season 0 before kickoff, and autoProgress's
+    // kickoff push is skipped for a season that already has a line -- so the FR
+    // row is the one site that would otherwise be left `undefined`. `undefined`
+    // means "this save predates the field", which a live career must never say.
+    for (const seed of ["rsflag-a", "rsflag-b", "rsflag-c", "always-return"]) {
+      const s = seed === "always-return" ? autoplayAlwaysReturn(seed) : autoplay(seed);
+      expect(s.seasons.length).toBeGreaterThan(0);
+      for (const line of s.seasons) {
+        expect(typeof line.redshirt).toBe("boolean");
+      }
+      expect(s.seasons[0]!.seasonIndex).toBe(0);
+      expect(s.seasons[0]!.redshirt).toBe(false);
+    }
+  });
+
+  it("leaves every line false when no redshirt was ever taken", () => {
+    let s = createCareer(setup, "no-redshirt");
+    let guard = 0;
+    while (s.status === "active" && guard++ < 500) {
+      const decision = getDecision(s);
+      if (!decision) throw new Error("active career with no decision");
+      // Decline the redshirt every time it is offered; otherwise first option.
+      const choiceId = decision.eventId === "redshirt" ? "decline" : decision.options[0]!.id;
+      s = advance(s, choiceId);
+    }
+    expect(s.eligibility.redshirtUsed).toBe(false);
+    expect(s.seasons.length).toBeGreaterThan(0);
+    for (const line of s.seasons) expect(line.redshirt).toBe(false);
+  });
+});

@@ -160,3 +160,86 @@ describe("careerInjuries", () => {
     expect(s.careerInjuries).toBe(0);
   });
 });
+
+// DECISION 039 item 2. An authored negative `stat` effect (a blown kick is
+// `fieldGoals: -1`) had no lower bound. On a redshirt season, whose
+// `sitSnapModifier: 0.05` rounds every generated stat to 0, the subtraction has
+// nothing to eat and the line stores -1 -- which printed in the rail and
+// permanently on the summary. Measured at 6 careers in 1,500, all six
+// redshirted.
+describe("stat effects are floored at zero", () => {
+  const withSeason = () => {
+    const s = fresh();
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear, redshirt: true });
+    return s;
+  };
+
+  it("a -1 against an unset stat stores 0, not -1", () => {
+    const s = withSeason();
+    applyEffect(s, { kind: "stat", stat: "fieldGoals", amount: -1 }, injuryOf);
+    expect(s.seasons[0]!.stats.fieldGoals).toBe(0);
+  });
+
+  it("a -1 against a zeroed stat stores 0, not -1", () => {
+    const s = withSeason();
+    s.seasons[0]!.stats.fieldGoals = 0;
+    applyEffect(s, { kind: "stat", stat: "fieldGoals", amount: -1 }, injuryOf);
+    expect(s.seasons[0]!.stats.fieldGoals).toBe(0);
+  });
+
+  it("clamps rather than saturating: a big negative against a small total lands on 0", () => {
+    const s = withSeason();
+    s.seasons[0]!.stats.passYards = 20;
+    applyEffect(s, { kind: "stat", stat: "passYards", amount: -60 }, injuryOf);
+    expect(s.seasons[0]!.stats.passYards).toBe(0);
+  });
+
+  it("still subtracts normally when the season has the production to absorb it", () => {
+    const s = withSeason();
+    s.seasons[0]!.stats.passYards = 300;
+    applyEffect(s, { kind: "stat", stat: "passYards", amount: -60 }, injuryOf);
+    expect(s.seasons[0]!.stats.passYards).toBe(240);
+  });
+
+  it("leaves positive stat effects untouched", () => {
+    const s = withSeason();
+    applyEffect(s, { kind: "stat", stat: "passYards", amount: 250 }, injuryOf);
+    expect(s.seasons[0]!.stats.passYards).toBe(250);
+  });
+});
+
+// DECISION 040. The same missing floor as the `stat` case, on a field that is
+// NOT merely displayed: `productionScore` sums `seasons[].snaps` and feeds
+// `deriveDraftStock`, so this clamp moves draft stock (bounded: <=1 point, on
+// 0.17% of careers) and had to be approved separately.
+describe("snap effects are floored at zero", () => {
+  const withSeason = (snaps: number) => {
+    const s = fresh();
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear, redshirt: true });
+    return s;
+  };
+
+  it("a -20 against a sit-season's single-digit snaps stores 0, not a negative", () => {
+    const s = withSeason(6);
+    applyEffect(s, { kind: "snaps", amount: -20 }, injuryOf);
+    expect(s.seasons[0]!.snaps).toBe(0);
+  });
+
+  it("a negative against a zeroed season stores 0", () => {
+    const s = withSeason(0);
+    applyEffect(s, { kind: "snaps", amount: -15 }, injuryOf);
+    expect(s.seasons[0]!.snaps).toBe(0);
+  });
+
+  it("still subtracts normally when the season has the snaps to absorb it", () => {
+    const s = withSeason(400);
+    applyEffect(s, { kind: "snaps", amount: -20 }, injuryOf);
+    expect(s.seasons[0]!.snaps).toBe(380);
+  });
+
+  it("leaves positive snap effects untouched", () => {
+    const s = withSeason(100);
+    applyEffect(s, { kind: "snaps", amount: 40 }, injuryOf);
+    expect(s.seasons[0]!.snaps).toBe(140);
+  });
+});

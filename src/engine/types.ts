@@ -36,6 +36,16 @@ export interface SeasonLine {
   // where enterOffseason advances eligibility into the next year.
   overall: number;
   classYear: ClassYear;
+  // True when this season was sat out on a redshirt. Recorded, never derived:
+  // `eligibility.redshirtUsed` says a redshirt was taken but not WHEN, and both
+  // derivations from stored data were measured and rejected (report 010;
+  // DECISIONS 015, 020, 033).
+  //
+  // Optional, because `localStorage` holds GameStates serialized before this
+  // field existed. `undefined` means "this save does not know", which is not
+  // the same as `false`, and a consumer must render the absence rather than
+  // assert the season was played.
+  redshirt?: boolean;
 }
 
 export type EffectTiming = "immediate" | "deferred";

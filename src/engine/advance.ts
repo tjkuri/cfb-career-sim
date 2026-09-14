@@ -282,7 +282,11 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
           // classYear is the year this season is PLAYED AS: enterOffseason has
           // already advanced eligibility into it before kickoff, so the value
           // read here is the correct one and must not be rewritten later.
-          s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
+          // `redshirt` is read at the same instant and for the same reason:
+          // `redshirtSeasonActive` was set by applyChoice during the offseason
+          // that precedes this push and is cleared by enterOffseason at the
+          // NEXT boundary, so here it is true for exactly the season being sat.
+          s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear, redshirt: s.redshirtSeasonActive });
         }
         // Before production, so a fire costs this phase's snaps too.
         rollAmbientInjury(s, content, rng, injuryOf);

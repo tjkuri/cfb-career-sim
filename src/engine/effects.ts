@@ -33,12 +33,32 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
     }
     case "stat": {
       const s = currentSeason(state);
-      if (s) s.stats[effect.stat] = (s.stats[effect.stat] ?? 0) + effect.amount;
+      // Floored at zero. A season stat is a counting stat -- a player cannot
+      // kick minus one field goal. Authored negative `stat` effects exist (a
+      // blown kick costs -1 FG), and on a redshirt season, whose
+      // `sitSnapModifier: 0.05` rounds every generated stat to 0, the subtraction
+      // has nothing to eat: 0 + (-1) = -1, which then printed in the rail and
+      // permanently on the summary. Measured at 6 careers in 1,500, all six
+      // redshirted (DECISION 039 item 2).
+      if (s) s.stats[effect.stat] = Math.max(0, (s.stats[effect.stat] ?? 0) + effect.amount);
       return;
     }
     case "snaps": {
       const s = currentSeason(state);
-      if (s) s.snaps += effect.amount;
+      // Floored at zero, for the same reason the `stat` case above is, and by
+      // the same mechanism: authored negative snap effects exist (-15, -20, -8)
+      // and a redshirt season's `sitSnapModifier: 0.05` leaves single-digit
+      // snaps for them to eat, so the line stored a negative. Measured at 15
+      // careers in 9,000, all 15 redshirted.
+      //
+      // Unlike `stat`, this one is not merely a display fix: `productionScore`
+      // sums `seasons[].snaps` across a career and feeds `deriveDraftStock`, so
+      // the clamp moves draft stock -- bounded at 1 point (<=20 snaps against
+      // 200 snaps per point) on 0.17% of careers. That is why it was carved out
+      // of DECISION 039 and approved separately as DECISION 040, and why the
+      // full-eligibility baseline in reports/018 §4 and reports/022 §1 was
+      // re-taken after it landed. See reports/022 §8.
+      if (s) s.snaps = Math.max(0, s.snaps + effect.amount);
       return;
     }
     case "injury": {

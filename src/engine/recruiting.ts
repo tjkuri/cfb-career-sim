@@ -52,6 +52,14 @@ function newSeasonLine(state: GameState): SeasonLine {
     teamLosses: 0,
     overall: state.overall,
     classYear: state.eligibility.classYear,
+    // The FR line is created here, at Signing Day, and autoProgress's kickoff
+    // push is skipped for season 0 because this line already exists. So the
+    // flag has to be written here too, or every career's first row would read
+    // as `undefined` -- "this save does not know" -- when the engine plainly
+    // does. Signing Day is the first decision of a career, before any offseason
+    // hub, so `redshirtSeasonActive` is false; it is read rather than hardcoded
+    // for the same reason `overall` and `classYear` above are.
+    redshirt: state.redshirtSeasonActive,
   };
 }
 

@@ -29,8 +29,30 @@ export function eligibleTiers(state: GameState): Tier[] {
 
 const UNDRAFTED_FLOOR = 35;
 
+// The cost of declaring with eligibility left, charged at the draft and nowhere
+// else (DECISION 038).
+//
+// 8 is the measured gap: the deliberately-bad two-season career scores 42.93
+// mean draft stock (`lazyEarly`, QB, n=3000) against an undrafted floor of 35,
+// so a penalty of 8 removes exactly the cushion it enjoys. It is also
+// 8 / 9.3 = 0.86 of one draft round, encoding "leaving a year of eligibility on
+// the table costs you most of a round."
+//
+// IT MUST NOT MOVE INTO `deriveDraftStock`. That function also feeds
+// `eligibleTiers`, which generates Signing Day and transfer offers; the tier
+// thresholds are 25/45/70 and an 8-point shift there would silently move
+// players across them and rewrite the offer ladder for every junior in the
+// game. Applied at the draft alone it has zero effect on the offer generator,
+// and every full-eligibility profile -- which declares as a SR -- is unchanged
+// to four decimal places. That is the acceptance test, not a nicety.
+export const EARLY_DECLARE_PENALTY = 8;
+
 export function computeDraftResult(state: GameState, rng: Rng): DraftResult {
-  const stock = deriveDraftStock(state);
+  const stock = Math.max(
+    0,
+    deriveDraftStock(state) -
+      (state.eligibility.classYear === "SR" ? 0 : EARLY_DECLARE_PENALTY),
+  );
   if (stock < UNDRAFTED_FLOOR) {
     return { undrafted: true, round: 0, pick: 0, overallPick: 0, draftStock: stock };
   }
