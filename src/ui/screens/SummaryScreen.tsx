@@ -149,6 +149,49 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
   const decline = span && span.net < 0 ? span : null;
   const { distinctions, routine } = splitHonors(s.honors);
 
+  // The three elements of the verdict block, named so the no-call branch can
+  // order them differently without either branch owning a second copy of the
+  // markup. Each is rendered identically in both orders; see the comment at
+  // the point of use for why the order is the whole fix.
+  const ending = (
+    <>
+      <p className="verdict">{s.headline}</p>
+      {s.subhead && <p className="verdict-sub">{s.subhead}</p>}
+    </>
+  );
+  // The career went down. That is a fact about two numbers the player has
+  // already seen, so stating it loudly discloses nothing and scolds no one --
+  // DECISION 012's permitted axis, and 032's call. Scale and weight move with
+  // the size of the drop; the hue is the chalk the other figures on this
+  // screen are set in, identical at every magnitude.
+  const arc = decline && (
+    <p className="arc-verdict" data-magnitude={declineMagnitude(decline.net)}>
+      <span className="arc-verdict-label">
+        Over {s.seasons.length} {seasonWord}
+      </span>
+      <span className="arc-verdict-figure">
+        <span className="arc-verdict-range">
+          {decline.first} → {decline.last}
+        </span>
+        <span className="arc-verdict-net">{signed(decline.net)}</span>
+      </span>
+    </p>
+  );
+  // DECISION 035: `FINAL OVERALL 61` sits two inches above a table whose last
+  // row says 59, and nothing said why. Both numbers stay and the label closes
+  // the gap -- this one counts the off-season that followed the last season,
+  // and the column head below says the column does not. Four words, at the
+  // point of collision.
+  const figure = (
+    <p className="final-ovr">
+      <span className="final-ovr-num">{s.finalOverall}</span>
+      <span className="final-ovr-label">
+        final overall
+        <span className="final-ovr-note">after the off-season</span>
+      </span>
+    </p>
+  );
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
@@ -197,39 +240,41 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
           )}
           <span>{s.schoolPath.join(" → ")}</span>
         </p>
-        <p className="verdict">{s.headline}</p>
-        {s.subhead && <p className="verdict-sub">{s.subhead}</p>}
-        {/* The career went down. That is a fact about two numbers the player
-            has already seen, so stating it loudly discloses nothing and
-            scolds no one -- DECISION 012's permitted axis, and 032's call.
-            Scale and weight move with the size of the drop; the hue is the
-            chalk the other figures on this screen are set in, identical at
-            every magnitude. */}
-        {decline && (
-          <p className="arc-verdict" data-magnitude={declineMagnitude(decline.net)}>
-            <span className="arc-verdict-label">
-              Over {s.seasons.length} {seasonWord}
-            </span>
-            <span className="arc-verdict-figure">
-              <span className="arc-verdict-range">
-                {decline.first} → {decline.last}
-              </span>
-              <span className="arc-verdict-net">{signed(decline.net)}</span>
-            </span>
-          </p>
+        {/* DECISION 032 fixed a congratulatory bad ending by inverting the
+            hierarchy, and it fixed it for DRAFTED careers. The undrafted one
+            kept the trophy treatment -- report 025: "`Undrafted` is set in the
+            same gold display type, size and position as `Round 5, Pick 14`."
+
+            Size and type already differ, and by decision they may not be the
+            lever: 026 set the magnitude-1 floor and 032 froze it as "the one
+            part of this that was already right". POSITION did not differ, and
+            position is what makes it a trophy. This block performs a ceremony
+            -- eyebrow, gold line, detail -- and on a career nobody called it
+            puts the word for "no result" on the podium.
+
+            `Round 5, Pick 9` is a value. `Undrafted` is the absence of one,
+            and this file already rules on absent values, in `.season-ovr`
+            below: the slot "holds its place and stays empty -- the absence of
+            a number, not a NaN and not a substituted one". A headline slot
+            cannot be blank, so it is simply not given first: on a no-call
+            ending the career's own closing figure leads and the ending states
+            itself last, which is where an ending goes. Every element is the
+            same element, in the same hue, at the same size, in a different
+            order -- 021's refusal of a chalk/gold split on `.verdict` stands
+            untouched. */}
+        {s.wasDrafted ? (
+          <>
+            {ending}
+            {arc}
+            {figure}
+          </>
+        ) : (
+          <>
+            {figure}
+            {arc}
+            {ending}
+          </>
         )}
-        {/* DECISION 035: `FINAL OVERALL 61` sits two inches above a table
-            whose last row says 59, and nothing said why. Both numbers stay
-            and the label closes the gap -- this one counts the off-season
-            that followed the last season, and the column head below says the
-            column does not. Four words, at the point of collision. */}
-        <p className="final-ovr">
-          <span className="final-ovr-num">{s.finalOverall}</span>
-          <span className="final-ovr-label">
-            final overall
-            <span className="final-ovr-note">after the off-season</span>
-          </span>
-        </p>
       </section>
 
       {s.seasons.length > 0 && (

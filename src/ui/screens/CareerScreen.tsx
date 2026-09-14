@@ -133,29 +133,47 @@ function statLine(stats: StatView[]): string {
 }
 
 /**
- * The secondary read on a ledger row: which year it was played as, and where.
+ * The season-over-season step in OVR, read down the PLAYED rows only.
  *
- * A future row is empty chrome and says nothing. It used to make an exception
- * for slot 5, captioned `redshirt year` -- and DECISION 033 removes it. The
- * 017 playtester read the caption exactly as intended ("a fifth season, but
- * conditional; I only get it if I redshirt"), then **took the redshirt** and
- * watched the row not change: the caption is keyed to reaching season 5, and
- * the UI has no way to check the condition it was naming. Report 010 measured
- * that "which season was the redshirt" is not derivable from stored data (the
- * duplicate-`classYear` signal exists in 40.6% of redshirt careers and points
- * at the wrong row 426 times out of 427), so this was not a wiring slip that a
- * better keying would fix -- the fact is simply not in the save.
+ * This is the read the 017 playtester called the best thing in the game, and
+ * until now it existed only on the ending screen -- the career arc was hidden
+ * until it was over. It is derived here rather than stored: the previous
+ * *rated* row is the baseline, so a season with no stored OVR (a pre-DECISION
+ * 009 save) is skipped over rather than reported as a change of zero.
  *
- * The dashed rule stays and does the work on its own; the playtester read it
- * correctly and unprompted as "not really part of the plan". What goes is the
- * sentence asserting WHY, which is the half the data cannot back. The field
- * that would let the caption come back honestly is proposed in report 020.
+ * Never drawn on the current row. `advance.ts:285` stamps the in-progress line
+ * with the OVR the season STARTED at, so a delta against it would be a season
+ * old -- the same stale number the row's own OVR cell has always refused to
+ * print (DECISION 019).
  */
-function ledgerDetail(row: LedgerRow, rows: LedgerRow[]): string {
-  if (row.state === "future") return "";
-  return [classYearLabel(rows, row.slot, row.classYear), row.schoolName]
-    .filter(Boolean)
-    .join("  ");
+function ledgerDelta(rows: LedgerRow[], index: number): number | null {
+  const row = rows[index];
+  if (!row || row.state !== "played" || row.overall === null) return null;
+  for (let j = index - 1; j >= 0; j--) {
+    const prev = rows[j];
+    if (prev && prev.state === "played" && prev.overall !== null) return row.overall - prev.overall;
+  }
+  return null;
+}
+
+/**
+ * The career so far, first rated season to last -- the summary screen's
+ * closing `.arc-span` row, said mid-career.
+ *
+ * Null until two seasons have actually recorded an OVR: one season is not an
+ * arc, and a span invented from a single number would be the fabrication
+ * DECISION 014 forbids everywhere else in this table.
+ */
+function ledgerArc(rows: LedgerRow[]): { first: number; last: number; net: number; count: number } | null {
+  const rated = rows.filter((r) => r.state === "played" && r.overall !== null);
+  if (rated.length < 2) return null;
+  const first = rated[0]!.overall!;
+  const last = rated[rated.length - 1]!.overall!;
+  return { first, last, net: last - first, count: rated.length };
+}
+
+function signed(delta: number): string {
+  return `${delta > 0 ? "+" : MINUS}${Math.abs(delta)}`;
 }
 
 /**
@@ -167,46 +185,115 @@ function ledgerDetail(row: LedgerRow, rows: LedgerRow[]): string {
  * job it exists to do. Completed rows are filled, the current row is lifted,
  * future rows are visible as empty chrome.
  *
- * Two things it deliberately does NOT draw:
+ * WAVE 13. The rows now carry what the ending screen's seasons block carries:
+ * school, the year it was played as, the record, the snaps, and the OVR it
+ * finished at with its step from the season before. That block is the
+ * best-liked screen in the game and this table was the same table with four
+ * of its six columns thrown away -- which is why it fitted in 224px and left
+ * a 475px void underneath it at 1456x824. The content is the answer to the
+ * void; the width follows the content.
  *
- *   * The current row's season-end OVR. `advance.ts:285` stamps a line with the
- *     OVR it STARTED at and `enterOffseason` overwrites it with the OVR it
- *     ended at, so the in-progress row's stored number is a season old. The
- *     live OVR is the hero numeral directly above; printing a stale one beside
- *     it would report two moments at once, which is the bug DECISION 019 just
- *     finished closing on the rail.
+ * Three things it deliberately does NOT draw:
+ *
+ *   * The current row's season-end OVR, or a step against it. `advance.ts:285`
+ *     stamps a line with the OVR it STARTED at and `enterOffseason` overwrites
+ *     it with the OVR it ended at, so the in-progress row's stored number is a
+ *     season old. The live OVR is the hero numeral in the other column;
+ *     printing a stale one beside it would report two moments at once, which is
+ *     the bug DECISION 019 just finished closing on the rail.
  *   * A record for the current season. There isn't one until the postseason
  *     resolver runs, and `0-0` is the absence of a record rather than a value
  *     for it (DECISION 014). The cell stays empty.
+ *   * The current season's snaps. They accumulate live, and the rail two
+ *     columns over is FROZEN to the card being read (DECISION 019) -- so the
+ *     two cells would print different snap counts for the same season every
+ *     time an outcome was on screen. The row states where the player is; the
+ *     rail states what has happened there.
  */
 function Ledger({ rows }: { rows: LedgerRow[] }) {
+  const arc = ledgerArc(rows);
+  const rated = rows.some((row) => row.state === "played" && row.overall !== null);
+
   return (
     <aside className="ledger" aria-label="Career ledger">
+      {/* The same words the summary's column head uses, for the same reason
+          (DECISION 035): this column is each season AS PLAYED, and the hero
+          numeral in the other column is the live one. Absent until there is a
+          figure in the column to name. */}
+      {rated && (
+        <p className="ledger-head" aria-hidden="true">
+          Ovr at season&rsquo;s end
+        </p>
+      )}
+
       <ol className="ledger-rows">
-        {rows.map((row) => (
-          <li
-            key={row.slot}
-            className="ledger-row"
-            data-state={row.state}
-            data-tentative={row.tentative ? "yes" : "no"}
-            {...(row.state === "current" ? { "aria-current": "step" as const } : {})}
-          >
-            <span className="ledger-year">{row.label}</span>
-            <span className="ledger-ovr">
-              {row.state === "played" && row.overall !== null ? (
-                <>
-                  {row.overall}
-                  <span className="sr-only"> overall</span>
-                </>
-              ) : (
-                ""
-              )}
-            </span>
-            <span className="ledger-detail">{ledgerDetail(row, rows)}</span>
-            <span className="ledger-record">{row.record ?? ""}</span>
-          </li>
-        ))}
+        {rows.map((row, index) => {
+          const played = row.state === "played";
+          const delta = ledgerDelta(rows, index);
+          const year = classYearLabel(rows, row.slot, row.classYear);
+          return (
+            <li
+              key={row.slot}
+              className="ledger-row"
+              data-state={row.state}
+              data-tentative={row.tentative ? "yes" : "no"}
+              {...(row.state === "current" ? { "aria-current": "step" as const } : {})}
+            >
+              <span className="ledger-year">{row.label}</span>
+              <span className="ledger-body">
+                <span className="ledger-school">{row.schoolName ?? ""}</span>
+                <span className="ledger-line">
+                  {year && <span className="ledger-class">{year}</span>}
+                  {played && row.record && <span className="ledger-record">{row.record}</span>}
+                  {played && row.snaps !== null && (
+                    <span className="ledger-snaps">{NUM.format(row.snaps)} snaps</span>
+                  )}
+                </span>
+              </span>
+              <span className="ledger-ovr">
+                {played && row.overall !== null && (
+                  <span className="ledger-ovr-num">
+                    {row.overall}
+                    <span className="sr-only"> overall</span>
+                  </span>
+                )}
+                {delta !== null && delta !== 0 && (
+                  <span className="ledger-delta">
+                    <span aria-hidden="true">{signed(delta)}</span>
+                    <span className="sr-only">
+                      , {upDown(delta)} {Math.abs(delta)} on the season before
+                    </span>
+                  </span>
+                )}
+              </span>
+            </li>
+          );
+        })}
       </ol>
+
+      {/* The closing line, and at desktop the floor of the room: it is pushed
+          to the bottom of the column so the table has a defined bottom edge
+          rather than stopping in mid-air over 250px of black. Same words and
+          same three cells as the summary's `.arc-span`, because it is the same
+          statement made earlier. */}
+      {arc && (
+        <p className="ledger-arc">
+          <span className="ledger-arc-label">
+            Across {arc.count} season{arc.count === 1 ? "" : "s"}
+          </span>
+          <span className="ledger-arc-range" aria-hidden="true">
+            {arc.first} &rarr; {arc.last}
+          </span>
+          {arc.net !== 0 && (
+            <span className="ledger-arc-net" aria-hidden="true">
+              {signed(arc.net)}
+            </span>
+          )}
+          <span className="sr-only">
+            Across {arc.count} seasons, overall {arc.first} to {arc.last}.
+          </span>
+        </p>
+      )}
     </aside>
   );
 }

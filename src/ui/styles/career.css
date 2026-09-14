@@ -303,27 +303,10 @@
    how much is left": a fixed-length table you never have to go and look for.
 
    `.frame`'s max-width is --measure, which is a MEASURE -- a function of the
-   prose size, not a page width. The decision column keeps it exactly; the grid
-   adds the ledger and its gutter outside it, so no line of prose gets longer. */
+   prose size, not a page width. The decision column keeps it EXACTLY, at both
+   widths and at every viewport: nothing in the left-hand column moves in this
+   pass. The room is made on the right. */
 .career-main { min-width: 0; }
-
-@media (min-width: 64rem) {
-  .career {
-    max-width: calc(var(--measure) + 3.5rem + 14rem);
-    display: grid;
-    grid-template-columns: minmax(0, var(--measure)) 14rem;
-    column-gap: 3.5rem;
-    align-items: start;
-  }
-
-  .ledger {
-    margin-top: 0;
-    position: sticky;
-    /* Matches `.app`'s own top padding, so the table settles where the rail
-       started rather than at the very edge of the viewport. */
-    top: clamp(1rem, 4vw, 2.5rem);
-  }
-}
 
 /* ---------- the career ledger ---------- */
 
@@ -338,32 +321,64 @@
    accident. Five labelled slots state the shape of a career without a word of
    explanation.
 
-   Same box-score vernacular as the rail above: condensed widths, tabular
-   figures, columns separated by space rather than punctuation. */
+   The columns are the summary screen's `.arc`: year, body, figure. Same three
+   cells, same reading order, same vernacular -- box-score, condensed widths,
+   tabular figures, columns separated by space rather than punctuation. Nothing
+   here is set at a size or a colour it was not already set at; what changed is
+   how many of the facts the row already held are drawn. */
 .ledger {
   margin-top: 2.25rem;
-  border-top: 1px solid var(--line);
   font-variation-settings: "wdth" 76;
   font-variant-numeric: tabular-nums;
 }
 
+/* The column head, and the same disambiguation DECISION 035 made on the
+   summary: this column is each season AS PLAYED, and the hero numeral in the
+   other column is the live one. */
+.ledger-head {
+  margin: 0 0 0.4rem;
+  padding: 0 0.6rem;
+  text-align: right;
+  font-variation-settings: "wdth" 74;
+  font-weight: var(--w-ui);
+  font-size: var(--t-micro);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+/* Every row draws its rule on top, and the table draws its own first one, so
+   the head above it is not left hanging over an open edge. */
 .ledger-rows {
+  --ledger-row-pad: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--line);
 }
 
-/* Two fixed-height text rows, declared on the grid rather than left to the
-   content. A future row has four empty cells and no line boxes at all, so
-   without this it would collapse to nothing and the table would stop showing
-   the career's length -- which is the whole point of drawing empty rows. */
+/* The block closes -- but only when its last row is a row rather than a
+   possibility. While slot 5 is still an unspent redshirt it hangs off a dashed
+   rule and the table stops under it with an OPEN edge, which is the whole of
+   how DECISION 010 refuses to promise a fifth season. A closing rule under a
+   dashed row would draw exactly that promise. */
+.ledger-row:last-child:not([data-tentative="yes"]) {
+  border-bottom: 1px solid var(--line);
+}
+
+/* A future row has empty cells and no line boxes at all, so without a floor it
+   would collapse to nothing and the table would stop showing the career's
+   length -- which is the whole point of drawing empty rows. 2.35rem is the two
+   text rows the grid used to declare, kept as a minimum so an empty row and a
+   one-line row are the same box. */
 .ledger-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: 1.3rem 1.05rem;
+  grid-template-columns: 3.2rem minmax(0, 1fr) 4.2rem;
   column-gap: 0.7rem;
-  align-items: baseline;
-  padding: 0.5rem 0.6rem;
+  align-items: start;
+  min-height: 2.35rem;
+  padding: var(--ledger-row-pad) 0.6rem;
   color: var(--chalk-dim);
 }
 
@@ -372,25 +387,21 @@
 .ledger-year {
   font-size: var(--t-micro);
   font-weight: var(--w-ui);
-  line-height: var(--lh-tight);
+  line-height: 1.6;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
 }
 
-/* The season's finishing OVR: the career arc DECISION 009 added the field for,
-   read down the column. A mid numeral, not THE numeral -- the hero above is
-   the live one. */
-.ledger-ovr {
-  justify-self: end;
-  font-variation-settings: "wdth" 68;
-  font-size: var(--t-label);
-  font-weight: var(--w-figure);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--track-tight);
+.ledger-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
 }
 
-.ledger-detail {
-  min-width: 0;
+/* Engine-built, so it is the one string on this screen that can arrive longer
+   than its column. It truncates rather than wraps: the row is a table row. */
+.ledger-school {
   font-size: var(--t-meta);
   line-height: var(--lh-tight);
   overflow: hidden;
@@ -398,13 +409,46 @@
   white-space: nowrap;
 }
 
-/* Empty all season and for every future row. `0-0` is the absence of a record
-   rather than a value for one, so nothing is drawn until the postseason
-   resolver has made it real (DECISION 014). */
-.ledger-record {
-  justify-self: end;
-  font-size: var(--t-meta);
+/* The year it was played as, the record and the snaps, spaced like a box
+   score. Empty all season on the current row and empty on every future one --
+   `0-0` is the absence of a record rather than a value for one (DECISION 014),
+   and live snaps here would contradict the frozen rail two columns over
+   (DECISION 019). */
+.ledger-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.8rem;
+  font-size: var(--t-micro);
   line-height: var(--lh-tight);
+}
+
+/* The season's finishing OVR: the career arc DECISION 009 added the field for,
+   read down the column, with the step from the season before it beside it.
+   A mid numeral, not THE numeral -- the hero in the other column is the live
+   one. Holds its width whether or not there is a number in it. */
+.ledger-ovr {
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  font-variation-settings: "wdth" 68;
+  font-size: var(--t-label);
+  font-weight: var(--w-figure);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+}
+
+/* Season over season. DECISION 012 governs it: this is a change in a number
+   already on screen, so it may be read by size and weight and never by hue --
+   +6 and -6 are the same colour, and they are the same size, because the
+   ledger is the secondary read and a gradation here would start competing
+   with the card. */
+.ledger-delta {
+  font-variation-settings: "wdth" 74;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-none);
 }
 
 /* Completed rows filled, the current row lifted, future rows visible as empty
@@ -412,6 +456,7 @@
    hue: there is no --good/--bad in this interface and the ledger is not the
    place to invent one (DECISIONS 006, 012, 021). */
 .ledger-row[data-state="played"] .ledger-ovr,
+.ledger-row[data-state="played"] .ledger-school,
 .ledger-row[data-state="played"] .ledger-record { color: var(--chalk); }
 
 .ledger-row[data-state="current"] {
@@ -439,6 +484,126 @@
   border-top-style: dashed;
   color: var(--chalk-faint);
 }
+
+/* The career so far, said in the words the ending screen will use again:
+   `Across 3 seasons  59 -> 68  +9`. It is the read the 017 playtester called
+   the best thing in the game, and the game was keeping it until the career was
+   over. Set at the table's own scale, never the hero's -- the live OVR is one
+   column to the left at 34px and this must not compete with it. */
+.ledger-arc {
+  margin: 1.1rem 0 0;
+  /* A foot rule, the same one the summary's `.arc-span` carries. At desktop
+     this line is pushed to the floor of the room and the rule is what makes it
+     the foot of a ledger page rather than a sentence adrift in black. */
+  padding: 0.75rem 0.6rem 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-arc-label {
+  margin-right: auto;
+  font-variation-settings: "wdth" 74;
+  font-weight: var(--w-ui);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+.ledger-arc-range {
+  font-variation-settings: "wdth" 70;
+  font-weight: var(--w-ui);
+  font-size: var(--t-meta);
+  color: var(--chalk-dim);
+}
+
+.ledger-arc-net {
+  font-variation-settings: "wdth" 70;
+  font-weight: var(--w-figure);
+  font-size: var(--t-meta);
+  color: var(--chalk-soft);
+}
+
+/* WAVE 13, the empty room. Measured by the 025 playtester at 1456x824: the
+   whole app was a 760px band centred in a 1456px window -- 348px of dead black
+   on each side -- and the card bottom landed at y=567 with 257px of black
+   under it. The ledger was 224x273 in the top right with a 224x475 void
+   beneath it.
+
+   Two columns of one measure each, 3.5rem of gutter either side of a hairline:
+   1016px of band, 220px of gutter each side at 1456. That is 70% of the
+   viewport, which is where the reference's own play shell measures (990 of
+   1440, 69%) -- arrived at from the content rather than copied, because the
+   content is what changed: the table now carries what the ending screen's
+   seasons block carries and 224px will no longer hold it.
+
+   The rule is the other half. A column of air with a defined left edge that
+   runs floor to ceiling is a column; the same air with nothing at its edge is
+   the void the playtester filed. One hairline, in the vocabulary every other
+   division on this screen already uses.
+
+   Not adopted from the reference: its height-LOCKED shell (`90svh`,
+   `overflow-hidden`). The resolved card grew this wave -- a THIS CARD /
+   EVERYTHING ELSE split, a character line and an injury note can all land on
+   one card -- and the tallest one measured here runs to y=633. A locked shell
+   would clip it, and 025 found zero clipping to preserve. This shell is
+   height-FILLED instead: the room is always at least a screen tall, and a card
+   that outgrows it pushes the page rather than being cut. */
+@media (min-width: 64rem) {
+  .career {
+    max-width: calc(var(--measure) * 2 + 3.5rem);
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, var(--measure));
+    column-gap: 3.5rem;
+    align-items: start;
+  }
+
+  .ledger {
+    margin-top: 0;
+    padding-left: 3.5rem;
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    /* Matches `.app`'s own top padding, so the table settles where the rail
+       started rather than at the very edge of the viewport. */
+    top: clamp(1rem, 4vw, 2.5rem);
+    /* The room. `.app` pads 2.5rem at the top (the clamp is at its ceiling
+       from 62.5rem up, so this whole breakpoint gets the same number) and 4rem
+       at the bottom; 6.5rem is the two of them, and what is left is exactly
+       one screen. `align-self: start` plus an explicit height, rather than
+       `stretch`, so the column can still stick when a tall card does push the
+       page past a screen. */
+    min-height: calc(100svh - 6.5rem);
+  }
+
+  /* Rows at the ending screen's rhythm rather than the old strip's: they are
+     carrying the ending screen's content now.
+
+     Every row is the height of a PLAYED row, so the table is the same 315px
+     block in season 1 as in season 5 -- the reference's "an empty slot you can
+     see", and the reason DECISION 007 wants a fixed-length table in the first
+     place: a table that grows as it fills moves the how-much-is-left signal
+     out from under the player. At phone width the minimum stays at one text
+     row, where four tall empty slots would be four screens of scroll to earn
+     nothing. */
+  .ledger-rows { --ledger-row-pad: 0.95rem; }
+  .ledger-row { min-height: 3.75rem; }
+
+  /* Pushed to the floor of the room. The air is BETWEEN the table and this
+     line, bounded above by the table's closing rule, below by a statement of
+     the career so far, and on the left by the column rule -- which is what
+     makes it whitespace instead of a void. It is also the honest shape of the
+     thing: five rows cannot fill 720px without becoming padding dressed as
+     structure, so the table is not stretched to reach the bottom. The
+     reference fills its column because it has twelve rows; we have five. */
+  .ledger-arc { margin-top: auto; }
+}
+
 
 /* ---------- the card ---------- */
 

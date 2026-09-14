@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 12 complete and committed · **Wave 13:** in flight · **PM session:** 6
+**Last updated:** 2026-09-14 · **Wave:** 12 complete and committed · **Wave 13:** complete and committed · **PM session:** 6 (handing off)
 
 ---
 
@@ -821,6 +821,8 @@ briefs this as "fix the six cards" will rewrite good writing and leave the cause
 | B35 | **Silent resolutions remain** — "Play this season", "Return to school" and "Stay at [school]" produce no outcome screen. **"Stay at Ole Miss" paid +10 as a bare number on a card with no sentence** | Wave 9 proved three hubs deserved silence *on the data then*. +10 is not silence-worthy. Re-measure before re-deciding |
 | B36 | **Arithmetic and state defects**: ledger read `8 snaps · 3 FG · 6 Points`; status read `ON THE FIELD: on the scout team` beside 339 snaps and 31 tackles; *Bowl Opt-Out* says *"your name's already climbing draft boards"* at **60 OVR on the scout team**; *Playoff or Bust* says *"Ten wins is a disappointing season here"* beside a **5-7** ledger | Mixed causes — some content conditions, some view-model. Cheap and they cost credibility every time |
 | B37 | **The redshirt card lies** — *"sit this season"* cost −3 and the season was played anyway | B13 was closed as a wording fix. The wording is still wrong |
+| B41 | **Off-field beats should not author `snaps` at all** — *Cutting the Line*, *Bed Check* and *On the Sideline, On Camera* award ±15/−20 snaps, which is why DECISION 048's gate had to sweep them in | DECISION 051. The gate is the approximation; this is the clean fix. It changes those cards for every player, not just redshirts, so it is a balance question and goes to the user |
+| B42 | **`Undrafted` may be a much rarer ending than the screen's prominence implies** — 400 careers under a deliberately bad policy produced **zero** undrafted results (59 drafted : 1 busted in a 60-career sample) | DECISION 052. Found while building a fixture to render the undrafted screen at all. Wave 9 made careers losable and 048's A/B puts the redshirt cohort at ~96% drafted. Balance observation, for the user |
 | B38 | **A playing-time phrase is printed beside `0 snaps`** — at Signing Day and preseason the header reads `ON THE FIELD: in the rotation` with `0 snaps` directly above it | Found by the PM's own click-through, wave 12. It is defect 2's mirror image: 027 fixed the low-phrase-beside-high-snaps direction and deliberately did not gate on `season.inProgress` (027 §7). A pre-season zero is "has not played yet", not "is not playing" — the phrase should probably be suppressed, not lowered. Small, `bands.ts` + `view-model.ts` |
 | B39 | **`delayPhases: 2` does not exist in practice** — all 14 deferred effects are `delayPhases: 1` and land inside their own card's `advance`, so "this will cost you later" never does | 026 §6.1. Content, frozen. Cheap (one field on 14 effects) and it is the only way an author can write a genuinely-later consequence |
 | B40 | **`suspension` is unaccounted on the card** — it zeroes snaps for two phases, moves no OVR, and the card says nothing | 026 §6.3. Same class as B30, out of that brief's scope |
@@ -892,13 +894,43 @@ untouched.** The PM played a full career by hand and confirmed all four card sha
   `view-model.ts` diff assumed one `currentSeasonLine(state)` call site; there are two. It was applied
   by hand against what the file actually said. Cross-lane diffs get re-read, not pasted.
 
-## Wave 13 — in flight (PM session 6)
+## Wave 13 — complete and committed (PM session 6)
 
 | Brief | What | Owns |
 |---|---|---|
 | `briefs/028-the-freeze-lift.md` | **DECISIONS 048/049/050.** `requiresPlaying` on all 52 + a `validateContent` rule; `minOverall` + `minClass: "JR"` on the four draft-board cards; the redshirt card's two engine strings; *Playoff or Bust* reworded; twelve `points` siblings in `k.ts` | `src/content/**`, and **only** `engine/types.ts`, `engine/select-event.ts`, `advance.ts:74/:76` |
 | `briefs/029-the-empty-room.md` | **B29.** The ~755px band in a 1456px window; the decision screen using a third of its area. The void under the year rail takes the season stat detail | `CareerScreen.tsx`, `career.css` |
 | `briefs/030-undrafted-is-not-a-trophy.md` | **B33.** `Undrafted` in the same gold display type, size and position as `Round 5, Pick 14`. DECISION 032 applied to the case it missed | `SummaryScreen.tsx`, `summary.css` |
+
+### Lane B — shipped. The room is used, and one reference feature was rejected on measurement
+
+- **Width:** the band goes 760px → **1016px** at 1456×824; dead black **348/348 → 220/220** each side,
+  70% of the viewport against the reference shell's 69%. Two columns of one `--measure` each with a
+  hairline rule between. The decision column is still *exactly* `--measure` and nothing inside it
+  moved. **PM-verified independently:** `.frame.career` x=220 w=1016, `.career-main` and `.ledger`
+  both 480 wide.
+- **Vertical:** the right column carries `min-height: calc(100svh - 6.5rem)` and ends at y=760. The
+  257px of dead black under the card and the 224×475 void under the year rail are both gone.
+- **The reference's `overflow:hidden` height-lock was REJECTED, on a measurement.** The tallest
+  resolved card over 120 cards bottoms at y=644; clipping it would create a new defect where 025 found
+  none. Zero scroll in 120/120 cards. *This is the third reference feature adopted, adapted or
+  rejected on purpose rather than copied.*
+- **What filled the void:** the ledger row now carries what the ending screen's season row carries —
+  school, class year, record, snaps, season-end OVR and its step from the season before — plus the
+  summary's column head and an `Across N seasons 60 → 71 +11` foot line pinned to the floor. **All
+  from fields already on `CareerView.ledger`; no view-model change needed or made.** Rows are now all
+  the height of a played row, so the table no longer grows as the career fills — DECISION 007's actual
+  point.
+- Four pre-existing rules kept and verified: no OVR, step, record or **snaps** on the current row
+  (snaps would contradict the frozen rail, DECISION 019), and the dashed fifth row keeps its open edge
+  (DECISION 010).
+- Verified at 1456, 1920, 1280, 1024, 768, 400 and 360 across plain cards, the tall 4-part account
+  card, transfer hub, offseason, ending, and empty and full ledgers. **PM re-measured 360/400: 20px
+  gutters, no overflow.**
+- **Left deliberately empty, with reasons:** 180–280px under the card in the left column (centring was
+  rejected because it would move the card between a decision and its outcome), the framed air inside
+  the right column, and the 220px side gutters. An optional `LedgerRow.stats` view-model diff is
+  written out in the report if the per-season stat line is ever wanted.
 
 **028 is alone in `src/content/**` on purpose** — its balance measurement is over the whole bundle, so
 a parallel lane touching any content would pollute it. That is the wave-10 lesson restated.
@@ -907,6 +939,59 @@ a parallel lane touching any content would pollute it. That is the wave-10 lesso
 it deliberately and by approval. Their check is `git status`: nothing modified under `src/engine/`,
 `src/content/`, or their out-of-bounds list. **028 records the new seed hashes for 24/77/101 so the PM
 can re-baseline at commit.**
+
+### Lane D — shipped, commit `ce36cbf`. 644 tests green
+
+**The stop condition did not fire.** Redshirt-cohort draft rate `0.9567 → 0.9592` over an
+identical-seed A/B of 7,200 careers. Redshirting still beats the never-redshirt control on top-3 rate
+(0.5917 vs 0.4792), stock median (76 vs 72) and OVR mean (82.95 vs 80.43). The cost landed in **round
+quality** — 68 careers out of round 1, spread across 2–7 — which is the intended sacrifice. Nothing
+was tuned.
+
+- **Production cards firing at a sitting player: 1,655 → 0.** The PM re-derived the coverage
+  independently from `CONTENT.events`: 59 production on-field events, **0 still ungated**.
+- **`minOverall: 70`**, and the number is defended: 70–74 is the lowest 5-point band in which every
+  measured career was drafted (653/653); at 65–69 more than one in five goes undrafted, which was
+  027 §3's own stated falsifier. All four cards still fire (36–45% of prior firings retained); FR/SO
+  firings **68.6–70.9% → 0%**.
+- **`points < 3 × fieldGoals`: 5.9% of K season rows → 0 / 4,569.**
+- The agent **declined** 027's proposed `"Redshirt:"` glossary prefix as off-voice and wrote its own.
+  The PM read every line before committing, per DECISION 030.
+
+**DECISION 051 — the measurement the approval did not cover.** The gate collapses a redshirt season's
+eligible pool from **81 events to 12** (3 `nonconf` / 5 `conference` / 4 `postseason`), which points
+straight at this phase's top finding. Measured on the committed probe against a pristine pre-048 tree,
+cohort C: first verbatim repeat median **17 → 17**, re-shown share unchanged, repeat-by-decision-16
+**41.0% → 44.4%**. +3.4pp on one rate and nothing else moves, because a redshirt season is one of
+five and the metric is career-wide. **Kept.** Falsifier: a playtester who redshirts and reports the
+season as thin — *the next playtest brief must send someone through a redshirt season deliberately
+and ask.*
+
+**New `npm run play` md5 baselines** (bit-identity moved by approval, precedent 040):
+`24 random cd2d3895e9c68e8dc485bfa5cc0fc832` · `77 random 7d6ee0df708a92555edb968ccc65ce64`
+(**unchanged** — that career never sits and never draws a gated card) ·
+`101 random f2ffe2b55fdbf8bf710182f64b871edb`.
+
+### Lane E — done, awaiting commit with lane B. It was small, and it says so
+
+**The defect was position, not size or hue.** `Undrafted` and `Round 5, Pick 9` already differ in
+size, weight, width and opacity — and those values are *locked* by DECISION 026's floor, which 032
+froze, so shrinking the word was never available. What was identical was **the slot**: both occupy
+the first position after the eyebrow, so the block announced the absence of a result where the result
+goes.
+
+The fix is two CSS blocks and one ternary: on `!wasDrafted` the verdict block's three elements run in
+reverse order — the career's closing figure leads, the ending states itself last. `.verdict` computes
+`rgb(240, 180, 41)` on **both** branches; DECISION 021's refusal of a chalk/gold split is untouched.
+Drafted careers render byte-identically.
+
+It also **completes DECISION 032** rather than extending it: on a *declining* undrafted career the
+promoted arc was being promoted underneath the trophy, so the honest number still ranked second.
+
+**One gap, stated by the agent rather than papered over:** phone width was argued from the tokens,
+not measured, because another agent was driving the shared browser. **The PM has since closed it —
+DECISION 052.** No defect: no overflow at 360/400/1456, the reorder holds at every width, and
+`.verdict` stays gold on both branches.
 
 **028 carries a stop condition** (DECISION 048): if the redshirt cohort's draft rate collapses rather
 than shifting modestly, it stops and reports rather than tuning. That is a PM/user call.
@@ -917,7 +1002,61 @@ milestone four times) is content, which 028 holds. B30/B31's follow-ons — 026 
 report the whole movement, by DECISION 037's choice) and §6.3 (`suspension` is unaccounted on the
 card) — are both real and both unqueued.
 
-## Next actions — for PM session 6, in order
+## Next actions — for PM session 7, in order
+
+**Read this section, `DECISIONS.md` 045–052, and the wave 12 and 13 sections above. Nothing else.**
+
+**The build is in the best state it has been in.** 644 tests green, both typecheck passes exit 0,
+build clean, three waves committed. Waves 12 and 13 closed the mechanism DECISION 046 identified:
+cards account for themselves, the header stops contradicting itself, a player who sits does not make
+plays, the desktop room is used, and a bad ending stops looking like a trophy.
+
+1. **The next wave is a PLAYTEST, not more building.** Four waves of change have landed since 025 and
+   nothing has been played by fresh eyes since. The north star is *a playtester who has never seen it
+   playing three careers in a row without being asked to* — that is a measurement, and it is overdue.
+   **The brief must carry three questions this session created and cannot answer itself:**
+   - **DECISION 051's falsifier.** Send them through a **redshirt season deliberately** and ask
+     whether it felt thin or repetitive. The gate collapsed that season's event pool 81 → 12 and the
+     career-wide metric would not notice.
+   - **Does the card's number now agree with its words?** That is what waves 12–13 were for. 025's
+     mechanism was that contradictions made skimming rational; ask directly whether they still find
+     any, and hand them 026's six rows to confirm or refute.
+   - **Onset, again.** 025 put it at decision 1 for careers 2–4 because every career opens on Signing
+     Day. Nothing since has changed the offseason. Expect it to still be decision 1 — and get the
+     number, because DECISION 045's redirected authoring budget is waiting on it.
+   Copy `briefs/025-post-wave9-playtest.md`'s shape. **Serial — one browser agent at a time, always.**
+2. **Then B32** — the declare card reads as a trap, not a gamble. Held out of waves 12 and 13 because
+   it wants `advance.ts` and `view-model.ts`. **DECISION 025 refused a round projection by name**, so
+   the fix is not `draftStock` and not a projection: a gamble should look like one before it is taken.
+3. **B34** — the Moments reel prints one milestone four times. Confirmed with evidence this session
+   (DECISION 052: a fixture career carries *"Enjoyed the bowl trip more than the bowl game"* in four
+   consecutive seasons). The cause is content — the milestone fires every season.
+4. **B38, B39, B40, B41, B42 are the new backlog.** B41 and B42 are balance and go to the **user**;
+   B38 is small and UI-side; B39 is cheap content; B40 is the same class as B30.
+5. **The engine is re-frozen.** DECISION 049's lift was for three named sites. All spent.
+6. **Do not reopen type, colour or contrast.** 025 found zero visual defects; waves 12–13 added none
+   that any measurement has found.
+7. **Tooling that cost this session real time — do not rediscover it (DECISION 052):**
+   - `resize_window` **silently no-ops** in this browser. Measure breakpoints by running the app in a
+     **same-origin iframe** sized to the exact viewport and reading real rects from it.
+   - Driving a career by clicking in a JS loop **hits the 45-second CDP timeout** after ~3–10 clicks.
+     Batch small, or skip the UI: write a terminal `GameState` straight into
+     `localStorage['cfb-career-sim:v1:current']` as `{schema: 1, state, resolved: null}` and the app
+     restores to it.
+   - **If a grep over a source file returns nothing you are certain is there, run `file` on it.** A
+     literal NUL byte in a template string made `grep` skip `view-model.ts` entirely.
+   - `npx tsx src/sim/repetition-probe.ts 24 B card` (or `C`, or `all`) is the committed gate for any
+     repetition claim. Use both cohorts; neither alone exercises all five opener variants.
+8. **`npm run play` baselines moved this wave, by approval.** Current md5s:
+   `24 random cd2d3895e9c68e8dc485bfa5cc0fc832` · `77 random 7d6ee0df708a92555edb968ccc65ce64` ·
+   `101 random f2ffe2b55fdbf8bf710182f64b871edb`.
+9. Increment the **PM session** counter at the top of this file when you take over.
+
+## Next actions — the wave 12/13 list, kept for anything unstruck
+
+### The original PM-session-6 list, now executed
+
+#### Next actions — for PM session 6, in order
 
 **Read this section, `DECISIONS.md` 042–047, and the wave 10, 11 and 12 sections above. Nothing else.**
 

@@ -1421,3 +1421,39 @@ redshirts, and is a bigger balance question than this wave. **Recorded as B41.**
 **What would change our mind.** A playtester redshirting and reporting the season as thin or repetitive
 in a way the career-wide numbers do not capture. The next playtest brief should send someone through a
 redshirt season deliberately and ask.
+
+## 052 — Lane E's phone-width gap is closed by the PM, and the method is worth keeping
+
+**Date:** 2026-09-14 · **Made by:** PM session 6 · **Evidence:** measured in-browser against the built app
+
+Brief 030's agent stated a gap rather than papering over it: phone width was argued from the tokens,
+not measured, because another agent was driving the shared browser and resizing it would have
+disturbed their measurement. **That was the right call and the check was owed.** It is now done.
+
+**Result — no defect.** Undrafted summary, measured at **360, 400 and 1456**: no horizontal overflow
+at any width, no element wider than the viewport, and the reorder holds everywhere — `.final-ovr` at
+y=154, `.verdict` at y=228. `.verdict` computes `rgb(240, 180, 41)` on the undrafted branch at every
+width, so DECISION 021's refusal of a chalk/gold split is intact. The career screen was measured the
+same way: `.frame` at 20px gutters both sides at 360 and 400, no overflow.
+
+**Two methods worth keeping, because both cost this session real time to find:**
+
+1. **`resize_window` silently no-ops in this browser.** Lane B found it and worked around it by running
+   the app in a same-origin iframe sized to the exact viewport and reading real rects from it. That
+   technique is how both the desktop and phone numbers in waves 12–13 were obtained, and it is the
+   only reliable way to measure a breakpoint here.
+2. **Driving a career by clicking in a JS loop hits the 45-second CDP timeout** after roughly 3–10
+   clicks, because each click is a full engine `advance` plus a React render. Batch small, or skip the
+   UI entirely: a terminal `GameState` can be written straight into
+   `localStorage['cfb-career-sim:v1:current']` as `{schema: 1, state, resolved: null}` and the app
+   restores to it. **That is how the undrafted screen was rendered at all** — see below.
+
+**A finding that outlived the check.** Under a deliberately bad policy (always take the last option),
+**400 careers produced zero undrafted results** — 59 drafted to 1 busted in a 60-career sample. The
+undrafted branch had to be rendered from a hand-built fixture. Wave 9 made careers *losable*
+(`lazyEarly` 89% → 56% drafted) and DECISION 048's A/B puts the redshirt cohort at ~96% drafted, so
+"undrafted" may now be a much rarer ending than the screen's prominence implies. **Recorded as B42.**
+It is a balance observation, not a polish one, and it goes to the user rather than being assumed.
+
+**Also confirmed in passing, with evidence:** B34 is real and reproducible. The fixture career's
+moments list carries *"Enjoyed the bowl trip more than the bowl game"* in **four consecutive seasons**.

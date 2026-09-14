@@ -313,6 +313,62 @@
   color: var(--chalk-dim);
 }
 
+/* ---------- a no-call ending stops being a trophy (report 025) ----------
+
+   DECISION 032 fixed the congratulatory bad ending with hierarchy rather than
+   hue, and fixed it for DRAFTED careers -- the arc is promoted when a career
+   went down. The undrafted ending was left as it was, and the 025 playtester
+   named it: "`Undrafted` is set in the same gold display type, size and
+   position as `Round 5, Pick 14`."
+
+   Two of those three were already false and are not available as levers.
+   Measured on the live page at 898px, where `--t-display` is at its 48px
+   ceiling: `Round 5, Pick 9` is 45.1px / 800 / wdth 69 / opacity 0.93, and
+   `Undrafted` is 34.6px / 700 / wdth 78 / opacity 0.68. Those are DECISION
+   026's floor values, and 032 froze them by name -- "the washout end of the
+   scale is the one part of this that was already right". So the answer here
+   was never going to be a smaller word, and it was never going to be a red.
+
+   POSITION is the one the playtester named that was true, and it is the one
+   that makes a trophy. The block performs a ceremony in a fixed order --
+   eyebrow, gold line, figure -- and on a career nobody called it hands the
+   podium to the word for "no result". `Round 5, Pick 9` is a value;
+   `Undrafted` is the absence of one, and the absence was being staged in the
+   slot the value earns.
+
+   So on a no-call ending the three elements run in the other order: the
+   career's own closing figure leads, and the ending states itself last, which
+   is where an ending goes. What this is NOT:
+
+   - Not a hue. `.verdict` is `--milestone` on this branch exactly as on the
+     other, at the identical computed value; DECISION 021 refused the
+     chalk/gold split on this element by name and nothing here reopens it.
+     No element on either branch changes colour.
+   - Not a resize. Every element keeps the size, weight, width and opacity it
+     had. 026's floor and 032's freeze on it are untouched.
+   - Not a change to a good ending. `.verdict-block` without `.quiet` -- every
+     drafted career, all eight magnitudes -- renders in the order it always
+     did, with the same rules in the same places.
+   - Not punitive. The loudest thing on the screen becomes a number the player
+     already had, set in the chalk every other figure here is set in. The
+     screen says what the career was and then says how it ended. */
+
+/* The figure now opens the block, so it takes the eyebrow's gap and gives up
+   the rule that separated it from what used to sit above it. */
+.verdict-block.quiet .final-ovr {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* ...and the ending closes it, so it takes the rule. `.verdict` carries
+   `margin: 0`, hence the explicit top margin rather than a shorthand. */
+.verdict-block.quiet .verdict {
+  margin-top: 1.3rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+
 /* The second heading in a section -- `Also earned` under `Honors`. It is a
    sibling tier, not a new section, so it keeps the same type and takes a
    smaller air gap (DECISION 034). */
