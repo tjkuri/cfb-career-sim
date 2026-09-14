@@ -1,0 +1,31 @@
+/* ---------- log ---------- */
+
+.log-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.log-name { font-variation-settings: "wdth" 76; font-weight: 600; }
+.log-headline { margin-left: auto; color: var(--milestone); font-variation-settings: "wdth" 76; }
+.log-headline.quiet { color: var(--chalk-faint); }
+.log-meta { width: 100%; color: var(--chalk-faint); font-size: 0.88rem; }
+
+.empty {
+  padding: 2.5rem 0;
+  color: var(--chalk-dim);
+}
+
+.notice {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--alert-edge);
+  border-left: 3px solid var(--alert);
+  border-radius: var(--radius-control);
+  background: var(--card);
+}
+
+.notice p { margin: 0 0 0.9rem; }

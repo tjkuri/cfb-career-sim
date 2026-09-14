@@ -1,0 +1,111 @@
+/* ---------- creation ---------- */
+
+.creation-head {
+  margin: 0 0 2rem;
+  font-variation-settings: "wdth" 68;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 11vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+}
+
+.field { margin-bottom: 1.4rem; }
+
+.field > label {
+  display: block;
+  font-variation-settings: "wdth" 76;
+  font-size: 0.9rem;
+  color: var(--chalk-dim);
+  margin-bottom: 0.35rem;
+}
+
+.input,
+.select {
+  width: 100%;
+  font: inherit;
+  color: var(--chalk);
+  background: var(--input);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 0.65rem 0.8rem;
+}
+
+.input:focus, .select:focus {
+  outline: none;
+  border-color: var(--focus);
+}
+
+/* The jersey number is the identity in football, so it gets the boldness. */
+.jersey {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-1);
+}
+
+.jersey-hash {
+  font-variation-settings: "wdth" 68;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--chalk-faint);
+  line-height: 1;
+}
+
+.jersey-input {
+  width: 2.6ch;
+  font-family: var(--sans);
+  font-variation-settings: "wdth" 68;
+  font-weight: 800;
+  font-size: clamp(3.5rem, 16vw, 5.5rem);
+  line-height: 1;
+  color: var(--identity);
+  background: none;
+  border: none;
+  border-bottom: 2px solid var(--line);
+  padding: 0 0 0.1rem;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.jersey-input:focus { outline: none; border-bottom-color: var(--focus); }
+
+.jersey-input::-webkit-outer-spin-button,
+.jersey-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.jersey-input { -moz-appearance: textfield; }
+
+.seed-note {
+  margin-top: 1.6rem;
+  font-size: 0.85rem;
+  color: var(--chalk-faint);
+  font-variation-settings: "wdth" 76;
+}
+
+.primary {
+  margin-top: 1.6rem;
+  width: 100%;
+  font: inherit;
+  font-variation-settings: "wdth" 76;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--action-ink);
+  background: var(--action);
+  border: none;
+  border-radius: var(--radius-control);
+  padding: 0.9rem;
+  cursor: pointer;
+}
+
+.primary:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+.ghost {
+  font: inherit;
+  font-variation-settings: "wdth" 76;
+  color: var(--chalk-dim);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+}
+
+.ghost:hover, .ghost:focus-visible { color: var(--chalk); border-color: var(--chalk-faint); outline: none; }

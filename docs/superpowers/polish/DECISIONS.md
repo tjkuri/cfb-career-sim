@@ -274,3 +274,51 @@ So the finding splits in two:
 
 *Would change our mind:* a playtester who gets the live stat line and still reports the missing
 in-season record as a hole.
+
+## 015 — `RS` is not derivable; the ledger labels rows without it for now
+**2026-09-13 · PM, from the 006 engine report**
+
+DECISION 010 said the redshirted ledger row would be labelled `RS`. It cannot be, and the engine
+change did not fix it: a redshirted career stores `FR, SO, JR, SR, SR` with **the duplicate at the
+end, never at the redshirt year**. The stored `classYear` is therefore ambiguous exactly where the
+label matters. The 006 agent raised this rather than adding a third engine field — correct call.
+
+**Not taken: a third engine field.** DECISION 009 authorized two fields on the argument that they
+record values the engine already computes. A redshirt marker is a new fact, the frozen-engine line
+has been crossed once already this phase, and the payoff is one row label.
+
+**The ledger brief decides between:**
+1. Infer the redshirt row from `snaps` ≈ 0 on a row whose `classYear` duplicates its successor's, and
+   **measure how often that inference is right** before shipping it. The audit already flagged this as
+   an inference rather than data.
+2. Label rows by sequence (Year 1–5) with the class year as a secondary read, sidestepping the
+   duplicate entirely.
+3. Ship the duplicate honestly — two `SR` rows — and let the empty snaps column say which was sat.
+
+Option 2 is the safe default if the measurement in option 1 is not clean. **Do not ship two
+identically-labelled rows with no distinguishing mark** (option 3 unadorned) — that is the "header
+lies" failure in a new place.
+
+*Would change our mind:* if the snaps inference measures clean across a few hundred redshirt careers,
+option 1 is both free and correct.
+
+## 016 — A killed agent's work is verified, not discarded, and not trusted
+**2026-09-13 · PM, from the rate-limit incident**
+
+All three wave-2 agents were killed mid-flight by a session limit. One had already written a six-file
+CSS split but died before verifying it: correct-looking work, zero evidence.
+
+Both reflexes are wrong. Discarding it wastes a completed task; trusting it ships an unverified
+refactor of the file 10 of 13 gaps depend on. **The PM verified it by hand** — concatenating the six
+files in import order, normalizing whitespace and comments, and diffing against the original: 379
+identical lines, 75 selectors in identical order, then 430 tests, both typecheck passes, clean build.
+
+Then the brief was rewritten to mark step 1 done *with the proof inline*, so the re-dispatched agent
+could not waste a session redoing it or "improving" it.
+
+**Standing rules this produced, now in every brief:**
+- The dev server is already running; never run a foreground command that does not exit. (`npm run dev`
+  killed the first playtester.)
+- If a tool call fails 3 times, stop and write up what you have.
+- **Do not commit, and never `git checkout`/`restore`/`stash`** — the tree routinely holds verified
+  uncommitted work from two or three concurrent agents, and one revert would destroy it.

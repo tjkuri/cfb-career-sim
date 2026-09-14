@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--turf);
+  color: var(--chalk);
+  font-family: var(--sans);
+  font-variation-settings: "wdth" 100;
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Condensed: headlines, numerals, the rail. */
+.cond {
+  font-variation-settings: "wdth" 76;
+  letter-spacing: 0.01em;
+}
+
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 4rem;
+}
+
+.frame {
+  width: 100%;
+  max-width: var(--measure);
+}

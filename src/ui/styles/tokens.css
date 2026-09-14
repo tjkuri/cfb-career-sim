@@ -1,0 +1,102 @@
+/* Two layers, on purpose.
+
+   PALETTE — the raw material: one neutral turf-green ramp, one chalk text ramp,
+   one accent. Palette names describe the *colour*. Surfaces and text steps are
+   referenced directly by the stylesheets (they are already role-shaped: card,
+   line, chalk-dim). The accent is NOT: only the role layer below may name it.
+
+   ROLES — what the accent is allowed to mean. `--bulb` was doing eight distinct
+   jobs, so no task could change one without changing all eight. Every job now
+   has its own token, even where two resolve to the same value today; that is
+   the point — the split is what makes them independently changeable later.
+
+   Rule that outranks every token here (DECISIONS 006 and 012): hue may never
+   track valence. There is deliberately no --good/--bad, no red/green pair, and
+   no role keyed to an outcome's branch. Scale, weight and motion may track
+   magnitude; colour may not. A magnitude set belongs to a later brief and
+   attaches to --emphasis and --dur-* below, never to a new hue. */
+
+:root {
+  /* ---------- palette: the ground, dark to light ---------- */
+  --turf-deep: #070d0a;
+  --turf: #0c1712;
+  --input: #101b16;   /* recessed ground: option rows, fields, the share block */
+  --card: #16241d;
+  --card-raised: #1c2e25;
+  --card-edge: #22372d;
+  --line: #24382e;
+
+  /* ---------- palette: the marks, light to dark ---------- */
+  --chalk: #eef3ef;
+  --chalk-soft: #d3ded6;   /* prose at rest, one step under a heading */
+  --chalk-dim: #93a89b;
+  --chalk-faint: #64776c;
+
+  /* ---------- palette: the one accent ----------
+     Held as channels so alpha variants derive from the hue rather than
+     re-spelling it. Changing --bulb-rgb moves every role below with it. */
+  --bulb-rgb: 240 180 41;   /* #f0b429 */
+  --bulb: rgb(var(--bulb-rgb));
+  --bulb-dim: #8a6a1f;
+
+  /* ---------- roles: the eight jobs the accent used to share ---------- */
+
+  /* 1. Selection — the edge that lights on the row you are about to pick.
+        Pre-choice, so it may say "this one", never "this one is good". */
+  --select: var(--bulb);
+  --select-dim: var(--bulb-dim);
+
+  /* 2. Focus — where the keyboard is. */
+  --focus: var(--bulb);
+  --focus-halo: rgb(var(--bulb-rgb) / 0.35);
+
+  /* 3. Action — the one button that moves the career forward. */
+  --action: var(--bulb);
+  --action-ink: var(--turf-deep);
+
+  /* 4. Emphasis — the rule beside a *resolved* outcome. DECISION 012's hook:
+        a later brief scales this by magnitude of change. It stays one hue. */
+  --emphasis: var(--bulb);
+
+  /* 5. Identity — the player's own mark, the jersey number. Decorative. */
+  --identity: var(--bulb);
+
+  /* 6+7. Milestone — a career fact already known and already on screen
+          (drafted, an award) given its headline. One token, two screens:
+          the summary verdict and the career-log headline. */
+  --milestone: var(--bulb);
+
+  /* 8. Alert — the interface speaking as itself, not as the game. */
+  --alert: var(--bulb);
+  --alert-edge: var(--bulb-dim);
+
+  /* Overall rating. Flat today at every value 0-99; the band ramp is G7's,
+     and inventing its steps here would be an aesthetic call this task does
+     not own. Re-point this token, not .ovr-number. */
+  --ovr: var(--chalk);
+
+  /* ---------- radius ---------- */
+  --radius-card: 5px;      /* the card, the only large surface */
+  --radius-control: 2px;   /* anything you click or type into */
+  --radius-well: 3px;      /* an inset block of text */
+
+  /* ---------- gap ----------
+     A 4px rhythm, declared as the vocabulary later layout work writes in.
+     Today's spacing literals are mostly off this scale (0.3, 0.6, 0.85,
+     0.9, 1.1rem); snapping them is a visible change and belongs to the
+     layout brief, so only exact matches are tokenized in this pass. */
+  --gap-1: 0.25rem;
+  --gap-2: 0.5rem;
+  --gap-3: 0.75rem;
+  --gap-4: 1rem;
+  --gap-5: 1.5rem;
+
+  /* ---------- duration ---------- */
+  --dur-state: 120ms;   /* an element reacting to the pointer or keyboard */
+  --dur-enter: 220ms;   /* content arriving on screen */
+
+  --sans: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --measure: 34rem;
+
+  color-scheme: dark;
+}
