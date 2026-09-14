@@ -1,5 +1,6 @@
 import { railView } from "../session/view-model";
-import type { LedgerRow } from "../session/ledger";
+import { classYearLabel, type LedgerRow } from "../session/ledger";
+import { countedStatLabel } from "../session/labels";
 import type { CareerView, Resolved, StatView } from "../session/types";
 
 interface Props {
@@ -31,25 +32,47 @@ function magnitude(delta: number): 0 | 1 | 2 | 3 {
   return 3;
 }
 
+// `1 Game-Winners` was printed here (017 playtest, claim 10.2), and the same
+// mistake was available for eight of the fifteen stats in the table. The count
+// is the thing that decides the label, so it is the count that picks it --
+// `labels.ts` owns the vocabulary and a test owns its coverage.
+// The separator is two EN SPACES, not three ASCII ones. The join has always
+// been written as three spaces, and HTML has always collapsed them to one --
+// so `38 Pancakes 13 Sacks Allowed` printed as one run-on string rather than
+// the spaced columns the strip is documented to draw, which is part of why
+// there was nothing here to read. U+2002 is not collapsible whitespace.
+const STAT_GAP = "\u2002\u2002";
+
 function statLine(stats: StatView[]): string {
-  return stats.map((s) => `${NUM.format(s.value)} ${s.label}`).join("   ");
+  return stats
+    .map((s) => `${NUM.format(s.value)} ${countedStatLabel(s.label, s.value)}`)
+    .join(STAT_GAP);
 }
 
 /**
  * The secondary read on a ledger row: which year it was played as, and where.
  *
- * A future row is empty chrome and says nothing -- except slot 5, which says
- * what it is. The playtester finished three careers still believing the game
- * was four seasons long ("four years to get drafted" is on the title screen and
- * never referenced again) and found the fifth season by accident. Naming the
- * slot is the whole point of DECISION 010's fifth row: it teaches that a fifth
- * year exists and that the redshirt is what buys it. Redshirting is a decision
- * the game openly offers, not a tier, a probability or a trait, so this is not
- * a hidden mechanic being leaked.
+ * A future row is empty chrome and says nothing. It used to make an exception
+ * for slot 5, captioned `redshirt year` -- and DECISION 033 removes it. The
+ * 017 playtester read the caption exactly as intended ("a fifth season, but
+ * conditional; I only get it if I redshirt"), then **took the redshirt** and
+ * watched the row not change: the caption is keyed to reaching season 5, and
+ * the UI has no way to check the condition it was naming. Report 010 measured
+ * that "which season was the redshirt" is not derivable from stored data (the
+ * duplicate-`classYear` signal exists in 40.6% of redshirt careers and points
+ * at the wrong row 426 times out of 427), so this was not a wiring slip that a
+ * better keying would fix -- the fact is simply not in the save.
+ *
+ * The dashed rule stays and does the work on its own; the playtester read it
+ * correctly and unprompted as "not really part of the plan". What goes is the
+ * sentence asserting WHY, which is the half the data cannot back. The field
+ * that would let the caption come back honestly is proposed in report 020.
  */
-function ledgerDetail(row: LedgerRow): string {
-  if (row.state === "future") return row.redshirtSlot ? "redshirt year" : "";
-  return [row.classYear, row.schoolName].filter(Boolean).join("  ");
+function ledgerDetail(row: LedgerRow, rows: LedgerRow[]): string {
+  if (row.state === "future") return "";
+  return [classYearLabel(rows, row.slot, row.classYear), row.schoolName]
+    .filter(Boolean)
+    .join("  ");
 }
 
 /**
@@ -96,7 +119,7 @@ function Ledger({ rows }: { rows: LedgerRow[] }) {
                 ""
               )}
             </span>
-            <span className="ledger-detail">{ledgerDetail(row)}</span>
+            <span className="ledger-detail">{ledgerDetail(row, rows)}</span>
             <span className="ledger-record">{row.record ?? ""}</span>
           </li>
         ))}
@@ -143,7 +166,16 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
             <span className="rail-school">{rail.school}</span>
             <span className="rail-when">
               Season {rail.seasonNumber}
-              <span className="rail-class">{rail.classYear}</span>
+              {/* `SR` twice: `enterOffseason` advances the class year through
+                  CLASS_ORDER and stops at SR, so a fifth season is stored --
+                  and was printed -- as a second senior year, here and on ledger
+                  rows 4 and 5. The playtester read it as "a glitch rather than
+                  a fifth-year victory lap". One display rule, shared with the
+                  ledger, so the header and the table can never qualify the same
+                  year differently. */}
+              <span className="rail-class">
+                {classYearLabel(view.ledger, rail.seasonNumber, rail.classYear)}
+              </span>
             </span>
           </div>
           <div className="rail-line rail-where">

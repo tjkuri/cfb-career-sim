@@ -3,12 +3,15 @@ import { CONTENT } from "../../content/index";
 import { ALL_POSITIONS } from "../../engine/index";
 import {
   FALLBACK_ICON,
+  countedStatLabel,
+  isUninflected,
   knownPhases,
   phaseLabel,
   awardLabel,
   iconGlyph,
   knownAwardIds,
   knownIcons,
+  knownSingularLabels,
   knownStatKeys,
   knownTrophyIds,
   statLabel,
@@ -88,5 +91,61 @@ describe("label behaviour", () => {
     }
     // Distinct, so a player can tell non-conference from conference play.
     expect(labels.size).toBe(4);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// `1 Game-Winners` (017 playtest, claim 10.2)
+//
+// The header prints `<count> <label>` and every stat label in the table is
+// written plural, so this was wrong for eight stats and not just the one the
+// playtester happened to see. The coverage test below is the actual fix: a
+// stat added to the table without a singular form fails here rather than
+// printing `1 Fumbles` at a player.
+// ---------------------------------------------------------------------------
+
+describe("counted stat labels", () => {
+  it("gives every plural label a singular form", () => {
+    const missing: string[] = [];
+    for (const position of ALL_POSITIONS) {
+      for (const key of CONTENT.positions[position].stats) {
+        const label = statLabel(position, key);
+        if (!label.endsWith("s")) continue;
+        if (isUninflected(label)) continue;
+        if (countedStatLabel(label, 1) === label) missing.push(`${position}.${key} -> ${label}`);
+      }
+    }
+    expect(missing, "plural labels with no singular form").toEqual([]);
+  });
+
+  it("only singularizes at a count of exactly one", () => {
+    expect(countedStatLabel("Game-Winners", 1)).toBe("Game-Winner");
+    expect(countedStatLabel("Game-Winners", 2)).toBe("Game-Winners");
+    expect(countedStatLabel("Game-Winners", 0)).toBe("Game-Winners");
+    expect(countedStatLabel("Pancakes", 27)).toBe("Pancakes");
+  });
+
+  // `FG -1` is live in the header today (017 claim 10.1, an engine stat bug
+  // that is not this brief's to fix). Whatever the engine hands us, `-1 FG`
+  // takes the singular, because minus one does in English.
+  it("treats minus one as singular", () => {
+    expect(countedStatLabel("Points", -1)).toBe("Point");
+    expect(countedStatLabel("Points", -3)).toBe("Points");
+  });
+
+  it("inflects the head noun, wherever it sits in the label", () => {
+    expect(countedStatLabel("Sacks Allowed", 1)).toBe("Sack Allowed");
+    expect(countedStatLabel("Pass Yds", 1)).toBe("Pass Yd");
+  });
+
+  it("leaves abbreviations and non-plurals alone", () => {
+    for (const label of ["FG", "TFL", "PBU", "TD", "INT", "INT Thrown", "Rec"]) {
+      expect(countedStatLabel(label, 1), label).toBe(label);
+    }
+  });
+
+  it("never maps a singular form back onto another label", () => {
+    const singulars = new Set(knownSingularLabels().map((l) => countedStatLabel(l, 1)));
+    expect(singulars.size).toBe(knownSingularLabels().length);
   });
 });

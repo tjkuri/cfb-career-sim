@@ -131,7 +131,7 @@ export function buildLedger(input: LedgerInput): LedgerRow[] {
     const slot = index + 1;
     if (slot < 1 || slot > LEDGER_SLOTS) continue;
     const row = rows[slot - 1]!;
-    row.state = active && index === currentSeasonIndex ? "current" : "played";
+    row.state = "played";
     row.classYear = line.classYear ?? null;
     row.schoolName = textOrNull(line.schoolName);
     row.record = textOrNull(line.record);
@@ -141,5 +141,82 @@ export function buildLedger(input: LedgerInput): LedgerRow[] {
     row.tentative = false;
   }
 
+  // The current row is the one the HEADER is naming, and it is keyed to
+  // `currentSeasonIndex` alone -- never to whether a season line exists yet.
+  //
+  // It used to be keyed to both, and that is the desync the 017 playtester got
+  // lost in (DECISION 033). `advance.ts:273-277` pushes a season line only on
+  // entering an ON-FIELD phase, while `advancePhase` increments `seasonIndex`
+  // on leaving the postseason -- so through the whole of every offseason the
+  // header reads `Season N` and no line for index N-1 exists. Requiring a line
+  // meant no row was marked current for an entire phase, in every season of
+  // every career. It went unreported for four seasons because slot N was blank
+  // chrome either way; in season 5 the unhighlighted row was also dashed and
+  // captioned, so the rail actively asserted a different year to the header.
+  //
+  // Keying off the index alone makes the two agree by construction: the header
+  // prints `currentSeasonIndex + 1` and this marks slot `currentSeasonIndex + 1`,
+  // from the same number, with nothing in between that can disagree.
+  //
+  // `active` still gates it. A career that ended mid-season leaves a row that
+  // is finished, not in progress, and a terminal career has no current year at
+  // all -- which is why a played row is written first and promoted here rather
+  // than the other way round.
+  const liveIndex = finiteOrNull(currentSeasonIndex);
+  if (active && liveIndex !== null) {
+    // Slot N is season index N-1, so the index is the array position directly.
+    // Out of range (a terminal career parked at index 5, a wrecked save) reads
+    // as `undefined` and marks nothing, which is the correct outcome.
+    const row = rows[liveIndex];
+    if (row) {
+      row.state = "current";
+      // Arriving in slot 5 settles the question the dashed rule was asking, so
+      // the row stops hedging whether or not `redshirtUsed` was ever set.
+      row.tentative = false;
+    }
+  }
+
   return rows;
+}
+
+// ---------------------------------------------------------------------------
+// The secondary read, and DECISION 015's forbidden case showing up in the data
+//
+// `enterOffseason` advances `classYear` through CLASS_ORDER and stops at SR
+// (advance.ts:228-229), so a career that plays a fifth season stores SR twice:
+// once for year 4 and once for year 5. The 017 playtester saw both rows, and
+// the header, reading `SR`, and reported the fifth season as "a glitch rather
+// than a fifth-year victory lap". Two rows carrying the same label is the
+// option DECISION 015 explicitly forbade.
+//
+// This is NOT the redshirt inference DECISION 020 withdrew, and it does not
+// re-derive it. It asks a different and much smaller question -- "has this
+// class year already been used by an earlier year of this career?" -- which is
+// answered by reading two stored values and comparing them. It never claims to
+// know WHICH season was sat out, which is the fact report 010 measured as
+// underivable. A second year as a senior is a fact the data states outright.
+// ---------------------------------------------------------------------------
+
+const ORDINALS = ["", "1st", "2nd", "3rd", "4th", "5th"] as const;
+
+/**
+ * The class year as it should be *displayed* for the career's `slot`-th year,
+ * given the whole table. Returns "" when nothing is stored (a pre-DECISION-009
+ * save, or a row that has not been played), so a caller can render it directly.
+ *
+ * Repeats are qualified by the year of the career they fall in, not by a guess
+ * at what caused the repeat: `5th-Yr SR`. The qualifier comes from the slot,
+ * which is the same number the primary label is built from, so the two can
+ * never disagree.
+ */
+export function classYearLabel(
+  rows: readonly LedgerRow[],
+  slot: number,
+  classYear: ClassYear | null,
+): string {
+  if (!classYear) return "";
+  const repeated = rows.some((r) => r.slot < slot && r.classYear === classYear);
+  if (!repeated) return classYear;
+  const ordinal = ORDINALS[slot] ?? `${slot}th`;
+  return `${ordinal}-Yr ${classYear}`;
 }

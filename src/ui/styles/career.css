@@ -42,7 +42,42 @@
 }
 
 .rail-id { line-height: 1.4rem; min-height: 1.4rem; font-size: var(--t-label); }
-.rail-where { line-height: 1.15rem; min-height: 1.15rem; font-size: var(--t-meta); }
+
+/* DECISION 023's pre-committed remedy, now that its falsifier has fired: the
+   017 playtester read rows 2 and 3 as "one flat block of grey" and said they
+   never read the stat line on purpose in three careers.
+
+   023 named the fix in advance -- DEMOTE ROW 2 -- and forbade the obvious
+   alternative, a fourth grey. Nothing here touches tone. Row 2 was 12px and
+   row 3 is 13px, which is not a step the eye can resolve at all, so the two
+   rows were being told apart by a one-pixel difference in size and a
+   half-step in colour that ran the wrong way (row 2 is the BRIGHTER grey).
+
+   Row 2 drops to --t-micro and takes the label register the strip already
+   speaks in `.rail-when` one line above: condensed, 700, tracked wide, upper
+   case (DECISION 008). That is not a new treatment invented for this row; it
+   is the existing role for interface chrome, and it is what row 2 holds --
+   who you are, where the season is, and what the team has done. Row 3 is the
+   only line here that changes as you play, and it is now the only line set as
+   running text, so the two no longer read as one block.
+
+   It also answers 023's second clause without spending it: "a structural
+   separator or a label, not a fourth grey". This is the label. No new token,
+   no new colour, and `--chalk-faint` stays exactly where 022 put it.
+
+   The caps are the house vernacular, not an eyebrow: this strip is a box-score
+   header, and `.rail-when`, `.ledger-year`, `.claim-where` and `.continue` are
+   all already set this way. `line-height` and `min-height` still match exactly,
+   which is what keeps the fixed slot from reflowing (see the note above). */
+.rail-where {
+  line-height: 1.05rem;
+  min-height: 1.05rem;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
 /* DECISION 023, claim 7's one type casualty. This row was --t-micro (11px)
    under a 12px row 2, and the playtester read it as "the only content in the
    game that answers 'how am I actually doing', set smaller than anything else
@@ -102,12 +137,19 @@
 .rail-phase { flex: none; white-space: nowrap; }
 
 /* Held empty all season, which is most of the time. It keeps its column so the
-   line above and below it do not move when a record finally exists. */
+   line above and below it do not move when a record finally exists.
+
+   Tracking is switched back off. Row 2 is tracked because it is a label row,
+   and `4-8` is not a label -- at 0.16em the hyphen floats and the record reads
+   as `4 - 8`, which is a different thing to say about a season. DECISION 008's
+   own rule: tracking is polarised, wide on small uppercase labels and negative
+   on large numerals, with nothing in between tracked at all. */
 .rail-record {
   margin-left: auto;
   flex: none;
   min-width: 2.75rem;
   text-align: right;
+  letter-spacing: normal;
   color: var(--chalk);
 }
 
@@ -294,7 +336,7 @@
    three careers believing a career was four seasons long, because the title
    screen says so and nothing afterwards mentions it; they found season 5 by
    accident. Five labelled slots state the shape of a career without a word of
-   explanation, and slot 5 says what buys it.
+   explanation.
 
    Same box-score vernacular as the rail above: condensed widths, tabular
    figures, columns separated by space rather than punctuation. */
@@ -385,8 +427,14 @@
 /* The fifth row while the redshirt is still unspent. It hangs off a dashed
    rule and the table simply stops under it: an open edge, not a closed one.
    DECISION 010's risk is a player reading slot 5 as a promise, and a row drawn
-   as a solid block of table would be exactly that promise. The dash says
-   "possible"; the words on it say what makes it happen. */
+   as a solid block of table would be exactly that promise.
+
+   The dash is now the whole signal. It used to carry a `redshirt year` caption
+   saying what would buy the row, and DECISION 033 removed it: the UI cannot
+   check that condition, the 017 playtester met it and watched the row not
+   change, and a caption that asserts an unverifiable fact is worse than no
+   caption. The dash asserts nothing except "possible", and the playtester read
+   it correctly with no help at all -- "not really part of the plan". */
 .ledger-row[data-tentative="yes"] {
   border-top-style: dashed;
   color: var(--chalk-faint);
