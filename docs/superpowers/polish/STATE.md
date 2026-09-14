@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 8 in flight (019, 020) · **PM session:** 4
+**Last updated:** 2026-09-13 · **Wave:** 9 in flight (022, 023) · **PM session:** 4
 
 ---
 
@@ -237,8 +237,8 @@ twelfth decision surprising. That escalation is in "For the user" below.
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| B18 | **No reachable failure state.** Deliberately bad play → R7 P2. The gamble framing has no visible downside | **blocked-on-user** — balance/engine |
-| B19 | **The offseason is a menu with one correct answer** — transfer up every year is free OVR | **blocked-on-user** — balance/engine |
+| B18 | **No reachable failure state** | **CAUSE FOUND, FIX APPROVED — DECISION 038.** Not "too easy": `UNDRAFTED_FLOOR` is 35 and a career making *no decisions* scores 42.9 once development banks. Full-career tanking already fails 12.7% of the time; the loophole is the two-season declare (0.6% bust, 89.2% drafted). `EARLY_DECLARE_PENALTY = 8` approved by the user; in flight as 022 |
+| B19 | ~~The offseason is a menu with one correct answer~~ | **REFUTED by measurement — DECISION 037.** Transferring up *costs* 0.43–0.91 overall and 0.85–2.23 draft stock per move and is the **worst** of the five offseason lines at all six positions. Two playtesters built an inverted model of a mechanic that works. Now a **legibility** item, folded into B23 |
 | B20 | **The ending has no range.** #69 and #194 identical; HONORS block and a trophy-led reel on a 7-5/5-7 career | **in flight — wave 6 lane B (016)** |
 | B21 | **The standing block reads as one self-contradicting sentence** — *"All-America caliber / just a guy in the building"*. **Not a regression; two axes rendered as one.** See DECISION 024 | **in flight — wave 6 lane A (015)** |
 | B22 | **Career length is never stated and the title screen contradicts it.** A fifth season exists, bought by the redshirt, never explained, while the title says "Four years to get drafted" | **partly in flight** — the five-row ledger answers it structurally (wave 6 lane A); the title-screen wording is still open |
@@ -549,7 +549,7 @@ can happen to a career are delivered as a one-word header change followed by rer
 also the two places where the game has already earned a beat."* That is B23 and B11 pointing at the
 same spot.
 
-## Wave 8 — in flight (PM session 4)
+## Wave 8 — complete and committed (PM session 4)
 
 Two lanes, and this time **the session layer is split by FILE, not by interface.** Splitting by
 interface collided at `types.ts` in two consecutive waves; this is the fix the board asked for.
@@ -560,6 +560,50 @@ interface collided at `types.ts` in two consecutive waves; this is the fix the b
 | `briefs/020-the-ledger-keeps-its-promise.md` | DECISION 033 — the dashed row stops asserting a fact the UI cannot check, and the season-5 header/rail desync (the only place the player was lost). Plus the duplicate `SR`, 023's strip fix, `1 Game-Winners`, and a `SeasonLine` redshirt-flag proposal | `CareerScreen.tsx`, `career.css`, `ledger.ts`, `labels.ts` |
 
 `briefs/018` (balance measurement) is **still in flight** and owns `src/sim/**` — disjoint from both.
+
+### What shipped
+
+```
+86c5a47 fix(ui): the summary's season table carries the same two bugs, now fixed
+578dbdc feat(ui): a career that went down says so at the size it deserves
+31e75fd fix(ui): the ledger stops promising what it cannot check, and a row is always current
+```
+
+**The file split by lane worked.** Three commits, zero collisions, and each lane's files were
+verified green in isolation (020's were committed with 019's stashed, both typecheck passes run).
+Do this again. **Splitting by interface failed twice; splitting by file has now worked once.**
+
+**Both agents reported a 545-test suite and each attributed the new tests to the other.** Neither
+was wrong and there is no discrepancy: wave 8 added **18** tests (12 in `ledger.test.ts`, 6 in
+`labels.test.ts`), and the other ~26 were `src/sim` tests written by the *018* agent, which was
+still in flight in the same worktree. **Lesson for a fresh PM: with three agents in one tree, the
+suite total is not a per-lane signal.** Count the diff.
+
+**Three findings from the lanes that outrank their own briefs:**
+
+- **The season-5 desync was global.** The current-row test required a stored season line, which does
+  not exist during *any* offseason — so no ledger row was current for a whole phase, in every season
+  of every career. Season 5 was merely where it became visible. An existing test was pinning the bug
+  and is now inverted.
+- **My brief for 019 was wrong about where careers land.** I wrote "rounds 1–4"; measured, **rounds
+  4–7 are 78% of outcomes and R6 is modal.** 019 corrected it and re-cut the scale accordingly —
+  eight steps, one per round, because R2 and R3 had been the *same tier*. A brief's premises are
+  checkable and this one should have been checked.
+- **`FG -1` is `effects.ts` applying an authored negative `stat` effect with no floor**, not stat
+  generation. Six careers in 1,500, all six redshirted.
+
+## Wave 9 — in flight (PM session 4)
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/022-engine-stage-two.md` | The three approved engine changes — `EARLY_DECLARE_PENALTY = 8` in `computeDraftResult` only, the `SeasonLine` redshirt flag, the `FG -1` floor. DECISIONS 038 and 039 | `src/engine/**`, `src/sim/**` |
+| `briefs/023-the-biggest-choices-get-a-moment.md` | B23 — hub decisions resolve invisibly; "Stay at Baylor" ran 75 → 82 between two clicks. Plus B25 (the declare card states that eligibility remains, no projection) and B26 (drop it if the data cannot support it) | `reducer.ts`, `types.ts`, `view-model.ts`, `CareerScreen.tsx`, `career.css` |
+
+**Why these two can run together and the content pilot still cannot.** 022's whole acceptance test
+is bit-identity against 018's measured tables. Content changes move event selection, which moves
+those numbers, which makes the leak check unverifiable. **The content pilot goes in wave 10, after
+022's bit-identity is banked** — not because of a file conflict but because of a measurement one.
+That distinction is worth keeping: file-disjointness is not the only kind.
 
 ### Queued, deliberately not dispatched
 

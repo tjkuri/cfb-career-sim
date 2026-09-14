@@ -905,3 +905,102 @@ most congratulatory element on a failed career's end screen.
 
 **What would change our mind.** Unchanged from 030: the harness showing the first-repeat number
 barely moves.
+
+## 037 — B19 is refuted by measurement. The offseason is a legibility problem, not a balance one
+
+**Date:** 2026-09-13 · **Made by:** PM session 4 · **Refutes:** B19 · **Evidence:** `reports/018-failure-and-the-offseason.md` §3
+
+Two independent playtesters reported the same thing — *"transferring up every year is free OVR"* and
+*"the offseason stopped being a decision."* Held to the same seeds with transfer choice as the only
+variable, it is **the opposite of true.**
+
+Transferring up **costs 0.43–0.91 overall and 0.85–2.23 draft stock per move**, roughly halves the
+round-1 rate, and is **the worst of the five offseason lines at all six positions.**
+
+**No engine change.** The engine is already charging a real price. What it never does is show it —
+`pickedRate` is flat to ±0.007 across the transfer lines, so the cost lands entirely in the upside,
+which is exactly the part a player cannot see. Two players in a row therefore built a confident,
+inverted model of a mechanic that was working correctly.
+
+**This is now a UI item, and it is a good one**, because the fix is not "reveal the number" — it is
+that a transfer currently produces no resolution card at all (B23). The most consequential offseason
+choice in the game is delivered as one word changing in the header.
+
+**Why this entry exists even though nothing changed.** B19 sat on the board as a balance defect for
+two PM sessions and was escalated to the user as one. It was wrong. Anyone who reads the playtests
+without this entry will re-raise it.
+
+**What would change our mind.** A measurement contradicting §3.1, run the same way — same seeds,
+transfer choice the only variable.
+
+## 038 — DECISION 029 stage 2 approved at P=8. "Two seasons is not enough, for anyone"
+
+**Date:** 2026-09-13 · **Made by:** the user, asked by PM session 4 · **Completes:** 029 · **Evidence:** `reports/018-failure-and-the-offseason.md` §2 and §4 item 1
+
+**The cause of B18 is not "the game is too easy." It is one arithmetic gap.** `UNDRAFTED_FLOOR` is
+**35**; a career that makes *no decisions at all* scores **35.8**, rising to **42.93** once automatic
+development is banked. The floor sits below a no-effort career. Tanking across a **full** career
+already ends in disaster 12.7% of the time — the loophole is declaring after two seasons, which
+busts 0.6% of the time and is drafted 89.2%.
+
+**Approved: `EARLY_DECLARE_PENALTY = 8`, applied in `computeDraftResult` only.**
+
+- **8 is the measured gap** (42.93 − 35 = 7.93), and 8/9.3 = 0.86 of one draft round, so it encodes
+  "leaving a year of eligibility on the table costs you most of a round."
+- **It must not go in `deriveDraftStock`**, which also feeds `eligibleTiers` and the offer generator.
+  The tier thresholds are 25/45/70 and an 8-point shift moves players across them. This constraint
+  is not optional; a stage-2 change that puts the term in the shared function is a *different*
+  change with side effects nobody has measured.
+- **Every full-eligibility profile is unchanged to four decimal places on every metric**, and round-1
+  rates do not move for anyone. The floor and the 9.3 band divisor are untouched.
+
+**What the user assented to, beyond a number.** After two seasons the engine cannot tell a good
+player from a bad one: the entire achievable range is **~6 draft-stock points**, because
+`STARTING_OVERALL` is 60 and `devCap` is 3 a season. So the penalty hits the *good* early declarer
+too (95.2% → 76.5% picked). The design statement being adopted is **"declaring after two seasons is
+a gamble"** — not "declaring early when you played badly is a gamble." Separating those would mean
+widening the two-season stock range, a far larger change.
+
+**STAGE4-HANDOFF's "picked 0.85–0.95" band is retired**, deliberately. It reads 0.798 (K) – 0.866
+(QB) at P=8. The band was set when the design belief was "you essentially always get drafted," which
+is the belief 029 existed to test. It was marked *proposed, not spec*. Holding it would cap the
+penalty at P=4, where deliberately-bad play is still picked 76.7% — *holding the band guarantees the
+change cannot fix the problem it was authorised to fix.*
+
+**Two dead levers found on the way, recorded so nobody counts on them:** `washoutOverallFloor: 45`
+fires in 0.00–0.07% of careers, and *trying* to lose is impossible — the saboteur policy is identical
+to the lazy one to three decimals.
+
+**What would change our mind.** A playtester finding that early declaring is now strictly dominated
+and the declare screen has stopped being a decision. The report puts that failure mode at P=12.
+
+**Consequent UI work, decided by the PM and not requiring a further ask.** A card that is now a real
+gamble currently carries no warning at all, which makes it a hidden trap. DECISION 025's refusal
+stands — no projection, no `draftStock`, no round estimate. But **stating the fact that eligibility
+remains leaks no number**, and it goes in. See B25.
+
+## 039 — Two additive engine changes approved outside 029's lift
+
+**Date:** 2026-09-13 · **Made by:** the user, asked by PM session 4 · **Evidence:** `reports/020-the-ledger-keeps-its-promise.md`
+
+029 lifted the `src/engine/**` freeze for B18/B19 only. These two are outside it and were asked
+separately.
+
+1. **`SeasonLine` gains an explicit redshirt flag.** One additive boolean, written where the engine
+   already knows the fact — the same shape as DECISION 009, which put `overall` and `classYear` on
+   this exact type. Report 010 measured that the redshirt is **not** recoverable from stored data
+   (the duplicate-`classYear` gate exists in 40.6% of redshirt careers and points at the wrong row
+   426 times out of 427), so there is no inference left to try. Without it, a `+10 OVR` redshirt is
+   the only decision in the game that leaves no trace the player can see.
+2. **`FG -1` gets its missing floor.** `effects.ts` applies an authored negative `stat` effect with
+   no lower bound; a redshirt season's `sitSnapModifier: 0.05` rounds every generated stat to 0, so
+   `0 + (-1) = -1`. Measured at 6 careers in 1,500, **all six redshirted**. It prints in the rail and
+   permanently on the summary.
+
+**What the UI may not then do with the flag.** `classYearLabel` stays derived from sequence — a
+fifth-year senior is a fifth-year senior however the fifth year was earned. Re-captioning the dashed
+row and marking the sat-out row are copy-and-treatment calls that get their own brief **with a
+playtest question attached**: the 017 playtester read the uncaptioned dashed rule correctly without
+help, so adding words back is not self-evidently an improvement.
+
+**What would change our mind.** On (1), nothing outstanding. On (2), nothing — it is a bug.
