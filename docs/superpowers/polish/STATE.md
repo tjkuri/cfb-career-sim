@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 10 complete and committed · **PM session:** 5
+**Last updated:** 2026-09-14 · **Wave:** 11 in flight · **PM session:** 5
 
 ---
 
@@ -759,39 +759,61 @@ than *onset*, and 024 §10's options A and B are correct under opposite answers 
   construction across two cards in the same five-card set is the defect the voice review exists to
   catch. `seasonIndex: [3]` now reads *"You do not waste a snap of it, and the tape says so."*
 
-## Next actions — for PM session 5, in order
+## Wave 11 — in flight (PM session 5)
 
-**Read this section, `DECISIONS.md` 037–041, and the wave 7 and 9 sections above. Nothing else.**
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/025-post-wave9-playtest.md` | The fourth-career playtest. Four careers, four positions. Career 3 tanks *and declares early*; career 4 transfers | nothing — playtester, no source changes |
 
-1. **Dispatch the content pilot.** It is the only thing left that addresses the *named* cause of
-   both playtesters stopping, and it has been queued through two waves for reasons that no longer
-   apply. DECISIONS **030** and **036** define it; 036 changed the target selection and kept the
-   gate. `milestone-opener` only, then re-run the 008 harness and **confirm the first-repeat
-   decision number actually moves** before a word of the other seven is written. Folded into its
-   scope: the four text defects in 036 (third person, the FCS-blind "ninety thousand people", the
-   bowl line awarded as a warm memory to a player tanking on purpose).
-   **The PM reads every line of prose before it is committed** — the user chose agent-written, which
-   moves the voice constraint onto you, and both playtesters named the writing as the best asset in
-   the game.
-2. **Then a playtest, and make it the fourth-career one.** Wave 9 changed the two things both
-   playtesters complained about that were *not* content: you can now lose (`lazyEarly` 89% → 56%
-   drafted), and the transfer that silently cost you overall now says so. Neither has met a player.
-   Use `briefs/017` as the shape. **Serial — one browser agent at a time.**
-   Questions it must carry: does the early-declare gamble read as a gamble or as a trap? Does the
-   transfer resolution change how the offseason feels? And 041's: eight careers changed round —
-   does anything feel different at the draft?
-3. **Do not queue more UI waves against B29 or B24 before that playtest.** B29 (wide-viewport
-   emptiness) is real but was measured by someone who also said the page *"never felt like it was
-   using the room it had"* while calling the ledger the wave's best work — the emptiness may be the
-   absence of B10's imagery, which is a user decision already shaped by DECISION 031.
-4. **B24 is the biggest unaddressed item and it is mostly content.** Position is a costume
-   everywhere except the in-season cards — all six start at OVR 60, "in the rotation" (not a thing
-   kickers are in), identical offseason block. ~1 card in 4 is position-specific, and those were the
-   only cards still being read by career 3. If the pilot in (1) proves out, this is the natural
-   second authoring target, and it is a **user** decision under DECISION 030's shape.
+**Serial. One browser agent at a time, always.** The dev server is running in the background at
+`localhost:5173`; the brief tells the agent not to start one.
+
+**The question it exists to answer is DECISION 044's: onset or dose.** Do players stop reading once
+they have been burned by a repeat at all, or does each further repeat wear them down? 024 §10's
+options A and B are correct under opposite answers, so this is the input the seven-event authoring
+decision is waiting on. The brief asks for the decision number at which the playtester first caught
+*themselves* skimming, per career, and tells them "I never stopped reading" is a real answer.
+
+**The playtester is deliberately not told that the opener now varies.** Telling them would send them
+hunting for variants and contaminate the only measurement this wave can produce.
+
+Also carried: can you lose now (wave 9 took `lazyEarly` 89% → 56% drafted); does declaring early read
+as a **gamble or a trap**; does the new transfer resolution card make the offseason a decision rather
+than a menu; DECISION 041's draft question; and B29's empty room at whatever width the harness gives.
+
+## Next actions — for PM session 6, in order
+
+**Read this section, `DECISIONS.md` 042–044, and the wave 10 and 11 sections above. Nothing else.**
+
+1. **Read `reports/025` when the playtest lands, and answer onset-or-dose first.** Everything else on
+   this list is downstream of it. If the playtester stopped reading at or near their *first* repeat
+   regardless of how many followed, DECISION 044's falsifier has fired: 024 §10 option **A** is
+   correct, the seven-event authoring budget is retired for good, and the repetition line of work is
+   closed. If they kept reading and wore down, option **B** is correct and the counterfactual's
+   13 → 19 / 100% → 37.5% is worth the budget.
+2. **Take the seven-event question to the user with that answer in hand — do not decide it yourself.**
+   It is the phase's largest authoring budget and DECISION 030's shape makes content scope a user
+   call. Give them 024 §10's three options with the playtest's answer attached. **Option C is the one
+   to flag**: the hub cards (`Redshirt?`, `Declare`, `Transfer Portal`) are string literals in
+   `advance.ts`, not content, so they are what the wall becomes after B and they need their own
+   engine decision. 48.8% of careers see `Redshirt?` twice.
+3. **Then the UI backlog is unblocked**, in this order: **B29** (the empty room — but read what 025
+   says about it at its own width before briefing anything; the emptiness may be the absence of B10's
+   imagery, which is a user decision already shaped by DECISION 031), then the small wave-4 leftovers
+   (labelled rail cells, a `title` on clamped options, the 1px `.standing` shift).
+4. **B24 is the biggest unaddressed item and it is mostly content.** Position is a costume everywhere
+   except the in-season cards — all six start at OVR 60, "in the rotation" (not a thing kickers are
+   in), identical offseason block. ~1 card in 4 is position-specific, and those were the only cards
+   still being read by career 3. 025 asks the position-costume question directly at four positions;
+   read that answer before sizing it. A **user** decision under DECISION 030's shape.
 5. The engine is **re-frozen.** 029's lift was for B18/B19, 039/040's for three named defects, and
-   all of it is spent. A further change writes a proposal and asks.
-6. Increment the **PM session** counter at the top of this file when you take over.
+   042's for one additive condition field. All of it is spent. A further change writes a proposal
+   and asks — and note that option C in (2) would be exactly such a proposal.
+6. **`src/sim/repetition-probe.ts` is the gate, and it is committed now.** Run it as
+   `npx tsx src/sim/repetition-probe.ts 24 B card` (or `C`, or `all`). Any future repetition claim
+   gets measured with it rather than argued. Use **both** cohorts: neither alone exercises all five
+   opener variants.
+7. Increment the **PM session** counter at the top of this file when you take over.
 
 ## Next actions — the older list, kept for anything unstruck
 
