@@ -1247,3 +1247,34 @@ same argument DECISION 037 and B23 already won for the transfer hub. **`reducer.
 **What would change our mind.** Nothing about (1); it is read from source. (2) is open as to remedy —
 if the only workable fix turns out to require an integer, that is a proposal against DECISION 002 and
 goes to the user, not a decision an agent takes in passing.
+
+## 047 — Wave 12 is two lanes, not three. The empty room waits for the card, because lanes A and B are not file-disjoint
+
+**Date:** 2026-09-14 · **Made by:** PM session 6 · **Amends:** the wave-12 plan in `STATE.md` "Next actions — for PM session 6" · **Evidence:** `src/ui/screens/CareerScreen.tsx:149-150`
+
+PM session 5 listed wave 12 as three file-disjoint lanes: A (`reducer.ts`/`view-model.ts`/`types.ts`),
+B (`CareerScreen.tsx`/`career.css`), C (`labels.ts`/`bands.ts`/`ledger.ts`). **A and B are not
+disjoint.** The number a card reports is not computed in the view model — it is computed in the
+screen:
+
+```
+const delta = resolved && resolved.overallBefore !== null ? view.overall - resolved.overallBefore : 0;
+```
+
+DECISION 046's fix — a card accounts for what *it* did, and anything else that landed during the same
+`advance` gets its own beat with its own sentence — deletes that line and renders beats where today
+there is one `.delta` paragraph. That is `CareerScreen.tsx` and it is `career.css`, which is lane B's
+entire allocation. PM-PROMPT rule 6 (*tasks in one wave must not touch the same files*) outranks the
+earlier assumption that they did not.
+
+**B29 is not dropped, it is sequenced second, and the order is better on the merits anyway.** B29 is a
+decision about how to fill ~260px of empty vertical space and ~350px of dead space each side. Lane A
+changes how much vertical content a resolved card carries. Laying out the room before the furniture
+has settled would mean measuring twice.
+
+**Wave 12 is therefore lane A (B30+B31) and lane C (B36+B37), which share no file.** Lane C is told
+that `view-model.ts` belongs to lane A this wave: a defect whose fix lands there is written into its
+report as an exact diff, not applied.
+
+**What would change our mind.** Lane A reporting that it landed without touching `CareerScreen.tsx` —
+in which case B29 could have run alongside it and wave 13 starts one lane lighter than planned.

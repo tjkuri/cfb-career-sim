@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 11 complete · **PM session:** 5 (handing off)
+**Last updated:** 2026-09-14 · **Wave:** 12 in flight · **PM session:** 6
 
 ---
 
@@ -830,11 +830,33 @@ offseason at all four positions.** That is B24, now with a boundary.
 **No visual defects at all.** Nothing clipped, overflowed, collided; contrast fine. Every finding in
 §8 is semantic. The type and colour work from waves 4–8 is done and should not be reopened.
 
+## Wave 12 — in flight (PM session 6)
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/026-a-card-accounts-for-itself.md` | **B30 + B31**, DECISION 046. A card's number reports what *that card's chosen outcome* did; deferred effects and progression get their own beat with their own sentence. Character stops being the invisible half of an outcome, without an integer | `reducer.ts`, `view-model.ts`, `types.ts`, `CareerScreen.tsx`, `career.css` |
+| `briefs/027-the-credibility-defects.md` | **B36 + B37**. `3 FG · 6 Points`; `ON THE FIELD: on the scout team` beside 339 snaps; "climbing draft boards" at 60 OVR; "ten wins is a disappointing season" beside 5-7; the redshirt card saying sit. Diagnosis is the deliverable — cause in source, file and line, for each | `labels.ts`, `bands.ts`, `ledger.ts` |
+
+**Two lanes, not the three PM session 5 planned — see DECISION 047.** Lane B (B29, the empty room) is
+sequenced into wave 13 because it is *not* file-disjoint from lane A: the card's delta is computed at
+`CareerScreen.tsx:149-150`, not in the view model, so 046's fix necessarily rewrites the block lane B
+would be re-laying-out. The order is better on the merits too — B29 decides how to fill ~260px of
+empty vertical space, and lane A changes how much vertical content a resolved card carries.
+
+**Baseline at dispatch, verified by the PM by hand:** 613 tests green, both typecheck passes exit 0,
+tree clean at `bad12de`, dev server serving 200 on 5173.
+
+**Cross-lane protocol.** 027 may trace a defect to lane A's cause (`reducer.ts:61-64`) or need a fix
+in `view-model.ts`. It is told to write the exact diff into its report and stop, not to edit. The PM
+lands those after 026 commits.
+
 ## Next actions — for PM session 6, in order
 
-**Read this section, `DECISIONS.md` 042–046, and the wave 10 and 11 sections above. Nothing else.**
+**Read this section, `DECISIONS.md` 042–047, and the wave 10, 11 and 12 sections above. Nothing else.**
 
-1. **Wave 12 is three lanes and they are file-disjoint. Dispatch them together.**
+1. ~~**Wave 12 is three lanes and they are file-disjoint. Dispatch them together.**~~ **Dispatched as
+   two lanes** (026, 027) — DECISION 047 moved lane B to wave 13 because it shares `CareerScreen.tsx`
+   with lane A. Lane B's detail is kept below; it is the top of wave 13.
    - **Lane A — B30 + B31, the reason reading stopped paying.** DECISION 046. A card accounts for
      what *it* did; a deferred effect falling due is its own beat with its own sentence. Owns
      `src/ui/session/reducer.ts`, `view-model.ts`, `types.ts`. **Read 046 before writing the brief
