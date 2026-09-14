@@ -3,6 +3,8 @@ import { CONTENT } from "../../content/index";
 import { ALL_POSITIONS } from "../../engine/index";
 import {
   FALLBACK_ICON,
+  knownPhases,
+  phaseLabel,
   awardLabel,
   iconGlyph,
   knownAwardIds,
@@ -72,5 +74,19 @@ describe("label behaviour", () => {
   it("falls back to the raw id for an unknown trophy or award", () => {
     expect(trophyLabel("mystery")).toBe("mystery");
     expect(awardLabel("mystery")).toBe("mystery");
+  });
+
+  it("gives every season phase a display name, never the raw id", () => {
+    const phases = knownPhases();
+    expect(phases).toHaveLength(4);
+    const labels = new Set<string>();
+    for (const phase of phases) {
+      const label = phaseLabel(phase);
+      expect(label.length).toBeGreaterThan(0);
+      expect(label).not.toBe(phase);
+      labels.add(label);
+    }
+    // Distinct, so a player can tell non-conference from conference play.
+    expect(labels.size).toBe(4);
   });
 });

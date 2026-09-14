@@ -126,3 +126,178 @@ describe("CareerView boundary", () => {
     }
   });
 });
+
+// DECISION 014. `simulateTeamRecord` runs once, at the end of the postseason
+// phase; the season line is pushed with zeros and stays that way all season.
+// `0-0` is not a display bug, it is the absence of a record, and the view-model
+// is where the two get told apart.
+describe("the season record only exists once it has been played", () => {
+  it("reports null, not 0-0, for a season the resolver has not reached", () => {
+    let sawALiveSeason = false;
+    for (const position of ALL_POSITIONS) {
+      for (const ui of playThrough(`vm-record-${position}`, position)) {
+        if (!ui.state) continue;
+        const view = buildView(ui.state);
+        const line = ui.state.seasons[ui.state.seasons.length - 1];
+        if (line && line.seasonIndex === ui.state.seasonIndex) {
+          sawALiveSeason = true;
+          // The engine's own value is a literal 0-0 here. The view must not
+          // pass it through, must not substitute a placeholder string, and
+          // must not estimate one from anything else.
+          expect(line.teamWins).toBe(0);
+          expect(line.teamLosses).toBe(0);
+          expect(view.seasonRecord).toBeNull();
+          expect(view.season!.record).toBeNull();
+          expect(view.season!.inProgress).toBe(true);
+        }
+        expect(view.seasonRecord).not.toBe("0-0");
+        expect(view.season?.record).not.toBe("0-0");
+      }
+    }
+    expect(sawALiveSeason).toBe(true);
+  });
+
+  it("never shows a record for the season currently being played", () => {
+    // Verified across every position: the resolver assigns W-L and the season
+    // index rolls over inside the same tick, so there is no observable state in
+    // which the current season has a record. If the engine ever changes that,
+    // this asserts the view-model follows rather than guesses.
+    for (const position of ALL_POSITIONS) {
+      for (const ui of playThrough(`vm-nolive-${position}`, position)) {
+        if (!ui.state) continue;
+        expect(buildView(ui.state).seasonRecord).toBeNull();
+      }
+    }
+  });
+
+  it("reports a real record once the season has closed out", () => {
+    let sawAClosedSeason = false;
+    for (const ui of playThrough("vm-closed", "QB")) {
+      if (!ui.state) continue;
+      const view = buildView(ui.state);
+      if (view.season && !view.season.inProgress) {
+        sawAClosedSeason = true;
+        expect(view.season.record).toMatch(/^\d+-\d+$/);
+        expect(view.season.record).not.toBe("0-0"); // a played season has games
+      }
+      for (const season of view.summary?.seasons ?? []) {
+        if (season.seasonIndex < ui.state.seasonIndex) expect(season.record).not.toBeNull();
+      }
+    }
+    expect(sawAClosedSeason).toBe(true);
+  });
+
+  it("gives the summary a null record for a season that never finished", () => {
+    // A career ended by an `ending` effect mid-season leaves a line the
+    // resolver never reached. That row is blank, not 0-0.
+    const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+    let s = createCareer(setup, "vm-unfinished");
+    const d = getDecision(s)!;
+    s = advance(s, d.options[0]!.id); // sign, which pushes no line yet
+    while (s.seasons.length === 0 && s.status === "active") {
+      const next = getDecision(s);
+      if (!next) break;
+      s = advance(s, next.options[0]!.id);
+    }
+    const view = buildView(s);
+    expect(view.season).not.toBeNull();
+    expect(view.season!.record).toBeNull();
+  });
+});
+
+describe("the live season line", () => {
+  it("carries snaps and stats during the season, when they are real", () => {
+    let withStats = 0;
+    for (const ui of playThrough("vm-live", "QB")) {
+      if (!ui.state) continue;
+      const view = buildView(ui.state);
+      if (!view.season?.inProgress) continue;
+      expect(view.season.snaps).toBeGreaterThanOrEqual(0);
+      expect(view.season.seasonNumber).toBe(ui.state.seasonIndex + 1);
+      for (const stat of view.season.stats) {
+        expect(typeof stat.label).toBe("string");
+        expect(stat.label.length).toBeGreaterThan(0);
+        expect(stat.value).not.toBe(0); // zeroes are omitted, not rendered
+      }
+      if (view.season.stats.length > 0) withStats++;
+    }
+    expect(withStats).toBeGreaterThan(0);
+  });
+
+  it("has no season line at all before the first on-field phase", () => {
+    const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+    const view = buildView(createCareer(setup, "vm-preseason"));
+    expect(view.season).toBeNull();
+    expect(view.seasonRecord).toBeNull();
+  });
+
+  it("labels the stat line by position — a QB throws ints, a DB catches them", () => {
+    // The one stat whose name means opposite things by position. Both go
+    // through labels.ts; this asserts the live line uses that layer rather
+    // than a second, flat one.
+    const qb = withInt("QB", "vm-ints-qb");
+    const db = withInt("DSKILL", "vm-ints-db");
+    expect(qb).toBe("INT Thrown");
+    expect(db).toBe("INT");
+    expect(qb).not.toBe(db);
+  });
+});
+
+/** Force an `ints` line onto a real in-progress season and read back its label. */
+function withInt(position: Setup["position"], seed: string): string {
+  for (const ui of playThrough(seed, position)) {
+    if (!ui.state) continue;
+    const line = ui.state.seasons[ui.state.seasons.length - 1];
+    if (!line || line.seasonIndex !== ui.state.seasonIndex) continue;
+    const state = structuredClone(ui.state);
+    state.seasons[state.seasons.length - 1]!.stats.ints = 3;
+    const stat = buildView(state).season!.stats.find((v) => v.value === 3 && v.label.includes("INT"));
+    if (stat) return stat.label;
+  }
+  throw new Error(`no in-progress season found for ${position}`);
+}
+
+describe("where in the season", () => {
+  it("puts a display-ready phase label on the view, never the raw id", () => {
+    const RAW_PHASE_IDS = ["offseason", "nonconf", "conference", "postseason"];
+    const seen = new Set<string>();
+    for (const position of ALL_POSITIONS) {
+      for (const ui of playThrough(`vm-phase-${position}`, position)) {
+        if (!ui.state) continue;
+        const view = buildView(ui.state);
+        expect(view.phaseLabel.length).toBeGreaterThan(0);
+        expect(RAW_PHASE_IDS).not.toContain(view.phaseLabel);
+        expect(view.seasonNumber).toBe(ui.state.seasonIndex + 1);
+        expect(view.seasonNumber).toBeGreaterThan(0);
+        seen.add(view.phaseLabel);
+      }
+    }
+    // All four phases are reachable and all four are labelled.
+    expect(seen.size).toBe(4);
+  });
+
+  it("names nothing `phaseAbs` — the deferred-effect clock is not player-facing", () => {
+    // Redundant with the boundary walk above, and deliberately so: the phase
+    // work in this file is the thing most likely to reach for that name.
+    const keys = new Set<string>();
+    const walk = (v: unknown): void => {
+      if (Array.isArray(v)) return v.forEach(walk);
+      if (v && typeof v === "object") {
+        for (const [k, val] of Object.entries(v)) {
+          keys.add(k);
+          walk(val);
+        }
+      }
+    };
+    for (const ui of playThrough("vm-phaseabs", "QB")) {
+      if (!ui.state) continue;
+      walk(buildView(ui.state));
+    }
+    for (const forbidden of FORBIDDEN_KEYS) expect(keys.has(forbidden)).toBe(false);
+    // And the fields this brief added are present, so the walk above is
+    // actually walking them rather than passing vacuously.
+    for (const added of ["phaseLabel", "seasonNumber", "season", "inProgress", "snaps"]) {
+      expect(keys.has(added), `${added} missing from the view`).toBe(true);
+    }
+  });
+});

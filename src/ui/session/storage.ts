@@ -56,7 +56,12 @@ export function clearCurrent(): void {
 export function loadCurrent(): { state: GameState; resolved: Resolved | null } | null {
   const saved = read<CurrentSave>(CURRENT_KEY);
   if (!saved || saved.schema !== SCHEMA || !saved.state) return null;
-  return { state: saved.state, resolved: saved.resolved ?? null };
+  // A save written before the season stamp existed has a resolved card with no
+  // `stamp` field. Normalize it to null here rather than letting `undefined`
+  // reach a consumer typed to expect the property: the save is still perfectly
+  // playable, and one missing header freeze is not worth discarding a career.
+  const resolved = saved.resolved ? { ...saved.resolved, stamp: saved.resolved.stamp ?? null } : null;
+  return { state: saved.state, resolved };
 }
 
 export function loadLog(): LogEntry[] {

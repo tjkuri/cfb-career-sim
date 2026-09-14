@@ -1,6 +1,6 @@
 import { advance, createCareer, getDecision, type GameState } from "../../engine/index";
 import { CONTENT } from "../../content/index";
-import { buildSummary, schoolName } from "./view-model";
+import { buildSummary, schoolName, seasonStamp } from "./view-model";
 import { appendLog } from "./storage";
 import type { Action, LogEntry, UiState } from "./types";
 
@@ -73,6 +73,12 @@ export function reducer(ui: UiState, action: Action): UiState {
       // Exactly one engine call per player choice. `advance` returns both the
       // outcome of this choice and the next pending decision; Continue is a
       // pure UI transition, not a second call.
+      //
+      // Stamped from the PRE-advance state, on purpose. `advance()` can carry
+      // the career across a phase boundary -- and across a season boundary,
+      // where `enterOffseason` advances the class year -- before it returns, so
+      // the state this outcome belongs to is gone by the time it is rendered.
+      const stamp = seasonStamp(ui.state);
       const next = advance(ui.state, option.id);
       const outcome = next.lastOutcome?.description ?? null;
 
@@ -86,6 +92,7 @@ export function reducer(ui: UiState, action: Action): UiState {
         title: decision.title,
         choiceLabel: option.label,
         outcome,
+        stamp,
       });
     }
 

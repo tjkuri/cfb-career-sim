@@ -1,4 +1,5 @@
 import type { Position } from "../../engine/index";
+import type { SeasonPhase } from "./types";
 
 // Display names for the three id vocabularies the engine and content traffic in
 // but never spell out. Kept in the UI rather than in src/content so the engine
@@ -53,6 +54,25 @@ export function awardLabel(id: string): string {
 
 export function statLabel(position: Position, key: string): string {
   return STAT_LABELS_BY_POSITION[position]?.[key] ?? STAT_LABELS[key] ?? key;
+}
+
+// Where the season is. `GameState.phase` is an engine id vocabulary like the
+// three above, so it gets its display names here rather than in a screen.
+// Typed as a total Record over SeasonPhase so a phase added to the engine is a
+// typecheck failure at this table, not a raw id shown to a player.
+const PHASE_LABELS: Record<SeasonPhase, string> = {
+  offseason: "Offseason",
+  nonconf: "Non-Conference",
+  conference: "Conference Play",
+  postseason: "Postseason",
+};
+
+export function phaseLabel(phase: SeasonPhase): string {
+  return PHASE_LABELS[phase];
+}
+
+export function knownPhases(): SeasonPhase[] {
+  return Object.keys(PHASE_LABELS) as SeasonPhase[];
 }
 
 // Moment icons. The authored vocabulary is 22 names; this is the MVP treatment,

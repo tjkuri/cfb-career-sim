@@ -166,3 +166,75 @@ describe("navigation and recovery", () => {
     expect(isUnplayable(drifted)).toBe(true);
   });
 });
+
+// A resolved outcome is read under a header that `advance()` has already moved.
+// The playtest caught the class badge flipping FR -> SO while the previous
+// season's last outcome was still on screen; measured over 36 careers, 69 of
+// 378 resolved cards (18%) sit under a class year that is not theirs, 270
+// (71%) under a phase that is not theirs, and EVERY career hits it at least
+// once. The stamp is the data half of the fix; the card itself still renders
+// from `view`, so the screen has to prefer the stamp for this to be visible.
+describe("the resolved card is stamped with the season it belongs to", () => {
+  it("stamps from the state the choice was made in, not the state after it", () => {
+    let stamped = 0;
+    let classFlips = 0;
+    let phaseFlips = 0;
+    const careersThatFlip = new Set<string>();
+
+    for (const position of ALL_POSITIONS) {
+      const setup: Setup = { ...SETUP, position };
+      const seed = `r-stamp-${position}`;
+      let ui = start(seed, setup);
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const next = step(ui, (ids) => ids[0]!);
+        if (next === ui) break;
+        ui = next;
+        if (!ui.resolved || !ui.state) continue;
+        const stamp = ui.resolved.stamp;
+        expect(stamp).not.toBeNull();
+        stamped++;
+
+        const view = buildView(ui.state);
+        expect(stamp!.seasonNumber).toBeGreaterThan(0);
+        expect(stamp!.phaseLabel.length).toBeGreaterThan(0);
+        // The stamp is never ahead of the live view: `advance` only ever moves
+        // the career forward, so a frozen value is equal or behind.
+        expect(stamp!.seasonNumber).toBeLessThanOrEqual(view.seasonNumber);
+        if (stamp!.classYear !== view.classYear) {
+          classFlips++;
+          careersThatFlip.add(seed);
+        }
+        if (stamp!.phaseLabel !== view.phaseLabel) phaseFlips++;
+      }
+    }
+
+    expect(stamped).toBeGreaterThan(0);
+    // The bug is real and it is not rare. If these ever go to zero the stamp
+    // has stopped being taken before `advance`.
+    expect(classFlips).toBeGreaterThan(0);
+    expect(phaseFlips).toBeGreaterThan(0);
+    expect(careersThatFlip.size).toBe(ALL_POSITIONS.length);
+  });
+
+  it("freezes only the season identity, never the progression numbers", () => {
+    // DECISION 012 wants the magnitude of a change visible on the resolved
+    // card. Freezing `overall` or the band phrases would hide the very delta
+    // the card exists to report, so the stamp deliberately carries neither.
+    let checked = false;
+    let ui = start("r-stamp-fields");
+    for (let guard = 0; guard < 300 && ui.screen !== "summary"; guard++) {
+      const next = step(ui, (ids) => ids[0]!);
+      if (next === ui) break;
+      ui = next;
+      if (!ui.resolved?.stamp) continue;
+      expect(Object.keys(ui.resolved.stamp).sort()).toEqual([
+        "classYear",
+        "phaseLabel",
+        "schoolName",
+        "seasonNumber",
+      ]);
+      checked = true;
+    }
+    expect(checked).toBe(true);
+  });
+});

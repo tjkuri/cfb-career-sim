@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createCareer, type Setup } from "../../engine/index";
 import { LOG_CAP, appendLog, clearCurrent, hydrate, loadCurrent, loadLog, saveCurrent, saveLog } from "./storage";
 import { INITIAL_STATE } from "./reducer";
-import type { LogEntry } from "./types";
+import type { LogEntry, Resolved } from "./types";
 
 const SETUP: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
 
@@ -37,11 +37,31 @@ beforeEach(() => { installStorage(); });
 describe("current save", () => {
   it("round-trips a career and its resolved card", () => {
     const state = createCareer(SETUP, "s-1");
-    const resolved = { title: "T", choiceLabel: "C", outcome: "O" };
+    const resolved: Resolved = {
+      title: "T",
+      choiceLabel: "C",
+      outcome: "O",
+      stamp: { seasonNumber: 1, classYear: "FR", phaseLabel: "Offseason", schoolName: null },
+    };
     saveCurrent(state, resolved);
     const loaded = loadCurrent();
     expect(loaded!.state.seed).toBe("s-1");
     expect(loaded!.resolved).toEqual(resolved);
+  });
+
+  it("restores a pre-stamp save with a null stamp rather than undefined", () => {
+    // Saves written before the resolved card carried a season stamp are still
+    // playable; the header simply cannot be frozen for the one card in flight.
+    const state = createCareer(SETUP, "s-legacy");
+    localStorage.setItem(
+      "cfb-career-sim:v1:current",
+      JSON.stringify({ schema: 1, state, resolved: { title: "T", choiceLabel: "C", outcome: "O" } }),
+    );
+    const loaded = loadCurrent();
+    expect(loaded).not.toBeNull();
+    expect(loaded!.resolved).not.toBeNull();
+    expect(loaded!.resolved!.stamp).toBeNull();
+    expect("stamp" in loaded!.resolved!).toBe(true);
   });
 
   it("returns null after being cleared", () => {
