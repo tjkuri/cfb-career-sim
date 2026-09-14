@@ -1174,3 +1174,76 @@ into a measurement — DECISION 003 and 037's habit.
 **What would change our mind.** The playtest reporting that the player stopped reading bodies at or
 near the *first* repeat regardless of how many followed. That is the onset answer, and it makes 024
 §10 option A correct and retires the authoring budget for good.
+
+## 045 — Onset, not dose. DECISION 044's falsifier fired, option A is taken, and the authoring budget is retired — then redirected
+
+**Date:** 2026-09-14 · **Made by:** PM session 5 · **Answers:** 030, 036, 044 · **Evidence:** `reports/025-post-wave9-playtest.md` §2
+
+044 pre-specified the falsifier: *the playtest reporting that the player stopped reading bodies at or
+near the first repeat regardless of how many followed.* **That is what 025 reports**, and it reports
+it harder than the clause anticipated:
+
+- **Career 1: skimming began at decision 15, on a verbatim repeat, and it was "a snap, not a slide."**
+  It generalised to brand-new cards by decision 23.
+- **Careers 2, 3 and 4: decision 1.** Every career opens on Signing Day again. Onset was immediate
+  and it never took a second repeat to get there.
+- **Dose governs only the reversal length** — a new position-specific card bought back *exactly one
+  card* of real reading before skimming resumed.
+
+**024 §10 option A is taken. The other seven milestone events are not written.** The counterfactual's
+13 → 19 is real and it is beside the point: onset in careers 2–4 is decision **1**, which no amount
+of in-season variation can move. Writing seven more sets of variants would have bought a better
+number on a measurement that 025 has just shown does not govern the behaviour we care about.
+
+**But the budget is redirected, not simply cancelled, and this is the part a future PM must not
+lose.** 025 names the target precisely and it is not the in-season milestones:
+
+> *the offseason — Redshirt? → Declare? → Transfer Portal → Fall Camp Battle → New Workout Regimen,
+> identical words and order every year at every position*
+
+That is the answer to "the single thing most in the way of a fifth career," it is where onset lives
+(decision 1 of every replay), and **three of those five cards are hub strings in `advance.ts`, not
+content.** It is a smaller writing job than the seven events and it is aimed at the measured cause.
+
+**What would change our mind.** A playtester whose onset is late and gradual, on a build whose
+offseason has been varied. That would mean onset is a property of *this* opening sequence rather than
+of repetition in general, and the dose hypothesis comes back.
+
+## 046 — The six "prose contradicts the number" defects are not prose defects. Do not let anyone rewrite the writing
+
+**Date:** 2026-09-14 · **Made by:** PM session 5 · **Evidence:** `reports/025-post-wave9-playtest.md` §8, plus `src/ui/session/reducer.ts:61-64` and three content sites read directly
+
+025 supplies the mechanism that two playtests could not: repetition *starts* skimming, and **the
+text/number contradictions are what make staying that way rational.** They apply to new cards as much
+as repeated ones, which is exactly how skimming generalises to cards the player has never seen. That
+makes this the highest-value item on the board.
+
+**It would be very easy, and completely wrong, to brief this as "fix the six cards."** The PM checked
+all six against source. **The prose is correct in every one.** There are three distinct causes:
+
+1. **Deferred effects and progression are attributed to whichever card is on screen.**
+   `reducer.ts:61-64` freezes `overallBefore` before `advance()`, so the card's delta is *everything
+   that happened during that advance* — the outcome's own effects, plus any `timing: "deferred"`
+   effect from an earlier card falling due, plus phase progression. *The Position Switch* really does
+   author `−2 deferred` under *"the fit never quite comes together"*; the **+5** the player saw was
+   other things landing. *Cutting the Line* authors `effects: []` and showed **−3**. The card was
+   telling the truth and the number was answering a different question.
+2. **The character half of an outcome is invisible, so cards whose real cost is character read as
+   free wins or inversions.** *The Ticket Hookup*'s negative outcome is `character −6, overall +1` —
+   accurate: getting caught does not make you worse at football. But only the `+1` is a number, so
+   "compliance caught me" reads as a reward. This is **B17 with a measured mechanism**, and it is the
+   collision between DECISION 002 (character is never a number) and the need for an outcome to be
+   legible. 002 is not reversed by this entry; the fix has to work without an integer.
+3. **The same card and choice give different results** (*Rivalry Week / Play through it*: +2, +2, −5)
+   with no signal that a roll happened. That is probability working correctly and being indisputably
+   read as "the text does not predict the result, so reading it stopped paying."
+
+**The shape of the fix, so it is not re-derived:** a card should account for what *it* did. The
+chosen outcome's `timing: "immediate"` effects are derivable from content without touching the
+engine, and a deferred effect falling due is its own beat and deserves its own sentence — the
+same argument DECISION 037 and B23 already won for the transfer hub. **`reducer.ts` and
+`view-model.ts` are UI files and are not frozen.**
+
+**What would change our mind.** Nothing about (1); it is read from source. (2) is open as to remedy —
+if the only workable fix turns out to require an integer, that is a proposal against DECISION 002 and
+goes to the user, not a decision an agent takes in passing.

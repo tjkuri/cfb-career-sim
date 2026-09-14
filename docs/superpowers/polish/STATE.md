@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 11 in flight · **PM session:** 5
+**Last updated:** 2026-09-14 · **Wave:** 11 complete · **PM session:** 5 (handing off)
 
 ---
 
@@ -759,7 +759,7 @@ than *onset*, and 024 §10's options A and B are correct under opposite answers 
   construction across two cards in the same five-card set is the defect the voice review exists to
   catch. `seasonIndex: [3]` now reads *"You do not waste a snap of it, and the tape says so."*
 
-## Wave 11 — in flight (PM session 5)
+## Wave 11 — complete (PM session 5)
 
 | Brief | What | Owns |
 |---|---|---|
@@ -781,39 +781,107 @@ Also carried: can you lose now (wave 9 took `lazyEarly` 89% → 56% drafted); do
 as a **gamble or a trap**; does the new transfer resolution card make the offseason a decision rather
 than a menu; DECISION 041's draft question; and B29's empty room at whatever width the harness gives.
 
+
+### What 025 found — read this before planning anything
+
+**The curve moved about one career.** Four "play again" answers: yes → yes (*"more than last time"*)
+→ *"yes, but I want to **check** something, not play something"* → **no**. The fourth:
+
+> *"No. I have four endings, I know what the levers are, and I know none of the words in the middle
+> will change anything. If you asked me to play a fifth I would click through it without reading and
+> we would both know it."*
+
+**The answer to the question the wave existed for: ONSET. See DECISION 045.** Career 1 skimming began
+at decision **15**, on a verbatim repeat, *"a snap, not a slide"*, generalised to brand-new cards by
+decision 23. Careers 2, 3 and 4: **decision 1**, because every career opens on Signing Day again.
+Dose governs only how long a good card buys back — *exactly one card*.
+
+**The mechanism, which two playtests could not supply and this one did:**
+
+> *Repetition is what starts it. The text/number contradictions are what make it rational to stay
+> that way, and they apply to new cards as much as repeated ones — which is exactly how it
+> generalises to cards I have never seen.*
+
+**DECISION 046 is the one to read before briefing any of it.** The PM checked all six named
+contradictions against source: **the prose is correct in every one.** Three separate causes, the
+largest being that `reducer.ts:61-64` freezes `overallBefore` before `advance()`, so a card's delta
+is everything that happened during that advance — its own effects, plus any deferred effect falling
+due, plus progression. *Cutting the Line* authors `effects: []` and displayed **−3**. **Anyone who
+briefs this as "fix the six cards" will rewrite good writing and leave the cause in place.**
+
+### New backlog from 025
+
+| ID | Item | Notes |
+|---|---|---|
+| B30 | **Cards do not account for what they did** — deferred effects and progression land on whichever card is on screen | DECISION 046 cause 1. `reducer.ts` + `view-model.ts`, both unfrozen. **Top of the board** |
+| B31 | **Character is the invisible half of an outcome**, so cards whose real cost is character read as rewards — *"compliance flags the resale listing"* = **+1 OVR** | DECISION 046 cause 2. B17 with a mechanism. A fix needing an integer is a proposal against DECISION 002 and goes to the user |
+| B32 | **Declaring early reads as a trap, not a gamble** — claim 2 **REFUTED**. The Declare card shows no projection, no stock, no warning, and frames it as *"Cash in now"* | Wave 9 made the penalty real; nothing tells the player a gamble is being taken. Note DECISION 025 refused a round projection by name — the fix is not `draftStock` |
+| B33 | **`Undrafted` is set in the same gold display type, size and position as `Round 5, Pick 14`** | DECISION 032 said the fix for a congratulatory bad ending is hierarchy. It was applied to *drafted* endings; the undrafted case kept the trophy treatment |
+| B34 | **The Moments reel printed 🏆 "Carried the team through bowl season" four times** on a player with no bowl win | The milestone fires every season. Repetition has now reached the ending screen |
+| B35 | **Silent resolutions remain** — "Play this season", "Return to school" and "Stay at [school]" produce no outcome screen. **"Stay at Ole Miss" paid +10 as a bare number on a card with no sentence** | Wave 9 proved three hubs deserved silence *on the data then*. +10 is not silence-worthy. Re-measure before re-deciding |
+| B36 | **Arithmetic and state defects**: ledger read `8 snaps · 3 FG · 6 Points`; status read `ON THE FIELD: on the scout team` beside 339 snaps and 31 tackles; *Bowl Opt-Out* says *"your name's already climbing draft boards"* at **60 OVR on the scout team**; *Playoff or Bust* says *"Ten wins is a disappointing season here"* beside a **5-7** ledger | Mixed causes — some content conditions, some view-model. Cheap and they cost credibility every time |
+| B37 | **The redshirt card lies** — *"sit this season"* cost −3 and the season was played anyway | B13 was closed as a wording fix. The wording is still wrong |
+| B29 | **The empty room — CONFIRMED badly at 1456×824.** A ~755px band in a 1456px window, ~350px dead black each side; card bottom at y≈560 with ~260px empty below. **The decision screen uses about a third of its area** | *"Looks like a phone layout that was never given a desktop breakpoint."* The year rail sits marooned top-right over a void that would hold the season stat detail the ending screen already knows how to lay out |
+
+**Position — PARTIAL, and precisely split:** real in-season (the Kicker cards were the only thing the
+playtester said they enjoyed — *"The Yips, the wind read, the onside kick"*), **identical in the
+offseason at all four positions.** That is B24, now with a boundary.
+
+**No visual defects at all.** Nothing clipped, overflowed, collided; contrast fine. Every finding in
+§8 is semantic. The type and colour work from waves 4–8 is done and should not be reopened.
+
 ## Next actions — for PM session 6, in order
 
-**Read this section, `DECISIONS.md` 042–044, and the wave 10 and 11 sections above. Nothing else.**
+**Read this section, `DECISIONS.md` 042–046, and the wave 10 and 11 sections above. Nothing else.**
 
-1. **Read `reports/025` when the playtest lands, and answer onset-or-dose first.** Everything else on
-   this list is downstream of it. If the playtester stopped reading at or near their *first* repeat
-   regardless of how many followed, DECISION 044's falsifier has fired: 024 §10 option **A** is
-   correct, the seven-event authoring budget is retired for good, and the repetition line of work is
-   closed. If they kept reading and wore down, option **B** is correct and the counterfactual's
-   13 → 19 / 100% → 37.5% is worth the budget.
-2. **Take the seven-event question to the user with that answer in hand — do not decide it yourself.**
-   It is the phase's largest authoring budget and DECISION 030's shape makes content scope a user
-   call. Give them 024 §10's three options with the playtest's answer attached. **Option C is the one
-   to flag**: the hub cards (`Redshirt?`, `Declare`, `Transfer Portal`) are string literals in
-   `advance.ts`, not content, so they are what the wall becomes after B and they need their own
-   engine decision. 48.8% of careers see `Redshirt?` twice.
-3. **Then the UI backlog is unblocked**, in this order: **B29** (the empty room — but read what 025
-   says about it at its own width before briefing anything; the emptiness may be the absence of B10's
-   imagery, which is a user decision already shaped by DECISION 031), then the small wave-4 leftovers
-   (labelled rail cells, a `title` on clamped options, the 1px `.standing` shift).
-4. **B24 is the biggest unaddressed item and it is mostly content.** Position is a costume everywhere
-   except the in-season cards — all six start at OVR 60, "in the rotation" (not a thing kickers are
-   in), identical offseason block. ~1 card in 4 is position-specific, and those were the only cards
-   still being read by career 3. 025 asks the position-costume question directly at four positions;
-   read that answer before sizing it. A **user** decision under DECISION 030's shape.
-5. The engine is **re-frozen.** 029's lift was for B18/B19, 039/040's for three named defects, and
-   042's for one additive condition field. All of it is spent. A further change writes a proposal
-   and asks — and note that option C in (2) would be exactly such a proposal.
-6. **`src/sim/repetition-probe.ts` is the gate, and it is committed now.** Run it as
-   `npx tsx src/sim/repetition-probe.ts 24 B card` (or `C`, or `all`). Any future repetition claim
-   gets measured with it rather than argued. Use **both** cohorts: neither alone exercises all five
-   opener variants.
-7. Increment the **PM session** counter at the top of this file when you take over.
+1. **Wave 12 is three lanes and they are file-disjoint. Dispatch them together.**
+   - **Lane A — B30 + B31, the reason reading stopped paying.** DECISION 046. A card accounts for
+     what *it* did; a deferred effect falling due is its own beat with its own sentence. Owns
+     `src/ui/session/reducer.ts`, `view-model.ts`, `types.ts`. **Read 046 before writing the brief
+     and paste its three causes into it** — the failure mode is an agent "fixing" six pieces of
+     correct writing. B31's remedy must work without an integer, or it is a proposal against
+     DECISION 002 and goes to the user.
+   - **Lane B — B29, the empty room.** Now measured: a ~755px band in 1456px, the decision screen
+     using about a third of its area, *"a phone layout that was never given a desktop breakpoint."*
+     The playtester names the fix themselves — the void under the year rail would hold the season
+     stat detail the ending screen already lays out. Owns `CareerScreen.tsx`, `career.css`. **This is
+     no longer blocked on B10/imagery**; 025 reports no visual defects and plenty of dead space, so
+     the room is real and empty independent of art.
+   - **Lane C — B36 + B37, the credibility defects.** `3 FG · 6 Points`; `ON THE FIELD: on the scout
+     team` beside 339 snaps; *"climbing draft boards"* at 60 OVR; *"Ten wins is a disappointing
+     season"* beside 5-7; the redshirt card saying sit when the season was played. Cheap, mixed
+     causes, and each one is a small proof that the words are not to be trusted. Owns `labels.ts`,
+     `bands.ts`, `ledger.ts` and — where a fix needs a condition rather than a label — a **proposal**,
+     not an edit.
+   **Do not put B32/B33/B34 in this wave**; they touch `SummaryScreen.tsx` and the declare card, and
+   lane A is changing what a resolved card means underneath them.
+
+2. **Then B32 and B33 together** — the ending and the declare card. B32 is the sharper one: wave 9
+   made declaring early genuinely cost 8 points of stock and the card still frames it as *"Cash in
+   now"* with no warning. **DECISION 025 refused a round projection by name**, so the fix is not
+   `draftStock` and not a projection; it is that a gamble should look like one before it is taken.
+
+3. **The seven milestone events are NOT written — DECISION 045.** Onset is decision 1 in careers 2–4.
+   If the authoring budget is spent at all, 025 names the target: the **offseason sequence**
+   (Redshirt? → Declare? → Transfer Portal → Fall Camp Battle → New Workout Regimen), identical words
+   and order every year at every position. Three of those five are hub strings in `advance.ts`, so
+   that is an engine proposal and a **user** decision under DECISION 030's shape. It is smaller than
+   the seven events and aimed at the measured cause.
+
+4. **B24 has a boundary now.** Position is real in-season — the Kicker cards were the only thing the
+   playtester said they *enjoyed* — and identical in the offseason at all four positions tried. Scope
+   it to the offseason, where it merges with (3).
+
+5. The engine is **re-frozen.** 029's lift was for B18/B19, 039/040's for three named defects, 042's
+   for one additive condition field. All spent. A further change writes a proposal and asks.
+
+6. **Do not reopen type, colour or contrast.** 025 found zero visual defects at 1456px — nothing
+   clipped, overflowed or collided, contrast fine. Waves 4–8 are done.
+
+7. **`npx tsx src/sim/repetition-probe.ts 24 B card`** (or `C`, or `all`) is the committed gate for
+   any repetition claim. Use both cohorts; neither alone exercises all five opener variants.
+
+8. Increment the **PM session** counter at the top of this file when you take over.
 
 ## Next actions — the older list, kept for anything unstruck
 
