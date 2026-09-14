@@ -71,11 +71,11 @@ are in the table. Two were wrong as stated (B3, B5) and would have wasted a wave
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| B11 | **Seasons are near-literal reruns** — identical Season Opener / Rivalry Week / Bowl text every season, word for word. *"This is where I stopped reading and started clicking"* — decision ~16 of career 1 | **blocked-on-user** | `src/content/**` is frozen. This is the single largest threat to the north star ("three careers in a row without being asked") and **no amount of polish fixes it** |
-| B12 | **Season-specific events fire in nonsense years** — All-Star Game Invite ("your last impression before the draft") closes *freshman* year; Redshirt? is offered unfiltered to a junior the game just called "one of the best in the conference" | **blocked-on-user** | Gating is content/engine. Cheaper than B11 and fixes much of the same damage |
-| B13 | **Redshirt fiction and mechanics disagree out loud** — took a redshirt, kept playing the same season, appeared in a game, summary credited 9 snaps | **blocked-on-user** | Reads as a bug, not a design choice. Engine-side |
+| B11 | **Seasons are near-literal reruns** | **MEASURED — see DECISION 017** | 864 careers: five `milestone-*` events are **40%** of a career and fire in **100%** of them; first verbatim repeat at **decision 13** in **99.3%** of careers. But 98 of 102 events fire — **not a content-volume problem.** Items 1–2 of 017 are UI-side and go in wave 3; item 3 is a content pilot on one event |
+| B12 | **Season-specific events fire in nonsense years** | **HALF-CONFIRMED** | All-star/combine invite lands in FR/SO for ~**25%** of QB/OL/DL/DSKILL careers — real. The Redshirt-to-a-star half is **REFUTED**: median OVR at the offer is 65, only 3.4% ≥75. Real oddities instead: a true freshman is *never* offered it, and **48.8%** of careers are asked twice |
+| B13 | **Redshirt fiction and mechanics disagree** | **NOT A BUG — a wording fix** | `sitSnapModifier` is 0.05, so **100%** of redshirt seasons credit snaps (median 26; the playtester's 9 was the p10). That is the four-game redshirt rule being modelled. **The fault is the telling:** the UI says you sat out, then credits snaps. Content/UI wording, not engine |
 | B14 | **Flat dynamic range** — a −8 OVR injury + demotion renders identically to a speeding-ticket joke; promotions happen silently in grey | todo | Fix is DECISION 012: magnitude may drive scale/weight/motion, valence may never drive hue. Needs 005's tokens first |
-| B15 | **Single-option cards have hidden effects** — "Win the job", the only option, cost 1 overall and showed no outcome text at all. Forced, negative, unexplained | todo | UI can show the delta (DECISION 012); the one-option-skips-Continue rule is spec §4 |
+| B15 | **Single-option cards have hidden effects** | **promoted — top of wave 3** | "Win the job", the only option, cost 1 overall and showed nothing. 008 found **three of the five metronomic milestones are one-option**, so this and B11 are the same wound: on 40% of decisions the player is not choosing, just re-pressing. UI can fix both (DECISION 017 items 1–2) |
 | B16 | **The biggest choices get the least ceremony** — transferring schools produces no outcome card at all; the header word just changes. Meanwhile a podcast invite gets a full card | todo | |
 | B17 | **Character is ignorable, not subtle** — moved twice in three careers, silently, and one outcome said *"Character intact"* while the phrase did not change | todo | The qualitative-only call (DECISION 002) stands; the *presentation* is what failed. It sits in the same grey directly under the role phrase and coasts on that adjacency |
 
@@ -203,40 +203,26 @@ Use `briefs/003-baseline-playtest-v2.md` as the shape; it is the one that worked
 
 ## Next actions
 
-1. Await 008. If repetition measures as bad as the playtest suggested, it outranks everything in
-   wave 3 — and it is content, so it goes to the user with numbers attached.
-2. Dispatch wave 3 items 1+2 as one agent (they collide), 3 as another. Commit each lane after
-   verifying it yourself.
+1. **Wave 3, revised by DECISION 017.** The one-option milestone cards are now the top item, ahead of
+   the ledger: they are 40% of a career, they are pure UI, and they carry zero balance risk. Fold
+   DECISION 017 items 1 and 2 into wave-3 item 2 ("give consequence a voice") — same files, same
+   agent, and the delta display is what makes a repeated card bearable.
+2. Dispatch wave 3 items 1+2 as one agent (they collide on `CareerScreen.tsx` and `career.css`),
+   the ledger as another. Commit each lane after verifying it yourself.
 3. Increment the **PM session** counter at the top of this file when you take over.
 
-## For the user — open, not PM calls
+## For the user — one open scope call
 
-**1. B11/B12/B13 — content repetition and event gating. This is the biggest finding in the phase.**
+**B10 — imagery.** The reference gives every option a picture at ~50% of the option card. We have no
+art. ~102 events / 330 outcomes, so per-outcome art does not scale. Per-*category* — practice, game
+day, injury, off-field, academics — is ~12–20 reusable flat vector pieces in the turf/chalk palette,
+and is the only shape worth recommending. Cost and style are the user's call.
 
-The playtester quit reading at decision ~16 of career 1, when Season Opener repeated verbatim in
-season two. *"That ankle has now barked in six separate seasons across three different players."*
-*"Once you can predict the season skeleton, a career is four laps of the same track with two or three
-new cards sprinkled in."*
-
-`src/content/**` is frozen, so none of it is a PM call. It matters because **no amount of visual
-polish fixes it** — we would ship a beautiful game that a player stops reading a third of the way in.
-Three shapes, cheapest first:
-
-- **Gate the season-specific events** (B12) so All-Star Invite stops firing in freshman year and
-  Redshirt? stops being offered to a junior star. Smallest change, fixes the loudest nonsense.
-- **Fix the redshirt contradiction** (B13) — redshirt taken, player still appeared, 9 snaps credited.
-  Reads as a bug.
-- **Add per-season variants** of the three skeleton events (B11). Largest, and the only one that
-  actually fixes the rerun problem.
-
-**2. B10 — imagery.** The reference gives every option a picture at ~50% of the option card. We have
-no art. ~102 events / 330 outcomes, so per-outcome art does not scale. Per-*category* — practice,
-game day, injury, off-field, academics — is ~12–20 reusable flat vector pieces in the turf/chalk
-palette, and is the only shape worth recommending. Cost and style are the user's call.
-
-**Already decided and merely reported to the user:** DECISION 009 crosses the frozen-engine line for
-the first time — two additive fields on `SeasonLine`, no balance effect, verified by byte-identical
-`npm run play` output across three seeds. Balance changes go to the user; this is plumbing.
+**B11 item 3 — authoring new content.** DECISION 017 items 1, 2 and 4 are PM calls and are in wave 3.
+Item 3 — writing per-season variants of the five milestone events — is **authoring new game content**,
+which is a different kind of decision from polish, so it is raised rather than assumed. The plan if it
+goes ahead: pilot `milestone-opener` alone (62% of first repeats), then re-run the 008 harness and
+confirm the first-repeat decision number actually moves before writing the other four.
 
 ## What a fresh PM should know that is not obvious from the files
 
