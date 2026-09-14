@@ -76,6 +76,10 @@ them confirmed or refuted by a playtester before anyone builds against them.
 
 ## Handoff protocol
 
+Full PM instruction set: `docs/superpowers/polish/PM-PROMPT.md`.
+
+## Handoff protocol
+
 Agents write findings to `reports/NNN-slug.md` and return **only** status, ≤5 bullets, and the path.
 Never full findings — this is the main lever on PM context size.
 
