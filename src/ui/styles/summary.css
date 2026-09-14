@@ -17,13 +17,78 @@
 
 /* ---------- the verdict ---------- */
 
+/* The magnitude set. A playtester played a career deliberately badly, drew
+   Round 7 Pick 2, and reported that "the ending is a gold headline regardless
+   of what I did" -- measured on our own screens, #69 and #194 printed in the
+   same hue at the same size, weight and position.
+
+   The axis is the DRAFT ROUND, which is ordinal, already printed in the
+   headline (so emphasising it discloses nothing -- DECISION 012's test) and
+   has `Undrafted` at its far end rather than off to one side. Five tiers, cut
+   on 600 measured careers: R1 2.7% | R2-3 12.5% | R4-5 39.0% | R6-7 40.0% |
+   no call 5.9%. The loudest tier is rare enough to mean something.
+
+   Four properties move with it -- size, weight, the width axis and entrance
+   travel. HUE DOES NOT. Every tier from 5 to 1 is `--milestone`; there is no
+   --good/--bad in tokens.css and none is wanted (DECISIONS 006, 012, 021).
+   Tier 1's numbers are exactly the treatment DECISION 021 upheld, so the
+   washout end of the scale is unchanged and the drafted ones now range above
+   it. The same shape as `.consequence[data-magnitude]` in career.css: one
+   custom-property set, one hue, five intensities of presence. */
 .verdict-block {
+  /* Tier 3 (rounds 4-5, the modal outcome) is the base. */
+  --verdict-scale: 0.88;
+  --verdict-weight: var(--w-title);
+  --verdict-wdth: 68;
+  --verdict-ink: 0.92;
+  --verdict-rise: 8px;
+  --verdict-dur: var(--dur-enter);
+
   margin: 2.6rem 0 0;
-  animation: verdict-in var(--dur-enter) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  animation: verdict-in var(--verdict-dur) cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* Round 1. 16 careers in 600. */
+.verdict-block[data-magnitude="5"] {
+  --verdict-scale: 1.12;
+  --verdict-wdth: 58;
+  --verdict-ink: 1;
+  --verdict-rise: 16px;
+  --verdict-dur: calc(var(--dur-enter) * 1.35);
+}
+
+/* Rounds 2-3. */
+.verdict-block[data-magnitude="4"] {
+  --verdict-scale: 1;
+  --verdict-wdth: 62;
+  --verdict-ink: 1;
+  --verdict-rise: 12px;
+  --verdict-dur: calc(var(--dur-enter) * 1.15);
+}
+
+/* Rounds 6-7. Still a draft, and still gold -- just not a headline. */
+.verdict-block[data-magnitude="2"] {
+  --verdict-scale: 0.8;
+  --verdict-weight: var(--w-ui);
+  --verdict-wdth: 74;
+  --verdict-ink: 0.84;
+  --verdict-rise: 5px;
+  --verdict-dur: calc(var(--dur-enter) * 0.85);
+}
+
+/* Undrafted, or a career that ended before the draft. The extreme of the same
+   axis, not a second state: DECISION 021's exact values (0.72 / 700 / 0.68). */
+.verdict-block[data-magnitude="1"] {
+  --verdict-scale: 0.72;
+  --verdict-weight: var(--w-ui);
+  --verdict-wdth: 78;
+  --verdict-ink: 0.68;
+  --verdict-rise: 3px;
+  --verdict-dur: calc(var(--dur-enter) * 0.7);
 }
 
 @keyframes verdict-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(var(--verdict-rise)); }
   to { opacity: 1; transform: none; }
 }
 
@@ -57,22 +122,16 @@
    because "Undrafted" is a word and 900 is reserved for numerals. */
 .verdict {
   margin: 0;
-  font-variation-settings: "wdth" 62;
-  font-weight: var(--w-title);
-  font-size: var(--t-display);
+  font-variation-settings: "wdth" var(--verdict-wdth);
+  font-weight: var(--verdict-weight);
+  font-size: calc(var(--t-display) * var(--verdict-scale));
+  /* Opacity, not a second colour: presence drops, the hue is identical. */
+  opacity: var(--verdict-ink);
   line-height: 0.92;
   letter-spacing: var(--track-tight);
   color: var(--milestone);
   font-variant-numeric: tabular-nums;
   text-wrap: balance;
-}
-
-/* Undrafted, or a career that ended early. Smaller, narrower, and dimmed --
-   never recoloured. The prose and the weight carry the tone. */
-.verdict-block.quiet .verdict {
-  font-size: calc(var(--t-display) * 0.72);
-  font-weight: var(--w-ui);
-  opacity: 0.68;
 }
 
 .verdict-sub {
@@ -129,7 +188,20 @@
    58 -> 71 -> 66 down the block. It is why the rows are a grid rather than a
    wrapping flex row: the numbers have to line up to be an arc at all. */
 
-.arc { --arc-cols: 2.5rem minmax(0, 1fr) 4.2rem; }
+.arc {
+  --arc-cols: 2.5rem minmax(0, 1fr) 4.2rem;
+  --arc-row-pad: 0.85rem;
+  /* The block closes. Every row draws its rule on top, so a five-row career
+     could get away with ending in mid-air and a two-row one could not: it read
+     as truncated (playtest claim 5) rather than short. One line. */
+  border-bottom: 1px solid var(--line);
+}
+
+/* One or two seasons is a career, not a stub. The block is NOT rebuilt for
+   short careers -- same rows, same columns, same reading order, because it is
+   the best-liked thing in the game -- it is given the room that makes two rows
+   sit as a deliberate block instead of the top two rows of a missing five. */
+.arc[data-span="short"] { --arc-row-pad: 1.35rem; }
 
 .arc-head {
   display: grid;
@@ -154,7 +226,7 @@
   grid-template-columns: var(--arc-cols);
   column-gap: 1rem;
   align-items: start;
-  padding: 0.85rem 0;
+  padding: var(--arc-row-pad) 0;
   border-top: 1px solid var(--line);
   /* Declared on the row: every cell in it is a figure that changes season to
      season, and the point of the block is that they line up as a column. */
@@ -257,11 +329,51 @@
   color: var(--chalk-soft);
 }
 
+/* The closing row: first rated season to last, and the difference between
+   them, on the same three magnitude tiers as the per-season delta and in the
+   same single hue. Two seasons at 62 -> 63 and four at 66 -> 83 now say
+   different things in the same words, which is the whole brief in one line. */
+.arc-span {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.9rem;
+  padding: 0.7rem 0 0.85rem;
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+.arc-span-label {
+  margin-right: auto;
+  font-variation-settings: "wdth" 74;
+  font-weight: var(--w-ui);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+.arc-span-range {
+  font-variation-settings: "wdth" 70;
+  font-weight: var(--w-ui);
+  font-size: var(--t-meta);
+  color: var(--chalk-dim);
+}
+
 /* ---------- honors ----------
 
    The rarest things in the game, previously a bulleted list set smaller than
    the stat labels beneath it. `--milestone` is the token for a career fact
-   already known and already on screen, given its headline. */
+   already known and already on screen, given its headline.
+
+   What this section now only contains is DISTINCTIONS. Measured over 600
+   careers, the old block fired on 70.5% of them and on 17.8% its entire
+   content was `Bowl Win` -- so the word HONORS sat over the outcome half the
+   league gets, above a 7-5 / 5-7 record, on the screen that decides whether
+   anyone plays again. Routine results keep their place in `.also` below: the
+   fact is not deleted, the claim is. Within the block, rarity drives size and
+   the accent edge -- a Heisman (0.7% of careers) is not an All-American
+   (5.8%) is not the same card. One hue at three sizes. */
 
 .honors {
   margin: 0;
@@ -299,12 +411,68 @@
   overflow: hidden;
 }
 
+/* A Heisman or a national title. Four careers in 600 had one. It takes the
+   full width of the grid and the accent edge thickens -- the same
+   thicken-the-rule move `.consequence[data-magnitude="3"]` makes in
+   career.css, and for the same reason. */
+.honor[data-rarity="3"] {
+  grid-column: 1 / -1;
+  padding: 1.1rem 1.2rem;
+  border-left-width: 4px;
+  background: var(--card-raised);
+}
+
+.honor[data-rarity="3"] .honor-label {
+  font-variation-settings: "wdth" 68;
+  font-weight: var(--w-title);
+  font-size: var(--t-title);
+}
+
 .honor-count {
   flex: none;
   font-variation-settings: "wdth" 70;
   font-weight: var(--w-figure);
   font-size: var(--t-micro);
   color: var(--chalk-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- what half the league has ----------
+
+   `Bowl Win` (45.3% of careers) and `All-Conference` (50.5%). Both are true,
+   both stay on the page, and neither is a distinction. They are set in the
+   chalk ramp rather than in `--milestone` -- the accent is reserved for a
+   career fact that deserves its headline, and these do not -- and at chip
+   size rather than card size. This is DECISION 014's principle one step on:
+   the absence of an honour is shown as its absence, not as a smaller trophy. */
+.also {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* When a career has real distinctions too, the chips sit under them. */
+.honors + .also { margin-top: 0.6rem; }
+
+.also-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  font-variation-settings: "wdth" 76;
+  font-weight: var(--w-ui);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+  color: var(--chalk-dim);
+}
+
+.also-count {
+  color: var(--chalk-faint);
   font-variant-numeric: tabular-nums;
 }
 
@@ -350,7 +518,27 @@
   align-items: baseline;
 }
 
-.moment-glyph { font-size: var(--t-label); line-height: var(--lh-tight); flex: none; width: 1.4rem; }
+/* The reel "led with a trophy emoji" for a career that went 7-5 then 5-7 --
+   and measured, the trophy glyph is the single most common mark in the game:
+   506 of the moments carrying `icon: "trophy"` are "Carried the team through
+   bowl season" and 423 are "Won the rivalry game", both routine season beats.
+   A full-colour gold 🏆 at the head of the list is the furniture cheering.
+
+   Two things are wrong and one of them is ours. Emoji are the only uncontrolled
+   COLOUR on a screen whose governing rule is that hue never tracks valence --
+   🏆 is gold, 🏥 is red, 💰 is green, and none of that was designed. Desaturating
+   them puts the glyph column back in the chalk ramp, where 011 said it belonged
+   ("a margin rather than the content"), and the reel then leads with the season
+   heading and the words. Re-pointing the bowl moment's icon is a CONTENT change
+   and is a proposal in report 016, not an edit here. */
+.moment-glyph {
+  font-size: var(--t-label);
+  line-height: var(--lh-tight);
+  flex: none;
+  width: 1.4rem;
+  filter: grayscale(1);
+  opacity: 0.7;
+}
 
 .moment-item {
   min-width: 0;

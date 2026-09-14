@@ -620,3 +620,73 @@ for "what does this number mean."
 is a game-design decision and not a PM call. If the qualitative channel still leaves players unable
 to read their own OVR after 024 ships, the escalation is to the user, not to `draftStock`.
 
+## 026 — The verdict scale: DECISION 021 extended to five steps, still one hue
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Extends:** 021 · **Governed by:** 012 · **Evidence:** `reports/016-the-ending-has-a-range.md`
+
+021 settled the verdict as **one hue at two intensities**. The 014 playtester then found the case it
+did not cover: *"#69 overall and #194 overall print identically — same gold, same size, same weight,
+same position. I can't even tell a good draft from a bad one at a glance."*
+
+**Approved as proposed by 016.** Five steps — R1 / R2–3 / R4–5 / R6–7 / no call — cut on a measured
+round distribution over 600 careers rather than on round numbers chosen by eye. Range is carried by
+**scale, weight, the width axis, opacity and entrance travel only.** No new token; `tokens.css`
+untouched.
+
+**Why this does not reopen 012.** Hue is constant and was verified in the live page, not asserted:
+`.verdict` computes `rgb(240, 180, 41)` at both step 1 and step 4. A great ending and a bad one are
+the same colour and differ in how loudly they are said. That is exactly the axis 012 permits and the
+one it forbids, in the right order.
+
+**Why it does not overturn 021.** Step 1 is 021's values exactly, so the washout end of the range is
+unchanged. 021 is extended at the top, not replaced.
+
+**What would change our mind.** A playtester who still cannot rank two *drafted* endings at a
+glance. The lever then is the scale spread (1.12 → 0.72 today), **not** a second hue.
+
+## 027 — HONORS means distinctions. Routine results stay on the page, under a different word
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Evidence:** `reports/016-the-ending-has-a-range.md` §2
+
+The 014 playtester found a two-season career that went 7-5 then 5-7 presented with an **HONORS**
+block: *"The screen reads as a celebration regardless of input."*
+
+016 measured why. `allConference` lands on **50.5%** of careers and `bowlWin` on **45.3%**; the
+HONORS block fired on **70.5%** of all careers, and on **17.8%** its entire content was the single
+line `Bowl Win`. A block that appears for seven careers in ten is not marking distinction, it is
+marking participation.
+
+**Approved: honors means distinctions only, rarity-tiered. Routine results are not deleted** — they
+remain on the page as chalk chips under an `Also earned` heading. Nothing is taken away from the
+player; the screen stops calling a coin-flip outcome an honour. Share text is byte-identical.
+
+**The counter-argument, stated because it is a fair one:** a bowl win *is* an achievement to a real
+player, and demoting it is us editorialising. The answer is the measurement — at 45.3% it is not a
+distinction — and the context: this is the screen a playtester answered *"no"* to a fourth career
+on, having named exactly this as a reason.
+
+**What would change our mind.** A playtester reporting the `Also earned` row reads as a consolation
+prize or a demotion. The fix then is the heading's wording, not restoring a block that fires 70% of
+the time.
+
+## 028 — Two open questions go to the next playtest rather than being guessed at
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Evidence:** `reports/016-the-ending-has-a-range.md` notes 3 and 5
+
+Two things 016 surfaced are deliberately **not** being decided now, because in both cases the house
+habit says a number or a player's reaction beats a PM's taste.
+
+1. **`FINAL OVERALL` can differ from the last season's stored OVR** (80 vs 78 on the `m0` fixture),
+   because the verdict reports post-offseason development and the ledger reports the season as
+   played. Both labels are accurate and the new span row now states the gap twice on one screen.
+   Closing it properly is either an **engine** change (record a post-development OVR on the final
+   `SeasonLine`) or a wording change. It is a real confusion but not obviously a bug, so the next
+   playtest is asked directly whether the two numbers read as a contradiction.
+2. **Re-pointing the `trophy` icon** on `Won the rivalry game`, `Carried the team through bowl
+   season` and `First to his feet when a teammate took the award`. The trophy is the most common
+   mark in the game and is almost never on an actual trophy (506 and 423 instances of the top two).
+   016 shipped the display-layer half — glyphs desaturated, since emoji were the only uncontrolled
+   colour on a screen whose rule is that hue never tracks valence — and left the three content
+   strings as a **proposal**, correctly, since `src/content/**` is frozen. Not urgent now that the
+   colour is under control.
+

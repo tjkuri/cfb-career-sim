@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CareerView, MomentView, SeasonView } from "../session/types";
+import type { CareerView, HonorView, MomentView, SeasonView } from "../session/types";
 import { shareText } from "../session/share";
 
 interface Props {
@@ -66,6 +66,36 @@ function signed(delta: number): string {
   return "±0";
 }
 
+// The career's own arc, end to end. The playtest confirmed the OVR column for
+// four and five seasons ("66 / 63 / 71 / 83 -- I read that as an arc without
+// being told to") and refuted it for two, where the same layout yields a
+// two-row stub that just stops. This is the closing line that gives a short
+// career a shape and a long one a total: it compares the two numbers at the
+// ends of the column, both already on screen, so it discloses nothing and
+// invents nothing. Null unless at least two seasons actually recorded an OVR
+// -- a one-season career and a pre-009 save get no span rather than a
+// fabricated zero (DECISION 014).
+function arcSpan(seasons: SeasonView[]): { first: number; last: number; net: number } | null {
+  const rated = seasons.filter((s): s is SeasonView & { overall: number } => s.overall !== null);
+  const first = rated[0];
+  const last = rated[rated.length - 1];
+  if (!first || !last || first === last) return null;
+  return { first: first.overall, last: last.overall, net: last.overall - first.overall };
+}
+
+// Distinctions from routine results. Rarity 1 is `allConference` and
+// `bowlWin`, which 50.5% and 45.3% of careers respectively earn; 2 and 3 are
+// the things almost nobody gets. Splitting them is what stops the word HONORS
+// from appearing over a bowl win -- see `HONOR_RARITY` in view-model.ts for the
+// measurement, and DECISION 014 for the rule that the answer is to stop
+// claiming the thing, not to stop showing it.
+function splitHonors(honors: HonorView[]): { distinctions: HonorView[]; routine: HonorView[] } {
+  return {
+    distinctions: honors.filter((h) => h.rarity > 1),
+    routine: honors.filter((h) => h.rarity === 1),
+  };
+}
+
 export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
   const s = view.summary;
   const [copied, setCopied] = useState(false);
@@ -75,6 +105,12 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
   const seasonWord = s.seasons.length === 1 ? "season" : "seasons";
   const momentGroups = groupMoments(s.moments, s.seasons);
   const hasArc = s.seasons.some((season) => season.overall !== null);
+  const span = arcSpan(s.seasons);
+  // Two seasons in a layout built for five read as truncated (playtest claim
+  // 5). The block is not rebuilt for short careers; it is given the room and
+  // the closing edge that make two rows look finished rather than cut off.
+  const arcSpanLength = s.seasons.length <= 2 ? "short" : "full";
+  const { distinctions, routine } = splitHonors(s.honors);
 
   async function copy() {
     try {
@@ -99,11 +135,21 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
         </div>
       </div>
 
-      {/* The most consequential sentence the game ever prints. It used to be
-          set at roughly the weight of a caption. A career that ended without a
-          call is set quieter and tighter than one that got drafted -- never in
-          a different hue, which is the line DECISIONS 006 and 012 draw. */}
-      <section className={s.wasDrafted ? "verdict-block" : "verdict-block quiet"}>
+      {/* The most consequential sentence the game ever prints, and until now
+          the one with no range: a 3rd-round pick and a 7th-round pick differed
+          only in their digits. `data-magnitude` is the draft round, 5 (round
+          1) down to 1 (no call at all), and it drives scale, weight, width and
+          entrance travel -- never hue. Every tier is `--milestone`; the line
+          DECISIONS 006, 012 and 021 draw is that a bad ending is quieter than
+          a good one, never a different colour.
+
+          `.quiet` is kept beside it because DECISION 021 named
+          `.verdict-block.quiet .verdict` as its one-line revert point; it now
+          selects exactly the set that magnitude 1 covers. */}
+      <section
+        className={s.wasDrafted ? "verdict-block" : "verdict-block quiet"}
+        data-magnitude={s.verdictMagnitude}
+      >
         <p className="path">
           {s.seasons.length > 0 && (
             <span className="path-count">
@@ -127,7 +173,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
               the one column it could never have: the OVR each season was
               finalized at, recorded by DECISION 009 so the arc reads down the
               right-hand edge. */}
-          <div className="arc">
+          <div className="arc" data-span={arcSpanLength}>
             {hasArc && (
               <div className="arc-head" aria-hidden="true">
                 <span className="arc-head-ovr">OVR</span>
@@ -164,28 +210,55 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
                 </div>
               );
             })}
+            {/* The closing row. It exists so the block ends rather than stops
+                -- which a five-row career could get away with and a two-row
+                one could not -- and so a short career states its own shape
+                instead of leaving the reader to find one in two numerals. */}
+            {span && (
+              <div className="arc-span">
+                <span className="arc-span-label">
+                  Across {s.seasons.length} {seasonWord}
+                </span>
+                <span className="arc-span-range">
+                  {span.first} → {span.last}
+                </span>
+                {span.net !== 0 && <span className={deltaClass(span.net)}>{signed(span.net)}</span>}
+              </div>
+            )}
           </div>
         </>
       )}
 
-      {(s.awards.length > 0 || s.trophies.length > 0) && (
+      {s.honors.length > 0 && (
         <>
-          <h2 className="section-head">Honors</h2>
-          {/* The rarest things in the game. They were a bulleted list set
-              smaller than the stat labels under them. */}
-          <ul className="honors">
-            {s.awards.map((a) => (
-              <li className="honor" key={a}>
-                <span className="honor-label">{a}</span>
-              </li>
-            ))}
-            {s.trophies.map((t) => (
-              <li className="honor" key={t.label}>
-                <span className="honor-label">{t.label}</span>
-                {t.count > 1 && <span className="honor-count">{`×${t.count}`}</span>}
-              </li>
-            ))}
-          </ul>
+          {/* The heading is the fix the playtest asked for. An HONORS block
+              fired on 70.5% of careers and read `Bowl Win` alone on 17.8% of
+              them -- including a deliberately-bad 7-5 / 5-7 two-season career,
+              which the screen then congratulated. A bowl win and an
+              all-conference nod are real and are still printed; they are
+              printed as what half the league has, not as an honour. When a
+              career has an actual distinction, the word is earned and used. */}
+          <h2 className="section-head">{distinctions.length > 0 ? "Honors" : "Also earned"}</h2>
+          {distinctions.length > 0 && (
+            <ul className="honors">
+              {distinctions.map((h) => (
+                <li className="honor" data-rarity={h.rarity} key={h.id}>
+                  <span className="honor-label">{h.label}</span>
+                  {h.count > 1 && <span className="honor-count">{`×${h.count}`}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+          {routine.length > 0 && (
+            <ul className="also">
+              {routine.map((h) => (
+                <li className="also-chip" key={h.id}>
+                  {h.label}
+                  {h.count > 1 && <span className="also-count">{`×${h.count}`}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )}
 
