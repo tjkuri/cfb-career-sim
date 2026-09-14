@@ -43,10 +43,20 @@
 
 .rail-id { line-height: 1.4rem; min-height: 1.4rem; font-size: var(--t-label); }
 .rail-where { line-height: 1.15rem; min-height: 1.15rem; font-size: var(--t-meta); }
+/* DECISION 023, claim 7's one type casualty. This row was --t-micro (11px)
+   under a 12px row 2, and the playtester read it as "the only content in the
+   game that answers 'how am I actually doing', set smaller than anything else
+   on screen" -- they leaned toward the monitor for it, every card. It is now
+   --t-body, one step ABOVE the row it sits under: the size order in this strip
+   follows what the player needs to read, not how far down the strip a line is.
+
+   023 asked for size before tone, so the colour is untouched and no grey was
+   added. `line-height` opens with the type and `min-height` tracks it exactly,
+   which is what keeps the slot from reflowing (see the note above). */
 .rail-stats {
-  line-height: 1.1rem;
-  min-height: 1.1rem;
-  font-size: var(--t-micro);
+  line-height: 1.25rem;
+  min-height: 1.25rem;
+  font-size: var(--t-body);
   color: var(--chalk-faint);
 }
 
@@ -115,17 +125,79 @@
   white-space: nowrap;
 }
 
-/* The number leads and the band phrase glosses it: 74 means nothing to someone
+/* Two claims about two different things, and they must not read as one
+   sentence (DECISION 024).
+
+   The number leads and the band phrase glosses it: 74 means nothing to someone
    who does not know the scale, and "week-one starter" means nothing precise to
-   someone who does. Character stays words-only on purpose. */
+   someone who does. That pair is ONE claim, about the player on the field.
+
+   The trust phrase is a second claim, about how the building feels, and it used
+   to sit directly under the band inside the same dimming ramp with nothing
+   naming either. Read top to bottom the three elements parse as one continuous
+   statement about `overall`, so `All-America caliber / just a guy in the
+   building` can only land as a contradiction -- the playtester filed it as a
+   bug. Both halves are true; a great player the staff is neutral on is a real
+   and interesting state. So the separation is structural: each claim is named
+   for the place it describes, they sit either side of a rule, and only the
+   first one is attached to the number.
+
+   Both labels are present, not just the second. A single label would read as a
+   footnote on a main statement; a matched pair is what makes them parse as two
+   readings of the same career rather than one reading and an aside.
+
+   The grid is two columns: the numeral owns column 1 of row 1 only, so the
+   locker-room claim sits in the text column with no numeral beside it and
+   cannot be read as a gloss on 85. The rule spans the text column alone for
+   the same reason. */
 .standing {
-  margin: 0.9rem 0 0;
-  display: flex;
-  align-items: baseline;
-  gap: 0.7rem;
+  margin: 1.05rem 0 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.85rem;
+  align-items: center;
 }
 
+.standing-claim {
+  grid-column: 2;
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.standing-field { grid-row: 1; }
+
+.standing-room {
+  grid-row: 2;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+/* The label register the rail already speaks: condensed, 11px, 700, tracked
+   wide, upper case (DECISION 008). It names the axis and then gets out of the
+   way -- "On the field" / "In the locker room" are two places, so they are
+   grammatically parallel, and neither collides with any phrase `bands.ts` can
+   produce. ("The staff" would have: two of the five trust bands already say
+   "the staff".) */
+.claim-where {
+  font-variation-settings: "wdth" 76;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+/* Row 1 only. The numeral belongs to the on-field claim and to nothing else;
+   letting it span both rows is precisely how it came to gloss the trust
+   phrase as well. */
 .ovr-number {
+  grid-row: 1;
+  grid-column: 1;
   font-variation-settings: "wdth" 68;
   font-weight: var(--w-figure);
   font-size: var(--t-hero);
@@ -135,30 +207,189 @@
   font-variant-numeric: tabular-nums;
 }
 
-.ovr-gloss {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
+/* Both phrases wrap now instead of truncating. This is not the rail's fixed
+   slot -- nothing here has to hold a shape across an advance -- and the longest
+   trust band ("they would run through a wall for you") does not fit one 360px
+   line at this size. Clipping the claim that DECISION 024 exists to make
+   readable would be a strange way to make it readable. The clamp is the
+   overflow ceiling, not an editorial cut: two lines holds every authored string
+   in both band sets at 360px. */
 .ovr-band {
   font-variation-settings: "wdth" 82;
   font-size: var(--t-label);
   font-weight: var(--w-ui);
   line-height: var(--lh-tight);
   color: var(--chalk);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Character moves UP: it was 12px in the faintest grey of the ramp, and B17 is
+   that it is already too easy to ignore, so buying the separation by making it
+   quieter was never available. It now matches the band's size and sits one
+   colour step off it, and carries prose weight rather than label weight --
+   which is what it is, a sentence about people rather than a gloss on a number.
+
+   No meter, no bar, no dot count, no number: `character` swings draft stock by
+   about +/-7.5 against overall's ~82, so any mark implying a scale with
+   resolution would overstate it by roughly tenfold (DECISION 002). Words
+   only. */
+.trust {
+  font-size: var(--t-label);
+  font-weight: var(--w-prose);
+  line-height: var(--lh-tight);
+  color: var(--chalk-soft);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* ---------- the play area ---------- */
+
+/* One DOM order, two layouts. The decision column is written first and the
+   ledger follows it, so at 360px the table lands BELOW the card instead of
+   pushing it off the fold -- the decision and its options stay the focal point
+   at every width, which is the constraint the ledger has to earn its place
+   against.
+
+   At desktop the same markup becomes two columns and the ledger moves into the
+   empty right-hand field (B1), sticky, always on screen. That is the placement
+   DECISION 007 committed to and the reference's own answer to "where am I,
+   how much is left": a fixed-length table you never have to go and look for.
+
+   `.frame`'s max-width is --measure, which is a MEASURE -- a function of the
+   prose size, not a page width. The decision column keeps it exactly; the grid
+   adds the ledger and its gutter outside it, so no line of prose gets longer. */
+.career-main { min-width: 0; }
+
+@media (min-width: 64rem) {
+  .career {
+    max-width: calc(var(--measure) + 3.5rem + 14rem);
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) 14rem;
+    column-gap: 3.5rem;
+    align-items: start;
+  }
+
+  .ledger {
+    margin-top: 0;
+    position: sticky;
+    /* Matches `.app`'s own top padding, so the table settles where the rail
+       started rather than at the very edge of the viewport. */
+    top: clamp(1rem, 4vw, 2.5rem);
+  }
+}
+
+/* ---------- the career ledger ---------- */
+
+/* Five rows, always (DECISION 010). The table never grows a row when the
+   redshirt lands, because a table that grows moves the "how much is left"
+   signal underneath the player -- the one job it exists to do (DECISION 007).
+
+   Rows are labelled by sequence, Year 1 to Year 5 (DECISION 020), and that
+   single fact is most of what this component is for. The 014 playtester played
+   three careers believing a career was four seasons long, because the title
+   screen says so and nothing afterwards mentions it; they found season 5 by
+   accident. Five labelled slots state the shape of a career without a word of
+   explanation, and slot 5 says what buys it.
+
+   Same box-score vernacular as the rail above: condensed widths, tabular
+   figures, columns separated by space rather than punctuation. */
+.ledger {
+  margin-top: 2.25rem;
+  border-top: 1px solid var(--line);
+  font-variation-settings: "wdth" 76;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Two fixed-height text rows, declared on the grid rather than left to the
+   content. A future row has four empty cells and no line boxes at all, so
+   without this it would collapse to nothing and the table would stop showing
+   the career's length -- which is the whole point of drawing empty rows. */
+.ledger-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 1.3rem 1.05rem;
+  column-gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.5rem 0.6rem;
+  color: var(--chalk-dim);
+}
+
+.ledger-row + .ledger-row { border-top: 1px solid var(--line); }
+
+.ledger-year {
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+/* The season's finishing OVR: the career arc DECISION 009 added the field for,
+   read down the column. A mid numeral, not THE numeral -- the hero above is
+   the live one. */
+.ledger-ovr {
+  justify-self: end;
+  font-variation-settings: "wdth" 68;
+  font-size: var(--t-label);
+  font-weight: var(--w-figure);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+}
+
+.ledger-detail {
+  min-width: 0;
+  font-size: var(--t-meta);
+  line-height: var(--lh-tight);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.trust {
+/* Empty all season and for every future row. `0-0` is the absence of a record
+   rather than a value for one, so nothing is drawn until the postseason
+   resolver has made it real (DECISION 014). */
+.ledger-record {
+  justify-self: end;
   font-size: var(--t-meta);
   line-height: var(--lh-tight);
+}
+
+/* Completed rows filled, the current row lifted, future rows visible as empty
+   chrome (DECISION 007). The lift is surface, weight and an inset edge -- never
+   hue: there is no --good/--bad in this interface and the ledger is not the
+   place to invent one (DECISIONS 006, 012, 021). */
+.ledger-row[data-state="played"] .ledger-ovr,
+.ledger-row[data-state="played"] .ledger-record { color: var(--chalk); }
+
+.ledger-row[data-state="current"] {
+  background: var(--card-raised);
+  box-shadow: inset 2px 0 0 var(--chalk-dim);
+  color: var(--chalk-soft);
+}
+
+.ledger-row[data-state="current"] .ledger-year { color: var(--chalk); }
+
+.ledger-row[data-state="future"] { color: var(--chalk-faint); }
+
+/* The fifth row while the redshirt is still unspent. It hangs off a dashed
+   rule and the table simply stops under it: an open edge, not a closed one.
+   DECISION 010's risk is a player reading slot 5 as a promise, and a row drawn
+   as a solid block of table would be exactly that promise. The dash says
+   "possible"; the words on it say what makes it happen. */
+.ledger-row[data-tentative="yes"] {
+  border-top-style: dashed;
   color: var(--chalk-faint);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ---------- the card ---------- */
