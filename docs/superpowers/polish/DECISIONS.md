@@ -322,3 +322,55 @@ could not waste a session redoing it or "improving" it.
 - If a tool call fails 3 times, stop and write up what you have.
 - **Do not commit, and never `git checkout`/`restore`/`stash`** — the tree routinely holds verified
   uncommitted work from two or three concurrent agents, and one revert would destroy it.
+
+## 017 — The repetition problem is five events, not a content shortage
+**2026-09-13 · PM, from the 008 measurement (864 instrumented careers, all six positions)**
+
+The playtester's boredom was real, reproducible, and locatable to a decision number:
+
+| | |
+|---|---|
+| Five fixed `milestone-*` events as a share of a four-year career | **40%** of decisions (60% with hub cards) |
+| Careers where they fire every season | **100%** |
+| First verbatim repeat | **decision 13**, in **99.3%** of careers (`milestone-opener` in 62% of cases) |
+| Decisions re-showing an already-seen event | **45%**; worst decile 50.7% |
+| Events one career sees | 18 of 102 (**17.6%**) |
+| Outcome strings one career sees | 24 of 330 (**7.3%**) |
+| New content on a 4th career, same position | **18.5%** of decisions |
+
+**The finding that changes the plan: this is not a content-volume problem.** 98 of 102 events fire;
+the random pool works fine. The damage is concentrated in five metronomic cards — and **three of them
+have exactly one option** (Season Opener, Fall Camp Battle, Senior Day). So on 40% of decisions the
+player is not choosing anything. They are re-pressing a button they have pressed before, in a game
+whose entire proposition is choosing.
+
+That reframes it from "write more content" to "stop the five cards that fire every season from being
+identical, and stop three of them from pretending to be decisions."
+
+**Ranked, cheapest first:**
+
+1. **Do not let a one-option milestone cost a tap.** Spec §4 already says one-option beats skip the
+   outcome step; these cards can carry their prose on the *following* card or resolve without an
+   interaction. Pure UI, no content edit, removes the most galling repetition at zero balance risk.
+2. **Show what the card did.** "Win the job" — the only option — silently cost 1 overall. DECISION 012
+   already authorizes rendering the delta. Repetition hurts far less when the card reports something.
+3. **Vary the five milestone texts.** Content authoring, and the only fix that actually solves it.
+   **Start with `milestone-opener` alone** — 62% of first repeats — write per-season variants, and
+   re-run the 008 harness to confirm the first-repeat decision number moves. Prove the approach on one
+   event before committing to five.
+4. **Gate the early all-star/combine invite.** ~25% of QB/OL/DL/DSKILL careers get it as a FR or SO,
+   and its whole fiction is "your last impression before the draft."
+
+**Two claims this measurement refuted, both worth recording:**
+
+- **`Redshirt?` is not being offered to stars.** The playtester suspected it; median OVR at the offer
+  is **65** and only **3.4%** are ≥75. The real oddities are different: a true freshman is *never*
+  offered it, and **48.8%** of careers are asked twice.
+- **B13 is not a bug.** `sitSnapModifier` is 0.05, so **100%** of redshirt seasons credit snaps
+  (median 26 — the playtester's 9 was the p10). That is almost certainly the four-game redshirt rule
+  being modelled, not a contradiction. **The bug is the telling, not the mechanic:** the UI says you
+  sat out and then credits you snaps. Fix the wording, not the engine.
+
+*Would change our mind on item 3:* if the `milestone-opener` pilot does not move the first-repeat
+number, the problem is structural (the fixed season skeleton itself) and content volume will not fix
+it either.

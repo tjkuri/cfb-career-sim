@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 2 in flight (005, 006, 007) · **PM session:** 1 
+**Last updated:** 2026-09-13 · **Wave:** 2 complete, 3 planned · **PM session:** 1 (hand off next) 
 
 ---
 
@@ -54,13 +54,13 @@ Status: `todo` · `in-flight` · `blocked` · `done` · `dropped`
 | ID | Item | Status | Notes |
 |---|---|---|---|
 | B1 | Decision card floats in a large empty field at desktop width | **CONFIRMED — low cost** | Playtester: real, but "not what hurt". B2's fix largely fills it anyway |
-| B2 | **No orientation in time** | **CONFIRMED — worse than stated** | Record reads `0-0` all season and *intermittently vanishes*; class badge flips mid-card. But see DECISION 014 — `0-0` is true, not a display bug. In flight: brief 007 |
+| B2 | **No orientation in time** | **data done, drawing pending** | `CareerView` now carries the live stat line, snaps, `phaseLabel`, `seasonNumber`, and a record that is `null` until real. **Nothing renders any of it yet** — wave 3 item 1 |
 | B3 | Flat hierarchy inside the card | **PARTIAL / mostly REFUTED** | Flatness is *between* cards, not inside them. Do not brief this as stated |
 | B4 | Option buttons read as form fields | **CONFIRMED** | Gold sits on Continue (a no-op) while real choices are grey outlines |
 | B5 | Summary is a uniform grey scroll | **PARTIAL** | The seasons block is *the best screen in the game*. Do not rewrite it — it is the model for the rest |
 | B6 | Moment icons are emoji | **PARTIAL — low priority** | Emoji are minor; **duplicate moments** are the real issue. Dedupe before restyling |
 | B7 | No rhythm across a career | **CONFIRMED — strongest finding** | And the cause is *content repetition*, not styling: identical Season Opener / Rivalry Week / Bowl text every season. See B11 |
-| B8 | One accent colour does every job | **CONFIRMED twice** | 004 counted **8 distinct `--bulb` jobs**; playtester calls it "the mechanism behind the flat dynamic range". In flight: brief 005 |
+| B8 | One accent colour does every job | **structurally fixed** | Eight jobs → eight role tokens, all still resolving to the same value. The *visual* consequence — making a −8 look different from a shrug — is B14, wave 3 item 2 |
 | B9 | Five parked *feel* items in `docs/superpowers/STAGE4-HANDOFF.md` — uneven injury exposure, character drift, decorative stats, +2 | todo | Deferred until a UI existed to judge them in. It exists now |
 | B10 | **Imagery** — reference gives every option a picture (50% of the option card). We have no art. Sourcing/scope is a **user decision**, not a PM call | blocked-on-user | ~102 events / 330 outcomes. Per-outcome art does not scale; per-event ≈102; per-*category* ≈12–20 and reusable. See `reports/002-reference-teardown.md` §6 |
 
@@ -106,49 +106,48 @@ divergences are three grep findings; both get evidence before anyone writes CSS.
 independent — one plays our build and the reference, the other tears down the reference bundle — and
 they share no files.
 
-## Uncommitted work in the tree — read before touching anything
+## Git state — read first
 
-`git status` is **not clean and that is expected.** Nothing in this phase has been committed; the user
-has not asked for commits and the PM does not make them on their behalf. Every brief now carries a
-**do not commit / do not revert** rule, because a `git checkout` or `stash` by any agent would destroy
-another's work.
+**Branch `polish/ui-phase`.** `main` is untouched. Four commits, nothing pushed:
 
-Verified and sitting uncommitted: the six-file CSS split (`tokens.css`, `base.css`, `career.css`,
-`creation.css`, `summary.css`, `log.css` + a 12-line `app.css` index).
+```
+64bdd98 refactor(ui): split app.css six ways, then give every accent job its own token
+77e8b9c feat(engine): SeasonLine records the overall and class year it was played at
+3f311b7 feat(ui): surface the season state the player is actually owed
+7d13847 docs(polish): the reasoning behind the polish phase
+```
 
-**Rate-limit incident, 2026-09-13.** All three wave-2 agents were killed mid-flight by a session
-limit. One had already written the CSS split but died before verifying it. The PM verified it by hand
-rather than trusting or rerunning it:
+**Baseline is now 444 tests** (was 430), both typecheck passes exit 0, build clean.
 
-- concatenating the six files in import order, normalized for whitespace and comments, gives **379
-  lines identical to the original**, with **75 selectors in identical order** (diffed, not eyeballed);
-- `npm test` 430 green · `npm run typecheck` both passes exit 0 · `npm run build` clean, CSS 7.42 kB.
+Agents are told **not to commit and never to `git checkout`/`restore`/`stash`** — the tree routinely
+holds uncommitted work from two or three concurrent agents. The PM commits, after verifying.
 
-Brief 005 was then rewritten to mark step 1 done, so the re-dispatched agent does not redo it. **A
-killed agent may have left correct work behind — verify before discarding, and verify before
-trusting.**
+## Wave 2 — complete
 
-## In flight — wave 2 (re-dispatched 2026-09-13 after the rate-limit kill)
+| Brief | Outcome |
+|---|---|
+| 005 tokens + split | Done. `app.css` → six files, cascade order proved by diff (379 identical lines, 75 selectors in order). Eight `--bulb` jobs → eight role tokens, all resolving to original values. No hex outside `tokens.css`. Font axis reaches a real 900 master. |
+| 006 engine fields | Done. `SeasonLine` carries `overall` + `classYear`. Byte-identical `play` output on three seeds, and the whole final `GameState` incl. `rngCursor` diffs to the two new fields only. |
+| 007 honest season state | Done. `CareerView` gains `season`, `phaseLabel`, `seasonNumber`; the record is `null` until it exists. |
 
-| Brief | What | Owns files |
+**Three things wave 2 found that the briefs did not anticipate:**
+
+1. **A fourth write site.** `newSeasonLine` in `recruiting.ts` creates season 0 at Signing Day; brief
+   006 named only the two `advance.ts` sites. Missing it would have shipped a blank first ledger row.
+2. **71% of resolved cards showed the wrong phase.** `App.tsx` builds the view from post-`advance`
+   state while `resolved` holds pre-`advance` prose — 270 of 378 cards, 36 of 36 careers. This is what
+   the playtester felt as "the class badge flips mid-card." **The data half shipped** (`Resolved.stamp`,
+   taken before `advance()`); the two-line `CareerScreen.tsx` fix is written up in report 007 and is
+   the first item of wave 3.
+3. **Removing the fake `0-0` makes the rail reflow worse, not better.** The playtester's "the header
+   changes shape between cards" needs a fixed slot, not a vanishing node. Report 007 flagged it for
+   the screen lane.
+
+## In flight
+
+| Brief | What | Owns |
 |---|---|---|
-| `briefs/005-split-css-and-tokens.md` | ~~Split `app.css`~~ **done, verified**; now: split the eight-job `--bulb`, add the missing surface/radius/gap/duration tokens, extend the font axis past `wght 800` | `src/ui/styles/**` |
-| `briefs/006-engine-seasonline-fields.md` | `SeasonLine` gains `overall` + `classYear` (DECISION 009) | `src/engine/types.ts`, `src/engine/advance.ts` |
-| `briefs/007-honest-season-state.md` | Live stat line + snaps + phase label on `CareerView`; stop rendering a record that does not exist (DECISION 014) | `src/ui/session/**` |
-
-The three lanes share no files. 005 owns all CSS, 006 owns all engine, 007 owns all session data.
-007 is explicitly told **not** to depend on 006's new fields.
-
-**Wave 3 is blocked on 005 landing** — every remaining visual task needs the split stylesheet and
-the new tokens. Queue, in playtester's own priority order:
-
-1. Draw the live season state 007 exposes (needs `career.css` + `CareerScreen.tsx`).
-2. Give consequence a visual voice — B14/B15, under DECISION 012 (magnitude, never valence).
-3. The five-row ledger — DECISIONS 007/010/013, plus the career-length answer.
-4. Type scale — DECISION 008 + audit G4; also fix audit Bug 3 (`body { font-size: 17px }` at
-   `app.css:36` does not scale rem declarations because `html` sets no `font-size`).
-5. Clamps — audit G3, hard prerequisite for any height-locked shell.
-6. Option rendering — B4/G6. Gold currently sits on Continue, a no-op, while real choices are grey.
+| `briefs/008-measure-repetition.md` | Measures the repetition problem across 300+ careers — is B11 as bad as one playtester made it sound? | report only; no `src/**` edits |
 
 ## Findings that outrank the backlog table
 
@@ -168,15 +167,47 @@ From `reports/004-current-ui-audit.md` — these were not on the board and chang
   Bug 3 (`body { font-size: 17px }` at `app.css:36` does not scale rem-based declarations, because
   `html` sets no `font-size`) belongs to the type-scale brief.
 
+## Wave 3 — ready to write, nothing blocking it
+
+`app.css` is split, so **two CSS lanes can now run in parallel** (`career.css` and `summary.css` are
+separate files). The token set exists, so visual work no longer has to invent one. Dispatch order:
+
+1. **Draw what 007 exposed, and fix the 71% phase bug.** The live stat line, snaps and phase label are
+   already on `CareerView` and nothing renders them. Report 007 gives the exact two-line
+   `CareerScreen.tsx` change for the stamp. Also give the rail a **fixed slot** so it stops reflowing.
+   *Owns:* `CareerScreen.tsx`, `career.css`.
+2. **Give consequence a voice** (B14/B15). A −8 OVR injury must not render like a speeding-ticket
+   joke. **DECISION 012 is the whole spec:** magnitude may drive scale, weight and motion; hue may
+   never track valence. Show the OVR delta on the resolved card — it is the one screen whose job is
+   "here is what happened" and it does not say what happened. `--emphasis` and the duration tokens are
+   the documented attachment points. *Owns:* `CareerScreen.tsx`, `career.css` — **collides with 1, so
+   sequence them or give both to one agent.**
+3. **The five-row ledger** (DECISIONS 007/010/013/015). Read 015 before starting: `RS` is **not
+   derivable**, and shipping two identically-labelled `SR` rows is forbidden. Option 2 (label by
+   sequence, class year secondary) is the safe default. *Owns:* `view-model.ts`, `types.ts`, a new
+   component, `career.css`.
+4. **Type scale** (DECISION 008 + audit G4). Six steps, raised floor, `leading-none` on numbers,
+   tabular-nums everywhere. Decide audit Bug 3 (`body{font-size:17px}` at `base.css:11` does not scale
+   rem declarations) rather than inherit it. *Owns:* all CSS — **run alone.**
+5. **Clamps** (audit G3). Zero exist; 9 overflow-capable nodes; longest real outcome is 241 chars.
+   Hard prerequisite for any height-locked shell. *Owns:* CSS.
+6. **Option rendering** (B4/G6). Gold currently sits on Continue — a no-op — while real choices are
+   grey outlines. *Owns:* `CareerScreen.tsx`, `career.css`.
+
+**Then re-playtest.** The north star is a playtester playing three careers in a row unprompted. The
+003 playtester stopped reading at decision ~16 and *still* wanted a fourth career — the writing is
+carrying this game, and the job is to stop the interface and the repetition getting in its way.
+
+Use `briefs/003-baseline-playtest-v2.md` as the shape; it is the one that worked. Playtesting is
+**serial** — two browser agents share one `localStorage` origin and would clobber each other.
+
 ## Next actions
 
-1. Await 005 / 006 / 007. Read the ≤5 bullets first; open a full report only when briefing against it.
-2. **Dispatch wave 3 only after 005 lands** — the queue above, in that order. Two CSS lanes can run
-   in parallel once the split exists (`career.css` and `summary.css` are separate files then).
-3. **Re-playtest after wave 3.** The north star is a playtester playing three careers in a row
-   unprompted; the 003 playtester stopped reading at decision ~16 and wanted a fourth career anyway.
-   Measure against that, not against an empty backlog.
-4. **Two things are waiting on the user — see "For the user" below.** Do not start either.
+1. Await 008. If repetition measures as bad as the playtest suggested, it outranks everything in
+   wave 3 — and it is content, so it goes to the user with numbers attached.
+2. Dispatch wave 3 items 1+2 as one agent (they collide), 3 as another. Commit each lane after
+   verifying it yourself.
+3. Increment the **PM session** counter at the top of this file when you take over.
 
 ## For the user — open, not PM calls
 
@@ -206,6 +237,20 @@ palette, and is the only shape worth recommending. Cost and style are the user's
 **Already decided and merely reported to the user:** DECISION 009 crosses the frozen-engine line for
 the first time — two additive fields on `SeasonLine`, no balance effect, verified by byte-identical
 `npm run play` output across three seeds. Balance changes go to the user; this is plumbing.
+
+## What a fresh PM should know that is not obvious from the files
+
+- **Two of the eight original claims were wrong.** B3 was mostly refuted and B5 was inverted — the
+  summary's seasons block is the best screen in the game. Verify before building; it saved a wave.
+- **The writing is the asset.** The playtester read every card with pleasure and wanted a fourth
+  career after quitting the third. Nothing in this phase should make the prose smaller or slower to
+  reach.
+- **Agents die.** One hung on `npm run dev` in the foreground; three were killed by a session limit
+  mid-flight. One of those had written correct work and left no evidence — see DECISION 016. Verify a
+  dead agent's output before discarding *or* trusting it.
+- **The measurement habit is the house style.** DECISION 003 reversed a design call on 300 careers of
+  data; 014 overturned the playtest's own top finding by source-checking it; 006 proved an engine
+  change additive on three seeds. When a call is contested, get a number.
 
 ## Handoff protocol
 
