@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type Setup } from "../../engine/index";
-import { buildView } from "./view-model";
+import { buildView, railView } from "./view-model";
 import { reducer, INITIAL_STATE } from "./reducer";
-import type { UiState } from "./types";
+import type { CareerView, RailView, UiState } from "./types";
 
 // The hidden-mechanics rule, enforced at the one boundary that can enforce it.
 // Tier logic and the transfer rebuild loop stay implicit; school traits are
@@ -454,5 +454,120 @@ describe("the moments timeline", () => {
       }
     }
     expect(checked).toBeGreaterThan(0);
+  });
+});
+
+// DECISION 019, second half. The rail reads the stamp for the season's
+// identity and read the LIVE view for the season line, so at a phase boundary
+// the two halves described two different moments: found by hand at
+// `localhost:5173` as `Offseason - 175 snaps - 362 Pass Yds`, an offseason
+// that has somehow played a season, one tick after the same rail correctly
+// read `0 snaps`. `advance()` can simulate a whole phase before it returns;
+// every cell of the rail has to come from the same side of that call.
+describe("the rail describes one moment, not two", () => {
+  /**
+   * Walk with the reducer and, for every resolved card, compare the rail the
+   * screen would draw against the numbers that were on screen when the choice
+   * was made.
+   */
+  function walkRails(seed: string, position: Setup["position"]) {
+    const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position };
+    let ui = reducer(INITIAL_STATE, { type: "start", setup, seed });
+    const cards: { before: CareerView; rail: RailView; live: CareerView }[] = [];
+    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+      if (ui.resolved) {
+        ui = reducer(ui, { type: "continue" });
+        continue;
+      }
+      if (!ui.state) break;
+      const d = getDecision(ui.state);
+      if (!d) break;
+      const before = buildView(ui.state);
+      const next = reducer(ui, { type: "choose", optionId: d.options[0]!.id });
+      if (next === ui) break;
+      ui = next;
+      if (ui.resolved && ui.state) {
+        const live = buildView(ui.state);
+        const rail = railView(live, ui.resolved);
+        // A one-option beat can auto-resolve behind the card just answered
+        // (DECISION 018), in which case the stamp belongs to that later card
+        // and `before` is not its moment. Identity says which happened.
+        const sameCard =
+          rail.seasonNumber === before.seasonNumber && rail.phaseLabel === before.phaseLabel;
+        if (sameCard) cards.push({ before, rail, live });
+      }
+    }
+    return cards;
+  }
+
+  it("draws the season line that was on screen when the choice was made", () => {
+    let checked = 0;
+    let diverged = 0;
+    for (const position of ALL_POSITIONS) {
+      for (const { before, rail, live } of walkRails(`vm-rail-${position}`, position)) {
+        checked++;
+        // The frozen half and the live half of the same rail must name the
+        // same moment: the phase comes from the stamp, so the snaps, the stat
+        // line and the record have to come from there too.
+        expect(rail.season?.snaps ?? null).toBe(before.season?.snaps ?? null);
+        expect(rail.season?.record ?? null).toBe(before.season?.record ?? null);
+        expect(rail.season?.stats ?? null).toEqual(before.season?.stats ?? null);
+        expect(rail.season).toEqual(before.season);
+        // The line's own season number may legitimately trail the header's:
+        // during an offseason the rail reports the season just completed
+        // (DECISION 013), which is the row those three cards ask for.
+        expect(rail.season?.seasonNumber ?? rail.seasonNumber).toBeLessThanOrEqual(
+          rail.seasonNumber,
+        );
+        if ((rail.season?.snaps ?? null) !== (live.season?.snaps ?? null)) diverged++;
+      }
+    }
+    expect(checked).toBeGreaterThan(20);
+    // The bug is real and it is not rare: if this hits zero the season line
+    // has stopped being frozen and the assertions above are passing vacuously.
+    expect(diverged).toBeGreaterThan(0);
+  });
+
+  it("never turns a frozen line into a `0-0` (DECISION 014)", () => {
+    for (const position of ALL_POSITIONS) {
+      for (const { rail } of walkRails(`vm-rail-rec-${position}`, position)) {
+        expect(rail.season?.record).not.toBe("0-0");
+      }
+    }
+  });
+
+  it("falls back to the live view for a save with no stamp, and never past one that has it", () => {
+    const live = buildView(createCareer({ lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" }, "vm-rail-null"));
+    const withLine: CareerView = {
+      ...live,
+      season: { seasonNumber: 2, schoolName: "Toledo", record: "9-3", snaps: 517, stats: [], inProgress: false },
+    };
+    const card = {
+      title: "t",
+      description: "",
+      choiceLabel: "c",
+      outcome: "o",
+      narrated: false,
+      stamp: null,
+      overallBefore: null,
+    };
+
+    // No stamp at all -- a save written before it existed. Every cell falls
+    // back to the live view rather than to `undefined` or to a zero.
+    const noStamp = railView(withLine, card);
+    expect(noStamp.season).toEqual(withLine.season);
+    expect(noStamp.phaseLabel).toBe(withLine.phaseLabel);
+    expect(noStamp.seasonNumber).toBe(withLine.seasonNumber);
+
+    // A stamp taken before the first on-field phase froze a null line. That
+    // null is the answer, not a miss: falling through to the live line is how
+    // the rail came to describe two moments in the first place.
+    const stamped = railView(withLine, {
+      ...card,
+      stamp: { seasonNumber: 1, classYear: "FR", phaseLabel: "Offseason", schoolName: null, season: null },
+    });
+    expect(stamped.season).toBeNull();
+    expect(stamped.school).toBe("Uncommitted");
+    expect(stamped.phaseLabel).toBe("Offseason");
   });
 });

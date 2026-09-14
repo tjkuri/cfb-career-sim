@@ -15,15 +15,37 @@ export type SeasonPhase = "offseason" | "nonconf" | "conference" | "postseason";
 // engine advances the phase, the season index and the class year inside the
 // same `advance()` that produced this prose.
 //
-// Deliberately carries no progression values. `overall`, the band phrase and
-// the trust phrase are *supposed* to move on the resolved card: DECISION 012
-// wants the magnitude of a change visible, and freezing them would hide the
-// very delta the card exists to report. Only the season's identity is frozen.
+// Two rules meet on this type and they point in opposite directions. Which one
+// applies depends on which part of the screen reads the value.
+//
+// FROZEN: everything the context rail draws -- the season's identity and the
+// season line it was writing. `advance()` can simulate an entire phase before
+// it returns, so a rail with a frozen phase beside a live snap count reports
+// two moments at once: `Offseason - 175 snaps - 362 Pass Yds`, an offseason
+// that has somehow played a season, one tick after the same rail correctly
+// read `0 snaps`. No cell of the rail may describe a different moment than the
+// cell next to it, so the line is stamped with the identity.
+//
+// NOT FROZEN: the progression values -- `overall`, the band phrase, the trust
+// phrase. DECISION 012 wants the magnitude of a change visible on the resolved
+// card, and freezing those would hide the very delta the card exists to
+// report. They are deliberately absent from this type.
+//
+// The two rules do not conflict because they govern different blocks: the
+// delta is read in `.standing`, which is never stamped, and no rail cell
+// carries a progression number. Freezing the rail therefore costs the delta
+// nothing.
 export interface SeasonStamp {
   seasonNumber: number; // 1-based, for display
   classYear: ClassYear;
   phaseLabel: string;
   schoolName: string | null;
+  /** The line the player was writing when the choice was made -- snaps, stat
+      line and record, all three as they stood before `advance()`. Null before
+      the first on-field phase of the career, and for a save written before
+      this field existed; a null here means the rail's third line renders
+      empty, never that it should reach for the live one. */
+  season: SeasonLineView | null;
 }
 
 // What the card is currently showing. `resolved` is non-null for exactly the
@@ -90,6 +112,19 @@ export interface SeasonLineView {
   /** True while this is the season being played; false once it has closed out
       and the career has moved into the following offseason. */
   inProgress: boolean;
+}
+
+// The context rail, resolved: one row of cells that all describe the same
+// moment. Built by `railView` from the live view and the card on screen, so
+// the screen itself never has to decide which half comes from where.
+export interface RailView {
+  school: string;
+  classYear: ClassYear;
+  seasonNumber: number;
+  phaseLabel: string;
+  /** The season line the rail's third row draws, and the source of its record
+      cell. Null renders as empty cells that keep their space (DECISION 019). */
+  season: SeasonLineView | null;
 }
 
 export interface MomentView {

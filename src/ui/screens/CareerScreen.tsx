@@ -1,3 +1,4 @@
+import { railView } from "../session/view-model";
 import type { CareerView, Resolved, StatView } from "../session/types";
 
 interface Props {
@@ -36,21 +37,18 @@ function statLine(stats: StatView[]): string {
 export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   // DECISION 019. While an outcome is on screen the rail describes the card
   // being read, not the state the engine has already moved into: `advance()`
-  // rolls the phase, the season index and the class year before it returns, and
-  // 71% of resolved cards were being read under a phase that was not theirs.
-  // The stamp is nullable -- a save written before it existed, and any card
-  // restored from one -- so every cell falls back to the live view, never to
-  // `undefined`.
-  const stamp = resolved?.stamp ?? null;
-  const school = (stamp ? stamp.schoolName : view.schoolName) ?? "Uncommitted";
-  const classYear = stamp?.classYear ?? view.classYear;
-  const seasonNumber = stamp?.seasonNumber ?? view.seasonNumber;
-  const phase = stamp?.phaseLabel ?? view.phaseLabel;
+  // rolls the phase, the season index and the class year before it returns --
+  // and can simulate an entire phase on the way -- so 71% of resolved cards
+  // were read under a phase that was not theirs, and the fix's first half left
+  // a rail whose identity was frozen beside a season line that was not
+  // (`Offseason - 175 snaps`). Every cell now comes from one moment. The
+  // assembly, and the nullable-stamp fallback, live in the view-model.
+  const rail = railView(view, resolved);
 
-  // Snaps, the stat line and the record stay live on purpose. The stamp freezes
-  // the season's *identity*; these are the line being written, and DECISION 014
-  // keeps the record absent until the postseason resolver has made it real.
-  const line = view.season;
+  // The record is still absent until the postseason resolver has made it real
+  // (DECISION 014); freezing the line cannot manufacture one, because the line
+  // was frozen with the same null the live view would have reported.
+  const line = rail.season;
 
   // Null baseline means a save that predates the field, not a change of zero.
   // No delta is reported rather than a fabricated one.
@@ -65,15 +63,15 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
           decision and its outcome (DECISION 019). */}
       <div className="rail">
         <div className="rail-line rail-id">
-          <span className="rail-school">{school}</span>
+          <span className="rail-school">{rail.school}</span>
           <span className="rail-when">
-            Season {seasonNumber}
-            <span className="rail-class">{classYear}</span>
+            Season {rail.seasonNumber}
+            <span className="rail-class">{rail.classYear}</span>
           </span>
         </div>
         <div className="rail-line rail-where">
           <span className="rail-player">{view.playerName}</span>
-          <span className="rail-phase">{phase}</span>
+          <span className="rail-phase">{rail.phaseLabel}</span>
           {/* Empty until the postseason resolver has assigned a real W-L
               (DECISION 014). The cell holds its width either way. */}
           <span className="rail-record">{line?.record ?? ""}</span>

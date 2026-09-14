@@ -43,7 +43,13 @@ describe("current save", () => {
       choiceLabel: "C",
       outcome: "O",
       narrated: false,
-      stamp: { seasonNumber: 1, classYear: "FR", phaseLabel: "Offseason", schoolName: null },
+      stamp: {
+        seasonNumber: 1,
+        classYear: "FR",
+        phaseLabel: "Offseason",
+        schoolName: null,
+        season: null,
+      },
       overallBefore: 60,
     };
     saveCurrent(state, resolved);

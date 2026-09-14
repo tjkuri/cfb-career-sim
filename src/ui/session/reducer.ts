@@ -2,7 +2,7 @@ import { advance, createCareer, getDecision, type GameState, type PendingDecisio
 import { CONTENT } from "../../content/index";
 import { buildSummary, schoolName, seasonStamp } from "./view-model";
 import { appendLog } from "./storage";
-import type { Action, LogEntry, Resolved, UiState } from "./types";
+import type { Action, LogEntry, Resolved, SeasonStamp, UiState } from "./types";
 
 export const INITIAL_STATE: UiState = {
   screen: "creation",
@@ -122,7 +122,17 @@ export function openCard(ui: UiState): UiState {
  * that has to refuse `undefined` on a property the screens are typed to read.
  * A missing baseline becomes null, never zero: the card then reports no delta
  * rather than a fabricated one (DECISION 014's rule, applied to progression).
+ *
+ * The stamp itself can now be half-written, which is why it is normalized one
+ * level deep: a save from between the stamp landing and the season line joining
+ * it restores a stamp with no `season`. Null is the right answer there -- the
+ * rail's third line renders empty -- and it must not arrive as `undefined`.
  */
+function normalizeStamp(stamp: SeasonStamp | null | undefined): SeasonStamp | null {
+  if (!stamp) return null;
+  return { ...stamp, season: stamp.season ?? null };
+}
+
 export function normalize(ui: UiState): UiState {
   const r = ui.resolved as Partial<Resolved> | null;
   if (!r) return ui;
@@ -134,7 +144,7 @@ export function normalize(ui: UiState): UiState {
       choiceLabel: r.choiceLabel ?? "",
       outcome: r.outcome ?? "",
       narrated: r.narrated ?? false,
-      stamp: r.stamp ?? null,
+      stamp: normalizeStamp(r.stamp),
       overallBefore: r.overallBefore ?? null,
     },
   };

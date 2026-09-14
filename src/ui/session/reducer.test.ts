@@ -218,10 +218,15 @@ describe("the resolved card is stamped with the season it belongs to", () => {
     expect(careersThatFlip.size).toBe(ALL_POSITIONS.length);
   });
 
-  it("freezes only the season identity, never the progression numbers", () => {
-    // DECISION 012 wants the magnitude of a change visible on the resolved
-    // card. Freezing `overall` or the band phrases would hide the very delta
-    // the card exists to report, so the stamp deliberately carries neither.
+  it("freezes the whole rail, and never the progression numbers", () => {
+    // Two rules, and the stamp's field list is where they are visible. It
+    // carries everything the rail draws -- the season's identity and the line
+    // being written -- because a rail with one frozen half and one live half
+    // names two moments at once. It carries no progression value: DECISION 012
+    // wants the magnitude of a change visible on the resolved card, and
+    // freezing `overall` or the band phrases would hide the very delta the
+    // card exists to report. Those are read in `.standing`, which is never
+    // stamped, so the two rules never meet on the same pixel.
     let checked = false;
     let ui = start("r-stamp-fields");
     for (let guard = 0; guard < 300 && ui.screen !== "summary"; guard++) {
@@ -233,11 +238,49 @@ describe("the resolved card is stamped with the season it belongs to", () => {
         "classYear",
         "phaseLabel",
         "schoolName",
+        "season",
         "seasonNumber",
       ]);
+      // The stamped line is the one that was on screen. Within a single
+      // season its snaps can only trail the live count -- `advance` never
+      // un-plays a snap -- and across a boundary the live view is already on
+      // the next line entirely, which is the whole reason the line is frozen.
+      const live = buildView(ui.state!);
+      const frozen = ui.resolved.stamp.season;
+      if (frozen && live.season && frozen.seasonNumber === live.season.seasonNumber) {
+        expect(frozen.snaps).toBeLessThanOrEqual(live.season.snaps);
+      }
       checked = true;
     }
     expect(checked).toBe(true);
+  });
+
+  it("normalizes a stamp written before it carried the season line", () => {
+    // A save from between the stamp landing and the line joining it restores
+    // a stamp with no `season`. It becomes null -- the rail's third line then
+    // renders empty -- and never reaches a screen as `undefined`.
+    const ui = start("r-stamp-legacy");
+    const legacy = {
+      ...ui,
+      resolved: {
+        title: "Old Card",
+        description: "",
+        choiceLabel: "c",
+        outcome: "It happened.",
+        narrated: false,
+        stamp: { seasonNumber: 2, classYear: "SO", phaseLabel: "Postseason", schoolName: "Toledo" },
+        overallBefore: 60,
+      },
+    } as unknown as UiState;
+    const restored = reducer(ui, { type: "restore", state: legacy });
+    expect(restored.resolved!.stamp).toEqual({
+      seasonNumber: 2,
+      classYear: "SO",
+      phaseLabel: "Postseason",
+      schoolName: "Toledo",
+      season: null,
+    });
+    expect("season" in restored.resolved!.stamp!).toBe(true);
   });
 });
 
