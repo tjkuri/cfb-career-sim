@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { CareerView, HonorView, MomentView, SeasonView } from "../session/types";
 import { shareText } from "../session/share";
+import { countedStatLabel } from "../session/labels";
 
 interface Props {
   view: CareerView;
@@ -102,6 +103,22 @@ function arcSpan(seasons: SeasonView[]): { first: number; last: number; net: num
 // from appearing over a bowl win -- see `HONOR_RARITY` in view-model.ts for the
 // measurement, and DECISION 014 for the rule that the answer is to stop
 // claiming the thing, not to stop showing it.
+// Report 020, task 3: `enterOffseason` stops `classYear` at SR, so a fifth
+// season stores SR twice and two rows carry the same label -- the one option
+// DECISION 015 forbade. The career screen applies this rule via `ledger.ts`;
+// the summary's own season table is the third place the duplicate surfaces,
+// and it renders from `s.seasons` rather than from a ledger, so it needs the
+// equivalent inline. Sequence is the fallback, exactly as DECISION 020 says.
+function seasonYearLabel(seasons: SeasonView[], i: number): string {
+  const season = seasons[i]!;
+  const sequence = `Y${season.seasonIndex + 1}`;
+  if (!season.classYear) return sequence;
+  const repeated = seasons.some(
+    (o, j) => j < i && o.classYear === season.classYear,
+  );
+  return repeated ? sequence : season.classYear;
+}
+
 function splitHonors(honors: HonorView[]): { distinctions: HonorView[]; routine: HonorView[] } {
   return {
     distinctions: honors.filter((h) => h.rarity > 1),
@@ -232,7 +249,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
               const delta = deltaFrom(s.seasons[i - 1], season);
               return (
                 <div className="season" key={season.seasonIndex}>
-                  <span className="season-year">{season.classYear ?? `Y${season.seasonIndex + 1}`}</span>
+                  <span className="season-year">{seasonYearLabel(s.seasons, i)}</span>
                   <span className="season-body">
                     <span className="season-school">{season.schoolName}</span>
                     <span className="season-line">
@@ -243,7 +260,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
                       <span className="season-stats">
                         {season.stats.map((st) => (
                           <span key={st.label}>
-                            {st.label} <b>{st.value}</b>
+                            {countedStatLabel(st.label, st.value)} <b>{st.value}</b>
                           </span>
                         ))}
                       </span>
