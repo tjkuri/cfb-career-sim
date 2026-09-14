@@ -39,9 +39,12 @@ describe("current save", () => {
     const state = createCareer(SETUP, "s-1");
     const resolved: Resolved = {
       title: "T",
+      description: "D",
       choiceLabel: "C",
       outcome: "O",
+      narrated: false,
       stamp: { seasonNumber: 1, classYear: "FR", phaseLabel: "Offseason", schoolName: null },
+      overallBefore: 60,
     };
     saveCurrent(state, resolved);
     const loaded = loadCurrent();

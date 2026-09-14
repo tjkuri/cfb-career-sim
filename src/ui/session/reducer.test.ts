@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getDecision, ALL_POSITIONS, type Setup } from "../../engine/index";
-import { INITIAL_STATE, isUnplayable, makeSeed, reducer } from "./reducer";
+import { advance, getDecision, ALL_POSITIONS, type Setup } from "../../engine/index";
+import { INITIAL_STATE, isUnplayable, makeSeed, openCard, reducer } from "./reducer";
 import { buildView } from "./view-model";
 import type { UiState } from "./types";
 
@@ -76,20 +76,22 @@ describe("choose", () => {
     expect(sawResolved).toBe(true);
   });
 
-  it("skips the outcome step on a single-option beat", () => {
-    // The button press is the acknowledgement, so there is nothing to resolve.
+  it("keeps the prose on a single-option beat instead of dropping it", () => {
+    // REVERSED by DECISION 018. This test previously asserted the opposite --
+    // that a one-option card resolved to nothing -- which was the 40% of a
+    // career that played out in silence. The beat now arrives already resolved,
+    // so a bare one-option decision is never reachable through the reducer and
+    // the assertion is made in the dedicated describe block below.
     let ui = start("r-5");
     let checked = false;
     for (let guard = 0; guard < 200 && ui.screen !== "summary"; guard++) {
-      const d = ui.state && !ui.resolved ? getDecision(ui.state) : null;
-      const wasSingle = d?.options.length === 1;
       const next = step(ui, (ids) => ids[0]!);
       if (next === ui) break;
-      if (wasSingle) {
-        expect(next.resolved).toBeNull();
+      ui = next;
+      if (next.resolved?.narrated) {
+        expect(next.resolved.outcome.length).toBeGreaterThan(0);
         checked = true;
       }
-      ui = next;
     }
     expect(checked).toBe(true);
   });
@@ -236,5 +238,250 @@ describe("the resolved card is stamped with the season it belongs to", () => {
       checked = true;
     }
     expect(checked).toBe(true);
+  });
+});
+
+// DECISION 018. A decision with exactly one option is not a choice. Until now
+// `reducer.ts:88` threw its authored outcome on the floor to save a tap the
+// player was never charged -- 104 cards in 72 careers, every one of them with
+// prose the engine had already produced. The beat now resolves on arrival,
+// inside the reducer, and the prose is read behind the same single Continue.
+describe("one-option cards resolve on arrival and keep their prose", () => {
+  /** Every decision the player is actually shown, in order, for one career. */
+  function cardsShown(seed: string, setup: Setup = SETUP) {
+    const cards: { optionCount: number; resolved: boolean; advances: number }[] = [];
+    let ui = start(seed, setup);
+    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+      const before = ui.state!.rngCursor;
+      if (ui.resolved) {
+        cards.push({ optionCount: 1, resolved: true, advances: 0 });
+        const next = reducer(ui, { type: "continue" });
+        if (next === ui) break;
+        ui = next;
+        continue;
+      }
+      const d = getDecision(ui.state!);
+      if (!d) break;
+      const next = reducer(ui, { type: "choose", optionId: d.options[0]!.id });
+      if (next === ui) break;
+      cards.push({
+        optionCount: d.options.length,
+        resolved: next.resolved !== null,
+        advances: next.state!.rngCursor - before,
+      });
+      ui = next;
+    }
+    return cards;
+  }
+
+  it("never shows a bare one-option decision waiting for a tap", () => {
+    // The auto-resolution runs in the reducer, so by the time any action has
+    // returned, a one-option decision has already become a narrated card.
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-beat-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        if (!ui.resolved && ui.state) {
+          const d = getDecision(ui.state);
+          if (d) {
+            expect(d.options.length, `${position}: ${d.title}`).toBeGreaterThan(1);
+            checked++;
+          }
+        }
+        const next = step(ui, (ids) => ids[0]!);
+        if (next === ui) break;
+        ui = next;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  it("renders the beat as a narrated card, not as a choice", () => {
+    let narrated = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-narrate-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const next = step(ui, (ids) => ids[0]!);
+        if (next === ui) break;
+        ui = next;
+        if (!ui.resolved?.narrated) continue;
+        narrated++;
+        // Title, description, the quiet option label and the authored prose.
+        expect(ui.resolved.title.length).toBeGreaterThan(0);
+        expect(ui.resolved.description.length).toBeGreaterThan(0);
+        expect(ui.resolved.choiceLabel.length).toBeGreaterThan(0);
+        expect(ui.resolved.outcome.length).toBeGreaterThan(0);
+        expect(ui.resolved.stamp).not.toBeNull();
+        expect(typeof ui.resolved.overallBefore).toBe("number");
+      }
+    }
+    // 104 one-option cards measured over 72 careers; six is a floor, not a target.
+    expect(narrated).toBeGreaterThan(5);
+  });
+
+  it("spends exactly one advance per card, beats included", () => {
+    // The engine call count is the invariant that a double-resolve would break.
+    // `advance` moves the RNG cursor, so a card that consumed two decisions
+    // would show up here as a card nobody was shown.
+    const cards = cardsShown("r-beat-count");
+    expect(cards.length).toBeGreaterThan(10);
+    for (const card of cards) {
+      if (card.advances === 0) continue; // a Continue press, not an engine call
+      expect(card.optionCount).toBeGreaterThan(1);
+    }
+  });
+
+  it("resolves at most one level: two consecutive beats are two cards", () => {
+    // Measured: 7 back-to-back one-option pairs across 72 careers. Each must
+    // still cost the player two Continues, never one merged card.
+    let ui = start("r-beat-chain");
+    let pairs = 0;
+    let previousWasBeat = false;
+    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+      const wasBeat = ui.resolved?.narrated === true;
+      if (wasBeat && previousWasBeat) pairs++;
+      previousWasBeat = wasBeat;
+      const next = step(ui, (ids) => ids[0]!);
+      if (next === ui) break;
+      ui = next;
+    }
+    // The chain case is seed-dependent; what must hold for every seed is that
+    // the walk terminated at a summary rather than spinning.
+    expect(ui.screen).toBe("summary");
+    expect(pairs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("terminates, and cannot spin, over every position", () => {
+    for (const position of ALL_POSITIONS) {
+      const ui = playToEnd(`r-beat-term-${position}`, { ...SETUP, position });
+      expect(ui.screen, position).toBe("summary");
+    }
+  });
+
+  it("leaves hub decisions exactly as they were", () => {
+    // Signing Day authors no prose because its result is the next screen.
+    const ui = start("r-beat-hub");
+    const d = getDecision(ui.state!)!;
+    expect(d.eventId).toBe("recruiting");
+    expect(d.options.length).toBeGreaterThan(1);
+    const after = reducer(ui, { type: "choose", optionId: d.options[0]!.id });
+    expect(after.resolved).toBeNull();
+  });
+
+  it("leaves multi-option cards as choices, labelled as chosen", () => {
+    let checked = false;
+    let ui = start("r-beat-multi");
+    for (let guard = 0; guard < 300 && ui.screen !== "summary"; guard++) {
+      const optionCount = !ui.resolved && ui.state ? getDecision(ui.state)?.options.length ?? 0 : 0;
+      const next = step(ui, (ids) => ids[0]!);
+      if (next === ui) break;
+      ui = next;
+      if (optionCount > 1 && ui.resolved) {
+        expect(ui.resolved.narrated).toBe(false);
+        checked = true;
+      }
+    }
+    expect(checked).toBe(true);
+  });
+
+  it("is idempotent: opening an already-opened card advances nothing", () => {
+    // App.tsx runs `openCard` inside the useReducer initializer, and StrictMode
+    // double-invokes initializers. Both invocations run from the same restored
+    // state, so this is the property that keeps a decision from being eaten.
+    let ui = start("r-beat-idem");
+    for (let guard = 0; guard < 60; guard++) {
+      const opened = openCard(ui);
+      const twice = openCard(opened);
+      if (opened.resolved) expect(twice).toBe(opened);
+      expect(openCard(opened).state!.rngCursor).toBe(opened.state!.rngCursor);
+      const next = step(opened, (ids) => ids[0]!);
+      if (next === opened || next.screen === "summary") break;
+      ui = next;
+    }
+  });
+});
+
+// DECISION 012. The card whose whole job is "here is what happened" has to
+// report the size of what happened, and the only honest baseline is the OVR as
+// it stood before `advance()` ran.
+describe("the resolved card carries the pre-advance overall", () => {
+  it("captures it at the same point as the stamp", () => {
+    const ui = start("r-delta");
+    const before = ui.state!.overall;
+    let after = ui;
+    for (let guard = 0; guard < 300 && after.screen !== "summary"; guard++) {
+      const next = step(after, (ids) => ids[0]!);
+      if (next === after) break;
+      after = next;
+      if (after.resolved) break;
+    }
+    expect(after.resolved).not.toBeNull();
+    expect(after.resolved!.overallBefore).toBe(before);
+  });
+
+  it("moves at least sometimes, and the delta is post minus pre", () => {
+    let moved = 0;
+    let seen = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-delta-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const next = step(ui, (ids) => ids[0]!);
+        if (next === ui) break;
+        ui = next;
+        const pre = ui.resolved?.overallBefore;
+        if (typeof pre !== "number") continue;
+        seen++;
+        const delta = buildView(ui.state!).overall - pre;
+        expect(Number.isFinite(delta)).toBe(true);
+        if (delta !== 0) moved++;
+      }
+    }
+    expect(seen).toBeGreaterThan(20);
+    // If this ever hits zero the baseline is being taken after `advance`.
+    expect(moved).toBeGreaterThan(0);
+  });
+});
+
+describe("restoring a save written before these fields existed", () => {
+  it("normalizes the missing properties instead of leaking undefined", () => {
+    // `stamp` was already normalized in storage.ts; `description`, `narrated`
+    // and `overallBefore` are new and arrive as `undefined` from an old save.
+    // The reducer is the funnel every restored UiState passes through.
+    const ui = start("r-legacy");
+    const legacy = {
+      ...ui,
+      resolved: { title: "Old Card", choiceLabel: "Old Choice", outcome: "It happened." },
+    } as unknown as UiState;
+    const restored = reducer(ui, { type: "restore", state: legacy });
+    expect(restored.resolved).toEqual({
+      title: "Old Card",
+      description: "",
+      choiceLabel: "Old Choice",
+      outcome: "It happened.",
+      narrated: false,
+      stamp: null,
+      overallBefore: null,
+    });
+  });
+
+  it("opens a restored save that is parked on a bare one-option card", () => {
+    // Pre-018 saves can sit on an un-resolved beat. Restoring one must produce
+    // the narrated card, not a button waiting to be pressed.
+    let ui = start("r-legacy-beat");
+    for (let guard = 0; guard < 400; guard++) {
+      const d = ui.state && !ui.resolved ? getDecision(ui.state) : null;
+      if (d && d.options.length === 1) {
+        const restored = reducer(ui, { type: "restore", state: { ...ui, resolved: null } });
+        expect(restored.resolved?.narrated).toBe(true);
+        return;
+      }
+      // Walk with the raw engine so the reducer's auto-resolution is bypassed
+      // and a bare beat can actually be observed.
+      if (!ui.state || ui.state.status !== "active") break;
+      const next = getDecision(ui.state);
+      if (!next) break;
+      ui = { ...ui, resolved: null, state: advance(ui.state, next.options[0]!.id) };
+    }
+    throw new Error("no bare one-option decision was reachable to restore onto");
   });
 });

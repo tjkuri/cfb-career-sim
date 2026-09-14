@@ -1,24 +1,114 @@
 /* ---------- context rail ---------- */
 
+/* A fixed slot, not a row of optional nodes. Three lines, each with a height
+   it keeps whether or not it has anything to say -- so removing the fake `0-0`
+   (DECISION 014) empties a cell instead of collapsing it, and the strip never
+   changes shape between a decision and its outcome (DECISION 019).
+
+   The vernacular is a box-score header: columns separated by space rather than
+   punctuation, condensed widths, tabular figures so the numbers hold their
+   column as they grow. */
+
 .rail {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0 1.25rem;
+  flex-direction: column;
+  gap: 0.15rem;
   padding-bottom: 0.7rem;
   border-bottom: 1px solid var(--line);
   font-variation-settings: "wdth" 76;
-  font-size: 0.95rem;
   color: var(--chalk-dim);
+}
+
+/* Each line is nowrap on purpose: wrapping is the reflow this slot exists to
+   prevent. Cells that can grow truncate instead.
+
+   `line-height` is set in rem rather than as a ratio, and `min-height` matches
+   it exactly. These rows are flex containers, so their height comes from the
+   tallest child's line box rather than from a strut -- an absolute line-height
+   makes every cell resolve to the same box whatever its font-size, and makes
+   an empty cell exactly as tall as a full one. A ratio here measured a 1.93px
+   jump the first time a stat line appeared, which is the whole bug. */
+.rail-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 0 1.1rem;
+  min-width: 0;
+}
+
+.rail-id { line-height: 1.6rem; min-height: 1.6rem; font-size: 1.05rem; }
+.rail-where { line-height: 1.35rem; min-height: 1.35rem; font-size: 0.88rem; }
+.rail-stats {
+  line-height: 1.3rem;
+  min-height: 1.3rem;
+  font-size: 0.82rem;
+  color: var(--chalk-faint);
 }
 
 .rail-school {
   color: var(--chalk);
   font-weight: 600;
-  font-size: 1.05rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.rail-record { margin-left: auto; font-variant-numeric: tabular-nums; }
+/* Season and class year travel together: they are one reading of where the
+   career is, and they are the pair `advance()` was rolling out from under the
+   player mid-card. */
+.rail-when {
+  margin-left: auto;
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.rail-class {
+  color: var(--chalk);
+  font-variation-settings: "wdth" 68;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.rail-player {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-phase { flex: none; white-space: nowrap; }
+
+/* Held empty all season, which is most of the time. It keeps its column so the
+   line above and below it do not move when a record finally exists. */
+.rail-record {
+  margin-left: auto;
+  flex: none;
+  min-width: 2.75rem;
+  text-align: right;
+  color: var(--chalk);
+  font-variant-numeric: tabular-nums;
+}
+
+.rail-snaps {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The live line the player is writing -- real from the first on-field phase,
+   unlike the record. One line, truncated rather than wrapped. */
+.rail-statline {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
 
 /* The number leads and the band phrase glosses it: 74 means nothing to someone
    who does not know the scale, and "week-one starter" means nothing precise to
@@ -88,16 +178,25 @@
 }
 
 /* Depth-chart rows, not identical pill cards: a flat row whose left edge lights
-   when it is the one you are about to pick. */
+   when it is the one you are about to pick.
+
+   B4: the accent used to sit on Continue, a no-op transition, while the real
+   choices were grey outlines on a recessed ground that read as form fields.
+   The options are the thing that commits the career, so they are raised off the
+   card and carry the selection accent at rest; Continue is demoted below.
+
+   Every option is styled identically and there is no per-option state here. Any
+   emphasis distinguishing one sibling from another before the choice is made
+   would leak the branch (DECISION 006, DECISION 012). */
 .option {
   position: relative;
   width: 100%;
   text-align: left;
   font: inherit;
   color: var(--chalk);
-  background: var(--input);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--line);
+  background: var(--card-raised);
+  border: 1px solid var(--card-edge);
+  border-left: 3px solid var(--select-dim);
   border-radius: var(--radius-control);
   padding: 0.85rem 1rem;
   cursor: pointer;
@@ -106,7 +205,7 @@
 
 .option:hover,
 .option:focus-visible {
-  background: var(--card);
+  background: var(--card-edge);
   border-color: var(--select-dim);
   border-left-color: var(--select);
   outline: none;
@@ -125,28 +224,106 @@
   color: var(--chalk-faint);
 }
 
+/* A one-option card is one card, but it is two beats: the setup, then what it
+   cost. The hairline is the seam DECISION 018 asked for so the merge does not
+   read as two events run together. The label is stated, never captioned "You
+   chose:" -- it was not a choice. */
+.resolved-beat {
+  margin: 1.35rem 0 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  font-variation-settings: "wdth" 70;
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--chalk);
+}
+
+/* DECISION 012's attachment point. The rule width and the delta's size, weight
+   and entrance travel with the magnitude of the change; the hue is
+   `--emphasis` at every tier, so a +8 and a -8 are equally loud and cannot be
+   told apart by colour. There is no --good/--bad and none is wanted.
+
+   Tiers are cut on measured breaks over 4,404 resolved cards: 46.6% of cards
+   move `overall` by 0 and print nothing, 42.4% by 1-2, 9.1% by 3-5, and 1.9%
+   by 6 or more. The loudest treatment is therefore rare enough to mean
+   something when it fires. */
+.consequence {
+  --rule: 3px;
+  --delta-size: 1.05rem;
+  --delta-weight: 600;
+  --delta-lift: 3px;
+
+  border-left: var(--rule) solid var(--emphasis);
+  /* Keeps the text a constant 1.25rem off the block edge while the rule
+     thickens inward, so a louder card does not shift its own prose. */
+  padding-left: calc(1.25rem - var(--rule));
+  transition: border-left-width var(--dur-state) ease;
+}
+
+.consequence[data-magnitude="2"] {
+  --rule: 5px;
+  --delta-size: 1.6rem;
+  --delta-weight: 700;
+  --delta-lift: 6px;
+}
+
+.consequence[data-magnitude="3"] {
+  --rule: 8px;
+  --delta-size: 2.35rem;
+  --delta-weight: 800;
+  --delta-lift: 10px;
+}
+
 .outcome {
   margin: 0;
   font-size: 1.12rem;
   line-height: 1.6;
-  border-left: 3px solid var(--emphasis);
-  padding-left: 1rem;
 }
 
+.delta {
+  margin: 0.8rem 0 0;
+  font-variation-settings: "wdth" 68;
+  font-size: var(--delta-size);
+  font-weight: var(--delta-weight);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--emphasis);
+  font-variant-numeric: tabular-nums;
+  animation: delta-in var(--dur-enter) ease both;
+  animation-delay: 90ms;
+}
+
+@keyframes delta-in {
+  from { opacity: 0; transform: translateY(var(--delta-lift)); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Continue moves the card off the screen; it does not commit anything. It
+   keeps the keyboard focus it has always had and gives the accent up to the
+   options (B4). */
 .continue {
   margin-top: 1.9rem;
   font: inherit;
   font-variation-settings: "wdth" 76;
   font-weight: 600;
-  color: var(--action-ink);
-  background: var(--action);
-  border: none;
+  color: var(--chalk);
+  background: transparent;
+  border: 1px solid var(--line);
   border-radius: var(--radius-control);
   padding: 0.7rem 1.6rem;
   cursor: pointer;
+  transition: border-color var(--dur-state) ease, background-color var(--dur-state) ease;
 }
 
-.continue:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.continue:hover {
+  background: var(--card-raised);
+  border-color: var(--chalk-faint);
+}
+
+.continue:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
 
 .fade-in { animation: fade var(--dur-enter) ease both; }
 
@@ -155,7 +332,22 @@
   to { opacity: 1; transform: none; }
 }
 
+/* The delta is also announced as a sentence, because "\2212 8 OVR" is not
+   something a screen reader can be trusted to read as a number. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .fade-in { animation: none; }
+  .fade-in,
+  .delta { animation: none; }
   * { transition-duration: 0ms !important; }
 }

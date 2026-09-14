@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import type { Setup } from "../engine/index";
-import { INITIAL_STATE, isUnplayable, makeSeed, reducer } from "./session/reducer";
+import { INITIAL_STATE, isUnplayable, makeSeed, normalize, openCard, reducer } from "./session/reducer";
 import { buildView } from "./session/view-model";
 import { clearCurrent, hydrate, saveCurrent, saveLog } from "./session/storage";
 import type { UiState } from "./session/types";
@@ -16,7 +16,15 @@ function init(): UiState {
   if (restored.state && isUnplayable(restored.state)) {
     return { ...restored, screen: "creation", state: null, resolved: null, unplayableSave: true };
   }
-  return restored;
+  // The same funnel every other UiState passes through: fill in fields a save
+  // predates, and open a beat the save is parked on (DECISION 018).
+  //
+  // Safe under StrictMode, which double-invokes this initializer: both calls
+  // run from `hydrate`'s own output, so each is `advance(sameState, sameId)` on
+  // a deterministic engine rather than a second advance from an advanced state.
+  // That is exactly the difference from doing this in a `useEffect`, where the
+  // second run would consume a real decision.
+  return openCard(normalize(restored));
 }
 
 export function App() {

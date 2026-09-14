@@ -30,11 +30,26 @@ export interface SeasonStamp {
 // window between answering a decision and pressing Continue.
 export interface Resolved {
   title: string;
+  /** The card's own prompt. Rendered only on a narrated beat, where the setup
+      and its consequence are read as one card (DECISION 018); a multi-option
+      card's description was already on screen when the choice was made. */
+  description: string;
   choiceLabel: string;
   outcome: string;
+  /** True when the card offered exactly one option. It was never a choice, so
+      the label is rendered as a quiet line and never as "You chose:". */
+  narrated: boolean;
   /** Null for a save written before the stamp existed, and for a career
       restored mid-card from one. Consumers must treat it as optional. */
   stamp: SeasonStamp | null;
+  /** `overall` as it stood immediately before `advance()` ran -- taken at the
+      same point as the stamp, but kept OFF it on purpose: the stamp freezes
+      the season's identity, this freezes the progression baseline the card
+      exists to measure against. DECISION 012 wants the magnitude of the change
+      visible, and post-minus-pre is that magnitude. Null for a save written
+      before this field existed; such a card shows no delta rather than a
+      fabricated zero. */
+  overallBefore: number | null;
 }
 
 export interface StatView {
@@ -45,12 +60,21 @@ export interface StatView {
 export interface SeasonView {
   seasonIndex: number;
   schoolName: string;
+  /** The year the season was PLAYED AS, read off the stored `SeasonLine`
+      rather than derived backwards by index -- which is ambiguous exactly
+      where a redshirt has been taken (DECISION 009). Null for a save written
+      before that field existed; such a row renders without a year label. */
   classYear: ClassYear | null;
   /** "9-3", or null when the season never reached its postseason resolver --
       a career that ended mid-season has no record, and `0-0` was a lie.
       See DECISION 014. */
   record: string | null;
   snaps: number;
+  /** The OVR this season was finalized at -- the career arc, the one read the
+      summary could not previously reproduce because nothing recorded it
+      (DECISION 009). Null for a pre-009 save: the absence of a number, never
+      `NaN` and never a substituted one (DECISION 014's rule, applied here). */
+  overall: number | null;
   stats: StatView[];
 }
 
@@ -72,6 +96,13 @@ export interface MomentView {
   seasonIndex: number;
   item: string;
   glyph: string;
+  /** How many times this exact moment was recorded *within this one season*.
+      Measured across 700 careers it is always 1 -- a repeated moment is the
+      same event earning itself again in a later season, which is a real
+      career fact and is grouped, not collapsed. The field exists so the one
+      shape that would be a bug (the same moment pushed twice for a single
+      event) renders as `x2` rather than as two identical rows. */
+  count: number;
 }
 
 export interface CareerSummaryView {
