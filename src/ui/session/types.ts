@@ -49,6 +49,34 @@ export interface SeasonStamp {
   season: SeasonLineView | null;
 }
 
+// The facts a HUB resolution is composed from.
+//
+// Signing Day, the transfer portal and the declare card author no prose --
+// there is no content entry behind them, `src/content/**` is frozen, and the
+// reducer used to conclude from the missing prose that there was nothing to
+// show. The 017 playtest falsified that: "Stay at Baylor" ran 75 -> 82 between
+// two clicks, and UTSA -> Baylor was "acknowledged by one word changing in the
+// header" (DECISION 037, B23).
+//
+// So the card is built from what the view-model already knows rather than from
+// authored text. Only two facts qualify, and both are things that HAPPENED:
+// the school moved, and `overall` moved. The second is already carried by
+// `overallBefore` and rendered by the existing delta; this type carries the
+// first. Nothing here characterises the choice, compares it to the option not
+// taken, or says whether it was wise -- that would be the leak DECISION 012
+// forbids, dressed as a fact.
+export interface HubFacts {
+  /** The school the career was at when the choice was made. Null only when
+      there was none -- which is Signing Day, and is why Signing Day produces
+      no card: see `hubFacts` in view-model.ts. */
+  from: string | null;
+  /** Where it is now, stated only when the choice actually MOVED it. Null on a
+      card that is reporting a pure overall movement (a "stay" that turned out
+      to be worth seven points), where naming the school again would say
+      nothing the chosen label did not already say. */
+  to: string | null;
+}
+
 // What the card is currently showing. `resolved` is non-null for exactly the
 // window between answering a decision and pressing Continue.
 export interface Resolved {
@@ -58,7 +86,14 @@ export interface Resolved {
       card's description was already on screen when the choice was made. */
   description: string;
   choiceLabel: string;
+  /** The authored outcome prose. Empty string on a hub card, which has none --
+      `hub` carries its content instead. Never null, so the screens keep one
+      shape to read. */
   outcome: string;
+  /** Non-null on a hub resolution, and only then. A card carries prose OR hub
+      facts; it never carries both, because a decision with authored prose is
+      not a hub. Null for a save written before this field existed. */
+  hub: HubFacts | null;
   /** True when the card offered exactly one option. It was never a choice, so
       the label is rendered as a quiet line and never as "You chose:". */
   narrated: boolean;
@@ -243,6 +278,14 @@ export interface CareerView {
   trust: string;
   status: Status;
   decision: PendingDecision | null;
+  /** One line of fact printed under the pending decision's own prompt, or null
+      when the decision needs none. Today it has exactly one user: the declare
+      card, which states how much eligibility remains (DECISION 038, B25).
+      It is deliberately NOT a general annotation channel -- anything that
+      characterised an option, ranked it, or estimated its result would be the
+      leak DECISIONS 012 and 025 forbid. Remaining eligibility is a rule of the
+      game the player is entitled to know and discloses no hidden value. */
+  decisionNote: string | null;
   summary: CareerSummaryView | null;
 }
 

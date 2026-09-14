@@ -42,6 +42,7 @@ describe("current save", () => {
       description: "D",
       choiceLabel: "C",
       outcome: "O",
+      hub: null,
       narrated: false,
       stamp: {
         seasonNumber: 1,

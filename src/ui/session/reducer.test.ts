@@ -487,9 +487,10 @@ describe("the resolved card carries the pre-advance overall", () => {
 
 describe("restoring a save written before these fields existed", () => {
   it("normalizes the missing properties instead of leaking undefined", () => {
-    // `stamp` was already normalized in storage.ts; `description`, `narrated`
-    // and `overallBefore` are new and arrive as `undefined` from an old save.
-    // The reducer is the funnel every restored UiState passes through.
+    // `stamp` was already normalized in storage.ts; `description`, `narrated`,
+    // `overallBefore` and `hub` are all newer than some saves and arrive as
+    // `undefined` from an old one. The reducer is the funnel every restored
+    // UiState passes through.
     const ui = start("r-legacy");
     const legacy = {
       ...ui,
@@ -501,6 +502,7 @@ describe("restoring a save written before these fields existed", () => {
       description: "",
       choiceLabel: "Old Choice",
       outcome: "It happened.",
+      hub: null,
       narrated: false,
       stamp: null,
       overallBefore: null,
@@ -526,5 +528,169 @@ describe("restoring a save written before these fields existed", () => {
       ui = { ...ui, resolved: null, state: advance(ui.state, next.options[0]!.id) };
     }
     throw new Error("no bare one-option decision was reachable to restore onto");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B23 / DECISION 037. The four hub decisions -- Signing Day, redshirt, declare,
+// transfer -- author no prose, and the reducer used to read the missing prose
+// as "nothing happened". The 017 playtest falsified that: "Stay at Baylor" ran
+// 75 -> 82 between two clicks, and the one transfer of the career was
+// "acknowledged by one word changing in the header".
+//
+// The rule that replaced it reads facts, not event ids: a hub card appears iff
+// the career is still active AND (the school moved OR `overall` moved). These
+// tests pin both halves -- the card that must now appear, and the empty
+// ceremonial card that must not.
+// ---------------------------------------------------------------------------
+describe("hub decisions resolve when they carry a consequence", () => {
+  // `ids[0]` never reaches a transfer hub: it takes the redshirt in the first
+  // offseason (which ENDS that offseason's hub sequence) and then declares at
+  // the first declare card. Both pickers below decline the redshirt and return
+  // to school, so the career actually runs long enough to reach the portal.
+  function keepPlaying(ids: string[], portal: "move" | "stay"): string {
+    if (portal === "move") {
+      const offer = ids.find((id) => id.startsWith("transfer-"));
+      if (offer) return offer;
+    }
+    if (ids.includes("stay")) return "stay";
+    if (ids.includes("decline")) return "decline";
+    if (ids.includes("return")) return "return";
+    return ids[0]!;
+  }
+
+  /** Every resolved card a career produces, played to the end. */
+  function cardsOf(seed: string, setup: Setup, portal: "move" | "stay") {
+    const cards: NonNullable<UiState["resolved"]>[] = [];
+    let ui = start(seed, setup);
+    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+      if (ui.resolved) cards.push(ui.resolved);
+      const next = step(ui, (ids) => keepPlaying(ids, portal));
+      if (next === ui) break;
+      ui = next;
+    }
+    return cards;
+  }
+
+  it("states the move when a transfer changed schools", () => {
+    // Somewhere in this cohort a portal offer is taken. The card it produces
+    // carries no prose -- there is none to carry, `src/content/**` is frozen --
+    // and says only where the career went.
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      for (const card of cardsOf(`r-hub-move-${position}`, { ...SETUP, position }, "move")) {
+        if (!card.hub?.to) continue;
+        checked++;
+        expect(card.outcome).toBe("");
+        expect(card.hub.from).toBeTruthy();
+        expect(card.hub.from).not.toBe(card.hub.to);
+        // A stated fact, never a characterisation: the card names two schools
+        // and nothing about which of them was the better idea (DECISION 012).
+        expect(card.title.length).toBeGreaterThan(0);
+      }
+    }
+    expect(checked, "no transfer that changed schools was reachable").toBeGreaterThan(0);
+  });
+
+  it("reports a pure overall movement without naming the school again", () => {
+    // The playtester's case: "Stay at Baylor", 75 -> 82. Nothing moved but the
+    // number, so the number is the whole card -- printing the school a second
+    // time would only repeat the button that was just pressed.
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-hub-stay-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        if (ui.resolved?.hub && !ui.resolved.hub.to) {
+          checked++;
+          expect(ui.resolved.outcome).toBe("");
+          expect(ui.resolved.overallBefore).not.toBe(ui.state!.overall);
+        }
+        const next = step(ui, (ids) => keepPlaying(ids, "stay"));
+        if (next === ui) break;
+        ui = next;
+      }
+    }
+    expect(checked, "no hub resolved on an overall movement alone").toBeGreaterThan(0);
+  });
+
+  it("shows nothing on Signing Day", () => {
+    // The one hub that is deliberately silent. There is no school to have moved
+    // FROM, so the only fact available is the one the player chose a click ago
+    // and the rail is already printing; measured over 3,000 careers, Signing Day
+    // moves `overall` by 0 in 3,000 of 3,000, so there is no second fact either.
+    for (const position of ALL_POSITIONS) {
+      const ui = start(`r-hub-signing-${position}`, { ...SETUP, position });
+      const d = getDecision(ui.state!)!;
+      expect(d.eventId).toBe("recruiting");
+      const after = reducer(ui, { type: "choose", optionId: d.options[0]!.id });
+      expect(after.resolved).toBeNull();
+    }
+  });
+
+  it("shows nothing when declaring: the summary is the resolution", () => {
+    // A card in front of the draft verdict is a click, not a beat.
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-hub-declare-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const d = !ui.resolved && ui.state ? getDecision(ui.state) : null;
+        if (d?.eventId === "declare") {
+          const after = reducer(ui, { type: "choose", optionId: "declare" });
+          expect(after.resolved).toBeNull();
+          expect(after.screen).toBe("summary");
+          checked++;
+          break;
+        }
+        const next = step(ui, (ids) => ids[0]!);
+        if (next === ui) break;
+        ui = next;
+      }
+    }
+    expect(checked, "no declare card was reachable").toBeGreaterThan(0);
+  });
+
+  it("never renders an empty ceremonial card", () => {
+    // The failure mode the brief names by name. Every hub card that appears
+    // must carry at least one fact; a hub that changed nothing stays silent
+    // and the next beat opens behind it exactly as it used to.
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-hub-empty-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const r = ui.resolved;
+        if (r && r.outcome === "") {
+          const moved = !!r.hub?.to;
+          const delta = r.overallBefore !== null && r.overallBefore !== ui.state!.overall;
+          expect(moved || delta, `${position}: a hub card carried no fact`).toBe(true);
+        }
+        const next = step(ui, (ids) => keepPlaying(ids, "move"));
+        if (next === ui) break;
+        ui = next;
+      }
+    }
+  });
+
+  it("does not eat the beat behind it", () => {
+    // `openCard` steps aside while a hub card is on screen, so the one-option
+    // beat that landed behind it opens on the Continue the player was going to
+    // press anyway -- one extra click for the hub, never a lost card.
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-hub-beat-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        if (ui.resolved?.hub) {
+          const cursorBefore = ui.state!.rngCursor;
+          const after = reducer(ui, { type: "continue" });
+          // Continue is a pure UI transition unless it opened a narrated beat,
+          // which is exactly one engine call and never two.
+          if (after.resolved) expect(after.resolved.narrated).toBe(true);
+          else expect(after.state!.rngCursor).toBe(cursorBefore);
+          checked++;
+        }
+        const next = step(ui, (ids) => keepPlaying(ids, "move"));
+        if (next === ui) break;
+        ui = next;
+      }
+    }
+    expect(checked, "no hub card was reachable").toBeGreaterThan(0);
   });
 });

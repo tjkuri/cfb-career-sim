@@ -237,9 +237,39 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
             {/* The outcome and what it cost, inside one rule, because they are
                 one fact. The rule thickens and the number grows with the size of
                 the change; neither ever changes hue, so a +8 and a -8 are equally
-                loud and indistinguishable by colour (DECISION 012). */}
+                loud and indistinguishable by colour (DECISION 012).
+
+                A hub card carries no prose and fills this block with facts
+                instead (B23): the move, the delta, or both. The block is not
+                rendered at all when it would hold none of the three, so the
+                rule never draws beside an empty card. */}
+            {(resolved.outcome || resolved.hub?.to || loudness > 0) && (
             <div className="consequence" data-magnitude={loudness}>
-              <p className="outcome">{resolved.outcome}</p>
+              {resolved.outcome && <p className="outcome">{resolved.outcome}</p>}
+
+              {/* The one thing a transfer resolution knows that the chosen
+                  label does not: the school it left. "Transfer to Baylor" was
+                  on the button; "UTSA → Baylor" is the career fact, and it is
+                  the sentence the 017 playtester said the game never wrote.
+                  Stated, never characterised -- no tier, no badge, nothing
+                  about whether the move was a good one (DECISION 012). */}
+              {resolved.hub?.to && (
+                <p className="move">
+                  <span className="move-from" aria-hidden="true">
+                    {resolved.hub.from}
+                  </span>
+                  <span className="move-arrow" aria-hidden="true">
+                    →
+                  </span>
+                  <span className="move-to" aria-hidden="true">
+                    {resolved.hub.to}
+                  </span>
+                  <span className="sr-only">
+                    Moved from {resolved.hub.from} to {resolved.hub.to}.
+                  </span>
+                </p>
+              )}
+
               {loudness > 0 && (
                 <p className="delta">
                   <span aria-hidden="true">
@@ -252,6 +282,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                 </p>
               )}
             </div>
+            )}
 
             <button className="continue" type="button" onClick={onContinue} autoFocus>
               Continue
@@ -261,6 +292,22 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
           <section className="card">
             <h2 className="card-title">{view.decision.title}</h2>
             <p className="card-body">{view.decision.description}</p>
+            {/* One line of rule-of-the-game fact, under the prompt and above
+                the options, and today only the declare card has one: how much
+                eligibility is left (DECISION 038, B25). Declaring early is now
+                a real gamble and the card carried no warning of any kind,
+                which made it a hidden trap -- the 017 playtester called it "a
+                coin flip dressed as a decision" and it was the exact moment
+                they concluded failure was impossible.
+
+                What it is NOT is a projection. DECISION 025 refused
+                `draftStock`, a round estimate and "you would go undrafted",
+                and that refusal is untouched: this sentence reads the same for
+                every player in the class year, so it cannot be inverted into
+                anything hidden. It is set quiet on purpose -- the ledger's
+                dashed row is still doing most of this work, and a louder line
+                here would start to look like advice. */}
+            {view.decisionNote && <p className="card-note">{view.decisionNote}</p>}
             {/* Every option carries identical emphasis. Distinguishing one from
                 its siblings before the player chooses would leak the branch
                 (DECISION 006, DECISION 012). */}

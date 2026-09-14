@@ -1,8 +1,8 @@
 import { advance, createCareer, getDecision, type GameState, type PendingDecision } from "../../engine/index";
 import { CONTENT } from "../../content/index";
-import { buildSummary, schoolName, seasonStamp } from "./view-model";
+import { buildSummary, hubFacts, schoolName, seasonStamp } from "./view-model";
 import { appendLog } from "./storage";
-import type { Action, LogEntry, Resolved, SeasonStamp, UiState } from "./types";
+import type { Action, HubFacts, LogEntry, Resolved, SeasonStamp, UiState } from "./types";
 
 export const INITIAL_STATE: UiState = {
   screen: "creation",
@@ -65,16 +65,31 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
   const next = advance(state, option.id);
   const outcome = next.lastOutcome?.description ?? null;
 
-  // Hub decisions (Signing Day, transfer, declare) author no prose because
-  // their result is the next screen. Nothing to read, so no card.
+  // Hub decisions (Signing Day, transfer, declare) author no prose, and the
+  // absence of prose used to end the matter: `outcome === null` meant no card.
+  // The 017 playtest falsified the reasoning behind that -- "the result is the
+  // next screen" is not true when the consequence is a seven-point overall
+  // swing the next screen does not mention (B23, DECISION 037).
+  //
+  // So a hub card is composed from facts instead of read from content, and
+  // `src/content/**` stays frozen. `hubFacts` returns null when the hub moved
+  // neither the school nor `overall`, which is what keeps this from becoming
+  // an empty ceremonial card between every offseason click.
+  //
+  // `outcome === null` is still the discriminator and still exhaustive:
+  // `applyChoice` sets `lastOutcome` for every authored event, so a card
+  // without prose is a hub by construction and no event id is matched here.
+  const hub: HubFacts | null = outcome === null ? hubFacts(state, next) : null;
+
   const resolved: Resolved | null =
-    outcome === null
+    outcome === null && hub === null
       ? null
       : {
           title: decision.title,
           description: decision.description,
           choiceLabel: option.label,
-          outcome,
+          outcome: outcome ?? "",
+          hub,
           // A card with one option was never a choice; the screen must not
           // label it "You chose:" (DECISION 018).
           narrated: decision.options.length === 1,
@@ -143,6 +158,11 @@ export function normalize(ui: UiState): UiState {
       description: r.description ?? "",
       choiceLabel: r.choiceLabel ?? "",
       outcome: r.outcome ?? "",
+      // A save written before hub cards existed restores without this. Null is
+      // the honest answer -- the card then reports whatever prose and delta it
+      // was saved with and claims no move -- and it must not arrive as
+      // `undefined` on a property the screen is typed to read.
+      hub: r.hub ?? null,
       narrated: r.narrated ?? false,
       stamp: normalizeStamp(r.stamp),
       overallBefore: r.overallBefore ?? null,
@@ -177,9 +197,13 @@ export function reducer(ui: UiState, action: Action): UiState {
       // pure UI transition, not a second call.
       const { next, resolved } = play(ui.state, decision, option);
 
-      // A hub card produces no prose, so nothing is on screen to hold the
-      // player. Open whatever landed behind it -- which is the only path by
-      // which a beat can follow a hub in the same action, and still one level.
+      // A hub that resolved to nothing puts nothing on screen to hold the
+      // player, so whatever landed behind it opens in the same action -- the
+      // only path by which a beat can follow a hub, and still one level.
+      // A hub that DID resolve to something is a card, and `openCard` steps
+      // aside for it: the beat behind it opens on the Continue the player was
+      // already going to press, so the hub costs one click and never eats a
+      // beat.
       return openCard(settle(ui, next, resolved));
     }
 

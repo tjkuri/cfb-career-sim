@@ -486,6 +486,25 @@
   overflow: hidden;
 }
 
+/* A fact about the rules, printed under the prompt that needs it. Today: how
+   much eligibility remains, on the declare card (DECISION 038, B25).
+
+   It is set one step BELOW the prompt it annotates -- 12px, --chalk-faint,
+   same register as the rail -- because the card must not start reading as
+   guidance. DECISION 025 refused a projection; a sentence that looked like one
+   would smuggle the refusal back in through typography. The hairline above it
+   separates the question from the rule without adding a box, a badge or an
+   icon, none of which this interface owns. */
+.card-note {
+  margin: 1.05rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+  font-variation-settings: "wdth" 84;
+  font-size: var(--t-meta);
+  line-height: var(--lh-tight);
+  color: var(--chalk-faint);
+}
+
 .options {
   margin-top: 1.9rem;
   display: flex;
@@ -629,6 +648,49 @@
   overflow: hidden;
 }
 
+/* The transfer, stated. A hub card has no prose to fill the consequence block,
+   so the move fills it: the school left, an arrow, the school arrived at.
+
+   Hierarchy carries the meaning and nothing else does. The origin is set at
+   --chalk-faint and the destination at --chalk/700, so the eye lands on where
+   the career IS; the arrow sits between them at --chalk-dim and is the only
+   mark on the card that is not a word. There is no hue here and there must not
+   be one: a move up and a move down are the same two schools and the same
+   arrow, and anything that told them apart by colour would be the valence
+   signal DECISION 012 forbids. The magnitude treatment this block already
+   carries is attached to the OVR delta below, where the player can already see
+   the number it is scaled from.
+
+   Wraps rather than truncates. Two school names plus an arrow is 47 characters
+   at the longest pair in the bundle, which is two lines at 360px. */
+.move {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.5rem;
+  font-size: var(--t-label);
+  line-height: var(--lh-tight);
+}
+
+/* Only when prose precedes it, which no hub card has today; the rule is here
+   so a later card carrying both does not run them together. */
+.move:not(:first-child) { margin-top: 0.8rem; }
+
+.move-from { color: var(--chalk-faint); }
+
+.move-arrow {
+  color: var(--chalk-dim);
+  /* The glyph is wider than its optical weight suggests at this size; the
+     condensed setting brings it back onto the baseline rhythm of the words. */
+  font-variation-settings: "wdth" 84;
+}
+
+.move-to {
+  color: var(--chalk);
+  font-weight: var(--w-ui);
+}
+
 .delta {
   margin: 0.8rem 0 0;
   font-variation-settings: "wdth" 68;
@@ -641,6 +703,11 @@
   animation: delta-in var(--dur-enter) ease both;
   animation-delay: 90ms;
 }
+
+/* On a hub card that reports a pure overall movement the delta is the only
+   thing in the block, and the gap it holds off the prose above it becomes a gap
+   between the rule and the numeral the rule is measuring. */
+.delta:first-child { margin-top: 0; }
 
 @keyframes delta-in {
   from { opacity: 0; transform: translateY(var(--delta-lift)); }

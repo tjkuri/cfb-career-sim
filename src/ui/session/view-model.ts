@@ -1,4 +1,11 @@
-import { getDecision, WASHOUT_REASONS, type GameState } from "../../engine/index";
+import { getDecision, WASHOUT_REASONS, type GameState, type PendingDecision } from "../../engine/index";
+// The one import that does not come through `engine/index`, because the barrel
+// does not re-export it and the barrel is another agent's file this wave.
+// `CLASS_ORDER` is the length of a career's eligibility, and `eligibilityLeft`
+// below is arithmetic on it; writing the 4 out as a literal here would be a
+// second copy of an engine rule that can change. Type-only imports from this
+// module are already the norm across `src/ui/session/**`.
+import { CLASS_ORDER } from "../../engine/types";
 import { CONTENT } from "../../content/index";
 import { standingPhrase, trustPhrase } from "./bands";
 import { buildLedger } from "./ledger";
@@ -8,6 +15,7 @@ import type {
   CareerView,
   HonorRarity,
   HonorView,
+  HubFacts,
   MomentView,
   RailView,
   Resolved,
@@ -146,6 +154,103 @@ export function seasonStamp(state: GameState): SeasonStamp {
     schoolName: currentSchoolName(state),
     season: currentSeasonLine(state),
   };
+}
+
+/**
+ * The facts a hub resolution is made of, or null when the hub changed nothing
+ * worth a card. Takes both sides of one `advance()` for the same reason
+ * `seasonStamp` is taken before it: the "before" state is gone by the time
+ * anything is rendered.
+ *
+ * B23 / DECISION 037. Signing Day, the transfer portal and the declare card
+ * author no prose, and the reducer read the missing prose as "nothing
+ * happened". It is not: the 017 playtester's "Stay at Baylor" moved `overall`
+ * 75 -> 82 in the gap between two clicks, and the one transfer of the career
+ * was announced by one word changing in the header.
+ *
+ * The rule is generic and reads only facts, so it needs no list of hub ids:
+ *
+ *   * A career that is no longer active gets **nothing**. Declaring IS the
+ *     next screen -- the draft verdict, which wave 8 spent its whole budget
+ *     making loud -- and a card in front of it is a click, not a beat.
+ *   * A career with no school BEFORE the choice gets nothing. That is Signing
+ *     Day, where the "move" is from nowhere to the school the player picked
+ *     one click ago and the rail is already printing. Measured over 3,000
+ *     careers, Signing Day moves `overall` by 0 in 3,000 of 3,000, so there is
+ *     never a second fact to carry either.
+ *   * Otherwise the card appears iff the school moved or `overall` moved. A
+ *     hub that changed neither is the empty ceremonial card the brief forbids
+ *     and is suppressed -- which, measured the same way, is 100% of "return to
+ *     school" (it lands straight on the next hub, so nothing has run yet) and
+ *     81.4% of "stay".
+ *
+ * Measured card rate over the same 3,000 careers: transfer hubs fire on 50.0%
+ * (school moved 38.5%, overall moved 17.0%), about 1.1 cards per career. The
+ * redshirt hub is untouched by this -- taking the redshirt authors its own
+ * prose, which is the machinery B23 observed already working.
+ */
+export function hubFacts(before: GameState, after: GameState): HubFacts | null {
+  if (after.status !== "active") return null;
+  const fromId = before.school.schoolId;
+  if (!fromId) return null;
+
+  const toId = after.school.schoolId;
+  const moved = toId !== fromId;
+  if (!moved && after.overall === before.overall) return null;
+
+  return {
+    from: schoolName(fromId),
+    // Named only on a move. On a card reporting a pure overall movement the
+    // school is unchanged and the chosen label already says where it is;
+    // printing it again would be chrome, not a fact.
+    to: moved ? schoolName(toId) : null,
+  };
+}
+
+// The declare card's one line of fact (DECISION 038, B25).
+//
+// DECISION 025 stands and is not reopened here: no projection, no draft stock,
+// no round estimate, no "you would go undrafted". What goes in is the number of
+// seasons of eligibility that remain, which is a rule of the game rather than a
+// reading of the player -- it is identical for a 45-overall walk-on and a
+// 95-overall All-American in the same class year, so it cannot be used to infer
+// anything hidden.
+//
+// The count is `cap - yearsUsed`, exactly the arithmetic `enterOffseason` uses
+// to force a declaration, and it INCLUDES the season about to be played: a
+// junior who returns has two more seasons in him, and the card says two.
+function eligibilityLeft(state: GameState): number {
+  const cap = CLASS_ORDER.length + (state.eligibility.redshirtUsed ? 1 : 0);
+  return cap - state.eligibility.yearsUsed;
+}
+
+// Spelled out rather than set as a numeral. Every numeral on this screen is a
+// measured quantity -- the OVR, the snap count, the record -- and a season
+// count is not one of those; "2" beside them reads as a fourth statistic.
+const COUNT_WORDS = ["no", "one", "two", "three", "four", "five"];
+
+function seasonsPhrase(n: number): string {
+  const word = COUNT_WORDS[n] ?? String(n);
+  return n === 1 ? `${word} season` : `${word} seasons`;
+}
+
+// A structural mirror of `advance.ts`'s `DECLARE_EVENT_ID`, which is not
+// exported. `view-model.test.ts` asserts the note actually appears on the
+// declare card the engine builds, so a drift in the id fails a test rather
+// than silently dropping the line.
+const DECLARE_EVENT_ID = "declare";
+
+function decisionNote(state: GameState, decision: PendingDecision | null): string | null {
+  if (!decision || decision.eventId !== DECLARE_EVENT_ID) return null;
+  const left = eligibilityLeft(state);
+  // The card is only raised while the career is active, so this is at least 1;
+  // the guard is for a save whose eligibility has drifted, where saying
+  // nothing is right and saying "no seasons remain" beside a live choice is
+  // not.
+  if (left < 1) return null;
+  const verb = left === 1 ? "remains" : "remain";
+  const phrase = seasonsPhrase(left);
+  return `${phrase[0]!.toUpperCase()}${phrase.slice(1)} of eligibility ${verb}.`;
 }
 
 // The rail, assembled in one place so no screen has to decide cell by cell
@@ -355,6 +460,7 @@ export function buildSummary(state: GameState): CareerSummaryView {
 
 export function buildView(state: GameState): CareerView {
   const terminal = state.status !== "active";
+  const decision = getDecision(state);
   return {
     playerName: `${state.setup.lastName} #${state.setup.jerseyNumber}`,
     positionLabel: positionLabel(state),
@@ -378,7 +484,8 @@ export function buildView(state: GameState): CareerView {
     standing: standingPhrase(state.overall),
     trust: trustPhrase(state.character),
     status: state.status,
-    decision: getDecision(state),
+    decision,
+    decisionNote: decisionNote(state, decision),
     summary: terminal ? buildSummary(state) : null,
   };
 }

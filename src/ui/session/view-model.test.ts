@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type Setup } from "../../engine/index";
-import { buildSummary, buildView, railView } from "./view-model";
+import { buildSummary, buildView, hubFacts, railView } from "./view-model";
 import { reducer, INITIAL_STATE } from "./reducer";
 import type { CareerView, RailView, UiState } from "./types";
 
@@ -547,6 +547,7 @@ describe("the rail describes one moment, not two", () => {
       description: "",
       choiceLabel: "c",
       outcome: "o",
+      hub: null,
       narrated: false,
       stamp: null,
       overallBefore: null,
@@ -688,5 +689,143 @@ describe("honors are separated from routine results", () => {
     const summary = buildSummary({ ...base, status: "drafted", trophies: { ...base.trophies, bowlWin: 1 }, awards: ["allConference"] as never[] });
     expect(summary.awards).toEqual(["All-Conference"]);
     expect(summary.trophies).toEqual([{ label: "Bowl Win", count: 1 }]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B23 / DECISION 037. The facts a hub resolution is composed from, since there
+// is no authored prose behind Signing Day, the portal or the declare card and
+// `src/content/**` is frozen.
+// ---------------------------------------------------------------------------
+describe("hubFacts", () => {
+  const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+
+  it("says nothing when the career is over", () => {
+    // Declaring IS the next screen. A card in front of the draft verdict is a
+    // click, not a beat.
+    const before = createCareer(setup, "vm-hub-terminal");
+    const after = { ...before, status: "drafted" as const, school: { ...before.school, schoolId: "other" } };
+    expect(hubFacts({ ...before, school: { ...before.school, schoolId: "here" } }, after)).toBeNull();
+  });
+
+  it("says nothing before there is a school to have left", () => {
+    // Signing Day. The career holds no school id at all until it resolves, so
+    // the only "move" available is from nowhere to the school the player chose
+    // one click ago and the rail is already printing.
+    const before = createCareer(setup, "vm-hub-signing");
+    expect(before.school.schoolId).toBe("");
+    const after = { ...before, school: { ...before.school, schoolId: "baylor" } };
+    expect(hubFacts(before, after)).toBeNull();
+  });
+
+  it("says nothing when neither the school nor overall moved", () => {
+    // The empty ceremonial card, refused.
+    const s = { ...createCareer(setup, "vm-hub-nochange"), school: { schoolId: "baylor", tier: 3 as const } };
+    expect(hubFacts(s, s)).toBeNull();
+  });
+
+  it("names both schools on a move", () => {
+    const before = { ...createCareer(setup, "vm-hub-move"), school: { schoolId: "utsa", tier: 2 as const } };
+    const after = { ...before, school: { schoolId: "baylor", tier: 3 as const } };
+    const facts = hubFacts(before, after)!;
+    expect(facts.from).toBeTruthy();
+    expect(facts.to).toBeTruthy();
+    expect(facts.from).not.toBe(facts.to);
+    // Display names, never ids -- and never the tier that is sitting right
+    // beside them on the state object.
+    expect(JSON.stringify(facts)).not.toContain("tier");
+  });
+
+  it("leaves the school unnamed when only overall moved", () => {
+    // "Stay at Baylor", 75 -> 82. The delta is the whole card; repeating the
+    // school would only restate the button that was just pressed.
+    const before = { ...createCareer(setup, "vm-hub-ovr"), school: { schoolId: "baylor", tier: 3 as const } };
+    const after = { ...before, overall: before.overall + 7 };
+    const facts = hubFacts(before, after)!;
+    expect(facts.to).toBeNull();
+    expect(facts.from).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B25 / DECISION 038. The declare card is now a real gamble and carried no
+// warning of any kind. DECISION 025's refusal of `draftStock`, a round
+// estimate and "you would go undrafted" is untouched; what goes in is the
+// number of seasons of eligibility left, which is a rule of the game.
+// ---------------------------------------------------------------------------
+describe("the declare card states the eligibility that remains", () => {
+  const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+
+  /** Walk to the first declare card, declining the redshirt on the way. */
+  function atDeclare(seed: string, position: Setup["position"]) {
+    let state = createCareer({ ...setup, position }, seed);
+    for (let guard = 0; guard < 500 && state.status === "active"; guard++) {
+      const d = getDecision(state);
+      if (!d) break;
+      if (d.eventId === "declare") return state;
+      const ids = d.options.map((o) => o.id);
+      state = advance(state, ids.includes("decline") ? "decline" : ids[0]!);
+    }
+    return null;
+  }
+
+  it("prints the note on the declare card and nowhere else", () => {
+    let sawDeclare = 0;
+    for (const position of ALL_POSITIONS) {
+      const state = atDeclare(`vm-note-${position}`, position);
+      expect(state, `${position}: no declare card was reachable`).not.toBeNull();
+      const view = buildView(state!);
+      expect(view.decisionNote).toMatch(/^(One season|Two seasons|Three seasons) of eligibility remains?\.$/);
+      sawDeclare++;
+    }
+    expect(sawDeclare).toBe(ALL_POSITIONS.length);
+
+    // Every other decision in a full career carries none. The note is a
+    // one-off fact, not a general annotation channel: anything that
+    // characterised an option or estimated its result would be the leak
+    // DECISIONS 012 and 025 forbid.
+    let ui: UiState = reducer(INITIAL_STATE, { type: "start", setup, seed: "vm-note-other" });
+    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+      if (ui.state) {
+        const d = getDecision(ui.state);
+        const note = buildView(ui.state).decisionNote;
+        if (d && d.eventId !== "declare") expect(note, d.eventId).toBeNull();
+      }
+      const next = ui.resolved
+        ? reducer(ui, { type: "continue" })
+        : reducer(ui, { type: "choose", optionId: getDecision(ui.state!)?.options[0]?.id ?? "" });
+      if (next === ui) break;
+      ui = next;
+    }
+  });
+
+  it("counts down as seasons are used, and includes the one about to be played", () => {
+    // A junior who returns has two more seasons in him and the card says two;
+    // by the senior offseason it says one. `enterOffseason` forces a
+    // declaration the moment the count would reach zero, so the note can never
+    // read "no seasons remain" beside a live choice.
+    const notes: string[] = [];
+    let state = createCareer(setup, "vm-note-countdown");
+    for (let guard = 0; guard < 500 && state.status === "active"; guard++) {
+      const d = getDecision(state);
+      if (!d) break;
+      if (d.eventId === "declare") notes.push(buildView(state).decisionNote!);
+      const ids = d.options.map((o) => o.id);
+      const pick = d.eventId === "declare" ? "return" : ids.includes("decline") ? "decline" : ids[0]!;
+      state = advance(state, pick);
+    }
+    expect(notes.length).toBeGreaterThan(1);
+    expect(notes[0]).toBe("Two seasons of eligibility remain.");
+    expect(notes[notes.length - 1]).toBe("One season of eligibility remains.");
+  });
+
+  it("leaks nothing: the note is the same sentence for every player in the class", () => {
+    // DECISION 025's test, applied. The sentence is a function of eligibility
+    // alone, so it cannot be inverted into overall, character or draft stock.
+    const strong = atDeclare("vm-note-leak", "QB")!;
+    const weak = { ...strong, overall: 40, character: 20 };
+    const great = { ...strong, overall: 95, character: 95 };
+    expect(buildView(weak).decisionNote).toBe(buildView(great).decisionNote);
+    expect(buildView(strong).decisionNote).not.toContain(String(strong.overall));
   });
 });
