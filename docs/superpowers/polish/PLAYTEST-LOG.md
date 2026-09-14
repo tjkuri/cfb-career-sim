@@ -44,3 +44,15 @@ Top three problems:
 Best moment: "The Yips" — missing eleven in a row on an empty practice field with nobody watching but the ball boy. Position-specific cards are the best writing in the game and they are the only reason the three careers felt different.
 Would you play again unprompted? no — after career 1 yes (the Moments reel), after career 2 reluctantly, after career 3 no. Career 2's reel printed "Carried the team through bowl season" three times identically, which spent the one thing that was pulling me back; and by career 3 I knew the offseason had one correct answer (always transfer up) and that a deliberately terrible career still prints a gold headline.
 Report: reports/014-post-wave4-playtest.md
+
+## 017 — Playtest after wave 6 · 2026-09-13
+Careers played: 3 (Quarterback 38 decisions, Kicker 33, Offensive line 18 — tanked on purpose)
+Reference game played: no
+Verdict in one line: The ledger is the best thing in the build and I used it to make real decisions — but the curve did not move, because what stops me is still repetition, and I stopped reading card bodies in career 1 this time instead of career 3.
+Top three problems:
+  1. I took a redshirt and the ledger never acknowledged it — the dashed YEAR 5 row stayed identical, the redshirt season logged as a normal season (with `FG -1`), and during season 5's offseason the header said SEASON 5 while the rail still showed YEAR 5 as a dashed "redshirt year" and highlighted nothing. That is the one place I was genuinely lost.
+  2. The deliberately-bad career reads as congratulatory: `Round 7, Pick 1` is the biggest, brightest, gold element on the page, and the Moments reel is 🏆🏆☀️☀️ including "Had the time of his life at a bowl game" — a warm memory handed to me for the exact choice I made to sabotage myself. The only honest element, `63 → 59 · −4`, is the smallest and dimmest type on the screen.
+  3. Ducking the install meeting for a podcast pays +1 OVR; doing the disciplined thing on the same card pays nothing. Playing badly is rate-limited, not directional — my 2-season, 2-10, FCS, refused-the-trainer lineman went 193rd overall. I worked out failure was impossible at the "Declare?" card, which offers the game's biggest decision with zero information attached.
+Best moment: Career 1 season 4, reading `65 / 75 / 74` in the rail — seeing that I had transferred *up* to Baylor and gone *down*, in one glance, and changing how I played the rest of the career because of it. That is the ledger doing exactly what it was built for.
+Would you play again unprompted? yes → no → no. Career 1 yes, but only to try a different position. Career 2 no — seven identical barking ankles. Career 3 no, harder, because the tank run answered the last question I had.
+Report: reports/017-post-wave6-playtest.md

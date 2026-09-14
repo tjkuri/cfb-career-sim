@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 7 (the 017 playtest) in flight · **PM session:** 4
+**Last updated:** 2026-09-13 · **Wave:** 8 in flight (019, 020) · **PM session:** 4
 
 ---
 
@@ -294,7 +294,7 @@ the trophy glyph is the most common mark in the game and almost never marks a tr
 display half (desaturation — emoji were the only uncontrolled colour on a screen whose rule is that
 hue never tracks valence), and left the three content strings as a proposal.
 
-### The verification gap a fresh PM must not inherit silently
+### The verification gap a fresh PM must not inherit silently — CLOSED by 017, kept for the lesson
 
 **Desktop geometry at ≥1024px is still unverified on a real wide viewport.** The Chrome extension
 pins the viewport at **800 CSS px**, and `resize_window` reports success while `innerWidth` stays
@@ -456,7 +456,7 @@ the leak check (DECISION 012's own "would change our mind") and whether a dimmed
 headline reads as congratulatory (DECISION 021's). Playtesting is **serial** — one browser agent at
 a time, they share a `localStorage` origin.
 
-## Wave 7 — in flight (PM session 4)
+## Wave 7 — the 017 playtest. Complete. Read this before planning anything
 
 `briefs/017-post-wave6-playtest.md` dispatched 2026-09-13, one playtester, **serial** — it owns the
 browser and the `localStorage` origin for its duration. Do not dispatch a second browser agent or a
@@ -486,6 +486,87 @@ It is parallel-safe with the playtest **by construction**: no browser, no `src/u
 clear the same bar — a content or UI edit changes the game under the playtester and destroys their
 session.
 
+### What 017 found — the short version
+
+Three careers, 89 decisions (QB 38 / Kicker 33 / OL 18, the last played to lose).
+Full report: `reports/017-post-wave6-playtest.md`.
+
+**The curve did not move. It got slightly worse: `yes → no → no`** (014's was `yes → reluctant yes →
+no`). And the cause is the same one both times:
+
+> *"I read 'Your ankle has been barking since Tuesday' for the seventh time in season five and I
+> stopped being a person reading a story and became a person clearing a queue."*
+
+**Wave 6 is not what is losing us the player, and this is stated plainly in the report:** *"The
+ledger and the ending are both better than what they replaced and neither one is the reason I
+stopped."* Do not read the flat curve as a verdict on the last two waves.
+
+**Skimming started in career 1 at decision 21, not career 3.** Two seasons earlier than 014. By
+career 3 it had generalised to brand-new cards — including the best-written injury card in the game,
+which cost 8 OVR and was clicked through unread.
+
+### The wave-6 work, judged
+
+| | Verdict |
+|---|---|
+| **The ledger** | **CONFIRMED and then some.** Used for three real decisions — twice to return to school after seeing the column fall. *"It did not become wallpaper."* Named as the one thing that made three careers feel like different lives |
+| **Orientation** | **"The clearest win of the wave."** `SEASON 3 · JR` plus the highlighted row: never once had to guess the year |
+| **The ending's range** | **PARTIAL.** R3 vs R7 rankable at a glance; **R2 vs R3 is not** — and 1–4 is where careers land. DECISION 026's own falsifier |
+| **A bad ending** | **REFUTED.** *"The floor is a gold headline, two trophies and a sunshine emoji."* DECISION 021's own falsifier |
+| **`Also earned`** | **Never rendered.** The heading is an either/or, so a career with both tiers shows an unlabelled grey chip. 027's falsifier, by way of a half-applied fix |
+| **Two OVR numbers** | Noticed on all three screens, **not** read as a mistake — but only because the rail had trained them for four seasons. A player arriving cold *"would call it a bug"* |
+| **The standing block** | **CONFIRMED.** B21 stays fixed |
+| **Strip rows 2/3** | Still merge. DECISION 023's falsifier, its pre-specified fix now dispatched |
+
+Calls logged in response: **DECISIONS 032–036.**
+
+### The desktop verification gap is CLOSED
+
+**017 played at 1456×757–813 CSS px** and the two-column layout rendered — content column ~480px
+centred with the ledger rail to its right. The media query fires. Nobody needs to re-verify this.
+
+**But it opened a new finding in the same breath:** *"roughly the right third and the bottom half of
+the window were empty dark green on every screen. Not cramped — the opposite. The page never felt
+like it was using the room it had."* That is **B1 returning at wide width**, and this time measured.
+(The user separately confirmed the *summary* screen is a single stack at that width, which is by
+design — the two-column shell is the decision screen only.)
+
+### New backlog from 017
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B23 | **Structural choices produce no resolution screen and no delta.** "Stay at Baylor" ran 75 → 82 **in the gap between two clicks.** Transfer, Declare and Stay show nothing; transferring UTSA → Baylor was *"acknowledged by one word changing in the header"* | todo — **high value** | This is B16, now quantified. The machinery exists: *taking* the redshirt does get a resolution and a loud `+10 OVR`. It is wired to one of four |
+| B24 | **Position is a costume everywhere except the in-season cards.** All six open at OVR 60, "in the rotation" (not a thing kickers are in), identical offseason block. *"My kicker was voted team captain — in his redshirt year."* About 1 card in 4 is position-specific, and those were the only cards still being read by career 3 | todo | The position cards are praised as the best writing in the game. The finding is that there are too few of them, not that they are wrong |
+| B25 | **"Declare for the Draft?" carries zero information and is the most consequential card in the game.** *"A coin flip dressed as a decision."* It is also where the playtester worked out failure was impossible — the game let a 61-OVR FCS lineman declare after two seasons **with no comment** | todo — **tension with DECISION 025** | 025 refused `draftStock` by name. A second playtester has now independently asked for the same thing. The ledger column is a partial answer and was used exactly this way. Needs a call that does not leak the number |
+| B26 | **Nothing tells you the end is coming.** Career 1 ended after season 4 with no warning, on a resolution Continue that turned out to be the last click | todo | Distinct from B22: the *shape* is now clear, the *ending* is not |
+| B27 | **The Moments reel is a repetition log.** Career 1 printed "Carried the team through bowl season" **three times out of six entries**; career 3's four entries are two lines repeated | todo — content-caused | The reel is *"the single best thing on the end screen"* and *"the part a player would screenshot."* The grouping (B6/011) is right; the strings repeat |
+| B28 | **`FG -1` — negative field goals**, printed in the rail and permanently on the summary. Caused by taking the redshirt | todo — **engine bug**, needs a proposal | Folded into 020's report as a diagnosis-only task |
+| B29 | **Wide-viewport emptiness.** Right third and bottom half empty at 1456px | todo | B1 at a measured width |
+
+**The single change the playtester would make, in their words:** *"The three cards after a transfer
+or a redshirt should be about the transfer or the redshirt. Right now the two biggest things that
+can happen to a career are delivered as a one-word header change followed by reruns, and they're
+also the two places where the game has already earned a beat."* That is B23 and B11 pointing at the
+same spot.
+
+## Wave 8 — in flight (PM session 4)
+
+Two lanes, and this time **the session layer is split by FILE, not by interface.** Splitting by
+interface collided at `types.ts` in two consecutive waves; this is the fix the board asked for.
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/019-the-ending-tells-the-truth.md` | DECISION 032 — widen the verdict scale where careers actually land, and **invert the hierarchy on a declining career** so the arc stops being the quietest true thing on the page. Plus 034 (`Also earned`) and 035 (label the two OVR numbers) | `SummaryScreen.tsx`, `summary.css`, `types.ts`, `view-model.ts`, `bands.ts` |
+| `briefs/020-the-ledger-keeps-its-promise.md` | DECISION 033 — the dashed row stops asserting a fact the UI cannot check, and the season-5 header/rail desync (the only place the player was lost). Plus the duplicate `SR`, 023's strip fix, `1 Game-Winners`, and a `SeasonLine` redshirt-flag proposal | `CareerScreen.tsx`, `career.css`, `ledger.ts`, `labels.ts` |
+
+`briefs/018` (balance measurement) is **still in flight** and owns `src/sim/**` — disjoint from both.
+
+### Queued, deliberately not dispatched
+
+**The content pilot (DECISIONS 030 + 036)** is written up but held **behind 018**. It edits
+`src/content/**`, and 018 is measuring balance *against that content* — adding event variants
+mid-run would invalidate its numbers. Dispatch it the moment 018 reports.
+
 ## The user's answers — all four standing escalations are now closed
 
 Asked and answered 2026-09-13 by PM session 4. **The "For the user" section below is kept for its
@@ -496,7 +577,7 @@ reasoning but is no longer an open ask.** Logged as DECISIONS 029, 030 and 031.
 | **B18/B19** — unfreeze the engine for balance? | **Yes, proposal-first.** Measure and propose numbers; user approves before any engine edit | **DECISION 029.** Stage 1 dispatched as 018. Stage 2 needs a user approval round |
 | **B11 item 3** — author content variants? | **Yes — pilot `milestone-opener` only, agent-written** | **DECISION 030.** Queued, not dispatched: it edits `src/content/**`, which would change the game under the live playtester. Dispatch when 017 returns |
 | **B10** — imagery scope? | **Per-category, ~12–20 reusable flat vector pieces** | **DECISION 031.** Shape settled so nobody reopens it; *when* is still open and it blocks nothing |
-| **Desktop ≥1024px** — the unverified media query | User is checking a real maximised window by hand | Answer pending. Record it here when it lands and strike the verification gap above |
+| **Desktop ≥1024px** — the unverified media query | **CLOSED by 017**, which played at 1456px | The two-column shell renders. The gap is struck. It left a new finding in its place — B29 |
 
 **Two notes a fresh PM should not have to rediscover:**
 

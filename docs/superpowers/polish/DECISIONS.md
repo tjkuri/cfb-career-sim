@@ -763,3 +763,145 @@ The shape is now settled so that nobody re-opens it; *when* is still open.
 **What would change our mind.** A playtester reporting the screens read as deliberately typographic
 rather than empty — in which case no art at all becomes a live option, and the honest move is to
 commit to the broadcast-graphic register instead of half-filling it.
+
+## 032 — DECISION 021 is reversed on its own terms: a bad ending is congratulatory, and the fix is hierarchy, not hue
+
+**Date:** 2026-09-13 · **Made by:** PM session 4 · **Reverses:** the "would change our mind" clause of 021, extends 026 · **Still governed by:** 012 · **Evidence:** `reports/017-post-wave6-playtest.md` claims 5 and 6
+
+021 said a washout would print in a dimmed gold rather than a second hue, and named its own
+falsifier: *a playtester reporting it reads as congratulatory.* **That report has arrived.** The 017
+playtester tanked a career on purpose — transferred *down*, refused the trainer, declared at 61 OVR
+off a 2-10 season — and wrote: *"the floor is a gold headline, two trophies and a sunshine emoji."*
+
+026 named its own falsifier too: *a playtester who still cannot rank two drafted endings at a
+glance.* **Also arrived.** Round 2 vs Round 3 is unrankable; Round 3 vs Round 7 is easy. The scale
+works where careers do not land and fails where they do.
+
+**Both are accepted. 012 is not reopened — hue stays constant.** The two levers are:
+
+1. **The scale spread widens**, as 026 pre-specified. 1.12 → 0.72 does not separate adjacent rounds
+   in the band where most careers land (1–4). This was the pre-committed lever and it is taken.
+2. **The hierarchy inverts on a bad career.** This is the new part and it is the bigger one. The
+   playtester found the one honest element on the screen — `ACROSS 2 SEASONS · 63 → 59 · −4` — and
+   noted it is *"set in the smallest, dimmest type available, three screens above the giant gold
+   headline. The hierarchy is exactly inverted."* A career that went **down** has that fact rendered
+   as its quietest element. On a declining career the arc is promoted; on a rising one nothing
+   changes.
+
+**Why this is not "make it red."** The screen is not being made to scold. It is being made to say
+the true thing at the size the true thing deserves. A −4 arc stated loudly is a fact, not a verdict,
+and it is the same mechanism 012 has permitted all along: magnitude drives scale, never hue.
+
+**What would change our mind.** A playtester reporting the end screen now reads as punitive, or that
+a *good* career's ending got quieter as a side effect of making a bad one honest.
+
+## 033 — The dashed fifth ledger row is making a promise the UI cannot keep. Stop promising, and propose the field
+
+**Date:** 2026-09-13 · **Made by:** PM session 4 · **Evidence:** `reports/017-post-wave6-playtest.md` claim 1
+
+The ledger's fifth row is dashed and captioned *redshirt year*. The 017 playtester read it correctly
+without being told — *"a fifth season, but conditional, I only get it if I redshirt"* — then **took
+the redshirt (+10 OVR, the biggest swing in the game) and the row did not change.** It changed only
+on *arriving* in season 5. The caption is keyed to a condition the UI never checks.
+
+This is not an oversight; it is DECISION 015/020 surfacing as a player-visible broken promise. Report
+010 measured that "which season was the redshirt" is **not reliably derivable** from stored data:
+the duplicate-`classYear` signal is present in 40.6% of redshirt careers and points at the wrong row
+426 times out of 427.
+
+**Two moves, in this order:**
+
+1. **Now, within the freeze: stop making the claim.** The row keeps its dashed rule — which the
+   playtester read correctly as "conditional, not really part of the plan" — and loses the caption
+   that asserts *why*. The structural signal was doing the work; the caption was writing a cheque
+   the data could not cash.
+2. **Propose the field.** `SeasonLine` gains an explicit redshirt flag, set by the engine at the
+   boundary where the fact is actually known. This is additive and is the same shape as the already-
+   approved DECISION 009 (`overall` and `classYear` joined `SeasonLine` the same way). It goes to
+   the user as a proposal; it is **not** covered by 029's narrow B18/B19 lift.
+
+**The related bug, same cause.** During season 5's offseason the header read `SEASON 5` while the
+YEAR 5 row was still dashed and **not highlighted as current** — for three decisions the two
+disagreed about what year it was. That is the only place in three careers the playtester was
+genuinely lost, and it is a correctness bug in the current-row logic, fixable now with no engine
+change.
+
+**What would change our mind.** Nothing about (1) — a UI must not assert a fact it cannot check. The
+user rejecting (2) would simply leave the dashed row permanently uncaptioned, which is honest.
+
+## 034 — DECISION 027's falsifier fires, exactly as written. The fix is the heading it named
+
+**Date:** 2026-09-13 · **Made by:** PM session 4 · **Amends:** 027 · **Evidence:** `reports/017-post-wave6-playtest.md` claim 7
+
+027 said: *a playtester reporting the `Also earned` row reads as a consolation prize or a demotion —
+the fix then is the heading's wording, not restoring a block that fires 70% of the time.*
+
+The playtester never saw the heading at all. `SummaryScreen.tsx:241` renders
+`distinctions.length > 0 ? "Honors" : "Also earned"` — so when a career has **both**, the routine
+chips appear underneath the distinctions with **no heading of their own**. What they saw was a gold
+All-American box and then a bare grey Bowl Win chip: *"with nothing naming the second tier it reads
+as 'and this lesser thing'... Bowl Win was a genuinely nice thing to have won and it looked like a
+leftover."*
+
+**027 was right and its implementation was half-applied.** The routine group gets its own heading
+whenever it renders, including — especially — when distinctions render above it. No block is
+restored, no rarity tiering is undone.
+
+**What would change our mind.** Nothing outstanding; this is 027's own pre-specified fix, applied
+where it was missed.
+
+## 035 — DECISION 028 is answered: the two overall numbers stay, and the label does the work
+
+**Date:** 2026-09-13 · **Made by:** PM session 4 · **Closes:** 028 item 1 · **Evidence:** `reports/017-post-wave6-playtest.md` claim 8
+
+028 asked a playtester directly whether `FINAL OVERALL` differing from the last ledger row reads as a
+contradiction. The answer is **no — and the reason is a warning, not a reassurance:**
+
+> *"It did not read as a contradiction — because the ledger had trained me on it for four seasons
+> first... the end screen is being carried by a side effect of the rail. A player who reaches the
+> draft screen without having stared at the rail would see `61 FINAL OVERALL` two inches above a
+> table whose last row says `59`, and I think they'd call it a bug."*
+
+**Decision: no engine change, no number removed. The label closes the gap.** Both numbers are true
+and both earn their place — one is the season as played, the other counts the offseason that
+followed it. What is missing is any word saying so. The fix is in wording at the point of collision,
+which costs nothing and does not depend on a player having learned the rule elsewhere.
+
+**Why not the engine fix 028 floated** (recording a post-development OVR on the final `SeasonLine`):
+it would make the two numbers agree by making the ledger's last row stop meaning what every other
+row means. That trades a labelling gap for an inconsistency inside the ledger, which is worse.
+
+**What would change our mind.** A playtester who reads the labelled version and still calls it a bug.
+Then the honest move is to show one number, not two.
+
+## 036 — The content pilot keeps its gate but changes its target selection
+
+**Date:** 2026-09-13 · **Made by:** PM session 4 · **Amends:** 030 · **Evidence:** `reports/017-post-wave6-playtest.md`, "Repetition — I am the data point you asked for"
+
+030 authorised a pilot on `milestone-opener` alone, chosen because it is 62% of first verbatim
+repeats. 017 confirms the count (Season Opener ×10 across three careers, first repeat at career 1
+decision **12**, exactly as predicted) but adds three findings that change *which* repeats cost the
+most:
+
+- **The worst repeats are the no-choice ones.** *"A repeated card that at least asks me something
+  still needs me awake. A repeated card that only asks me to click is a training exercise in not
+  reading."* Season Opener and Fall Camp Battle are both Continue-only.
+- **The repeats cluster exactly where a beat belongs.** Twice, the first three cards after
+  transferring to a new school were all verbatim repeats — *"arriving at a new school, the most
+  dramatic thing the game can do to you, is delivered as three cards I'd already read."*
+- **Skimming generalised in career 1, not career 3.** By decision 21 the playtester was skipping
+  bodies on brand-new cards, including the best-written injury card in the game.
+
+**The gate from 030 stands unchanged:** write one event's variants, re-run the 008 harness, confirm
+the first-repeat decision number actually moves before writing the rest. **What changes is that
+`milestone-opener` is now the right pilot for two reasons rather than one** — highest count *and*
+Continue-only, so it tests the sharper hypothesis.
+
+**Added to the pilot's scope, because they are defects rather than new writing:** the third-person
+`Had the time of his life at a bowl game` on a second-person screen; `Ninety thousand people, a noon
+kickoff` firing at an FCS school; and the same bowl-trip line being awarded as a warm memory for the
+option a tanking player picks *to waste the season*. That last one is not a typo — it is the single
+most congratulatory element on a failed career's end screen.
+
+**What would change our mind.** Unchanged from 030: the harness showing the first-repeat number
+barely moves.
