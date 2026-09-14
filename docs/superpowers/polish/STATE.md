@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 12 in flight · **PM session:** 6
+**Last updated:** 2026-09-14 · **Wave:** 12 complete and committed · **Wave 13:** in flight · **PM session:** 6
 
 ---
 
@@ -821,6 +821,9 @@ briefs this as "fix the six cards" will rewrite good writing and leave the cause
 | B35 | **Silent resolutions remain** — "Play this season", "Return to school" and "Stay at [school]" produce no outcome screen. **"Stay at Ole Miss" paid +10 as a bare number on a card with no sentence** | Wave 9 proved three hubs deserved silence *on the data then*. +10 is not silence-worthy. Re-measure before re-deciding |
 | B36 | **Arithmetic and state defects**: ledger read `8 snaps · 3 FG · 6 Points`; status read `ON THE FIELD: on the scout team` beside 339 snaps and 31 tackles; *Bowl Opt-Out* says *"your name's already climbing draft boards"* at **60 OVR on the scout team**; *Playoff or Bust* says *"Ten wins is a disappointing season here"* beside a **5-7** ledger | Mixed causes — some content conditions, some view-model. Cheap and they cost credibility every time |
 | B37 | **The redshirt card lies** — *"sit this season"* cost −3 and the season was played anyway | B13 was closed as a wording fix. The wording is still wrong |
+| B38 | **A playing-time phrase is printed beside `0 snaps`** — at Signing Day and preseason the header reads `ON THE FIELD: in the rotation` with `0 snaps` directly above it | Found by the PM's own click-through, wave 12. It is defect 2's mirror image: 027 fixed the low-phrase-beside-high-snaps direction and deliberately did not gate on `season.inProgress` (027 §7). A pre-season zero is "has not played yet", not "is not playing" — the phrase should probably be suppressed, not lowered. Small, `bands.ts` + `view-model.ts` |
+| B39 | **`delayPhases: 2` does not exist in practice** — all 14 deferred effects are `delayPhases: 1` and land inside their own card's `advance`, so "this will cost you later" never does | 026 §6.1. Content, frozen. Cheap (one field on 14 effects) and it is the only way an author can write a genuinely-later consequence |
+| B40 | **`suspension` is unaccounted on the card** — it zeroes snaps for two phases, moves no OVR, and the card says nothing | 026 §6.3. Same class as B30, out of that brief's scope |
 | B29 | **The empty room — CONFIRMED badly at 1456×824.** A ~755px band in a 1456px window, ~350px dead black each side; card bottom at y≈560 with ~260px empty below. **The decision screen uses about a third of its area** | *"Looks like a phone layout that was never given a desktop breakpoint."* The year rail sits marooned top-right over a void that would hold the season stat detail the ending screen already knows how to lay out |
 
 **Position — PARTIAL, and precisely split:** real in-season (the Kicker cards were the only thing the
@@ -830,7 +833,7 @@ offseason at all four positions.** That is B24, now with a boundary.
 **No visual defects at all.** Nothing clipped, overflowed, collided; contrast fine. Every finding in
 §8 is semantic. The type and colour work from waves 4–8 is done and should not be reopened.
 
-## Wave 12 — in flight (PM session 6)
+## Wave 12 — complete and committed (PM session 6)
 
 | Brief | What | Owns |
 |---|---|---|
@@ -849,6 +852,70 @@ tree clean at `bad12de`, dev server serving 200 on 5173.
 **Cross-lane protocol.** 027 may trace a defect to lane A's cause (`reducer.ts:61-64`) or need a fix
 in `view-model.ts`. It is told to write the exact diff into its report and stop, not to edit. The PM
 lands those after 026 commits.
+
+### What shipped — wave 12, commit `99456d4`
+
+**636 tests green (was 613), both typecheck passes exit 0, build clean, `npm run play` byte-identical
+on seeds 24/77/101 against a pristine `git archive HEAD` extraction, `src/engine` and `src/content`
+untouched.** The PM played a full career by hand and confirmed all four card shapes on screen.
+
+- **A card's number is its own chosen outcome**, identified by matching `lastOutcome.description`
+  against the chosen option's candidate outcomes — from content, no engine change, **0 unidentified
+  outcomes in 12,847 measured cards**. 13.5% of cards were reporting a number that was not theirs,
+  **227 with the wrong sign**, 758 printing a movement on a card that authored none. The remainder
+  gets its own beat, `EVERYTHING ELSE`.
+- **The biggest offender was `effects: []`, not the deferred effect.** Four of the six playtest rows
+  author nothing and were printing **eight distinct numbers across 352 resolutions**. All say
+  `No change` now.
+- **Character needed no integer and DECISION 002 is untouched.** The card says *"Cost you in the
+  locker room."* above the figure — words, weight, position, no hue, no magnitude. Confirmed on
+  screen: the Ticket Hookup now carries that line above its `+1`.
+- **Defect 2 fixed** (`ON THE FIELD: on the scout team` beside 339 snaps) — fires on 45.7% of careers,
+  measured over 1,200 careers / 30,739 decisions.
+- 027 diagnosed all five credibility defects to file and line. Four were frozen-file proposals, and
+  three of them share one cause — DECISION 048.
+
+### Three things from wave 12 worth not rediscovering
+
+- **`reducer.ts:61-64` was only half the story.** DECISION 046 named the deferred effect as cause 1,
+  and the measurement inverted it: **every deferred effect in the bundle is `delayPhases: 1` and lands
+  inside its own card's `advance`**, so the Position Switch's `−2` *is* that card's number. Disowning
+  it would have been the same bug reversed. The account asks `pendingEffects` rather than assuming.
+  026 §6.1 proposes `delayPhases: 2` if a genuinely-later cost is ever wanted — that is content, and
+  frozen.
+- **A literal NUL byte in `view-model.ts` made `grep` silently skip the entire file.** Lane A wrote it
+  as a key separator in a template string; `file` reported the source as `data`. The PM lost real time
+  to greps that returned nothing on a file that plainly contained the string. Replaced with a
+  `\u0000` escape — same runtime value, greppable source. **If a grep over a source file returns
+  nothing you are certain is there, run `file` on it.**
+- **A handoff diff written against a live file can be stale by the time it lands.** 027 §7's
+  `view-model.ts` diff assumed one `currentSeasonLine(state)` call site; there are two. It was applied
+  by hand against what the file actually said. Cross-lane diffs get re-read, not pasted.
+
+## Wave 13 — in flight (PM session 6)
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/028-the-freeze-lift.md` | **DECISIONS 048/049/050.** `requiresPlaying` on all 52 + a `validateContent` rule; `minOverall` + `minClass: "JR"` on the four draft-board cards; the redshirt card's two engine strings; *Playoff or Bust* reworded; twelve `points` siblings in `k.ts` | `src/content/**`, and **only** `engine/types.ts`, `engine/select-event.ts`, `advance.ts:74/:76` |
+| `briefs/029-the-empty-room.md` | **B29.** The ~755px band in a 1456px window; the decision screen using a third of its area. The void under the year rail takes the season stat detail | `CareerScreen.tsx`, `career.css` |
+| `briefs/030-undrafted-is-not-a-trophy.md` | **B33.** `Undrafted` in the same gold display type, size and position as `Round 5, Pick 14`. DECISION 032 applied to the case it missed | `SummaryScreen.tsx`, `summary.css` |
+
+**028 is alone in `src/content/**` on purpose** — its balance measurement is over the whole bundle, so
+a parallel lane touching any content would pollute it. That is the wave-10 lesson restated.
+
+**`npm run play` byte-identity is suspended as a check for 029 and 030 this wave**, because 028 moves
+it deliberately and by approval. Their check is `git status`: nothing modified under `src/engine/`,
+`src/content/`, or their out-of-bounds list. **028 records the new seed hashes for 24/77/101 so the PM
+can re-baseline at commit.**
+
+**028 carries a stop condition** (DECISION 048): if the redshirt cohort's draft rate collapses rather
+than shifting modestly, it stops and reports rather than tuning. That is a PM/user call.
+
+**Held back to wave 14 deliberately:** B32 (the declare card reads as a trap) touches the declare hub
+in `advance.ts` and `view-model.ts`, both spoken for this wave; B34 (the Moments reel printing one
+milestone four times) is content, which 028 holds. B30/B31's follow-ons — 026 §6.2 (hub cards still
+report the whole movement, by DECISION 037's choice) and §6.3 (`suspension` is unaccounted on the
+card) — are both real and both unqueued.
 
 ## Next actions — for PM session 6, in order
 
@@ -878,7 +945,8 @@ lands those after 026 commits.
    **Do not put B32/B33/B34 in this wave**; they touch `SummaryScreen.tsx` and the declare card, and
    lane A is changing what a resolved card means underneath them.
 
-2. **Then B32 and B33 together** — the ending and the declare card. B32 is the sharper one: wave 9
+2. **B33 is dispatched as wave 13 (brief 030). B32 is held to wave 14** — the ending and the declare
+   card. B32 is the sharper one: wave 9
    made declaring early genuinely cost 8 points of stock and the card still frames it as *"Cash in
    now"* with no warning. **DECISION 025 refused a round projection by name**, so the fix is not
    `draftStock` and not a projection; it is that a gamble should look like one before it is taken.
