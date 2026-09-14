@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 4 complete and committed; 5 (playtest) in flight · **PM session:** 3
+**Last updated:** 2026-09-13 · **Wave:** 5 complete; 6 in flight · **PM session:** 3
 
 ---
 
@@ -179,6 +179,82 @@ over finished surfaces once, instead of re-tuning CSS written against the old re
 *component* is also wave 4: 010 ships its logic and an exact wiring diff, and mounting it collides
 with 009's `CareerScreen.tsx`.
 
+## Wave 5 — the 014 playtest. Read this before planning anything
+
+Three careers, ~105 decisions (QB 41 / Kicker 32 / OL 18). Full report:
+`reports/014-post-wave4-playtest.md`. **This is the most decision-changing report of the phase.**
+
+### The north star, measured: we are not there
+
+The metric is a cold playtester starting a third career unprompted. Verbatim:
+
+1. *"Yes — I want to play again right now. What's pulling me is the Moments reel at the end... What's
+   pulling against it is that I already know six of the cards word-for-word."*
+2. *"Reluctantly yes — but the pull has changed. After career 1 I wanted to play; now I want to
+   **check** something, which isn't the same thing."*
+3. *"**No.** I would stop here. There is nothing left I expect to be surprised by — I know the six
+   cards that fire every year, I know the offseason is a menu with one correct answer, and I know
+   the ending is a gold headline regardless of what I did. I played the third one because you asked."*
+
+**Read the decay, not just the verdict.** Enjoyment → obligation → refusal, over three careers, with
+a named cause at each step. The writing still landed ("the Moments reel... rebuilt my four years
+into a story I actually recognised"). What failed is everything around it.
+
+**The three causes are named, and only one of them is a UI problem:**
+
+| Cause | Owner |
+|---|---|
+| Content repetition — 8 recurring cards, first verbatim repeat at **decision 12** | **User** (B11 item 3, authoring) |
+| No reachable failure state; the offseason has one correct answer | **User** (balance, engine) |
+| The ending is a gold headline regardless of input | **PM** — wave 6 lane B |
+
+**This is the honest read of the phase: the remaining UI work cannot reach the north star by
+itself.** Waves 6+ can make the ending mean something and the screen legible; they cannot make the
+twelfth decision surprising. That escalation is in "For the user" below.
+
+### Claim verdicts
+
+| Claim | Verdict |
+|---|---|
+| 8 — long text / overflow | **CONFIRMED CLEAN.** Zero overflow in 105 cards. Wave 4's clamps hold |
+| 3 — OVR delta magnitude | **CONFIRMED for magnitude** (+4 reads louder than +1 — *do not touch it*), **REFUTED for meaning** |
+| 4 — the DECISION 012 leak check | **Essentially passes.** Same card gave +2 one season and −5 another: *"a real gamble and it reads as one."* **One exception:** "The Ticket Hookup" → *"Less money, zero risk..."* characterises the branch not taken. A softer case in "Rivalry Week / Sit and get right". Playtester's own warning: **do not over-correct** |
+| 5 — career-arc OVR column | **CONFIRMED for long careers** (66→63→71→83 *"reads as an arc"*), **REFUTED for short ones** — 2 seasons is a stub in a five-row frame |
+| 6 — a bad ending in dimmed gold | **CANNOT CONFIRM — premise untested.** Played deliberately badly, declared at OVR 65 on a 5-7 record, still drafted **R7 P2**. *"I could not lose."* And #69 vs #194 print **identically** |
+| 7 — smaller, heavier type | **CONFIRMED**, one casualty: strip row 3 too small to read |
+| 1, 2 | Partial. Claim 2: the strip is *"actively lying"* in places |
+| DECISION 022's grey question | **PARTIALLY REFUTED — see DECISION 023** |
+
+### New backlog from the playtest
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B18 | **No reachable failure state.** Deliberately bad play → R7 P2. The gamble framing has no visible downside | **blocked-on-user** — balance/engine |
+| B19 | **The offseason is a menu with one correct answer** — transfer up every year is free OVR | **blocked-on-user** — balance/engine |
+| B20 | **The ending has no range.** #69 and #194 identical; HONORS block and a trophy-led reel on a 7-5/5-7 career | **in flight — wave 6 lane B (016)** |
+| B21 | **The standing block reads as one self-contradicting sentence** — *"All-America caliber / just a guy in the building"*. **Not a regression; two axes rendered as one.** See DECISION 024 | **in flight — wave 6 lane A (015)** |
+| B22 | **Career length is never stated and the title screen contradicts it.** A fifth season exists, bought by the redshirt, never explained, while the title says "Four years to get drafted" | **partly in flight** — the five-row ledger answers it structurally (wave 6 lane A); the title-screen wording is still open |
+
+Also confirmed independently: **B13** (the redshirt tells you it sat you, then hands you a
+game-deciding onside kick in a 9-snap year) and **B11** (repetition is *worse* than measured — 8
+recurring cards, first verbatim repeat at decision 12 vs the harness's 13, and its real cost is
+**indirect**: by career 3 the playtester skimmed every card body *including brand-new good ones*).
+
+**The most useful single sentence in the report**, for anyone deciding what to build next:
+repetition's cost is not boredom with the repeated cards, it is that it **teaches the player to stop
+reading**, which then throws away the game's best asset.
+
+## Wave 6 — in flight (PM session 3)
+
+Two lanes, hard file split: lane A owns the decision screen, lane B owns the summary. They share no
+files. `tokens.css` is off limits to both — the type scale and palette were settled in waves 4 and
+the 022/023 pair, and a third agent editing tokens would undo that.
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/015-decision-screen-orientation.md` | (1) **Mount the ledger** — built, tested, unrendered, with an exact wiring diff in report 010; also the structural answer to B22. (2) Split the two axes so the standing block stops reading as a contradiction (DECISION 024). (3) Strip row 3 legibility (DECISION 023) | `CareerScreen.tsx`, `career.css`, and `view-model.ts`/`types.ts` only if the wiring diff needs them |
+| `briefs/016-the-ending-has-a-range.md` | B20. A draft position must read differently at a glance, by **scale/weight/motion — never hue** (DECISION 012); stop the furniture congratulating a bad career; make a short career look intentional rather than truncated | `SummaryScreen.tsx`, `summary.css`, summary-facing interfaces in `types.ts`/`view-model.ts` |
+
 ## Findings that outrank the backlog table
 
 From `reports/004-current-ui-audit.md` — these were not on the board and change the plan:
@@ -334,7 +410,8 @@ a time, they share a `localStorage` origin.
 1. ~~**Re-dispatch wave 4**~~ — **done and committed** as three commits. See the wave 4 section.
 2. ~~**Then wave 5: `briefs/014`, the playtest.**~~ **Dispatched, in flight.** Then decide what is left from what it says, not from
    this table.
-3. **The ledger component is now the top unstarted item, and nothing blocks it.**
+3. ~~**The ledger component is now the top unstarted item**~~ — **dispatched as wave 6 lane A.**
+   Detail kept below because a fresh PM may need it if the lane fails.
    `src/ui/session/ledger.ts` is built, tested (6,418 snapshots over 240 careers, zero invariant
    violations) and committed; `reports/010-ledger-logic.md` ends with the **exact two-file wiring
    diff**. It needs `CareerScreen.tsx` and `career.css` — which is why it could join neither wave 3
@@ -349,20 +426,55 @@ a time, they share a `localStorage` origin.
    struck from this list rather than left to be redone. What the type pass *opened* is smaller and
    listed in the wave 4 section: labelled rail cells (needs markup), a `title` on clamped options,
    and a 1px `.standing` height shift.
-5. Increment the **PM session** counter at the top of this file when you take over.
+5. **When wave 6 returns:** verify (492 baseline, both typecheck passes, build clean, `npm run
+   play` byte-identical on two seeds, engine/content untouched in `git status`), click through, and
+   commit as **two** commits — the lanes share no files.
+6. **Then a playtest again**, and this time the question is narrower than 014's: did the ending
+   gaining a range, and the ledger appearing, change the *third*-career answer? Use
+   `briefs/014-post-wave4-playtest.md` as the shape — it is the best brief written in this phase and
+   it got refutations, not validation. Playtesting is **serial**.
+7. **Do not plan past that without the user's answers on B18/B19/B11.** The 014 report is explicit
+   that the remaining north-star gap is content and balance, not interface. A fresh PM who queues
+   four more UI waves against it will be polishing a game the playtester has already stopped
+   reading.
+8. Increment the **PM session** counter at the top of this file when you take over.
 
-## For the user — one open scope call
+## For the user — the phase's outcome now depends on these
 
-**B10 — imagery.** The reference gives every option a picture at ~50% of the option card. We have no
-art. ~102 events / 330 outcomes, so per-outcome art does not scale. Per-*category* — practice, game
-day, injury, off-field, academics — is ~12–20 reusable flat vector pieces in the turf/chalk palette,
-and is the only shape worth recommending. Cost and style are the user's call.
+**Three of these are new and they are the reason the north star is not reachable by UI work alone.**
 
-**B11 item 3 — authoring new content.** DECISION 017 items 1, 2 and 4 are PM calls and are in wave 3.
-Item 3 — writing per-season variants of the five milestone events — is **authoring new game content**,
-which is a different kind of decision from polish, so it is raised rather than assumed. The plan if it
-goes ahead: pilot `milestone-opener` alone (62% of first repeats), then re-run the 008 harness and
-confirm the first-repeat decision number actually moves before writing the other four.
+### 1. B18 + B19 — balance, and the reason career 3 was a "no"
+
+The 014 playtester played career 3 **deliberately badly** — skipped the install, ghosted the media
+twice, let a relative handle the money, played hurt — declared after two seasons at **OVR 65 with a
+5-7 record**, and was still drafted in **Round 7, Pick 2**. Their words: *"I could not lose."* They
+had also worked out that transferring up every offseason is free OVR, so *"the offseason stopped
+being a decision."*
+
+These are engine and balance questions, not polish, so they are raised rather than assumed. Wave 6
+can make a Round 7 pick *look* like a Round 7 pick; it cannot make it a loss. **Without a reachable
+downside the decisions are not gambles, and no amount of visual range will make them feel like
+gambles.**
+
+### 2. B11 item 3 — authoring new content (unchanged ask, now with a sharper cost)
+
+Writing per-season variants of the five (the playtester counted eight) milestone events. The pilot
+plan stands: do `milestone-opener` alone (62% of first repeats), re-run the 008 harness, and confirm
+the first-repeat decision number actually moves before writing the rest.
+
+**What is new is the measured cost of not doing it.** Repetition's damage is not that the repeated
+cards are dull — it is that by career 3 the playtester was skimming *every* card body, including
+brand-new ones they had never seen. Repetition is training players out of reading the prose, and the
+prose is this game's best asset.
+
+### 3. B10 — imagery (unchanged)
+
+
+
+The reference gives every option a picture at ~50% of the option card. We have no art. ~102 events /
+330 outcomes, so per-outcome art does not scale. Per-*category* — practice, game day, injury,
+off-field, academics — is ~12–20 reusable flat vector pieces in the turf/chalk palette, and is the
+only shape worth recommending. Cost and style are the user's call.
 
 ## What a fresh PM should know that is not obvious from the files
 

@@ -535,3 +535,88 @@ Note the shape of this one: DECISION 008's own "would change our mind" clause na
 the raised floor as the thing to watch, the type pass measured it, and the clause was honoured in
 the same wave rather than three waves later. That is the clause working as intended.
 
+## 023 — DECISION 022 is amended, not reversed: the AA floor holds, and the strip gets size, not tone
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Amends:** 022 · **Evidence:** `reports/014-post-wave4-playtest.md`
+
+022 raised `--chalk-faint` to clear AA and named its own risk: that the ramp's bottom two greys
+would stop reading as two tiers. The 014 playtester was asked the question blind and **split the
+answer**, which is more useful than either verdict alone:
+
+- **Holds** where the two greys sit on lines of different size and opposite meaning — the rail's
+  bright headline against its dim sub-line, the "You chose: X" line against the outcome paragraph.
+  *"Unmistakable."*
+- **Fails** in the context strip, where rows 2 and 3 are adjacent and similar: *"the tonal step
+  between them is gone — what tells them apart is that row 3 is smaller."*
+
+**The call: keep `#849a8d`. Do not darken it back, and do not collapse the tier.** The failure is
+local to one component, and 022's alternative (retire faint as a text colour everywhere) would throw
+away the two places the playtester says it is working.
+
+**In the strip specifically, separation becomes size and structure rather than tone** — and note the
+playtester's second sentence, which matters more than the first: row 3 is *too small to read
+comfortably* (claim 7's one casualty). Fixing legibility there likely fixes the tonal complaint as a
+side effect, because the rows stop being near-identical in size. Do the legibility fix first and
+re-ask; do not reach for a new grey.
+
+**What would change our mind.** If a later playtester reports the strip's rows still merge *after*
+row 3 is legible, the answer is a structural separator or a label, not a fourth grey. The ramp is
+four steps and stays four steps.
+
+## 024 — The rail does not contradict itself. Two axes are being read as one sentence, and that is B17
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Supersedes nothing; upgrades B17** · **Evidence:** `reports/014-post-wave4-playtest.md` §"The rail contradicts itself constantly"
+
+The 014 playtester flagged, as a **likely regression from the wave-4 rail work**, that the standing
+block contradicts itself: *"All-America caliber / just a guy in the building"*, and the sub-line
+stuck on one phrase for ~35 consecutive decisions across three seasons and two schools.
+
+**Checked in source before acting. It is not a regression, and nothing in wave 4 touched it.**
+`CareerScreen.tsx:85-91` renders `.ovr-band` from `standingPhrase(overall)` and `.trust` from
+`trustPhrase(character)` as two unlabelled children of one `.ovr-gloss`, stacked beside the OVR
+number. They are **two different axes**. `All-America caliber` is `overall >= 85`; `just a guy in
+the building` is `character` in 50–69 (`bands.ts:16,30`). A great player the staff is neutral on is
+a coherent and interesting state — the game is describing it correctly.
+
+**So the data is right and the presentation is wrong, which is exactly what B17 said** and what
+DECISION 002 could not have anticipated. Three elements — a number, a standing phrase, a trust
+phrase — sit adjacent in one dimming ramp with no labels, so they read as one continuous sentence
+about *overall*. Read that way, the second clause can only parse as a contradiction of the first.
+The ~35-decision stasis compounds it: `TRUST_BANDS` are deliberately coarse (DECISION 002 — character
+moves draft stock ~±7.5 against overall's ~82, so a finer dial would misrepresent it tenfold), which
+is correct, but a line that never moves *and* appears to describe overall reads as broken rather
+than as stable.
+
+**The call: the two axes must be visually separable as two statements.** The fix is structural —
+labelling, spatial separation, or attaching trust to something other than the OVR number's gloss.
+It is **not** to make the character bands finer (that re-litigates 002, which measured), and **not**
+to hide character (B17 says it is already too ignorable).
+
+**What would change our mind.** If a playtester who sees the separated version still reads the two
+as one claim, the problem is the phrasing of the trust bands, not the layout.
+
+## 025 — "Currently projected: 6th round" is refused. The playtester asked for `draftStock` by name
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Evidence:** `reports/014-post-wave4-playtest.md` §"If I could change three things", item 2
+
+The 014 playtester's second-highest ask was to *"contextualise OVR"* by showing what the number
+means — *"currently projected: 6th round."* Their reasoning is sound: OVR 71 means nothing to a new
+player, and the game's biggest number is uninterpretable.
+
+**Refused. That value is `draftStock`, which the hidden-mechanics rule names explicitly as never
+displayed** (PHASE3-KICKOFF; spec §7). A live round projection turns every decision into a
+reload-and-compare against a visible score, which is the precise failure DECISION 002's reasoning
+and the whole hidden-mechanics rule exist to prevent. A playtester cannot be expected to know this,
+and the ask is not evidence the rule is wrong — it is evidence the *underlying need* is unmet.
+
+**The need is real and is granted in a different currency.** The other half of the same ask —
+**print the transfer delta** — is approved without reservation: the player moved schools and the
+OVR moved, and we said nothing. Showing a change that already happened is not a projection of a
+hidden score. Beyond that, OVR is already contextualised qualitatively by the standing band, which
+DECISION 024 is about to make legible as a statement about overall; that is the sanctioned channel
+for "what does this number mean."
+
+**What would change our mind.** Nothing short of the user reversing the hidden-mechanics rule, which
+is a game-design decision and not a PM call. If the qualitative channel still leaves players unable
+to read their own OVR after 024 ships, the escalation is to the user, not to `draftStock`.
+
