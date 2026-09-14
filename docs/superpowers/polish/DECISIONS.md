@@ -374,3 +374,128 @@ identical, and stop three of them from pretending to be decisions."
 *Would change our mind on item 3:* if the `milestone-opener` pilot does not move the first-repeat
 number, the problem is structural (the fixed season skeleton itself) and content volume will not fix
 it either.
+
+## 018 — A one-option card is a narrated beat, not a decision: it resolves on arrival and keeps its prose
+**2026-09-13 · PM session 2, from reading `reducer.ts:85-89` against DECISION 017 item 1**
+
+DECISION 017 ranked "do not let a one-option milestone cost a tap" as the cheapest fix for the 40%
+of a career that is metronomic. Reading the code changes the diagnosis. `reducer.ts:88`:
+
+```ts
+const skipOutcome = outcome === null || decision.options.length === 1;
+if (skipOutcome) return settle(ui, next, null);
+```
+
+**The tap was already saved. What it was bought with is the prose.** Every one-option card already
+resolves in a single press — and throws `next.lastOutcome.description` on the floor. DECISION 001
+made those 330 authored descriptions reachable precisely so this could not happen. So "Win the job"
+costing 1 overall and showing nothing is not a styling failure and not a content failure; it is this
+line trading the writing away to save an interaction.
+
+Both are available. **A one-option decision resolves the moment the player arrives on it**, and the
+card renders title, description, the option label as a quiet line, the authored outcome, and the
+delta (DECISION 012), behind a single Continue. One interaction, prose intact, and the card never
+pretends to offer a choice it does not have.
+
+Invariants the implementation must hold:
+
+- Exactly one `advance` per card. Auto-resolution must be **inside the reducer**, not a `useEffect` —
+  React re-invokes effects in StrictMode and a double `advance` would silently consume a decision.
+- It resolves **at most one level** and stops with `resolved` non-null. Two consecutive one-option
+  cards must produce two cards, not one skipped one.
+- Multi-option decisions are untouched. Hub cards (Signing Day, transfer, declare) author no prose
+  and keep today's behaviour.
+- The engine is not called differently, only at a different moment in the UI's own sequence. Same
+  seed, same draws, same career.
+
+*Why this is a PM call and not the user's:* no engine or content file changes, no balance effect, and
+it restores authored text the game already ships rather than adding any.
+
+*Would change our mind:* if a playtester reads the merged card as two events run together — that
+would mean the beat needs a visual seam, not that the merge was wrong.
+
+## 019 — The context rail is a fixed slot that never reflows, and it reports the season the card belongs to
+**2026-09-13 · PM session 2 · implements 013/014, and fixes what report 007 found**
+
+Three separate findings land on the same strip of interface:
+
+1. Report 007: **71% of resolved cards showed the wrong phase** (270 of 378 cards, 36 of 36 careers).
+   `App.tsx` builds the view from post-`advance` state while `resolved` carries pre-`advance` prose.
+   `Resolved.stamp` already exists and is taken before `advance()`; nothing reads it yet.
+2. Report 007: removing the fake `0-0` (DECISION 014) makes the rail **reflow worse**, because the
+   node vanishes instead of emptying. The playtester's "the header changes shape between cards" is a
+   layout fault, not a content one.
+3. DECISION 013: orientation is wanted at the **season-line** level — record, snaps, stat line, this
+   year — not as a progress bar.
+
+**The rail is a fixed-height slot with fixed cells.** A cell with nothing to say renders empty and
+keeps its space; no cell appears or disappears between cards. It carries the season identity and the
+live season line, and it reads the **stamp** whenever a resolved outcome is on screen, so the strip
+always describes the card being read rather than the state the engine has already moved to.
+
+The record still renders only once it is real (DECISION 014). Its slot is held regardless.
+
+*Would change our mind:* a playtester who reads the held-empty cells as broken rather than pending.
+
+## 020 — Ledger rows are labelled by sequence. DECISION 015's open question is closed, and its "would change our mind" clause is withdrawn
+**2026-09-13 · PM session 2, from the 010 measurement (1,536 careers, 4 cohorts, all six positions)**
+
+DECISION 015 left three ways to label a redshirted career's ledger rows and required a measurement
+before choosing. The measurement is in, and it settles it: **option 2 — rows are labelled `Year 1`
+through `Year 5`, with the stored class year as a secondary read.**
+
+What decided it is not the snaps signal everyone expected to decide it:
+
+| | |
+|---|---|
+| Redshirt careers where the duplicate-`classYear` gate is present at all | **40.6%** (427 of 1,051) |
+| Of those, cases where the gate points at the **wrong row** | **99.8%** (426 of 427) |
+| Careers where the redshirt actually sits at season index 1 | 955 of 1,051 |
+| Snaps separation, redshirt vs. ordinary rows | median **26 vs 461** — clean |
+| Best snaps threshold (T=52) over 5,390 rows | 0 false negatives, 31 false positives |
+
+**The snaps inference works and is still wrong.** It identifies a redshirt row with ~99.4% accuracy
+— and that row is not the ambiguous one. The stored duplicate lands at the *end* of the career while
+the redshirt is taken at season index 1, so labelling the snaps-identified row `RS` leaves the two
+identically-labelled `SR` rows exactly where they were. That is option 3 unadorned, which DECISION
+015 forbids: a correct label in the wrong place buys nothing and costs the row that needed it.
+
+**DECISION 015's "would change our mind" clause is hereby withdrawn.** It read: *"if the snaps
+inference measures clean across a few hundred redshirt careers, option 1 is both free and correct."*
+It measured clean. It is neither free nor correct, and the clause as written would send the next
+agent to re-derive a 99.4% accuracy figure and re-propose a label that fixes nothing. The clause was
+wrong because it assumed accuracy was the binding constraint; the binding constraint is *which row*.
+
+*What would actually change our mind:* an engine field recording the redshirt season index — which
+DECISION 015 already declined, on the grounds that the frozen-engine line has been crossed once this
+phase and the payoff is one row label. That reasoning still holds, and sequence labels make it moot:
+`Year 1`–`Year 5` is unambiguous by construction and answers the career-length question (DECISION
+013's one genuine demand on the full table) more directly than class years ever did.
+
+## 021 — The summary verdict is one hue at two intensities. The 011 agent's call stands
+**2026-09-13 · PM session 2, ruling on a judgement call raised by the 011 agent**
+
+The summary headline is the most consequential sentence the game prints: a draft round and pick, or
+`Undrafted`, or an ending reason. It was set in `--chalk` when the career failed and `--milestone`
+(the accent) when it succeeded. The 011 agent moved the failed case to a **dimmed `--milestone`** and
+flagged it for review, reading DECISION 012 as forbidding the split.
+
+**Upheld, and the agent read it correctly.** The old treatment was a hue tracking valence — the one
+thing 012 and 006 both forbid — sitting unnoticed on the screen where it is loudest. What replaced it
+is one hue at two intensities, which is exactly the axis 012 permits: *scale, weight and motion may
+track magnitude; hue may not track valence.*
+
+**The argument for allowing a hue split here, and why it loses.** The leak rationale genuinely does
+not apply at the summary: the career is over, every branch is resolved, and there is nothing left for
+a colour to disclose. A red washout would leak nothing. It loses anyway, on two grounds. First, the
+rule is worth more as a categorical one than as a rule with a carve-out a future agent has to
+re-derive — and the carve-out would sit one screen away from the resolved outcome card, where the
+same colours *would* leak. Second, `--milestone`'s own definition in `tokens.css` is "a career fact
+already known and already on screen, given its headline." A career ended by injury is exactly that.
+
+The intensity drop is doing real work: it is the magnitude of the career, not a verdict on the
+player.
+
+*Would change our mind:* a playtester who reads the dimmed accent on `Career-ending injury` as
+congratulatory, or who cannot tell a washout from a draft at a glance. This is a direct question for
+the next playtest — it goes in the brief. One line to revert if it lands wrong.
