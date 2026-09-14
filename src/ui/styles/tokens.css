@@ -30,7 +30,12 @@
   --chalk: #eef3ef;
   --chalk-soft: #d3ded6;   /* prose at rest, one step under a heading */
   --chalk-dim: #93a89b;
-  --chalk-faint: #64776c;
+  /* Raised from #64776c by DECISION 022. The 012 type pass dropped thirteen text
+     roles to 11px, and at that size the old value's 3.0-3.8:1 was felt, not just
+     measured. This clears WCAG AA (4.5:1) on all three grounds it is ever set on:
+     5.36 on --card, 6.09 on --turf, 4.76 on --card-raised. Do not darken it back
+     without re-measuring against --card-raised, which is the binding one. */
+  --chalk-faint: #849a8d;
 
   /* ---------- palette: the one accent ----------
      Held as channels so alpha variants derive from the hue rather than

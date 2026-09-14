@@ -499,3 +499,39 @@ player.
 *Would change our mind:* a playtester who reads the dimmed accent on `Career-ending injury` as
 congratulatory, or who cannot tell a washout from a draft at a glance. This is a direct question for
 the next playtest — it goes in the brief. One line to revert if it lands wrong.
+
+## 022 — `--chalk-faint` is raised to clear WCAG AA. The type pass's own "would change our mind" clause, honoured
+
+**Date:** 2026-09-13 · **Made by:** PM session 3 · **Follows:** 008, 012
+
+Report 012 shipped the register inversion and flagged, without fixing it, that `--chalk-faint`
+(`#64776c`) carries **thirteen 11px text roles** at a measured **3.83:1 on `--turf`, 3.37:1 on
+`--card`, 3.00:1 on `--card-raised`** — all under the 4.5:1 AA floor, and none of those roles is
+large enough for the 3:1 large-text allowance. The agent was right not to fix it: colour was not its
+brief, and `tokens.css` palette values are a PM call.
+
+**The call: raise the token to `#849a8d`.** One line. Every role assignment the type pass made
+deliberately is preserved.
+
+**Why not the value the report proposed.** 012 suggested "roughly `#7e9488`". Re-measured here, that
+clears AA on `--card` (4.97) and **fails on `--card-raised` (4.42)** — and `--card-raised` is live at
+`career.css:245` and `:392`. A fix that clears one of the three grounds a token is set on is not a
+fix. `#849a8d` measures **6.09 / 5.36 / 4.76** across turf / card / card-raised: AA on all three,
+with the binding case being the raised card.
+
+**Why not the other option — re-pointing the thirteen roles to `--chalk-dim`.** It also clears AA,
+but it retires the bottom tier of the grey ramp as a *text* colour, and does it by editing thirteen
+selectors instead of one value. If the tier has to go, it should go as a deliberate collapse, not as
+a side effect of an accessibility fix.
+
+**What would change our mind.** The honest cost of this call is that the ramp's bottom two steps
+move closer together: `--chalk-dim` is 6.38:1 on `--card` and `--chalk-faint` is now 5.36:1, about
+7 L\* apart. That is a real but subtle step. **If the next playtester cannot tell the two tiers
+apart — if the de-emphasised micro-copy stops reading as de-emphasised — the answer is to collapse
+the tier deliberately (re-point the 11px roles to `--chalk-dim` and stop using faint for text), not
+to darken faint back below AA.** This question is added to `briefs/014-post-wave4-playtest.md`.
+
+Note the shape of this one: DECISION 008's own "would change our mind" clause named legibility at
+the raised floor as the thing to watch, the type pass measured it, and the clause was honoured in
+the same wave rather than three waves later. That is the clause working as intended.
+
