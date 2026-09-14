@@ -90,6 +90,11 @@ export interface EventConditions {
   requiresPlaying?: boolean;
   maxCharacter?: number;
   maxOverall?: number;
+  // DECISION 049: the exact mirror of maxOverall. It is the only condition that
+  // lets a card say "this beat is for good players" -- the draft-prospect family
+  // (bowl-opt-out and its three siblings) told a 60-overall sophomore his name
+  // was climbing draft boards, and minClass alone does not close that.
+  minOverall?: number;
   schoolTrait?: SchoolTrait[];
 }
 

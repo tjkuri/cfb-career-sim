@@ -1378,3 +1378,46 @@ deletes one `rng.next()` per phase per kicker and diverges every existing K seed
 nothing downstream that would justify it (`postseason.ts:40` gates All-Conference on `fieldGoals`).
 Also rejected, and recorded for the Stage-2 engine work rather than here: drawing one jitter per
 *position* rather than per stat, which would fix the same class of incoherence in QB lines.
+
+## 051 — DECISION 048's gate is kept after measuring its second-order cost: a redshirt season's event pool falls from 81 to 12
+
+**Date:** 2026-09-14 · **Made by:** PM session 6 · **Evidence:** measured by the PM against a pristine pre-048 tree
+
+048 was approved on the strength of the defect it closes. Applying it, the PM checked what it costs
+on the axis this whole phase says matters most — repetition — because the approval did not cover that
+and an unmeasured side effect on the top finding would have been a bad trade taken silently.
+
+**The pool collapse is real and large.** Events eligible during a redshirt season, by phase:
+
+| phase | before | after |
+|---|---|---|
+| `nonconf` | 31 | **3** |
+| `conference` | 30 | **5** |
+| `postseason` | 20 | **4** |
+
+81 → 12. A redshirt season is now served from a very small pool, and DECISION 045 established that
+repetition is what starts players skimming.
+
+**The measured consequence is small.** Committed probe, cohort C (the redshirt cohort), 144 careers,
+against a pristine pre-048 tree:
+
+| | before | after |
+|---|---|---|
+| first verbatim repeat, median decision | 17 | **17** |
+| repeat by decision 16 | 41.0% | **44.4%** |
+| re-shown share, median / p90 | 36.4% / 40.9% | **36.4% / 40.9%** |
+
+**+3.4pp on one rate, and nothing else moves.** The reason is that a redshirt season is one season of
+five, and the repetition metric is career-wide. **The gate is kept.**
+
+**Three off-field cards are inside the gate and that is deliberate.** *Cutting the Line*, *Bed Check*
+and *On the Sideline, On Camera* are off-field beats a redshirting player could plausibly live
+through — but each awards `snaps` (+15, +15, −20), and a direct `snaps` award bypasses
+`sitSnapModifier` entirely, so they were paying real playing time to a player who was not playing.
+048's rule is about what a card *pays*, not where it happens. The cleaner long-term fix is that an
+off-field beat should not author `snaps` at all; that changes those cards for every player, not just
+redshirts, and is a bigger balance question than this wave. **Recorded as B41.**
+
+**What would change our mind.** A playtester redshirting and reporting the season as thin or repetitive
+in a way the career-wide numbers do not capture. The next playtest brief should send someone through a
+redshirt season deliberately and ask.

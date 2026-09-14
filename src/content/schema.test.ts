@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateContent, type ContentBundle } from "./schema";
+import { awardsProduction, validateContent, type ContentBundle } from "./schema";
 import { POSTSEASON, PROGRESSION } from "./postseason";
 import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
 import { REDSHIRT } from "./redshirt";
@@ -373,6 +373,10 @@ describe("validateContent", () => {
   it("allows stat and snaps effects on an on-field event", () => {
     const b = goodBundle();
     b.events[1]!.phase = "nonconf";
+    // DECISION 048 now requires the gate on any on-field card that awards
+    // production, so the fixture carries it. The property under test is
+    // unchanged: stat and snaps effects are legal in an on-field phase.
+    b.events[1]!.conditions = { requiresPlaying: true };
     b.events[1]!.options[0]!.positiveOutcome.effects = [
       { kind: "stat", stat: "passYards", amount: 50 },
       { kind: "snaps", amount: 40 },
@@ -445,5 +449,102 @@ describe("schoolTraits validation", () => {
     const bundle = goodBundle();
     bundle.traitHints = { ...bundle.traitHints, factory: "" };
     expect(validateContent(bundle).join("\n")).toContain('traitHints: missing hint for trait "factory"');
+  });
+
+  it("rejects out-of-range minOverall, and a minOverall above its own maxOverall", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "bad-minovr", kind: "random", phase: "offseason", weight: 1,
+      conditions: { minOverall: 120 },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    bundle.events.push({
+      id: "impossible-window", kind: "random", phase: "offseason", weight: 1,
+      conditions: { minOverall: 80, maxOverall: 60 },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("bad-minovr") && e.toLowerCase().includes("minoverall"))).toBe(true);
+    expect(errors.some((e) => e.includes("impossible-window") && e.includes("can never fire"))).toBe(true);
+  });
+
+  // DECISION 048. The 52 events that awarded a redshirting player production
+  // were all authored one at a time, each one individually plausible. This rule
+  // is what makes the 53rd impossible to write by accident.
+  it("rejects an on-field event that awards production without requiresPlaying", () => {
+    for (const phase of ["nonconf", "conference", "postseason"] as const) {
+      const bundle = goodBundle();
+      bundle.events.push({
+        id: `ungated-${phase}`, kind: "random", phase, weight: 1,
+        title: "t", description: "d",
+        options: [{
+          id: "o", label: "o", probability: 1,
+          positiveOutcome: { description: "d", effects: [{ kind: "stat", stat: "passYards", amount: 40 }] },
+        }],
+      });
+      expect(validateContent(bundle).join("\n")).toContain(`Event ungated-${phase}: on-field event awards stat/snaps production`);
+    }
+  });
+
+  it("accepts the same event once it sets requiresPlaying, and ignores snaps-free on-field cards", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "gated", kind: "random", phase: "conference", weight: 1,
+      conditions: { requiresPlaying: true },
+      title: "t", description: "d",
+      options: [{
+        id: "o", label: "o", probability: 1,
+        positiveOutcome: { description: "d", effects: [{ kind: "snaps", amount: 12 }] },
+      }],
+    });
+    bundle.events.push({
+      id: "no-production", kind: "random", phase: "conference", weight: 1,
+      title: "t", description: "d",
+      options: [{
+        id: "o", label: "o", probability: 1,
+        positiveOutcome: { description: "d", effects: [{ kind: "character", amount: 2 }] },
+      }],
+    });
+    expect(validateContent(bundle)).toEqual([]);
+  });
+
+  // The negative branch counts too: a card that DEBITS a stat is still claiming
+  // the player took the field that season.
+  it("flags an on-field event whose only production is on the negative branch", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "negative-only", kind: "random", phase: "nonconf", weight: 1,
+      title: "t", description: "d",
+      options: [{
+        id: "o", label: "o", probability: 0.5,
+        positiveOutcome: { description: "d", effects: [{ kind: "character", amount: 1 }] },
+        negativeOutcome: { description: "d", effects: [{ kind: "stat", stat: "ints", amount: -1 }] },
+      }],
+    });
+    expect(validateContent(bundle).join("\n")).toContain("Event negative-only: on-field event awards stat/snaps production");
+  });
+
+  // The shipped bundle is the thing the rule exists to protect, and
+  // `validateContent(CONTENT)` is asserted empty elsewhere in this file --
+  // this states the specific property so a regression names itself.
+  it("every on-field event in the shipped bundle that awards production sets requiresPlaying", () => {
+    const onField = CONTENT.events.filter((e) => ["nonconf", "conference", "postseason"].includes(e.phase));
+    const offenders = onField.filter((e) => awardsProduction(e) && !e.conditions?.requiresPlaying).map((e) => e.id);
+    expect(offenders).toEqual([]);
+    expect(onField.filter(awardsProduction).length).toBe(59);
+  });
+
+  // DECISION 049. The four draft-prospect cards told a 60-overall sophomore his
+  // name was climbing draft boards. All three gates are load-bearing.
+  it("the four draft-prospect cards gate on class, overall and playing status", () => {
+    for (const id of ["bowl-opt-out", "all-star-invite", "all-star-practice-week", "senior-bowl-invite"]) {
+      const ev = CONTENT.events.find((e) => e.id === id);
+      expect(ev, id).toBeDefined();
+      expect(ev!.conditions?.minClass, id).toBe("JR");
+      expect(ev!.conditions?.minOverall, id).toBe(70);
+      expect(ev!.conditions?.requiresPlaying, id).toBe(true);
+    }
   });
 });

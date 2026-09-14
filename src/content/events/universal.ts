@@ -122,7 +122,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
     weight: 2,
     conditions: { tier: [3, 4], requiresPlaying: true },
     title: "Playoff or Bust",
-    description: "Ten wins is a disappointing season here. The message boards have been counting since September, and the staff can hear them through the walls.",
+    description: "The standard here is the playoff, and everything short of it is a bad year. The message boards have been counting since September, and the staff can hear them through the walls.",
     options: [
       {
         id: "say-it-on-camera",

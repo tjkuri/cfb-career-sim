@@ -167,6 +167,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
+    conditions: { requiresPlaying: true },
     title: "Cutting the Line",
     description: "The training-table line is long and you are starving. Cutting to the front in front of the walk-ons would take ten seconds.",
     options: [
@@ -456,7 +457,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 4,
-    conditions: { maxCharacter: 55 },
+    conditions: { maxCharacter: 55, requiresPlaying: true },
     title: "On the Sideline, On Camera",
     description: "You and your coordinator get into it on the sideline, three feet from a live broadcast camera.",
     options: [
@@ -511,7 +512,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 4,
-    conditions: { maxCharacter: 55 },
+    conditions: { maxCharacter: 55, requiresPlaying: true },
     title: "Bed Check",
     description: "Game-week curfew, and the RA doing bed check finds your room empty at 1 a.m.",
     options: [

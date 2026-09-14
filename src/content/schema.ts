@@ -84,6 +84,22 @@ export interface ContentBundle {
   traitHints: Record<SchoolTrait, string>;
 }
 
+// The three phases a player spends on the field. `offseason` is excluded
+// because nobody is playing in it (and checkEffect already rejects stat/snaps
+// effects there outright).
+const ON_FIELD_PHASES = new Set<Phase>(["nonconf", "conference", "postseason"]);
+
+// Does any outcome of any option credit season production -- a `stat` line or
+// `snaps`? Negative amounts count: a card that debits a stat is still claiming
+// the player took the field.
+export function awardsProduction(ev: GameEvent): boolean {
+  return ev.options.some((opt) =>
+    [opt.positiveOutcome, opt.negativeOutcome]
+      .filter((o): o is Outcome => o !== undefined)
+      .some((oc) => oc.effects.some((eff) => eff.kind === "stat" || eff.kind === "snaps")),
+  );
+}
+
 export function validateContent(bundle: ContentBundle): string[] {
   const errors: string[] = [];
   const knownStats = new Set<string>();
@@ -217,6 +233,19 @@ export function validateContent(bundle: ContentBundle): string[] {
       for (const oc of outcomes) for (const eff of oc.effects) checkEffect(ev.id, opt.id, eff, ev.phase, errors);
     }
 
+    // DECISION 048. A player sitting a redshirt is not on the field, so a card
+    // that credits him production for a season he did not play puts stats on
+    // his permanent ledger row and his summary reel. `requiresPlaying` already
+    // existed and worked; it was simply missing from 52 of the 59 on-field
+    // events that award production. This rule is what stops the next authored
+    // card reopening the hole silently. Opting a beat back INTO a redshirt
+    // season is deliberately not expressible -- see the decision's note on the
+    // declined `allowedDuringRedshirt`.
+    if (ON_FIELD_PHASES.has(ev.phase) && awardsProduction(ev) && !ev.conditions?.requiresPlaying)
+      errors.push(
+        `Event ${ev.id}: on-field event awards stat/snaps production and must set conditions.requiresPlaying (DECISION 048)`,
+      );
+
     const c = ev.conditions;
     if (c) {
       if (c.minClass && !CLASS_ORDER.includes(c.minClass))
@@ -234,6 +263,10 @@ export function validateContent(bundle: ContentBundle): string[] {
         errors.push(`Event ${ev.id}: invalid maxCharacter "${c.maxCharacter}"`);
       if (c.maxOverall !== undefined && (c.maxOverall < 0 || c.maxOverall > 99))
         errors.push(`Event ${ev.id}: invalid maxOverall "${c.maxOverall}"`);
+      if (c.minOverall !== undefined && (c.minOverall < 0 || c.minOverall > 99))
+        errors.push(`Event ${ev.id}: invalid minOverall "${c.minOverall}"`);
+      if (c.minOverall !== undefined && c.maxOverall !== undefined && c.minOverall > c.maxOverall)
+        errors.push(`Event ${ev.id}: minOverall ${c.minOverall} exceeds maxOverall ${c.maxOverall} (the event can never fire)`);
       if (c.requiresFinalSeason !== undefined && typeof c.requiresFinalSeason !== "boolean")
         errors.push(`Event ${ev.id}: requiresFinalSeason must be a boolean`);
       if (c.requiresPlaying !== undefined && typeof c.requiresPlaying !== "boolean")

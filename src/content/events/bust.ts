@@ -175,7 +175,7 @@ export const BUST_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { maxCharacter: 25 },
+    conditions: { maxCharacter: 25, requiresPlaying: true },
     title: "The Doghouse",
     description: "You have been running with the twos for three weeks and nobody will tell you why.",
     options: [

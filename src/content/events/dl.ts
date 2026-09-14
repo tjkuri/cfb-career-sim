@@ -79,7 +79,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["DL"] },
+    conditions: { position: ["DL"], requiresPlaying: true },
     title: "Stat-Padding Saturday",
     description:
       "The nonconference schedule serves up a body that has no business lining up across from you. The line coach tells you to eat.",
@@ -108,7 +108,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["DL"] },
+    conditions: { position: ["DL"], requiresPlaying: true },
     title: "Gap Discipline",
     description:
       "The scheme calls for you to hold your gap and let the linebackers clean up. The quarterback keeps rolling toward daylight anyway.",
@@ -148,7 +148,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["DL"] },
+    conditions: { position: ["DL"], requiresPlaying: true },
     title: "The Roughing Call",
     description:
       "You bury the quarterback a half-second after the ball's out, and the flag comes in high and hot. The officials are watching you the rest of the way.",
@@ -191,7 +191,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["DL"], minClass: "JR" },
+    conditions: { position: ["DL"], minClass: "JR", requiresPlaying: true },
     title: "Double-Teamed All Day",
     description:
       "The opposing coordinator builds the whole game plan around keeping two bodies on you. Every rep is a fight before it starts.",
@@ -233,7 +233,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["DL"] },
+    conditions: { position: ["DL"], requiresPlaying: true },
     title: "The Strip Sack",
     description:
       "You get home clean and the ball comes loose. Fifteen bodies pile on it near midfield, and nobody's sure who's underneath.",
@@ -271,7 +271,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 2,
-    conditions: { position: ["DL"] },
+    conditions: { position: ["DL"], requiresPlaying: true },
     title: "Trash Talk",
     description: "The opposing guard has been running his mouth since warmups, and he hasn't stopped since the first snap.",
     options: [
@@ -313,7 +313,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["DL"] },
+    conditions: { position: ["DL"], requiresPlaying: true },
     title: "Bowl Practice Reps",
     description:
       "Three weeks of practice before the bowl game means three weeks of live reps against your own offensive line, every single day.",
@@ -353,7 +353,7 @@ export const DL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["DL"], tier: [1, 2] },
+    conditions: { position: ["DL"], tier: [1, 2], requiresPlaying: true },
     title: "Combine Buzz",
     description:
       "Scouts keep asking about your get-off number. You've never been the workout-warrior type, but they want it anyway.",

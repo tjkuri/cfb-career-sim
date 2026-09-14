@@ -84,7 +84,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["DSKILL"] },
+    conditions: { position: ["DSKILL"], requiresPlaying: true },
     title: "Gambling on the Jump",
     description:
       "Third-and-six, the receiver breaks in front of you, and you've got half a second to decide: jump the route, or play it honest and stay on top.",
@@ -124,7 +124,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["DSKILL"] },
+    conditions: { position: ["DSKILL"], requiresPlaying: true },
     title: "The Missed Tackle Reel",
     description:
       "You whiff on an open-field tackle in the red zone Saturday, and Monday the coordinator cuts the clip into the team meeting with your name on it.",
@@ -156,7 +156,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["DSKILL"] },
+    conditions: { position: ["DSKILL"], requiresPlaying: true },
     title: "Special Teams Gunner",
     description:
       "Special teams is short a body, and now you're the gunner sprinting downfield into a wall of blockers on every punt.",
@@ -196,7 +196,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["DSKILL"], minClass: "JR" },
+    conditions: { position: ["DSKILL"], minClass: "JR", requiresPlaying: true },
     title: "Travel With the No. 1",
     description:
       "The coordinator puts you on an island with their best receiver for four quarters — every route, every formation, wherever he lines up.",
@@ -241,7 +241,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["DSKILL"] },
+    conditions: { position: ["DSKILL"], requiresPlaying: true },
     title: "The Pick-Six",
     description: "The quarterback stares down his read a beat too long, and the ball's in the air right where you're standing.",
     options: [
@@ -282,7 +282,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 2,
-    conditions: { position: ["DSKILL"] },
+    conditions: { position: ["DSKILL"], requiresPlaying: true },
     title: "Targeting Review",
     description:
       "You square up a receiver working across the middle and the hit is full speed — full speed enough that the booth stops the game to review it for targeting.",
@@ -328,7 +328,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["DSKILL"], tier: [1, 2] },
+    conditions: { position: ["DSKILL"], tier: [1, 2], requiresPlaying: true },
     title: "The Bowl Interception",
     description:
       "Bowl-week practice bleeds into the game itself, and midway through the third quarter you're staring down a wideout you've studied on tape for three weeks.",
@@ -367,7 +367,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["DSKILL"] },
+    conditions: { position: ["DSKILL"], requiresPlaying: true, minClass: "JR", minOverall: 70 },
     title: "All-Star Practice Week",
     description:
       "Bowl-week all-star practices put a stopwatch and a dozen scouts on every rep of one-on-ones, and the receiver across from you is somebody's first-round pick.",

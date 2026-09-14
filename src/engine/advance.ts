@@ -71,9 +71,9 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
     return {
       eventId: REDSHIRT_EVENT_ID,
       title: "Redshirt?",
-      description: "Sit this season to preserve a year of eligibility and gamble on coming back stronger — it might backfire.",
+      description: "Four games at most, and the season doesn't count against your eligibility. A year of scout team and the weight room, and a gamble on coming back stronger — it might backfire.",
       options: [
-        { id: "redshirt", label: "Take the redshirt (sit the season)" },
+        { id: "redshirt", label: "Take the redshirt (play four games at most)" },
         { id: "decline", label: "Play this season" },
       ],
     };

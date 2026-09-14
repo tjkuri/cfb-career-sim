@@ -94,6 +94,23 @@ describe("eventMatches", () => {
     expect(eventMatches(makeState({ overall: 70 }), ev)).toBe(false);
   });
 
+  // DECISION 049. The exact mirror of maxOverall: it lets a card say "this
+  // beat is for good players", which is what the draft-prospect family needed
+  // and what minClass alone could not express.
+  it("minOverall gates on high overall", () => {
+    const ev = makeEvent({ conditions: { minOverall: 70 } });
+    expect(eventMatches(makeState({ overall: 69 }), ev)).toBe(false);
+    expect(eventMatches(makeState({ overall: 70 }), ev)).toBe(true);
+    expect(eventMatches(makeState({ overall: 90 }), ev)).toBe(true);
+  });
+
+  it("minOverall and maxOverall together bound a window", () => {
+    const ev = makeEvent({ conditions: { minOverall: 60, maxOverall: 70 } });
+    expect(eventMatches(makeState({ overall: 59 }), ev)).toBe(false);
+    expect(eventMatches(makeState({ overall: 65 }), ev)).toBe(true);
+    expect(eventMatches(makeState({ overall: 71 }), ev)).toBe(false);
+  });
+
   // DECISION 042. The pilot's per-season variants are only disjoint if this
   // condition is an exact set membership test, not a >= like minClass.
   it("seasonIndex matches only the seasons it lists", () => {

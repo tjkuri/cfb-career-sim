@@ -6,7 +6,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["QB"] },
+    conditions: { position: ["QB"], requiresPlaying: true },
     title: "Extra Film Study",
     description: "The QB room is open late. Grind the tape?",
     options: [
@@ -30,7 +30,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["QB"] },
+    conditions: { position: ["QB"], requiresPlaying: true },
     title: "Bowl Spotlight",
     description: "National TV, prime time. Do you rise to it?",
     options: [
@@ -124,7 +124,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["QB"] },
+    conditions: { position: ["QB"], requiresPlaying: true },
     title: "Audible Authority",
     description: "The OC hands you full control of the checks at the line. Now it's on you to get the offense in the right play.",
     options: [
@@ -170,7 +170,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["QB"] },
+    conditions: { position: ["QB"], requiresPlaying: true },
     title: "Caught on the Sideline Camera",
     description: "The broadcast catches you ripping into a receiver after a drop, in 4K, for a national audience.",
     options: [
@@ -216,7 +216,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["QB"] },
+    conditions: { position: ["QB"], requiresPlaying: true },
     title: "Third and Long",
     description: "Third and eleven, two minutes left in the half. Sling it downfield, or take the easy checkdown?",
     options: [
@@ -259,7 +259,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["QB"], tier: [1, 2] },
+    conditions: { position: ["QB"], tier: [1, 2], requiresPlaying: true },
     title: "The Silent Count",
     description: "A hundred thousand fans on the road, and you can't hear your own cadence. Trust the silent count, or burn a timeout to get it right.",
     options: [
@@ -295,7 +295,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["QB"], minClass: "JR" },
+    conditions: { position: ["QB"], minClass: "JR", requiresPlaying: true },
     title: "The Two-Minute Drill",
     description: "Down four, no timeouts, eighty seconds on the clock. It's on you.",
     options: [
@@ -342,7 +342,7 @@ export const QB_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["QB"] },
+    conditions: { position: ["QB"], requiresPlaying: true, minClass: "JR", minOverall: 70 },
     title: "All-Star Game Invite",
     description: "An all-star bowl wants you in Mobile. Accept and show out in front of every scout in the building, or skip it and protect your stock?",
     options: [

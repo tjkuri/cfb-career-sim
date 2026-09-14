@@ -79,7 +79,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["OSKILL"] },
+    conditions: { position: ["OSKILL"], requiresPlaying: true },
     title: "Return Duty",
     description: "Special teams is thin, and they want you back deep fielding punts on top of your normal reps.",
     options: [
@@ -115,7 +115,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["OSKILL"] },
+    conditions: { position: ["OSKILL"], requiresPlaying: true },
     title: "The Drop",
     description:
       "A ball hits you right in the numbers, wide open, and clangs off your hands in week two. The broadcast shows it twice.",
@@ -140,7 +140,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["OSKILL"] },
+    conditions: { position: ["OSKILL"], requiresPlaying: true },
     title: "Bubble Screen Diet",
     description:
       "The OC has you catching bubble screens on repeat. Good for the completion rate, deadly boring, and it's not moving the needle on your tape.",
@@ -185,7 +185,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 4,
-    conditions: { position: ["OSKILL"], minClass: "JR" },
+    conditions: { position: ["OSKILL"], minClass: "JR", requiresPlaying: true },
     title: "Feature Back Workload",
     description: "The staff hands you 28 touches a game and dares the defense to slow you down.",
     options: [
@@ -224,7 +224,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["OSKILL"] },
+    conditions: { position: ["OSKILL"], requiresPlaying: true },
     title: "The Toe-Tap",
     description:
       "You lay out for a ball near the sideline. Bang-bang. The whole stadium waits on the booth to sort out your feet.",
@@ -273,7 +273,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 2,
-    conditions: { position: ["OSKILL"] },
+    conditions: { position: ["OSKILL"], requiresPlaying: true },
     title: "Asked to Block",
     description: "The OC needs you sealing the edge on run downs, not touching the ball. Good soldier, quiet stat line.",
     options: [
@@ -309,7 +309,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["OSKILL"], tier: [1, 2] },
+    conditions: { position: ["OSKILL"], tier: [1, 2], requiresPlaying: true, minClass: "JR", minOverall: 70 },
     title: "Bowl Opt-Out",
     description:
       "Directional bowl, low stakes, and your name's already climbing draft boards. Sit and protect the tape you have, or suit up for the guys who got you here?",
@@ -350,7 +350,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 4,
-    conditions: { position: ["OSKILL"] },
+    conditions: { position: ["OSKILL"], requiresPlaying: true },
     title: "The Long One",
     description: "One snap, a blown coverage, and nothing but grass. Eighty yards of green in front of you.",
     options: [

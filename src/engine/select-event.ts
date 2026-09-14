@@ -38,6 +38,7 @@ export function eventMatches(state: GameState, ev: GameEvent, content: ContentBu
   if (c.requiresPlaying && state.redshirtSeasonActive) return false;
   if (c.maxCharacter !== undefined && state.character > c.maxCharacter) return false;
   if (c.maxOverall !== undefined && state.overall > c.maxOverall) return false;
+  if (c.minOverall !== undefined && state.overall < c.minOverall) return false;
   return true;
 }
 

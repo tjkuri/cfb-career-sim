@@ -66,7 +66,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["OL"] },
+    conditions: { position: ["OL"], requiresPlaying: true },
     title: "The Blindside",
     description:
       "The starting left tackle goes down in practice, and the coordinator points at you to protect the quarterback's blind side this week.",
@@ -109,7 +109,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["OL"] },
+    conditions: { position: ["OL"], requiresPlaying: true },
     title: "Cadence Trouble",
     description:
       "Two false starts in the first quarter of the opener, and the center keeps snapping early. The line coach is not being quiet about it on the headset.",
@@ -138,7 +138,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["OL"] },
+    conditions: { position: ["OL"], requiresPlaying: true },
     title: "Pancake Highlight",
     description:
       "You bury a linebacker on an outside zone rep, and the clip is on the team's social account before you're off the field.",
@@ -183,7 +183,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["OL"], minClass: "JR" },
+    conditions: { position: ["OL"], minClass: "JR", requiresPlaying: true },
     title: "Facing the Freak",
     description:
       "The conference's best pass rusher lines up across from you for four quarters, and everyone in the building knows the game runs through this matchup.",
@@ -224,7 +224,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 2,
-    conditions: { position: ["OL"] },
+    conditions: { position: ["OL"], requiresPlaying: true },
     title: "The Holding Call",
     description: "A holding flag wipes out a forty-yard touchdown, and the coordinator saw exactly who threw it.",
     options: [
@@ -270,7 +270,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["OL"] },
+    conditions: { position: ["OL"], requiresPlaying: true },
     title: "Playing Through the Hand",
     description:
       "Your hand is swollen to twice its size after last week. The trainer can rig a club cast so you can play, or you can sit and let the backup get the reps.",
@@ -310,7 +310,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["OL"], tier: [1, 2] },
+    conditions: { position: ["OL"], tier: [1, 2], requiresPlaying: true, minClass: "JR", minOverall: 70 },
     title: "Senior Bowl Invite",
     description:
       "An all-star bowl in Mobile wants you for a week of one-on-ones in front of every offensive line coach in the league.",
@@ -350,7 +350,7 @@ export const OL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 2,
-    conditions: { position: ["OL"] },
+    conditions: { position: ["OL"], requiresPlaying: true },
     title: "Guard or Tackle?",
     description: "Scouts keep asking if you'll kick inside to guard. You've played left tackle your entire life and don't love the idea.",
     options: [

@@ -81,7 +81,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["K"] },
+    conditions: { position: ["K"], requiresPlaying: true },
     title: "Kickoff Duties Too",
     description:
       "The special teams coordinator has decided one specialist job isn't enough for you and hands you kickoff duty on top of your own. Same leg, twice the workload, same paycheck.",
@@ -95,6 +95,7 @@ export const K_EVENTS: GameEvent[] = [
             "You bang touchbacks all afternoon and still have plenty left for your own attempts. Nobody thanks you, but nobody has to.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 2 },
+            { kind: "stat", stat: "points", amount: 6 },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
@@ -103,6 +104,7 @@ export const K_EVENTS: GameEvent[] = [
             "The extra reps catch up to your leg by the fourth quarter, and a kickable one sails wide when it matters.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: -1 },
+            { kind: "stat", stat: "points", amount: -3 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -124,7 +126,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 2,
-    conditions: { position: ["K"] },
+    conditions: { position: ["K"], requiresPlaying: true },
     title: "The Chip Shot",
     description:
       "It's a twenty-two-yarder, the kind you make in your sleep, except the offense stalls out with over a minute left on the play clock and you have entirely too long to think about it.",
@@ -155,7 +157,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "nonconf",
     weight: 3,
-    conditions: { position: ["K"] },
+    conditions: { position: ["K"], requiresPlaying: true },
     title: "The Fake",
     description:
       "The call comes in from the sideline, and for once the ball isn't going through the uprights — it's going to you, on your feet, with eleven large strangers trying to make sure it doesn't work.",
@@ -169,6 +171,7 @@ export const K_EVENTS: GameEvent[] = [
             "The edge is wide open and you tuck it upfield without much grace but plenty of urgency. Two drives later you're back out for the real thing, and that one goes through clean too.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 1 },
+            { kind: "stat", stat: "points", amount: 3 },
             { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Converted a fake field goal for a first down", icon: "football" },
           ],
@@ -199,7 +202,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["K"], minClass: "JR" },
+    conditions: { position: ["K"], minClass: "JR", requiresPlaying: true },
     title: "Iced",
     description:
       "You're mid-approach when the opposing coach calls timeout, and the referee waves you back to the sideline to think about what you were about to do for another two minutes.",
@@ -213,6 +216,7 @@ export const K_EVENTS: GameEvent[] = [
             "The ice doesn't take. Same steps, same count, same result — straight through the middle.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 1 },
+            { kind: "stat", stat: "points", amount: 3 },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
@@ -221,6 +225,7 @@ export const K_EVENTS: GameEvent[] = [
             "You have too much time to think about the time you have to think, and it sails wide with the crowd noise turned all the way up.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: -1 },
+            { kind: "stat", stat: "points", amount: -3 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -242,7 +247,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 2,
-    conditions: { position: ["K"] },
+    conditions: { position: ["K"], requiresPlaying: true },
     title: "The Wind at Home",
     description:
       "Everyone on the coaching staff insists your own stadium doesn't swirl. You have a theory about the upper deck that nobody else believes, and today you get to test it.",
@@ -256,6 +261,7 @@ export const K_EVENTS: GameEvent[] = [
             "You aim four yards outside the near upright, exactly like you've been telling anyone who'll listen for two years, and the wind brings it back right where you called it. The special teams meeting gets noticeably quieter around you after that.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 2 },
+            { kind: "stat", stat: "points", amount: 6 },
             { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "moment", item: "Called the stadium's wind correctly on a game-deciding kick", icon: "wind" },
           ],
@@ -283,7 +289,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 3,
-    conditions: { position: ["K"] },
+    conditions: { position: ["K"], requiresPlaying: true },
     title: "Onside Kick",
     description:
       "Down eight with ninety seconds left, the coordinator looks at you like you're the one who has to decide this game now, which, for the next ten seconds, you are.",
@@ -297,6 +303,7 @@ export const K_EVENTS: GameEvent[] = [
             "It hits exactly where you wanted it, your own gunner comes up with the recovery, and two plays later you're jogging back out to tie the game — which you do.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 2 },
+            { kind: "stat", stat: "points", amount: 6 },
             { kind: "stat", stat: "gameWinners", amount: 1 },
             { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "moment", item: "Set up a game-tying kick with an onside recovery", icon: "football" },
@@ -315,7 +322,10 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You kick it away and let the defense earn the stop. They do, and it leaves you a clean, unhurried look to tie the game, which you take.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }],
+          effects: [
+            { kind: "stat", stat: "fieldGoals", amount: 1 },
+            { kind: "stat", stat: "points", amount: 3 },
+          ],
         },
       },
     ],
@@ -325,7 +335,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 3,
-    conditions: { position: ["K"], tier: [1, 2] },
+    conditions: { position: ["K"], tier: [1, 2], requiresPlaying: true },
     title: "Bowl Game Winner",
     description:
       "Zero seconds on the clock, your team down two, and the distance is well within what you've hit a hundred times in an empty practice stadium and never once cared about the way you care right now.",
@@ -339,6 +349,7 @@ export const K_EVENTS: GameEvent[] = [
             "It's good, and the stadium erupts, half in celebration and half in silence. Somebody's going to be replaying this kick at your wedding someday.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
+            { kind: "stat", stat: "points", amount: 9 },
             { kind: "stat", stat: "gameWinners", amount: 1 },
             { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "moment", item: "Kicked a walk-off field goal to win a bowl game", icon: "trophy" },
@@ -367,7 +378,7 @@ export const K_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "postseason",
     weight: 2,
-    conditions: { position: ["K"] },
+    conditions: { position: ["K"], requiresPlaying: true },
     title: "The Long Attempt",
     description:
       "Fifty-seven yards, and the coach is jogging down the sideline asking if you have it in you, which is not a question you get asked very often and not one you love answering under center lights.",
@@ -381,6 +392,7 @@ export const K_EVENTS: GameEvent[] = [
             "It's got the leg by ten yards and clears the crossbar with room to spare. The broadcast replays it four times before the next snap.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
+            { kind: "stat", stat: "points", amount: 9 },
             { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "moment", item: "Made a 57-yard field goal", icon: "target" },
           ],
@@ -398,7 +410,10 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You're honest about the odds, and the coach agrees — the punter pins them deep instead. Two drives later a shorter, saner look presents itself, and that one you make.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }],
+          effects: [
+            { kind: "stat", stat: "fieldGoals", amount: 1 },
+            { kind: "stat", stat: "points", amount: 3 },
+          ],
         },
       },
     ],
