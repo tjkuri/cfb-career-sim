@@ -240,12 +240,16 @@ function schoolPath(state: GameState): string[] {
 // What reads the number is scale, weight, width and entrance travel. Never
 // hue: tier 5 and tier 1 are both `--milestone`, which is the whole point of
 // DECISIONS 012 and 021 and is asserted in summary.css.
+// Eight steps, one per round, because the pairs a player can actually compare
+// are adjacent rounds and the old five-step cut gave Round 2 and Round 3 the
+// SAME step -- not a small difference, no difference at all. Measured over 600
+// random-policy careers, all six positions: R1 1.8% | R2 5.8% | R3 8.3% |
+// R4 16.8% | R5 20.0% | R6 24.3% | R7 17.2% | undrafted 4.0% | ended early
+// 1.7%. Round 8 does not exist in the draft; the clamp is a guard, not a tier.
 function verdictMagnitude(draft: GameState["draftResult"]): VerdictMagnitude {
   if (!draft || draft.undrafted) return 1;
-  if (draft.round <= 1) return 5;
-  if (draft.round <= 3) return 4;
-  if (draft.round <= 5) return 3;
-  return 2;
+  const round = Math.min(7, Math.max(1, Math.round(draft.round)));
+  return (9 - round) as VerdictMagnitude;
 }
 
 function headline(state: GameState): {

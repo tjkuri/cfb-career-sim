@@ -60,6 +60,19 @@ function deltaClass(delta: number): string {
   return "season-delta";
 }
 
+// DECISION 032: on a career whose arc is NEGATIVE the arc is promoted -- same
+// three magnitude cuts as `deltaClass`, so a -2 and a -12 do not shout at the
+// same volume. This reads the size of the drop only; the direction decides
+// whether the element exists, and the element is the same single hue at every
+// size it is ever set in. Nothing here is keyed to a branch flag: the two
+// numbers it compares are both already on screen in the column below it.
+function declineMagnitude(net: number): 1 | 2 | 3 {
+  const size = Math.abs(net);
+  if (size >= 6) return 3;
+  if (size >= 3) return 2;
+  return 1;
+}
+
 function signed(delta: number): string {
   if (delta > 0) return `+${delta}`;
   if (delta < 0) return `−${Math.abs(delta)}`;
@@ -110,6 +123,13 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
   // 5). The block is not rebuilt for short careers; it is given the room and
   // the closing edge that make two rows look finished rather than cut off.
   const arcSpanLength = s.seasons.length <= 2 ? "short" : "full";
+  // The one honest sentence on a tanked career's end screen, and report 017
+  // found it "set in the smallest, dimmest type available" under a giant gold
+  // headline: "the hierarchy is exactly inverted." On a declining career it
+  // moves up into the verdict block and is set at figure size. On a rising
+  // one this is null and the block renders exactly as it did -- DECISION 032
+  // promotes the arc on a bad ending; it does not quieten a good one.
+  const decline = span && span.net < 0 ? span : null;
   const { distinctions, routine } = splitHonors(s.honors);
 
   async function copy() {
@@ -135,13 +155,15 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
         </div>
       </div>
 
-      {/* The most consequential sentence the game ever prints, and until now
-          the one with no range: a 3rd-round pick and a 7th-round pick differed
-          only in their digits. `data-magnitude` is the draft round, 5 (round
-          1) down to 1 (no call at all), and it drives scale, weight, width and
-          entrance travel -- never hue. Every tier is `--milestone`; the line
-          DECISIONS 006, 012 and 021 draw is that a bad ending is quieter than
-          a good one, never a different colour.
+      {/* The most consequential sentence the game ever prints. Its range is
+          `data-magnitude`: the draft round at one step per round, 8 (round 1)
+          down to 2 (round 7) and 1 for no call at all, driving scale, weight,
+          width, opacity and entrance travel -- never hue. It was five steps,
+          which made rounds 2 and 3 the same step and therefore unrankable
+          (report 017, claim 5); eight is one per round, and the spread runs
+          1.34 -> 0.72 rather than 1.12 -> 0.72. Every step is `--milestone`;
+          the line DECISIONS 006, 012 and 021 draw is that a bad ending is
+          quieter than a good one, never a different colour.
 
           `.quiet` is kept beside it because DECISION 021 named
           `.verdict-block.quiet .verdict` as its one-line revert point; it now
@@ -160,9 +182,36 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
         </p>
         <p className="verdict">{s.headline}</p>
         {s.subhead && <p className="verdict-sub">{s.subhead}</p>}
+        {/* The career went down. That is a fact about two numbers the player
+            has already seen, so stating it loudly discloses nothing and
+            scolds no one -- DECISION 012's permitted axis, and 032's call.
+            Scale and weight move with the size of the drop; the hue is the
+            chalk the other figures on this screen are set in, identical at
+            every magnitude. */}
+        {decline && (
+          <p className="arc-verdict" data-magnitude={declineMagnitude(decline.net)}>
+            <span className="arc-verdict-label">
+              Over {s.seasons.length} {seasonWord}
+            </span>
+            <span className="arc-verdict-figure">
+              <span className="arc-verdict-range">
+                {decline.first} → {decline.last}
+              </span>
+              <span className="arc-verdict-net">{signed(decline.net)}</span>
+            </span>
+          </p>
+        )}
+        {/* DECISION 035: `FINAL OVERALL 61` sits two inches above a table
+            whose last row says 59, and nothing said why. Both numbers stay
+            and the label closes the gap -- this one counts the off-season
+            that followed the last season, and the column head below says the
+            column does not. Four words, at the point of collision. */}
         <p className="final-ovr">
           <span className="final-ovr-num">{s.finalOverall}</span>
-          <span className="final-ovr-label">final overall</span>
+          <span className="final-ovr-label">
+            final overall
+            <span className="final-ovr-note">after the off-season</span>
+          </span>
         </p>
       </section>
 
@@ -176,7 +225,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
           <div className="arc" data-span={arcSpanLength}>
             {hasArc && (
               <div className="arc-head" aria-hidden="true">
-                <span className="arc-head-ovr">OVR</span>
+                <span className="arc-head-ovr">Ovr at season&rsquo;s end</span>
               </div>
             )}
             {s.seasons.map((season, i) => {
@@ -213,8 +262,15 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
             {/* The closing row. It exists so the block ends rather than stops
                 -- which a five-row career could get away with and a two-row
                 one could not -- and so a short career states its own shape
-                instead of leaving the reader to find one in two numerals. */}
-            {span && (
+                instead of leaving the reader to find one in two numerals.
+
+                It is absent on a declining career because the statement has
+                MOVED, not been copied: printing `63 -> 59 -4` twice inside
+                one screen-height would be the same fact said quietly under
+                the same fact said loudly. The block still closes -- `.arc`
+                carries its own bottom rule, which is what wave 6 actually
+                fixed -- and the shape is stated above, larger. */}
+            {span && !decline && (
               <div className="arc-span">
                 <span className="arc-span-label">
                   Across {s.seasons.length} {seasonWord}
@@ -238,7 +294,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
               all-conference nod are real and are still printed; they are
               printed as what half the league has, not as an honour. When a
               career has an actual distinction, the word is earned and used. */}
-          <h2 className="section-head">{distinctions.length > 0 ? "Honors" : "Also earned"}</h2>
+          {distinctions.length > 0 && <h2 className="section-head">Honors</h2>}
           {distinctions.length > 0 && (
             <ul className="honors">
               {distinctions.map((h) => (
@@ -248,6 +304,18 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
                 </li>
               ))}
             </ul>
+          )}
+          {/* DECISION 034: the routine group gets its own heading WHENEVER it
+              renders, including -- especially -- when distinctions render
+              above it. 027 shipped this as a ternary, so a career with both
+              printed a gold All-American box and then an unheaded grey chip:
+              "with nothing naming the second tier it reads as 'and this
+              lesser thing'." No block is restored and no rarity split is
+              undone; the second tier is simply named. */}
+          {routine.length > 0 && (
+            <h2 className={distinctions.length > 0 ? "section-head second" : "section-head"}>
+              Also earned
+            </h2>
           )}
           {routine.length > 0 && (
             <ul className="also">

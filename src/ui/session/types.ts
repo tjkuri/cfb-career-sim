@@ -166,15 +166,23 @@ export interface HonorView {
 }
 
 // The draft result as a magnitude, on the one axis the result already has:
-// round. 5 = round 1, 4 = rounds 2-3, 3 = rounds 4-5, 2 = rounds 6-7, 1 =
-// undrafted or a career that ended before the draft -- the extreme of the same
-// axis, not a separate state and emphatically not a separate colour.
-// Cut on the measured distribution (n=600): R1 2.7%, R2-3 12.5%, R4-5 39.0%,
-// R6-7 40.0%, no call 5.9%.
+// round. One step per round -- 8 = round 1, 7 = round 2 ... 2 = round 7, and
+// 1 = undrafted or a career that ended before the draft, the extreme of the
+// same axis rather than a separate state and emphatically not a second colour.
+//
+// It was five steps, which lumped rounds 2-3 into one and rounds 6-7 into
+// another, so the two endings a playtester was asked to rank side by side --
+// Round 2 and Round 3 -- were not merely close, they were byte-identical
+// (report 017, claim 5). Re-measured here over 600 random-policy careers
+// across all six positions: R1 1.8%, R2 5.8%, R3 8.3%, R4 16.8%, R5 20.0%,
+// R6 24.3%, R7 17.2%, undrafted 4.0%, ended early 1.7%. No round is rare
+// enough to share a step with its neighbour, and 78% of careers land in R4-R7
+// -- so the resolution goes everywhere the distribution is, which is the whole
+// drafted range, not a chosen band inside it.
 //
 // DECISION 012 governs what may read this: scale, weight and motion, never
 // hue. It discloses nothing -- the round is printed in the headline beside it.
-export type VerdictMagnitude = 1 | 2 | 3 | 4 | 5;
+export type VerdictMagnitude = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export interface CareerSummaryView {
   headline: string; // "Round 3, Pick 19" | "Undrafted" | the ending reason

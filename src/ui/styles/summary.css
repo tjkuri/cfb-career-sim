@@ -19,59 +19,103 @@
 
 /* The magnitude set. A playtester played a career deliberately badly, drew
    Round 7 Pick 2, and reported that "the ending is a gold headline regardless
-   of what I did" -- measured on our own screens, #69 and #194 printed in the
-   same hue at the same size, weight and position.
+   of what I did". The first pass fixed that end of the range and was then
+   asked the harder question -- rank two GOOD endings -- and failed it:
+   "Round 2 vs Round 3: no. Side by side those two headlines are the same size,
+   the same weight and the same colour" (report 017, claim 5). They were the
+   same size because they were the same tier. Five tiers over seven rounds
+   means two pairs of rounds print identically, and one of those pairs is the
+   pair a player is most likely to compare.
 
    The axis is the DRAFT ROUND, which is ordinal, already printed in the
    headline (so emphasising it discloses nothing -- DECISION 012's test) and
-   has `Undrafted` at its far end rather than off to one side. Five tiers, cut
-   on 600 measured careers: R1 2.7% | R2-3 12.5% | R4-5 39.0% | R6-7 40.0% |
-   no call 5.9%. The loudest tier is rare enough to mean something.
+   has `Undrafted` at its far end rather than off to one side. Now EIGHT steps,
+   one per round plus no-call, cut on 600 re-measured careers across all six
+   positions: R1 1.8% | R2 5.8% | R3 8.3% | R4 16.8% | R5 20.0% | R6 24.3% |
+   R7 17.2% | undrafted 4.0% | ended early 1.7%. No round is rare enough to
+   share a step, and 78% of careers land in R4-R7, so the resolution is spread
+   across the whole drafted range rather than concentrated in a band.
 
-   Four properties move with it -- size, weight, the width axis and entrance
-   travel. HUE DOES NOT. Every tier from 5 to 1 is `--milestone`; there is no
-   --good/--bad in tokens.css and none is wanted (DECISIONS 006, 012, 021).
-   Tier 1's numbers are exactly the treatment DECISION 021 upheld, so the
-   washout end of the scale is unchanged and the drafted ones now range above
-   it. The same shape as `.consequence[data-magnitude]` in career.css: one
-   custom-property set, one hue, five intensities of presence. */
+   THE SPREAD, which is DECISION 026's pre-committed lever and the reason this
+   block exists: 1.12 -> 0.72 becomes 1.34 -> 0.72, geometric at ~1.09 per
+   step. The floor is DECISION 021's exact value and does not move -- the
+   washout end of the scale is the one part of this that was already right.
+   Everything above it goes UP, which is the other half of the requirement:
+   no good ending is quieter than it was (R3 was 1.00 and is 1.12; R7 was 0.80
+   and is 0.79, the one step that is level, and it is the bottom of the
+   drafted range by design).
+
+   Five properties move with it -- size, weight, the width axis, opacity and
+   entrance travel. HUE DOES NOT. Every step from 8 to 1 is `--milestone`;
+   there is no --good/--bad in tokens.css and none is wanted (DECISIONS 006,
+   012, 021). The same shape as `.consequence[data-magnitude]` in career.css:
+   one custom-property set, one hue, eight intensities of presence. */
 .verdict-block {
-  /* Tier 3 (rounds 4-5, the modal outcome) is the base. */
-  --verdict-scale: 0.88;
+  /* Round 5, the modal outcome (20.0%), is the base. */
+  --verdict-scale: 0.94;
   --verdict-weight: var(--w-title);
-  --verdict-wdth: 68;
-  --verdict-ink: 0.92;
-  --verdict-rise: 8px;
+  --verdict-wdth: 69;
+  --verdict-ink: 0.93;
+  --verdict-rise: 9px;
   --verdict-dur: var(--dur-enter);
 
   margin: 2.6rem 0 0;
   animation: verdict-in var(--verdict-dur) cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
-/* Round 1. 16 careers in 600. */
-.verdict-block[data-magnitude="5"] {
-  --verdict-scale: 1.12;
-  --verdict-wdth: 58;
+/* Round 1. 11 careers in 600. The loudest sentence the game ever prints. */
+.verdict-block[data-magnitude="8"] {
+  --verdict-scale: 1.34;
+  --verdict-wdth: 56;
+  --verdict-ink: 1;
+  --verdict-rise: 19px;
+  --verdict-dur: calc(var(--dur-enter) * 1.45);
+}
+
+/* Round 2. */
+.verdict-block[data-magnitude="7"] {
+  --verdict-scale: 1.23;
+  --verdict-wdth: 60;
   --verdict-ink: 1;
   --verdict-rise: 16px;
   --verdict-dur: calc(var(--dur-enter) * 1.35);
 }
 
-/* Rounds 2-3. */
-.verdict-block[data-magnitude="4"] {
-  --verdict-scale: 1;
-  --verdict-wdth: 62;
+/* Round 3. The step that used to be Round 2's as well. */
+.verdict-block[data-magnitude="6"] {
+  --verdict-scale: 1.12;
+  --verdict-wdth: 63;
   --verdict-ink: 1;
-  --verdict-rise: 12px;
+  --verdict-rise: 13px;
+  --verdict-dur: calc(var(--dur-enter) * 1.25);
+}
+
+/* Round 4. */
+.verdict-block[data-magnitude="5"] {
+  --verdict-scale: 1.03;
+  --verdict-wdth: 66;
+  --verdict-ink: 0.97;
+  --verdict-rise: 11px;
   --verdict-dur: calc(var(--dur-enter) * 1.15);
 }
 
-/* Rounds 6-7. Still a draft, and still gold -- just not a headline. */
-.verdict-block[data-magnitude="2"] {
-  --verdict-scale: 0.8;
+/* Round 6. Below this the weight drops off the title master: still a draft,
+   still gold, no longer a headline. */
+.verdict-block[data-magnitude="3"] {
+  --verdict-scale: 0.86;
   --verdict-weight: var(--w-ui);
-  --verdict-wdth: 74;
-  --verdict-ink: 0.84;
+  --verdict-wdth: 72;
+  --verdict-ink: 0.88;
+  --verdict-rise: 7px;
+  --verdict-dur: calc(var(--dur-enter) * 0.95);
+}
+
+/* Round 7. */
+.verdict-block[data-magnitude="2"] {
+  --verdict-scale: 0.79;
+  --verdict-weight: var(--w-ui);
+  --verdict-wdth: 75;
+  --verdict-ink: 0.8;
   --verdict-rise: 5px;
   --verdict-dur: calc(var(--dur-enter) * 0.85);
 }
@@ -141,6 +185,87 @@
   font-size: var(--t-body);
 }
 
+/* ---------- the arc, promoted (DECISION 032) ----------
+
+   A career that went DOWN had that fact rendered as the quietest element on
+   its own end screen: `ACROSS 2 SEASONS - 63 -> 59 - -4`, at 11px, below a
+   table, under a gold display headline. "The hierarchy is exactly inverted."
+
+   So on a negative arc the sentence moves into the verdict block and is set
+   at figure size. Three things this is NOT:
+
+   - It is not a second hue. The figures are `--ovr`, the same token the final
+     overall two lines below and every season OVR in the column are set in,
+     and it is the SAME computed value at magnitude 1 and magnitude 3. Nothing
+     on this screen turns red (DECISIONS 006, 012).
+   - It is not a scolding. It states two numbers already on the page and their
+     difference. The label says "over N seasons" and stops.
+   - It is not a change to a good ending. The element does not exist on a
+     rising career, so nothing above or below it moves and no good career's
+     verdict got quieter to make a bad one honest.
+
+   Scale tracks the size of the drop on `deltaClass`'s own three cuts (>=6,
+   >=3, rest), so a -2 does not shout like a -12. */
+.arc-verdict {
+  /* -1 or -2. Measured against the headline beside it: at 0.85 a two-point
+     dip printed the same size as a Round 6 verdict, which overstates it.
+     0.78 keeps a trivial decline subordinate to the ending and still an
+     order of magnitude louder than the 11px line it used to be. */
+  --arc-verdict-scale: 0.78;
+  --arc-verdict-weight: var(--w-ui);
+
+  margin: 1.3rem 0 0;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* -3 to -5. */
+.arc-verdict[data-magnitude="2"] {
+  --arc-verdict-scale: 1;
+  --arc-verdict-weight: var(--w-title);
+}
+
+/* -6 or worse: the collapse the 017 playtester engineered on purpose. It is
+   set larger than the R7 headline above it, which is the inversion being
+   corrected -- the loudest true thing on the screen is the true thing. */
+.arc-verdict[data-magnitude="3"] {
+  --arc-verdict-scale: 1.2;
+  --arc-verdict-weight: var(--w-figure);
+}
+
+.arc-verdict-label {
+  font-variation-settings: "wdth" 74;
+  font-weight: var(--w-ui);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+.arc-verdict-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.8rem;
+  font-variation-settings: "wdth" 66;
+  font-size: calc(var(--t-hero) * var(--arc-verdict-scale));
+  line-height: var(--lh-none);
+  letter-spacing: var(--track-tight);
+  /* One hue for the whole range, and the same one the other figures on this
+     screen carry. Verified in the live page at both ends, the way DECISION
+     026 verified the verdict: identical computed `color`. */
+  color: var(--ovr);
+  font-variant-numeric: tabular-nums;
+}
+
+.arc-verdict-range { font-weight: var(--w-ui); }
+
+/* The difference itself, which is the part the eye should land on. */
+.arc-verdict-net { font-weight: var(--arc-verdict-weight); }
+
 /* The career's last number, given the size of a number rather than the size of
    a caption. `--ovr` is the token for it; 900 is reserved for numerals. */
 .final-ovr {
@@ -162,7 +287,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* DECISION 035. `61 FINAL OVERALL` sits above a table whose last row reads
+   59; both are true and the screen never said why. The note is the fix, and
+   it is four words: this number counts the off-season that followed the last
+   season, and `.arc-head-ovr` below says the column does not. Sentence case
+   and untracked, so it reads as a clarification rather than a second label. */
 .final-ovr-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
   font-variation-settings: "wdth" 74;
   font-weight: var(--w-ui);
   font-size: var(--t-micro);
@@ -170,6 +303,20 @@
   text-transform: uppercase;
   color: var(--chalk-faint);
 }
+
+.final-ovr-note {
+  font-variation-settings: "wdth" 84;
+  font-weight: var(--w-prose);
+  font-size: var(--t-meta);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--chalk-dim);
+}
+
+/* The second heading in a section -- `Also earned` under `Honors`. It is a
+   sibling tier, not a new section, so it keeps the same type and takes a
+   smaller air gap (DECISION 034). */
+.section-head.second { margin-top: 1.5rem; }
 
 .section-head {
   margin: 2.6rem 0 0.7rem;
@@ -210,8 +357,12 @@
   padding-bottom: 0.35rem;
 }
 
+/* It said `OVR`, which is the ambiguity DECISION 035 names: this column is
+   each season AS PLAYED, and the number in the verdict block counts the
+   off-season after the last of them. It spans from column 2 so the words fit
+   on one line without widening the column the figures line up in. */
 .arc-head-ovr {
-  grid-column: 3;
+  grid-column: 2 / -1;
   text-align: right;
   font-variation-settings: "wdth" 74;
   font-weight: var(--w-ui);
@@ -454,7 +605,9 @@
   gap: 0.4rem;
 }
 
-/* When a career has real distinctions too, the chips sit under them. */
+/* The chips always have a heading of their own now (DECISION 034), so the
+   air above them comes from `.section-head.second` and this pair never meets
+   directly. Kept as the fallback for the ordering, not as the live spacing. */
 .honors + .also { margin-top: 0.6rem; }
 
 .also-chip {

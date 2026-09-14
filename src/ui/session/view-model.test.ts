@@ -597,24 +597,33 @@ describe("the verdict has a range", () => {
     });
   }
 
-  it("maps the draft round onto five steps, with no call at the far end", () => {
-    expect(summaryWith({ round: 1, pick: 4, undrafted: false }).verdictMagnitude).toBe(5);
-    expect(summaryWith({ round: 2, pick: 4, undrafted: false }).verdictMagnitude).toBe(4);
-    expect(summaryWith({ round: 3, pick: 4, undrafted: false }).verdictMagnitude).toBe(4);
-    expect(summaryWith({ round: 4, pick: 4, undrafted: false }).verdictMagnitude).toBe(3);
-    expect(summaryWith({ round: 5, pick: 4, undrafted: false }).verdictMagnitude).toBe(3);
-    expect(summaryWith({ round: 6, pick: 4, undrafted: false }).verdictMagnitude).toBe(2);
+  it("gives every round its own step, with no call at the far end", () => {
+    // One step per round. The five-step version put rounds 2 and 3 on the same
+    // step, which is why a playtester asked to rank them could not: they were
+    // not close, they were identical.
+    expect(summaryWith({ round: 1, pick: 4, undrafted: false }).verdictMagnitude).toBe(8);
+    expect(summaryWith({ round: 2, pick: 4, undrafted: false }).verdictMagnitude).toBe(7);
+    expect(summaryWith({ round: 3, pick: 4, undrafted: false }).verdictMagnitude).toBe(6);
+    expect(summaryWith({ round: 4, pick: 4, undrafted: false }).verdictMagnitude).toBe(5);
+    expect(summaryWith({ round: 5, pick: 4, undrafted: false }).verdictMagnitude).toBe(4);
+    expect(summaryWith({ round: 6, pick: 4, undrafted: false }).verdictMagnitude).toBe(3);
     expect(summaryWith({ round: 7, pick: 4, undrafted: false }).verdictMagnitude).toBe(2);
     expect(summaryWith({ round: 0, pick: 0, undrafted: true }).verdictMagnitude).toBe(1);
   });
 
   it("separates the two picks the playtester could not tell apart", () => {
-    // #69 overall is Round 3 Pick 5; #194 is Round 7 Pick 2.
+    // #69 overall is Round 3 Pick 5; #194 is Round 7 Pick 2. And the pair
+    // report 017 could NOT rank -- Round 2 against Round 3 -- which is the
+    // falsifier DECISION 026 pre-registered and DECISION 032 accepted.
     const good = summaryWith({ round: 3, pick: 5, undrafted: false });
     const bad = summaryWith({ round: 7, pick: 2, undrafted: false });
     expect(good.subhead).toBe("#69 overall");
     expect(bad.subhead).toBe("#194 overall");
     expect(good.verdictMagnitude).not.toBe(bad.verdictMagnitude);
+    const r2 = summaryWith({ round: 2, pick: 12, undrafted: false });
+    const r3 = summaryWith({ round: 3, pick: 21, undrafted: false });
+    expect(r2.verdictMagnitude).not.toBe(r3.verdictMagnitude);
+    expect(r2.verdictMagnitude).toBeGreaterThan(r3.verdictMagnitude);
   });
 
   it("gives a career that ended before the draft the quietest step", () => {
@@ -630,7 +639,7 @@ describe("the verdict has a range", () => {
       for (const ui of playThrough(`vm-mag-${position}`, position)) {
         const summary = ui.state ? buildView(ui.state).summary : null;
         if (!summary) continue;
-        expect([1, 2, 3, 4, 5]).toContain(summary.verdictMagnitude);
+        expect([1, 2, 3, 4, 5, 6, 7, 8]).toContain(summary.verdictMagnitude);
         seen++;
       }
     }
