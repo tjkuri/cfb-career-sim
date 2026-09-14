@@ -488,9 +488,9 @@ describe("the resolved card carries the pre-advance overall", () => {
 describe("restoring a save written before these fields existed", () => {
   it("normalizes the missing properties instead of leaking undefined", () => {
     // `stamp` was already normalized in storage.ts; `description`, `narrated`,
-    // `overallBefore` and `hub` are all newer than some saves and arrive as
-    // `undefined` from an old one. The reducer is the funnel every restored
-    // UiState passes through.
+    // `overallBefore`, `hub` and `account` are all newer than some saves and
+    // arrive as `undefined` from an old one. The reducer is the funnel every
+    // restored UiState passes through.
     const ui = start("r-legacy");
     const legacy = {
       ...ui,
@@ -506,6 +506,7 @@ describe("restoring a save written before these fields existed", () => {
       narrated: false,
       stamp: null,
       overallBefore: null,
+      account: null,
     });
   });
 
@@ -692,5 +693,119 @@ describe("hub decisions resolve when they carry a consequence", () => {
       }
     }
     expect(checked, "no hub card was reachable").toBeGreaterThan(0);
+  });
+});
+
+// DECISION 046. The number on a card used to be `view.overall -
+// resolved.overallBefore`: everything that moved during the `advance`, whoever
+// caused it. `cardAccount` splits that into what the card did and what merely
+// happened while it was on screen, and the reducer is where the split is taken
+// -- the baseline belongs to the state before the engine call, and the answer
+// has to survive `localStorage`.
+describe("a resolved card carries its own accounting", () => {
+  /** One card as the screen reads it: what it reported before this split
+      (`total`) and what it now reports as its own. */
+  interface Card {
+    resolved: NonNullable<UiState["resolved"]>;
+    total: number;
+  }
+
+  /** Play with a deterministic but varied policy, so the sample is not just
+      whatever `options[0]` happens to be on every card in the game. */
+  function cardsOf(seed: string, setup: Setup): Card[] {
+    const out: Card[] = [];
+    let ui = start(seed, setup);
+    let x = seed.length * 2654435761;
+    for (let guard = 0; guard < 600 && ui.screen !== "summary"; guard++) {
+      if (ui.resolved) {
+        const r = ui.resolved;
+        const overall = buildView(ui.state!).overall;
+        out.push({ resolved: r, total: r.overallBefore === null ? 0 : overall - r.overallBefore });
+        ui = reducer(ui, { type: "continue" });
+        continue;
+      }
+      const d = ui.state ? getDecision(ui.state) : null;
+      if (!d) break;
+      x = (x * 1103515245 + 12345) & 0x7fffffff;
+      ui = reducer(ui, { type: "choose", optionId: d.options[x % d.options.length]!.id });
+    }
+    return out;
+  }
+
+  function sample(): Card[] {
+    const out: Card[] = [];
+    for (const position of ALL_POSITIONS) {
+      for (let i = 0; i < 6; i++) {
+        out.push(...cardsOf(`acct-${position}-${i}`, { ...SETUP, position }));
+      }
+    }
+    return out;
+  }
+
+  it("identifies the outcome that fired on every card that has prose", () => {
+    // If the description match ever failed, the account would fall back to
+    // null and the card would silently go back to reporting the whole advance
+    // -- the defect, restored, with nothing on screen to show it. Measured
+    // over 4,341 resolved cards: zero unidentified.
+    const cards = sample().filter((c) => c.resolved.outcome !== "");
+    expect(cards.length).toBeGreaterThan(300);
+    expect(cards.filter((c) => c.resolved.account === null)).toEqual([]);
+  });
+
+  it("separates what the card did from what landed underneath it", () => {
+    // The defect, measured on our own screens rather than argued. Over 360
+    // careers, 14.4% of resolved cards were reporting a number that was not
+    // theirs, 146 of them with the wrong SIGN, and 132 printed an OVR movement
+    // on a card that authored none.
+    const cards = sample().filter(
+      (c) => c.resolved.outcome !== "" && c.resolved.overallBefore !== null,
+    );
+    const misattributed = cards.filter((c) => c.total !== c.resolved.account!.own);
+    expect(misattributed.length).toBeGreaterThan(0);
+
+    // The two shapes that made the prose look like a liar. A card that
+    // authored no OVR movement and printed one:
+    const phantom = cards.filter((c) => c.resolved.account!.own === 0 && c.total !== 0);
+    expect(phantom.length).toBeGreaterThan(0);
+    // And a card whose own number points the other way from the one it showed:
+    const inverted = cards.filter(
+      (c) =>
+        c.total !== 0 &&
+        c.resolved.account!.own !== 0 &&
+        Math.sign(c.total) !== Math.sign(c.resolved.account!.own),
+    );
+    expect(inverted.length).toBeGreaterThan(0);
+
+    // A character cost with no OVR movement is the shape that read as a free
+    // win: `effects: [{ character: -4 }, { snaps: 15 }]` printed whatever the
+    // rest of the phase did, or nothing at all.
+    const freeWins = cards.filter(
+      (c) => c.resolved.account!.lockerRoom === "cost" && c.resolved.account!.own >= 0,
+    );
+    expect(freeWins.length).toBeGreaterThan(0);
+  });
+
+  it("leaves a hub card reporting the movement across the click", () => {
+    // DECISION 037 is not reopened. A hub authors no prose, so there is no
+    // outcome to account and the account is null -- which is exactly what
+    // makes the screen fall back to the whole delta, the seven-point swing
+    // B23 was filed about.
+    const hubs = sample().filter((c) => c.resolved.outcome === "");
+    for (const hub of hubs) expect(hub.resolved.account).toBeNull();
+  });
+
+  it("takes the account from the state the choice was made in", () => {
+    // Same reasoning as the stamp: `advance()` can carry the career across a
+    // phase boundary before it returns, so the baseline the account clamps
+    // against is gone by the time anything is rendered.
+    const ui = start("acct-baseline");
+    let next = reducer(ui, { type: "choose", optionId: getDecision(ui.state!)!.options[0]!.id });
+    for (let guard = 0; guard < 40 && !(next.resolved && next.resolved.outcome); guard++) {
+      next = next.resolved
+        ? reducer(next, { type: "continue" })
+        : reducer(next, { type: "choose", optionId: getDecision(next.state!)!.options[0]!.id });
+    }
+    expect(next.resolved!.account).not.toBeNull();
+    expect(next.resolved!.overallBefore).not.toBeNull();
   });
 });

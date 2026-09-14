@@ -44,6 +44,7 @@ describe("current save", () => {
       outcome: "O",
       hub: null,
       narrated: false,
+      account: null,
       stamp: {
         seasonNumber: 1,
         classYear: "FR",

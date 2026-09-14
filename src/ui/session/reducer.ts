@@ -1,6 +1,6 @@
 import { advance, createCareer, getDecision, type GameState, type PendingDecision } from "../../engine/index";
 import { CONTENT } from "../../content/index";
-import { buildSummary, hubFacts, schoolName, seasonStamp } from "./view-model";
+import { buildSummary, cardAccount, hubFacts, schoolName, seasonStamp } from "./view-model";
 import { appendLog } from "./storage";
 import type { Action, HubFacts, LogEntry, Resolved, SeasonStamp, UiState } from "./types";
 
@@ -81,6 +81,17 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
   // without prose is a hub by construction and no event id is matched here.
   const hub: HubFacts | null = outcome === null ? hubFacts(state, next) : null;
 
+  // What THIS card did, separated from what merely happened while it was being
+  // resolved (DECISION 046 cause 1). `overallBefore` measures the whole
+  // `advance()` -- this outcome, plus an earlier card's deferred effect falling
+  // due, plus a season of development -- and attributing all of it here is how
+  // *"the fit never quite comes together"* came to print **+5 OVR**.
+  //
+  // Taken here rather than in the screen for the same reason the stamp is: the
+  // baseline it is computed against belongs to the state before the call, and
+  // the answer has to survive being written to `localStorage` and read back.
+  const account = outcome === null ? null : cardAccount(state, next, decision, option.id);
+
   const resolved: Resolved | null =
     outcome === null && hub === null
       ? null
@@ -95,6 +106,7 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
           narrated: decision.options.length === 1,
           stamp,
           overallBefore,
+          account,
         };
 
   return { next, resolved };
@@ -166,6 +178,12 @@ export function normalize(ui: UiState): UiState {
       narrated: r.narrated ?? false,
       stamp: normalizeStamp(r.stamp),
       overallBefore: r.overallBefore ?? null,
+      // A save written before the card accounted for itself restores without
+      // this, and null is the honest answer: such a card reports the whole
+      // movement across its `advance`, exactly as it did when it was saved.
+      // Re-deriving it here is not possible -- the option id and the baseline
+      // it was computed from are both gone by the time a save is read.
+      account: r.account ?? null,
     },
   };
 }

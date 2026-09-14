@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type Setup } from "../../engine/index";
-import { buildSummary, buildView, hubFacts, railView } from "./view-model";
+import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type GameState, type PendingDecision, type Setup } from "../../engine/index";
+import { CONTENT } from "../../content/index";
+import { buildSummary, buildView, cardAccount, hubFacts, railView } from "./view-model";
 import { reducer, INITIAL_STATE } from "./reducer";
-import type { CareerView, RailView, UiState } from "./types";
+import type { CardAccount, CareerView, RailView, UiState } from "./types";
 
 // The hidden-mechanics rule, enforced at the one boundary that can enforce it.
 // Tier logic and the transfer rebuild loop stay implicit; school traits are
@@ -551,6 +552,7 @@ describe("the rail describes one moment, not two", () => {
       narrated: false,
       stamp: null,
       overallBefore: null,
+      account: null,
     };
 
     // No stamp at all -- a save written before it existed. Every cell falls
@@ -827,5 +829,197 @@ describe("the declare card states the eligibility that remains", () => {
     const great = { ...strong, overall: 95, character: 95 };
     expect(buildView(weak).decisionNote).toBe(buildView(great).decisionNote);
     expect(buildView(strong).decisionNote).not.toContain(String(strong.overall));
+  });
+});
+
+// DECISION 046, cause 1 and cause 2. A resolved card's number described
+// everything that happened inside its `advance()` -- its own outcome, plus an
+// earlier card's deferred effect coming due, plus a season of development --
+// and the playtester logged six cards whose prose the number therefore
+// contradicted. The prose is correct in all six (report 025 §8), so the six
+// rows of that table are the six cases below.
+describe("a card accounts for what it did", () => {
+  const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
+
+  function decisionFor(eventId: string): PendingDecision {
+    return { eventId, title: "", description: "", options: [] };
+  }
+
+  /** The authored prose for one branch of one option, read from the bundle so
+      the test accounts the outcome the engine would actually have reported. */
+  function prose(eventId: string, optionId: string, branch: "positive" | "negative"): string {
+    const option = CONTENT.events.find((e) => e.id === eventId)!.options.find((o) => o.id === optionId)!;
+    const outcome = branch === "positive" ? option.positiveOutcome : option.negativeOutcome!;
+    return outcome.description;
+  }
+
+  /** Account one outcome against a real career state. `advance()` applies a
+      chosen outcome's effects FIRST, so a before-state with an untouched
+      queue and an after-state carrying the prose is exactly the shape
+      `cardAccount` reads in the reducer. */
+  function account(
+    eventId: string,
+    optionId: string,
+    branch: "positive" | "negative",
+    over?: Partial<GameState>,
+  ): CardAccount | null {
+    const before: GameState = { ...createCareer(setup, "acct"), ...over };
+    const after: GameState = {
+      ...before,
+      lastOutcome: { description: prose(eventId, optionId, branch) },
+    };
+    return cardAccount(before, after, decisionFor(eventId), optionId);
+  }
+
+  it("row 1 — The Position Switch: the fit not coming together is not a +5", () => {
+    // "The fit never quite comes together, and it shows on the depth chart."
+    // showed +5. The outcome authors a deferred -2 and nothing else; the +5 was
+    // a season of development landing on top of it. Every deferred effect in
+    // the bundle is delayPhases: 1 and lands inside its own card's advance, so
+    // the -2 IS this card's own number -- and the development is not.
+    expect(prose("position-switch", "commit", "negative")).toContain("never quite comes together");
+    expect(account("position-switch", "commit", "negative")).toEqual({
+      own: -2,
+      injury: false,
+      lockerRoom: null,
+      later: null,
+    });
+  });
+
+  it("row 2 — The Ticket Hookup: getting caught is a +1 AND a cost", () => {
+    // `character -6, overall +1`, and accurate: being caught reselling comps
+    // does not make you worse at football. With only the +1 rendered it read
+    // as a reward. DECISION 002 forbids the integer, so the character half is
+    // reported as a direction and the screen says it in words.
+    expect(prose("offfield-ticket-hookup", "sell-them", "negative")).toContain("Compliance flags");
+    expect(account("offfield-ticket-hookup", "sell-them", "negative")).toEqual({
+      own: 1,
+      injury: false,
+      lockerRoom: "cost",
+      later: null,
+    });
+  });
+
+  it("row 3 — The Long Attempt: a missed 57-yarder is a -1, not a +1", () => {
+    // "off the upright and away" authors -1. The +1 the playtester saw was
+    // somebody else's.
+    expect(prose("the-long-attempt", "tell-him-youve-got-it", "negative")).toContain("off the upright");
+    expect(account("the-long-attempt", "tell-him-youve-got-it", "negative")?.own).toBe(-1);
+  });
+
+  it("row 4 — Bowl Opt-Out: zero new risk, zero new tape, zero OVR", () => {
+    // `effects: []`. The card said +2.
+    expect(prose("bowl-opt-out", "sit", "positive")).toContain("Zero new risk");
+    expect(account("bowl-opt-out", "sit", "positive")).toEqual({
+      own: 0,
+      injury: false,
+      lockerRoom: null,
+      later: null,
+    });
+  });
+
+  it("row 5 — Cutting the Line: nobody notices, and nothing moves", () => {
+    // `effects: []` again, shown as -3. Waiting your turn costs nothing, and
+    // the card is now allowed to say so.
+    expect(prose("offfield-training-table", "wait-your-turn", "positive")).toContain("Nobody notices");
+    expect(account("offfield-training-table", "wait-your-turn", "positive")?.own).toBe(0);
+    // The other option on the same card is the inverse shape: it moves no OVR
+    // at all and its whole cost is character, which is exactly the card that
+    // must not read as a free win.
+    expect(account("offfield-training-table", "cut-the-line", "positive")).toEqual({
+      own: 0,
+      injury: false,
+      lockerRoom: "cost",
+      later: null,
+    });
+  });
+
+  it("row 6 — Somebody Rolls Up On You: the sprain is the card's own -5", () => {
+    // This one the old number got right, by coincidence: the -5 is the ankle's
+    // `overallDelta` and nothing else landed. What was missing is that it is a
+    // loan -- the engine restores the full amount when the injury heals, and
+    // the card now says so rather than leaving the restoration to reappear on
+    // an unrelated card as somebody else's remainder.
+    expect(prose("the-knee", "cart", "positive")).toContain("Sprain, not a tear");
+    expect(account("the-knee", "cart", "positive")).toEqual({
+      own: -CONTENT.injuries.ankle!.overallDelta,
+      injury: true,
+      lockerRoom: null,
+      later: null,
+    });
+  });
+
+  it("reads the branch that fired from its prose, with no engine change", () => {
+    // The engine reports `lastOutcome: { description }` and strips the
+    // positive/negative flag on purpose (DECISION 001). Two candidate outcomes
+    // per option, distinct descriptions: the description identifies the
+    // branch, from content.
+    const positive = account("position-switch", "commit", "positive");
+    const negative = account("position-switch", "commit", "negative");
+    expect(positive?.own).toBe(2);
+    expect(negative?.own).toBe(-2);
+  });
+
+  it("refuses to guess: prose that matches nothing gets no account", () => {
+    const before = createCareer(setup, "acct-miss");
+    const after: GameState = { ...before, lastOutcome: { description: "Something else entirely." } };
+    expect(cardAccount(before, after, decisionFor("position-switch"), "commit")).toBeNull();
+    // An event or option that is no longer in the bundle, which is the drift
+    // `isUnplayable` guards, is the same answer.
+    expect(cardAccount(before, after, decisionFor("no-such-event"), "commit")).toBeNull();
+    // And a hub card, which authors no prose at all: DECISION 037 already
+    // settled that its number is the movement across the click.
+    const hub: GameState = { ...before, lastOutcome: undefined };
+    expect(cardAccount(before, hub, decisionFor("transfer"), "stay")).toBeNull();
+  });
+
+  it("accounts the redshirt card, whose prose the engine reads off content", () => {
+    // The one decision outside `content.events` that authors prose. Its two
+    // descriptions and its bump/sink amounts are both in `content.redshirt`,
+    // so it can be accounted like any other card.
+    const before = createCareer(setup, "acct-rs");
+    const bump: GameState = { ...before, lastOutcome: { description: CONTENT.redshirt.bumpDescription } };
+    const sink: GameState = { ...before, lastOutcome: { description: CONTENT.redshirt.sinkDescription } };
+    expect(cardAccount(before, bump, decisionFor("redshirt"), "redshirt")?.own).toBe(CONTENT.redshirt.bumpOverall);
+    expect(cardAccount(before, sink, decisionFor("redshirt"), "redshirt")?.own).toBe(CONTENT.redshirt.sinkOverall);
+  });
+
+  it("clamps the way the engine clamps, so the ceiling never leaks into the remainder", () => {
+    // At 99 the engine refuses the point. A naive sum would credit the card
+    // with a +1 it never got and push a phantom -1 into "everything else".
+    expect(account("the-long-attempt", "tell-him-youve-got-it", "positive", { overall: 99 })?.own).toBe(0);
+    expect(account("the-long-attempt", "tell-him-youve-got-it", "positive", { overall: 98 })?.own).toBe(1);
+  });
+
+  it("keeps a deferred effect out of the card's number while it is still queued", () => {
+    // The mirror of row 1. Every deferred effect in the bundle today lands
+    // inside its own card's `advance`, because the next decision falls in a
+    // later phase; one that does not has not happened yet, and the card says
+    // only that something lands later -- never how much, never when.
+    const before = createCareer(setup, "acct-deferred");
+    const after: GameState = {
+      ...before,
+      lastOutcome: { description: prose("position-switch", "commit", "negative") },
+      pendingEffects: [
+        { effect: { kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }, firePhaseAbs: before.phaseAbs + 1 },
+      ],
+    };
+    expect(cardAccount(before, after, decisionFor("position-switch"), "commit")).toEqual({
+      own: 0,
+      injury: false,
+      lockerRoom: null,
+      later: "cost",
+    });
+  });
+
+  it("never reports character as a number, only as a direction", () => {
+    // DECISION 002, still standing. The account carries "cost" or "credit" and
+    // no magnitude, so no screen can print one: character moves draft stock by
+    // ~±7.5 against overall's ~82, and an integer would overstate it tenfold.
+    const caught = account("offfield-ticket-hookup", "sell-them", "negative")!;
+    expect(caught.lockerRoom).toBe("cost");
+    expect(JSON.stringify(caught)).not.toContain("6");
+    const kept = account("bowl-opt-out", "play", "positive")!;
+    expect(kept.lockerRoom).toBe("credit");
   });
 });

@@ -709,6 +709,101 @@
    between the rule and the numeral the rule is measuring. */
 .delta:first-child { margin-top: 0; }
 
+/* ---------- the card accounts for itself (DECISION 046) ---------- */
+
+/* The character half of an outcome, in words, because DECISION 002 forbids the
+   integer and is not reversed here: character moves draft stock by ~±7.5
+   against overall's ~82, so a number, a bar or a dot count would all claim a
+   resolution it does not have.
+
+   What it gets instead is the three levers 002 leaves open -- words, position
+   and weight. POSITION: above the OVR figure, inside the same rule, so on a
+   card whose real cost was character the eye does not land on `+1 OVR` first
+   and stop. WEIGHT: 700 at --chalk, against the outcome prose's 500 at
+   --chalk-soft directly above it. Same size, same width, same hue: it is the
+   next sentence of the same paragraph, said harder.
+
+   That pairing is the fix for the exact defect B17 names. *The Ticket Hookup*
+   resolves to `character −6, overall +1` under "compliance flags the resale
+   listing with your name still in the metadata" -- and with only the `+1`
+   rendered, getting caught printed as a reward. */
+.locker-room {
+  margin: 0.85rem 0 0;
+  font-size: var(--t-label);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
+  color: var(--chalk);
+}
+
+/* The label register the rail, the ledger and the standing block already speak
+   (DECISION 008): condensed, 11px, 700, tracked wide, upper case. Not a new
+   treatment invented for this row -- it is this interface's existing word for
+   "this names the thing under it".
+
+   It renders on the OVR figure ONLY when a second figure exists to be told
+   apart from it. One number needs no label, and 46.6% of resolved cards carry
+   at most one. */
+.account-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-variation-settings: "wdth" 76;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
+/* A footnote on the figure above it, and only ever one of two: an injury's
+   points are restored in full when it heals, and a deferred effect has not
+   landed yet. Both are facts about the number directly above, so they are set
+   as the quietest running text on the card and never as another label. */
+.account-note {
+  margin: 0.5rem 0 0;
+  font-size: var(--t-meta);
+  line-height: var(--lh-tight);
+  color: var(--chalk-faint);
+}
+
+/* The remainder: a season of development, an earlier card's deferred effect
+   coming due, an injury healing. Real, and not this card's.
+
+   The hairline is the seam. `.resolved-beat` already uses this device to stop
+   two beats of one card reading as one event; here it does the same work in
+   the other direction, so two numbers inside one rule cannot be read as one
+   sum. The figure is --chalk-dim and not --emphasis: the accent is reserved
+   for what the card DID (DECISION 012's "emphasis on a resolved outcome"), and
+   this is the part it did not do. Both directions of the remainder are the
+   same chalk, so nothing here tells a +6 from a −6 by colour. */
+.delta-else {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.7rem;
+  margin: 0.95rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+/* No magnitude scaling, at any tier: `--delta-size` deliberately does not
+   reach this. A remainder is reported, never dramatised. */
+.account-figure {
+  font-variation-settings: "wdth" 68;
+  font-size: var(--t-label);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--chalk-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The label sits on the same line as the figure here, not above it, so the row
+   reads as one short sentence rather than as a second stacked statistic. */
+.delta-else .account-label {
+  margin-bottom: 0;
+}
+
 @keyframes delta-in {
   from { opacity: 0; transform: translateY(var(--delta-lift)); }
   to { opacity: 1; transform: none; }

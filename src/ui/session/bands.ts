@@ -21,6 +21,52 @@ const STANDING_BANDS: Band[] = [
   { min: 0, phrase: "hanging on to a roster spot" },
 ];
 
+// ---------------------------------------------------------------------------
+// The two phrases that are not claims about ability (report 027, defect 2)
+//
+// Every phrase above is derived from `overall` alone, but the vocabulary is
+// DEPTH-CHART language, and the bottom two rungs do not describe how good the
+// player is -- they assert that he is NOT PLAYING. `overall` cannot support
+// that claim: playing time is `snapModifier` (recruiting offer, transfer,
+// school trait, redshirt), which is a different number entirely. So the header
+// printed `ON THE FIELD: on the scout team` beside `339 snaps · 31 tackles` in
+// the same strip, 40px apart. Measured over 1,200 random-policy careers across
+// all six positions: 5.9% of all decisions (1,807 of 30,739) and **45.7% of
+// careers** show one of these two phrases while the visible snap count is 100
+// or more.
+//
+// The rule is a REFUSAL, not an inference: a phrase that denies playing time is
+// not printed when the number printed beside it refutes it. It does not guess
+// at snap counts, and it never moves a phrase down -- only the two denials can
+// be lifted, and only to the weakest phrase compatible with playing.
+//
+// This is NOT the redshirt inference DECISION 020 withdrew, and does not
+// re-derive it. That inference asked "WHICH stored season was sat out", which
+// report 010 measured as underivable. This asks nothing about any other season,
+// labels no ledger row, and reads one number that is already on screen.
+//
+// The floor is `progression.washoutSnapFloor` (60), the engine's own definition
+// of "did not play enough for this season to count" -- the same anchoring rule
+// the bands themselves use. It is not imported, because this module has no
+// content dependency and the labels layer deliberately keeps it that way;
+// `bands.test.ts` asserts the constant still equals the content value, so a
+// balance change to the floor fails a test instead of drifting.
+//
+// The redshirt season falls out correctly rather than being special-cased:
+// `sitSnapModifier: 0.05` gives a sat-out season a median of 26 snaps and a
+// measured max of 54 over 2,315 redshirt rows, all below 60 -- so a redshirt
+// still reads `on the scout team`, which is exactly what it is.
+export const PLAYING_SNAP_FLOOR = 60;
+
+/** The phrases that assert the player is not on the field. Only these can be
+    lifted by a snap count, because only these can be contradicted by one. */
+const OFF_FIELD_PHRASES = new Set<string>(["on the scout team", "hanging on to a roster spot"]);
+
+/** The weakest phrase that is compatible with taking real snaps. Deliberately
+    the next rung up and no further: the snap count says he plays, it does not
+    say he starts, and the OVR number is printed beside the phrase anyway. */
+const PLAYING_FALLBACK = "in the rotation";
+
 // Coarser on purpose. Character moves draft stock by about ±7.5 against
 // overall's ~82 points of range; a dial of equal resolution would misrepresent
 // its influence by roughly an order of magnitude.
@@ -37,8 +83,21 @@ function bandFor(bands: Band[], value: number): string {
   return bands[bands.length - 1]!.phrase;
 }
 
-export function standingPhrase(overall: number): string {
-  return bandFor(STANDING_BANDS, overall);
+/**
+ * The "ON THE FIELD" phrase.
+ *
+ * `snapsThisSeason` is the snap count the header is printing beside the phrase
+ * -- `CareerView.season?.snaps`, i.e. the season IN PROGRESS. Optional, and
+ * omitting it returns the pure `overall` band unchanged: a caller with no
+ * season line (recruiting, a pre-field phase, a save that predates the field)
+ * has nothing to contradict, and null is the absence of a number, never a zero.
+ */
+export function standingPhrase(overall: number, snapsThisSeason?: number | null): string {
+  const phrase = bandFor(STANDING_BANDS, overall);
+  if (!OFF_FIELD_PHRASES.has(phrase)) return phrase;
+  if (typeof snapsThisSeason !== "number" || !Number.isFinite(snapsThisSeason)) return phrase;
+  if (snapsThisSeason < PLAYING_SNAP_FLOOR) return phrase;
+  return PLAYING_FALLBACK;
 }
 
 export function trustPhrase(character: number): string {

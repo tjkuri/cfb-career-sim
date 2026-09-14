@@ -1278,3 +1278,103 @@ report as an exact diff, not applied.
 
 **What would change our mind.** Lane A reporting that it landed without touching `CareerScreen.tsx` —
 in which case B29 could have run alongside it and wave 13 starts one lane lighter than planned.
+
+## 048 — A player who sits does not make plays. `requiresPlaying` is added to all 52, and a schema rule stops it recurring
+
+**Date:** 2026-09-14 · **Made by:** the user, on PM session 6's escalation · **Evidence:** `reports/027-the-credibility-defects.md` §6
+
+`EventConditions.requiresPlaying` exists and works (`select-event.ts:38` rejects the event when
+`state.redshirtSeasonActive`), and `milestones.ts:6` uses it correctly. Across the rest of the bundle
+it is almost absent: **59 on-field events award `stat` or `snaps` production and 52 of them do not
+set it.** Zero of K's ten on-field events set it.
+
+Measured over 3,000 careers: **31.4%** of all production-card firings happen while the player is
+sitting a redshirt, and **85.6%** of redshirt careers get at least one. A kicker who chose to sit is
+offered *"Zero seconds on the clock, your team down two…"* and the moment it awards goes on his
+permanent summary reel for a season he did not play.
+
+**This is the proximate cause of three of the five defects in brief 027** — the `3 FG · 6 Points`
+arithmetic (21.2% of redshirt K rows against 0.8% of played ones), the on-screen half of B37, and
+about a third of defect 3's misfires. It was not in the brief; the agent found it underneath.
+
+**Approved: `requiresPlaying: true` on all 52, plus a `validateContent` rule** — an on-field event
+whose outcomes award `stat` or `snaps` production must set `requiresPlaying` — so the next authored
+card cannot reopen the hole silently.
+
+**It is a balance change and it was escalated as one.** Production cards award `snaps`; snaps drive
+development. A redshirt season is currently generating development it should not, which is part of
+why B19's "transferring up every offseason is free OVR" reading survived. Closing it makes the
+redshirt a real sacrifice. **The implementing agent measures draft rate and final-OVR distribution
+over ≥1,000 careers before and after, and stops to report rather than proceeding if the shift is
+large.**
+
+**`npm run play` bit-identity moves with this change** — the DECISION 040 precedent. It changes which
+events are *eligible*, so seeds diverge by construction. The new baseline is re-established and
+recorded at commit.
+
+**The four-game nuance is deliberately not modelled with a new condition.** A redshirt does play up
+to four games, and `sitSnapModifier: 0.05` already models that numerically (100% of redshirt seasons
+credit snaps, median 26 — B13). Defaulting to gated is the safe direction; an
+`allowedDuringRedshirt` opt-in was offered and declined for now.
+
+**What would change our mind.** The before/after measurement showing redshirting becomes strictly
+dominated — a draft-rate collapse in the redshirt cohort rather than a modest, intended cost.
+
+## 049 — Two additive engine changes approved: `minOverall`, and the redshirt card stops promising a season you do not play
+
+**Date:** 2026-09-14 · **Made by:** the user, on PM session 6's escalation · **Evidence:** `reports/027-the-credibility-defects.md` §3 and §5
+
+The engine was re-frozen after 042. Both of these were proposed rather than taken, and both are
+approved.
+
+**1. `minOverall?: number` on `EventConditions`.** One field in `engine/types.ts` plus one check in
+`select-event.ts`, the exact mirror of the existing `maxOverall`. Additive, no RNG movement.
+
+Its purpose: *Bowl Opt-Out* tells a 60-overall sophomore on the scout team that *"your name's already
+climbing draft boards."* It is a family of four (`bowl-opt-out`, `all-star-invite`,
+`all-star-practice-week`, `senior-bowl-invite`), each firing at a freshman or sophomore ~69–71% of
+the time. `minClass: "JR"` removes ~69% of the bad firings, but the median OVR at fire time is still
+~66, so the claim is still occasionally made to a player who will go undrafted. `minOverall` is the
+only condition that lets content say *this beat is for good players*, and there are 81 on-field
+events that may want it.
+
+**2. `advance.ts:74` and `:76` — the redshirt card's own two strings.** The redshirt decision is a
+synthetic hub built in the engine, which is why grepping `src/content/**` for it finds nothing. Both
+strings promise a season that is not played; `sitSnapModifier: 0.05` means every redshirt season
+credits snaps. **The engine is right and the telling is wrong.** Two string literals in a
+`getDecision` branch, no behaviour change, no RNG movement.
+
+Proposal B — appending a `decisionNote()` in `view-model.ts`, the shape DECISION 038 settled for the
+declare card — is **rejected in favour of A**: fixing the sentence that is wrong beats printing a
+correction underneath it.
+
+**What would change our mind.** Nothing on (2). On (1), a measurement showing `minOverall` gates
+these four cards so hard they effectively stop firing — in which case the cards want rewording, not
+gating, and 027 §3 records the fallback wording.
+
+## 050 — Two content fixes the PM took without escalating, under DECISION 043's precedent
+
+**Date:** 2026-09-14 · **Made by:** PM session 6 · **Evidence:** `reports/027-the-credibility-defects.md` §1 and §4
+
+DECISION 043 established that a text defect in frozen content gets fixed in place, with prose, rather
+than worked around from the UI. These two are that shape and carry no balance consequence, so they
+were decided rather than escalated. They are logged because the freeze means every content edit needs
+a written reason.
+
+**1. `Playoff or Bust` — "Ten wins is a disappointing season here."** Read beside a **5-7** ledger in
+**96.5%** of its 85 firings. The sentence is *meant* as a statement about the program's standard and
+is read as a claim about this season, because the ledger's record is the nearest number on screen.
+Gating on the record was rejected: it needs W-L to accrue mid-season, which moves the RNG draw order
+and diverges every seed. **Reword so the standard cannot be mistaken for a scoreboard, and delete the
+number that invites the comparison.** One string.
+
+**2. `k.ts` — three field goals are nine points.** Twelve `{ kind: "stat", stat: "fieldGoals" }`
+effects, only one of which (line 141) pairs a `points` sibling. Each gains one, including the two
+negatives. Purely additive, `applyEffect` order unchanged so the `rng` cursor does not move; K seeds
+change stat *values*, not draw order.
+
+**Explicitly rejected: deriving `points` in the engine.** Removing `points` from `STAT_MODEL.K.per100`
+deletes one `rng.next()` per phase per kicker and diverges every existing K seed, and `points` feeds
+nothing downstream that would justify it (`postseason.ts:40` gates All-Conference on `fieldGoals`).
+Also rejected, and recorded for the Stage-2 engine work rather than here: drawing one jitter per
+*position* rather than per stat, which would fix the same class of incoherence in QB lines.

@@ -1,7 +1,7 @@
 import { railView } from "../session/view-model";
 import { classYearLabel, type LedgerRow } from "../session/ledger";
 import { countedStatLabel } from "../session/labels";
-import type { CareerView, Resolved, StatView } from "../session/types";
+import type { CardAccount, CareerView, Resolved, StatView } from "../session/types";
 
 interface Props {
   view: CareerView;
@@ -23,6 +23,11 @@ const NUM = new Intl.NumberFormat("en-US");
  * Magnitude only. `Math.abs` is load-bearing: a +8 and a -8 return the same
  * tier and therefore get the same treatment, which is the whole of the rule
  * that scale may track magnitude while hue may never track valence.
+ *
+ * It is now read from the card's OWN delta, not from the whole `advance`. A
+ * card that authored `effects: []` was being set at tier 2 because a deferred
+ * effect from three cards ago happened to land underneath it, which is the
+ * emphasis rule amplifying a misattribution rather than a magnitude.
  */
 function magnitude(delta: number): 0 | 1 | 2 | 3 {
   const size = Math.abs(delta);
@@ -30,6 +35,84 @@ function magnitude(delta: number): 0 | 1 | 2 | 3 {
   if (size <= 2) return 1;
   if (size <= 5) return 2;
   return 3;
+}
+
+// U+2212, not a hyphen: the minus sign is a numeric glyph and sits on the
+// figure's own width and height. The screen-reader text says the word instead.
+const MINUS = "−";
+
+function ovrText(delta: number): string {
+  return `${delta > 0 ? "+" : MINUS}${Math.abs(delta)} OVR`;
+}
+
+function upDown(delta: number): string {
+  return delta > 0 ? "up" : "down";
+}
+
+/**
+ * The card's own number, said as a sentence.
+ *
+ * With nothing else to report the wording is unchanged from before this split,
+ * because there is nothing to distinguish it from: one number, one movement.
+ * As soon as a second beat exists the two have to be told apart in speech as
+ * well as on screen, or the listener hears two bare numbers.
+ */
+function ownSentence(own: number, alone: boolean, now: number): string {
+  if (alone) return `Overall ${upDown(own)} ${Math.abs(own)}, now ${now}.`;
+  if (own === 0) return "This card: no change to overall.";
+  return `This card: overall ${upDown(own)} ${Math.abs(own)}.`;
+}
+
+/**
+ * The character half of an outcome, as words (DECISION 046 cause 2).
+ *
+ * DECISION 002 is not reversed and no integer appears: character moves draft
+ * stock by ~±7.5 against overall's ~82, and a number here would overstate it
+ * tenfold. What it gets instead is what B17 said it was missing -- position and
+ * weight. The line sits ABOVE the OVR figure, inside the same rule, in the same
+ * vocabulary the standing block uses two inches higher ("In the locker room"),
+ * so *The Ticket Hookup*'s "compliance flags the resale listing" can no longer
+ * be read as a `+1` and nothing else.
+ *
+ * Direction only. There is no gradation here on purpose: a size would be the
+ * resolution DECISION 002 says character does not have, dressed as typography.
+ */
+function lockerRoomLine(account: CardAccount): string | null {
+  // Terse on purpose. A character effect fires on 37.5% of resolved cards
+  // (measured over 360 careers), so this line is read often -- and a sentence
+  // read that often has to behave like `+1 OVR` does, as a stated fact that
+  // never varies, rather than like narration, which would turn into the
+  // wallpaper this whole wave exists to stop people skimming.
+  if (account.lockerRoom === "cost") return "Cost you in the locker room.";
+  if (account.lockerRoom === "credit") return "Earned you credit in the locker room.";
+  return null;
+}
+
+/**
+ * The two footnotes an OVR figure can need to be true.
+ *
+ * An injury's points are a loan: `effects.ts` restores the full `overallDelta`
+ * when it heals. A card that prints the loss and says nothing contradicts
+ * itself twice -- once here, and again later when the points reappear on an
+ * unrelated card as somebody else's remainder.
+ *
+ * A deferred effect that is still queued is the mirror image: the card has not
+ * finished happening. One that already landed inside the same `advance` is not
+ * a footnote at all -- it is the card's own number, and `cardAccount` counts it
+ * there. That distinction is the whole of the *Position Switch* row: its
+ * authored `−2` lands in its own tick, so the card now prints `−2` under "the
+ * fit never quite comes together" instead of the `+5` that belonged to a
+ * season of development.
+ *
+ * Neither the size nor the timing is ever stated -- only that the card is not
+ * finished.
+ */
+function accountNotes(account: CardAccount, own: number): string[] {
+  const notes: string[] = [];
+  if (account.injury && own !== 0) notes.push("The OVR comes back when the injury heals.");
+  if (account.later === "cost") notes.push("The cost of this one lands later.");
+  if (account.later === "credit") notes.push("The rest of this one lands later.");
+  return notes;
 }
 
 // `1 Game-Winners` was printed here (017 playtest, claim 10.2), and the same
@@ -144,11 +227,39 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   // was frozen with the same null the live view would have reported.
   const line = rail.season;
 
-  // Null baseline means a save that predates the field, not a change of zero.
-  // No delta is reported rather than a fabricated one.
-  const delta =
+  // DECISION 046. Three numbers where there used to be one, and only the first
+  // of them was ever this card's.
+  //
+  //   total     everything `advance()` moved: this outcome, plus an earlier
+  //             card's deferred effect coming due, plus a season of
+  //             development. Null baseline means a save that predates the
+  //             field, not a change of zero -- no delta is reported rather
+  //             than a fabricated one.
+  //   own       what THIS card's chosen outcome did, read from content by
+  //             `cardAccount`. Null account (a hub card, or a save written
+  //             before the field) falls back to `total`, which is what every
+  //             card reported before this split and is what DECISION 037
+  //             wanted on the hub specifically.
+  //   elsewhere the remainder. It is real -- it is a deferred effect landing,
+  //             or a season of development, or both -- so it is not dropped;
+  //             it gets its own beat, one line down, under its own label.
+  const account = resolved?.account ?? null;
+  const total =
     resolved && resolved.overallBefore !== null ? view.overall - resolved.overallBefore : 0;
-  const loudness = magnitude(delta);
+  const own = account ? account.own : total;
+  const elsewhere = account ? total - own : 0;
+  const loudness = magnitude(own);
+
+  // Once there are two numbers they both need naming; one number on its own
+  // needs no label and does not get one, which keeps the 46.6%-of-cards common
+  // case exactly as it was. A zero own-delta is PRINTED rather than omitted
+  // when there is a remainder beside it: "no change" is the fact that
+  // *Cutting the Line*'s `effects: []` was contradicting when the card showed
+  // the −3 that belonged to something else.
+  const showElsewhere = elsewhere !== 0;
+  const showOwn = own !== 0 || showElsewhere;
+  const notes = account ? accountNotes(account, own) : [];
+  const locker = account ? lockerRoomLine(account) : null;
 
   return (
     // The decision column comes first in the DOM and the ledger follows it, so
@@ -243,7 +354,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                 instead (B23): the move, the delta, or both. The block is not
                 rendered at all when it would hold none of the three, so the
                 rule never draws beside an empty card. */}
-            {(resolved.outcome || resolved.hub?.to || loudness > 0) && (
+            {(resolved.outcome || resolved.hub?.to || showOwn || locker) && (
             <div className="consequence" data-magnitude={loudness}>
               {resolved.outcome && <p className="outcome">{resolved.outcome}</p>}
 
@@ -270,14 +381,45 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                 </p>
               )}
 
-              {loudness > 0 && (
+              {/* Character, as a cost, without an integer (DECISION 002 held,
+                  DECISION 046 cause 2). It is placed above the OVR figure
+                  deliberately: B17 is that the character read is too easy to
+                  skip, and on a card whose real cost was character the number
+                  underneath must not be the first thing the eye lands on. */}
+              {locker && <p className="locker-room">{locker}</p>}
+
+              {showOwn && (
                 <p className="delta">
-                  <span aria-hidden="true">
-                    {delta > 0 ? "+" : "−"}
-                    {Math.abs(delta)} OVR
+                  {showElsewhere && <span className="account-label">This card</span>}
+                  <span aria-hidden="true">{own === 0 ? "No change" : ovrText(own)}</span>
+                  <span className="sr-only">
+                    {ownSentence(own, !showElsewhere, view.overall)}
+                  </span>
+                </p>
+              )}
+
+              {notes.map((note) => (
+                <p className="account-note" key={note}>
+                  {note}
+                </p>
+              ))}
+
+              {/* The remainder, and the reason the card above it can afford to
+                  be honest. It is never scaled by magnitude -- DECISION 012
+                  attaches emphasis to what a card DID, and this is the part it
+                  did not do. Quiet, stated, and never explained beyond what is
+                  knowable: "a deferred effect from three cards ago" is a fact
+                  only the engine holds, and a precise invention would be worse
+                  than a vague truth. */}
+              {showElsewhere && (
+                <p className="delta-else">
+                  <span className="account-label">Everything else</span>
+                  <span className="account-figure" aria-hidden="true">
+                    {ovrText(elsewhere)}
                   </span>
                   <span className="sr-only">
-                    Overall {delta > 0 ? "up" : "down"} {Math.abs(delta)}, now {view.overall}
+                    Everything else: overall {upDown(elsewhere)} {Math.abs(elsewhere)}, now{" "}
+                    {view.overall}.
                   </span>
                 </p>
               )}

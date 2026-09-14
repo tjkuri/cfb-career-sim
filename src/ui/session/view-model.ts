@@ -5,12 +5,19 @@ import { getDecision, WASHOUT_REASONS, type GameState, type PendingDecision } fr
 // below is arithmetic on it; writing the 4 out as a literal here would be a
 // second copy of an engine rule that can change. Type-only imports from this
 // module are already the norm across `src/ui/session/**`.
-import { CLASS_ORDER } from "../../engine/types";
+import { CLASS_ORDER, type Effect, type Outcome } from "../../engine/types";
+// Same reasoning, one module over. `clampOverall` is the engine's own bound on
+// `overall` (0-99), and `cardAccount` below has to reproduce the engine's
+// arithmetic exactly or the remainder it hands the card is off by the clamp.
+// Importing the function is what makes "exactly" true; re-spelling `Math.min(99,
+// ...)` here would be a second copy of an engine rule, drifting silently.
+import { clampOverall } from "../../engine/effects";
 import { CONTENT } from "../../content/index";
 import { standingPhrase, trustPhrase } from "./bands";
 import { buildLedger } from "./ledger";
 import { awardLabel, iconGlyph, phaseLabel, statLabel, trophyLabel } from "./labels";
 import type {
+  CardAccount,
   CareerSummaryView,
   CareerView,
   HonorRarity,
@@ -207,6 +214,204 @@ export function hubFacts(before: GameState, after: GameState): HubFacts | null {
   };
 }
 
+// ---------------------------------------------------------------------------
+// What a card did, as opposed to what happened while it was on screen.
+// ---------------------------------------------------------------------------
+
+const EVENTS_BY_ID = new Map(CONTENT.events.map((e) => [e.id, e]));
+
+// A structural mirror of `advance.ts`'s `REDSHIRT_EVENT_ID`, which is not
+// exported, for the same reason `DECLARE_EVENT_ID` below is one. The redshirt
+// hub is the one decision outside `content.events` that authors prose: the
+// engine reads its two descriptions and its bump/sink amounts straight off
+// `content.redshirt`, so its card can be accounted for from content like any
+// other. A test plays a redshirt and asserts the account is non-null, so a
+// drift in the id fails rather than quietly demoting the card.
+const REDSHIRT_EVENT_ID = "redshirt";
+
+// The engine's own fallback when an `injury` effect names a type the bundle
+// does not carry (`advance.ts`'s `injuryLookup`). Mirrored, not guessed: if the
+// engine subtracted 3 for an unknown type, so must the card's account.
+const UNKNOWN_INJURY_DELTA = 3;
+
+/**
+ * The candidate outcomes a chosen option could have resolved to, narrowed to
+ * those whose prose matches what the engine reported.
+ *
+ * This is the whole trick, and it needs no engine change: `GameState` carries
+ * only `lastOutcome: { description }` (DECISION 001 strips the branch flag on
+ * purpose), but an `EventOption` has at most two authored outcomes, and their
+ * descriptions are distinct. Matching the reported description against the two
+ * therefore identifies which one fired, from content the UI is already allowed
+ * to read.
+ *
+ * Nothing here is told the option's `probability`, and the result is only ever
+ * computed for the option the player actually took -- so no unchosen branch is
+ * reachable through it (DECISIONS 006, 012).
+ */
+function firedOutcomes(eventId: string, optionId: string, description: string): Outcome[] {
+  if (eventId === REDSHIRT_EVENT_ID) {
+    const cfg = CONTENT.redshirt;
+    const out: Outcome[] = [];
+    if (cfg.bumpDescription === description) {
+      out.push({ description, effects: [{ kind: "overall", timing: "immediate", amount: cfg.bumpOverall }] });
+    }
+    if (cfg.sinkDescription === description) {
+      out.push({ description, effects: [{ kind: "overall", timing: "immediate", amount: cfg.sinkOverall }] });
+    }
+    return out;
+  }
+  const option = EVENTS_BY_ID.get(eventId)?.options.find((o) => o.id === optionId);
+  if (!option) return [];
+  return [option.positiveOutcome, option.negativeOutcome].filter(
+    (o): o is Outcome => !!o && o.description === description,
+  );
+}
+
+function direction(amount: number): "cost" | "credit" | null {
+  if (amount < 0) return "cost";
+  if (amount > 0) return "credit";
+  return null;
+}
+
+type OverallEffect = Extract<Effect, { kind: "overall" }>;
+
+/**
+ * Has this card's own deferred effect already landed by the time the card is
+ * read?
+ *
+ * This is not a detail, and getting it wrong inverts the fix. Every deferred
+ * effect in the bundle is `delayPhases: 1`, which fires at the next
+ * `tickPhaseStart` -- and `advance()` runs `autoProgress` until the next
+ * decision is raised, so whether that tick happens before the player sees the
+ * card depends entirely on whether the next decision falls in the same phase.
+ * Measured over 360 careers: the *Position Switch*'s authored `−2` lands inside
+ * its own `advance` on most resolutions and on a later card on the rest.
+ *
+ * So the queue is asked instead of assumed. If an effect matching this one is
+ * still queued after the call, it has not landed and the card says only that
+ * something lands later. If it is not, it landed during this `advance` and it
+ * is this card's own number -- disowning it would put "the fit never quite
+ * comes together" over "no change", which is the same defect pointing the
+ * other way.
+ *
+ * Matching is by value, not identity: `applyEffect` pushes the authored object
+ * into `pendingEffects`, and a save round-trips through JSON. Two identical
+ * deferred effects from two different cards are indistinguishable by
+ * construction -- if an earlier card's twin fired while this one stayed
+ * queued, the same amount is attributed to this card and the earlier one is
+ * reported as still pending. The arithmetic is unchanged either way, and the
+ * total the card reports is the same.
+ */
+function stillPending(before: GameState, after: GameState, effect: OverallEffect): boolean {
+  const matches = (state: GameState): number =>
+    state.pendingEffects.filter(
+      (p) =>
+        p.effect.amount === effect.amount &&
+        (p.effect.delayPhases ?? 1) === (effect.delayPhases ?? 1),
+    ).length;
+  return matches(after) > matches(before);
+}
+
+/**
+ * One outcome's effects, accounted.
+ *
+ * `own` is walked in authored order through the engine's own clamp, from the
+ * OVR the card was read against. That is not decoration: `applyChoice` runs
+ * FIRST inside `advance()` (advance.ts:88), before any phase tick, simulation
+ * or development, so replaying the outcome's effects from `overallBefore`
+ * reproduces the engine's arithmetic exactly -- including the 99 ceiling, where
+ * a naive sum would credit a card with a point the engine refused and push a
+ * phantom −1 into the remainder.
+ *
+ * A deferred effect counts as `own` once it has landed, and only then; see
+ * `stillPending`.
+ */
+function accountOf(
+  effects: Effect[],
+  before: GameState,
+  after: GameState,
+): CardAccount {
+  let overall = before.overall;
+  let deferred = 0;
+  let character = 0;
+  let injury = false;
+
+  for (const effect of effects) {
+    switch (effect.kind) {
+      case "overall":
+        if (effect.timing !== "deferred") overall = clampOverall(overall + effect.amount);
+        else if (stillPending(before, after, effect)) deferred += effect.amount;
+        else overall = clampOverall(overall + effect.amount);
+        break;
+      case "injury":
+        injury = true;
+        overall = clampOverall(
+          overall - (CONTENT.injuries[effect.injuryType]?.overallDelta ?? UNKNOWN_INJURY_DELTA),
+        );
+        break;
+      case "character":
+        character += effect.amount;
+        break;
+      default:
+        // stat, snaps, suspension, trophy, award, moment, ending. All real, and
+        // none of them an OVR movement this card would otherwise be blamed for
+        // -- the stat line is already on the rail and the honours are already
+        // on the summary.
+        break;
+    }
+  }
+
+  return {
+    own: overall - before.overall,
+    injury,
+    lockerRoom: direction(character),
+    later: direction(deferred),
+  };
+}
+
+/**
+ * What the card on screen actually did, or null when that cannot be known.
+ *
+ * Null is a real answer and the card handles it by falling back to the whole
+ * movement across the `advance`, which is what every card did before this
+ * existed. It is returned for:
+ *
+ *   * a hub card (Signing Day, transfer, declare) -- no authored prose, so
+ *     nothing to match, and DECISION 037 already settled that its number is
+ *     the movement across the click and is the point of the card;
+ *   * an event id or option id that is no longer in the bundle, which is the
+ *     same drift `isUnplayable` guards;
+ *   * prose that matches neither candidate, or matches both with two different
+ *     accountings. An ambiguous match is not resolved by picking one: a wrong
+ *     attribution is exactly the defect this function exists to remove, and a
+ *     card that reports the honest total is strictly better than one that
+ *     reports a confident fiction.
+ */
+export function cardAccount(
+  before: GameState,
+  after: GameState,
+  decision: PendingDecision,
+  optionId: string,
+): CardAccount | null {
+  const description = after.lastOutcome?.description;
+  if (description === undefined) return null;
+
+  const candidates = firedOutcomes(decision.eventId, optionId, description);
+  if (candidates.length === 0) return null;
+
+  const accounts = candidates.map((o) => accountOf(o.effects, before, after));
+  const first = accounts[0]!;
+  const agree = accounts.every(
+    (a) =>
+      a.own === first.own &&
+      a.injury === first.injury &&
+      a.lockerRoom === first.lockerRoom &&
+      a.later === first.later,
+  );
+  return agree ? first : null;
+}
+
 // The declare card's one line of fact (DECISION 038, B25).
 //
 // DECISION 025 stands and is not reopened here: no projection, no draft stock,
@@ -302,7 +507,7 @@ function momentViews(state: GameState): MomentView[] {
   const out: MomentView[] = [];
   const seen = new Map<string, MomentView>();
   for (const m of state.moments) {
-    const key = `${m.seasonIndex} ${m.item}`;
+    const key = `${m.seasonIndex}\u0000${m.item}`;
     const prior = seen.get(key);
     if (prior) {
       prior.count += 1;
@@ -461,6 +666,10 @@ export function buildSummary(state: GameState): CareerSummaryView {
 export function buildView(state: GameState): CareerView {
   const terminal = state.status !== "active";
   const decision = getDecision(state);
+  // The season line is built once and used twice: the header prints its snap
+  // count, and the standing phrase is checked against that same number, so the
+  // two halves of one strip cannot contradict each other (report 027, defect 2).
+  const season = currentSeasonLine(state);
   return {
     playerName: `${state.setup.lastName} #${state.setup.jerseyNumber}`,
     positionLabel: positionLabel(state),
@@ -469,7 +678,7 @@ export function buildView(state: GameState): CareerView {
     seasonRecord: currentRecord(state),
     phaseLabel: phaseLabel(state.phase),
     seasonNumber: state.seasonIndex + 1,
-    season: currentSeasonLine(state),
+    season,
     // The fixed five-row table DECISIONS 007/010 commit us to, built by the
     // pure module rather than here: `seasonViews` has already applied the
     // view-model's honesty rules (no `0-0` mid-season, null on a pre-009
@@ -481,7 +690,11 @@ export function buildView(state: GameState): CareerView {
       active: !terminal,
     }),
     overall: state.overall,
-    standing: standingPhrase(state.overall),
+    // `season?.snaps ?? null` -- null is the absence of a number, never a zero.
+    // Deliberately NOT gated on `season.inProgress`: during the offseason the
+    // header still prints last season's snap count beside this phrase, so that
+    // is the number the phrase must not contradict.
+    standing: standingPhrase(state.overall, season?.snaps ?? null),
     trust: trustPhrase(state.character),
     status: state.status,
     decision,

@@ -108,6 +108,61 @@ export interface Resolved {
       before this field existed; such a card shows no delta rather than a
       fabricated zero. */
   overallBefore: number | null;
+  /** What the chosen outcome ITSELF did, read from content. Null when the
+      outcome could not be identified -- a hub card, or a save written before
+      this field existed -- and the card then falls back to reporting the whole
+      movement across the `advance`, which is what it always did. See
+      `cardAccount`. */
+  account: CardAccount | null;
+}
+
+// A resolved card's own accounting (DECISION 046 cause 1).
+//
+// `overallBefore` measures the whole `advance()`: the chosen outcome's effects,
+// plus any `timing: "deferred"` effect from an EARLIER card falling due in the
+// same tick, plus a season of development. Attributing all of it to whichever
+// card happens to be on screen is what put **+5 OVR** under *"the fit never
+// quite comes together"* and **−3 OVR** under an outcome that authors
+// `effects: []`. Six such cards were logged in one playtest, and the prose was
+// correct in all six.
+//
+// So the card reports what the card did, and the remainder -- `total − own` --
+// is real and gets its own beat rather than being silently folded in. This
+// type is that first half, derived from `src/content/**` with no engine change:
+// the engine reports `lastOutcome: { description }` and an `EventOption` has at
+// most two candidate outcomes, so the description identifies which one fired.
+export interface CardAccount {
+  /** The OVR the chosen outcome moved on its own: its `timing: "immediate"`
+      overall effects plus the magnitude of any injury it caused, clamped the
+      way the engine clamps, from the same baseline. Deferred effects are NOT
+      in here -- they have not landed yet, and `later` is how the card says so. */
+  own: number;
+  /** True when part of `own` is an injury. The engine restores the full
+      `overallDelta` when the injury heals, so the number is a loan, not a
+      loss, and a card that does not say so is contradicting itself twice --
+      once now and once again when the points come back on an unrelated card. */
+  injury: boolean;
+  /** The direction of the outcome's `character` effect, and deliberately never
+      its size. DECISION 002 stands: character moves draft stock by ~±7.5
+      against overall's ~82, so an integer would overstate it tenfold. But
+      invisible is worse than imprecise -- *The Ticket Hookup*'s "compliance
+      flags the resale listing" is `character −6, overall +1`, and with only
+      the `+1` rendered, getting caught reads as a reward (DECISION 046 cause
+      2, B17). A direction is not a resolution. */
+  lockerRoom: "cost" | "credit" | null;
+  /** Set when the outcome enqueued a `timing: "deferred"` overall effect that
+      was STILL QUEUED when the card was read -- by the sign of the sum. A
+      deferred effect that already landed inside the same `advance` is in
+      `own`, where it belongs: all 14 in the bundle are `delayPhases: 1`, and
+      whether that lands before or after the player sees the card depends on
+      whether the next decision falls in the same phase. Measured over 360
+      careers, every one of them landed in its own card's `advance`, so this is
+      null today and the branch exists for content that defers further.
+
+      All 14 are also negative; the sign is read rather than assumed so a
+      positive one would not be announced as a cost. The card says only that
+      something lands later -- never how much, never when. */
+  later: "cost" | "credit" | null;
 }
 
 export interface StatView {
