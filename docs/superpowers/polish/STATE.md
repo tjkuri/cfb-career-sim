@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 5 complete; 6 in flight · **PM session:** 3
+**Last updated:** 2026-09-13 · **Wave:** 6 complete and committed · **PM session:** 3 (handing off)
 
 ---
 
@@ -43,7 +43,7 @@ records the three things in it we are deliberately *not* taking.
 ## Current state of the build
 
 - Phase 3 MVP complete and committed (`42ba561`), plus the OVR display reversal (`d600e69`).
-- **492 tests passing**, both typecheck passes exit 0, production build clean (~110 kB gz JS / 3.65 kB gz CSS).
+- **501 tests passing**, both typecheck passes exit 0, production build clean (~112 kB gz JS).
 - Playable end to end: creation → Signing Day → decisions → draft summary → share text → career log,
   with `localStorage` resume.
 
@@ -108,19 +108,27 @@ they share no files.
 
 ## Git state — read first
 
-**Branch `polish/ui-phase`.** `main` is untouched. Four commits, nothing pushed:
+**Branch `polish/ui-phase`.** `main` is untouched, nothing pushed. Baseline is now **501 tests**,
+both typecheck passes exit 0, build clean.
+
+Most recent first:
 
 ```
-64bdd98 refactor(ui): split app.css six ways, then give every accent job its own token
-77e8b9c feat(engine): SeasonLine records the overall and class year it was played at
-3f311b7 feat(ui): surface the season state the player is actually owed
-7d13847 docs(polish): the reasoning behind the polish phase
+6fc2c17 feat(ui): the ending can tell a good career from a bad one
+e818846 feat(ui): mount the ledger, and split the two things the OVR block was saying
+ba156d2 feat(ui): the view model learns the ledger, honors rarity and a verdict scale
+9b3d5d8 docs(polish): the 014 playtest, three calls it forced, and wave 6
+ae561cc docs(polish): wave 4 landed, and the question it handed the playtest
+d621732 fix(a11y): raise --chalk-faint to clear AA at the new 11px floor
+3e5c8ce feat(ui): invert the type register, and clamp what can overflow
+cdfd2f2 fix(ui): the rail describes one moment, not two
+7feb63a docs(polish): wave 3's calls, wave 4 ready to re-dispatch, and the handoff
 ```
 
-**Baseline is now 444 tests** (was 430), both typecheck passes exit 0, build clean.
-
-Agents are told **not to commit and never to `git checkout`/`restore`/`stash`** — the tree routinely
-holds uncommitted work from two or three concurrent agents. The PM commits, after verifying.
+Agents are told **not to commit and never to `git checkout` / `restore` / `stash`** — the tree
+routinely holds uncommitted work from two concurrent agents. **The PM commits**, after verifying:
+tests, both typecheck passes, build, `npm run play` byte-identical on two seeds, `src/engine/**` and
+`src/content/**` untouched in `git status`, and a hand click-through.
 
 ## Wave 2 — complete
 
@@ -244,7 +252,7 @@ recurring cards, first verbatim repeat at decision 12 vs the harness's 13, and i
 repetition's cost is not boredom with the repeated cards, it is that it **teaches the player to stop
 reading**, which then throws away the game's best asset.
 
-## Wave 6 — in flight (PM session 3)
+## Wave 6 — complete and committed (PM session 3)
 
 Two lanes, hard file split: lane A owns the decision screen, lane B owns the summary. They share no
 files. `tokens.css` is off limits to both — the type scale and palette were settled in waves 4 and
@@ -254,6 +262,49 @@ the 022/023 pair, and a third agent editing tokens would undo that.
 |---|---|---|
 | `briefs/015-decision-screen-orientation.md` | (1) **Mount the ledger** — built, tested, unrendered, with an exact wiring diff in report 010; also the structural answer to B22. (2) Split the two axes so the standing block stops reading as a contradiction (DECISION 024). (3) Strip row 3 legibility (DECISION 023) | `CareerScreen.tsx`, `career.css`, and `view-model.ts`/`types.ts` only if the wiring diff needs them |
 | `briefs/016-the-ending-has-a-range.md` | B20. A draft position must read differently at a glance, by **scale/weight/motion — never hue** (DECISION 012); stop the furniture congratulating a bad career; make a short career look intentional rather than truncated | `SummaryScreen.tsx`, `summary.css`, summary-facing interfaces in `types.ts`/`view-model.ts` |
+
+### What shipped
+
+```
+6fc2c17 feat(ui): the ending can tell a good career from a bad one
+e818846 feat(ui): mount the ledger, and split the two things the OVR block was saying
+ba156d2 feat(ui): the view model learns the ledger, honors rarity and a verdict scale
+```
+
+**Three commits, not two.** Both lanes needed `types.ts` and `view-model.ts` despite the briefs
+splitting them by interface — the same collision wave 3 hit. Rather than let one screen's commit
+carry the other's data, the shared session layer went in first as its own commit, **verified to
+typecheck, test and build on its own** (staged, rest stashed, both `tsc` passes run, 501 tests) and
+rendering nothing new. Each of the three commits builds independently. **If a future wave puts two
+agents near `types.ts` again, plan for this shape from the start rather than discovering it at
+commit time — splitting by interface in the brief was not sufficient two waves running.**
+
+**B21 fixed and visually confirmed by the PM:** the standing block now reads `60 · ON THE FIELD ·
+in the rotation`, a rule, then `IN THE LOCKER ROOM · the staff trusts you`. The contradiction the
+playtester reported is now structurally impossible. Character moved up a step in size and tone
+(B17) and stays words-only.
+
+**B22 answered structurally:** the ledger renders Years 1–4 on solid rules and **Year 5 hanging off
+a dashed rule labelled "redshirt year"**, going solid when the redshirt lands. A career's shape and
+its conditional fifth year are now stated without a word of explanation.
+
+**016 measured the honors problem far past what the brief assumed** — the block fired on **70.5%**
+of all careers, and on 17.8% its entire content was `Bowl Win`. That is DECISION 027. It also found
+the trophy glyph is the most common mark in the game and almost never marks a trophy, shipped the
+display half (desaturation — emoji were the only uncontrolled colour on a screen whose rule is that
+hue never tracks valence), and left the three content strings as a proposal.
+
+### The verification gap a fresh PM must not inherit silently
+
+**Desktop geometry at ≥1024px is still unverified on a real wide viewport.** The Chrome extension
+pins the viewport at **800 CSS px**, and `resize_window` reports success while `innerWidth` stays
+800 — the agent hit this, and **the PM reproduced it independently** before accepting the excuse.
+What *is* verified: the agent measured real rects by injecting the media block's body, and the PM
+confirmed the predicate is valid and the grid arithmetic closes (`--measure` 480 + 56 gap + 224
+ledger = 760 container). What is **not** verified is the media-query predicate actually firing at
+≥1024px. **Ask the user for a glance at a real 1456px window, or find a harness that can widen the
+viewport.** Do not let a third agent burn a run rediscovering this.
+
 
 ## Findings that outrank the backlog table
 
@@ -426,13 +477,21 @@ a time, they share a `localStorage` origin.
    struck from this list rather than left to be redone. What the type pass *opened* is smaller and
    listed in the wave 4 section: labelled rail cells (needs markup), a `title` on clamped options,
    and a 1px `.standing` height shift.
-5. **When wave 6 returns:** verify (492 baseline, both typecheck passes, build clean, `npm run
-   play` byte-identical on two seeds, engine/content untouched in `git status`), click through, and
-   commit as **two** commits — the lanes share no files.
-6. **Then a playtest again**, and this time the question is narrower than 014's: did the ending
+5. ~~**When wave 6 returns**~~ — verified and committed as three commits; see the wave 6 section.
+6. **Next: a playtest.** This is now the top action, and this time the question is narrower than 014's: did the ending
    gaining a range, and the ledger appearing, change the *third*-career answer? Use
    `briefs/014-post-wave4-playtest.md` as the shape — it is the best brief written in this phase and
    it got refutations, not validation. Playtesting is **serial**.
+   **Four questions the next playtest must carry**, each settling a standing decision:
+   (a) DECISION 026 — can you rank two *drafted* endings at a glance now? If not, the lever is the
+   scale spread (1.12 → 0.72), **not** a second hue.
+   (b) DECISION 027 — does the `Also earned` row read as a consolation prize? If so the fix is the
+   heading's wording, not restoring a block that fired 70% of the time.
+   (c) DECISION 023 — do strip rows 2 and 3 still merge now that row 3 is legible? Rows differ by
+   only 1px today; the pre-specified fix is demoting row 2, **not** a fourth grey.
+   (d) DECISION 028 — does `FINAL OVERALL` differing from the last season's stored OVR (80 vs 78 on
+   the `m0` fixture) read as a contradiction? Both labels are accurate; closing it properly is an
+   engine change, so it is worth knowing whether it actually confuses anyone.
 7. **Do not plan past that without the user's answers on B18/B19/B11.** The 014 report is explicit
    that the remaining north-star gap is content and balance, not interface. A fresh PM who queues
    four more UI waves against it will be polishing a game the playtester has already stopped
