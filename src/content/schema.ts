@@ -223,6 +223,9 @@ export function validateContent(bundle: ContentBundle): string[] {
         errors.push(`Event ${ev.id}: invalid minClass "${c.minClass}"`);
       if (c.tier) for (const t of c.tier)
         if (t < 1 || t > 4) errors.push(`Event ${ev.id}: invalid tier "${t}"`);
+      if (c.seasonIndex) for (const n of c.seasonIndex)
+        if (!Number.isInteger(n) || n < 0 || n > 4)
+          errors.push(`Event ${ev.id}: invalid seasonIndex "${n}" (expected an integer 0-4)`);
       if (c.position) for (const p of c.position)
         if (!knownPositions.has(p)) errors.push(`Event ${ev.id}: invalid position "${p}"`);
       if (c.schoolTrait) for (const t of c.schoolTrait)

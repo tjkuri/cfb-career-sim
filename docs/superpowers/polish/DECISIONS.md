@@ -1074,3 +1074,103 @@ DECISIONS are superseded, never rewritten — 040's text stays as it was written
 **What would change our mind.** A third path from `snaps` into the draft, which would mean the bound
 is still wrong. None was found: `overall` and `injury` clamp through `clampOverall`, `character`
 through `clampCharacter`, `trophy` only increments.
+
+## 042 — The content pilot needs one additive engine field, because per-season variants are not expressible today. Approved, bounded, and gated on a no-change proof
+
+**Date:** 2026-09-14 · **Made by:** PM session 5 · **Amends:** the `src/engine/**` freeze, for one field · **Evidence:** `src/engine/select-event.ts:48-56`, read directly
+
+DECISIONS 030 and 036 approved per-season variants of `milestone-opener`. **They cannot be written
+against the current schema.** `selectFixedEvent` fires *every* matching fixed event, one per
+`advance`, in content order — it does not pick one from a pool. So five variants with no
+discriminating condition would fire five openers per season, and the discriminators that exist
+(`minClass` is `>=`, `tier`, `requiresFinalSeason`) cannot partition seasons into disjoint sets.
+The pilot is blocked on a schema gap, not on writing.
+
+**Approved: one optional field, `seasonIndex?: number[]`, on `EventConditions`**, plus its check in
+`eventMatches`, its validator clause in `src/content/schema.ts`, and tests. Nothing else in
+`src/engine/**` moves.
+
+**Why `seasonIndex` and not `classYear`.** `classYear` is the fiction and it was the obvious choice,
+but `advance.ts:228-229` caps it at `SR`, so a five-year redshirt career is `FR SO JR SR SR` and the
+two `SR` seasons would still serve a verbatim repeat — the pilot would fail for exactly the players
+who play the most football. `seasonIndex` is 0–4 and partitions cleanly. The cost is that a variant
+cannot safely name a class year in its prose, which pushes the writing toward naming the *stage*
+(your first opener ever; the one where you are the guy) rather than the label. That is better prose
+anyway, and DECISION 017's diagnosis is about the card being re-read, not about it being annotated.
+
+**This is not a balance change and it is not going to the user.** The field is unused by all 102
+existing events, so the engine's behaviour is unchanged until content opts in; and the pilot's
+variants keep option ids, probabilities and effects identical, so opting in changes prose only. That
+is a testable claim, and it is the wave's acceptance gate: **the nine full-eligibility profiles from
+`reports/022` §8 must come back identical on every measured field.** If they do not, the variants
+have moved a number and the pilot stops until we know why.
+
+**What would change our mind.** The no-change proof failing, or the variants requiring a second
+condition axis to read well — that would mean the pilot is growing an engine dependency and should
+be re-scoped rather than extended.
+
+## 043 — The three text defects get fixed in place, with prose, not with new gates
+
+**Date:** 2026-09-14 · **Made by:** PM session 5 · **Implements:** DECISION 036's added scope · **Evidence:** `src/content/events/milestones.ts:39, 152`
+
+036 folded three defects into the pilot. Each has a cheap wrong fix that would cost more than the
+defect, so the shape is fixed here rather than left to the agent:
+
+1. **`Ninety thousand people, a noon kickoff` fires at an FCS school.** The tempting fix is a `tier`
+   gate and a variant per tier. **Refused.** It multiplies against the season axis, and a tier-shaped
+   prose split is one bad sentence away from being the school-tier badge the hidden-mechanics rule
+   forbids. The fix is that **no opener variant asserts a crowd size, a venue, or a stature the
+   player's school may not have.** Write the nerves, not the stadium.
+2. **`Had the time of his life at a bowl game` is third person on a second-person screen.** Straight
+   copy defect. Second person, and sweep `milestones.ts` for others while in there.
+3. **The same line is awarded as a `moment` to the option a tanking player picks to waste the
+   season** — the most congratulatory element on a failed career's end screen. The fix is **not**
+   deleting the moment: it fires for everyone who picks `enjoy`, including players having a genuinely
+   good time, and an option with no effects at all is a worse card. **Reword it so it reads as what
+   it is** — a trip enjoyed, not an achievement earned. Wry, not punishing. The icon may change; the
+   effect list keeps its shape.
+
+**What would change our mind.** (1) reversing if a playtester reports the opener now reads as
+placeless — the failure mode of refusing to name a venue is prose with nothing concrete in it, and
+concrete-but-school-agnostic is the target, not vague.
+
+## 044 — DECISION 030's clause fired. The pilot ships, the other seven do not get written yet, and the question that decides them goes to a playtest
+
+**Date:** 2026-09-14 · **Made by:** PM session 5 · **Answers:** 030, 036 · **Evidence:** `reports/024-the-content-pilot.md`, gate re-run by the PM
+
+030 authorised one event's variants and said: *the harness showing the first-repeat number barely
+moves* would mean variants are not the lever. The number moved **13 → 15** on cohort B. The brief
+named 13 → 14 as the refutation threshold, so this is one decision past it, and the second gate row
+did not move at all — **100% of careers still hit a verbatim repeat by decision 16**, before and
+after. Cohort C's median is flat at 17. The PM re-ran the committed probe independently and got the
+agent's figures exactly.
+
+**The pilot ships anyway, and this is not a contradiction.** Three of its four products are
+unconditional wins that do not depend on the gate: the three DECISION 043 text defects are fixed, a
+committed and validated harness now exists where a throwaway script used to be, and **re-shown
+decisions fell 45.0% → 37.5% on cohort B and 43.2% → 36.4% on cohort C.** Reverting would throw those
+away to honour a clause about a different number.
+
+**What the gate actually measured, which is narrower than 030 anticipated.** Not "variants do not
+work" — the opener now repeats *never*, in either cohort. What it measured is that **the fixed
+milestone skeleton behaves as a queue.** Emptying one slot promotes the next: the first repeat is now
+`milestone-rivalry` in 112 of 144 careers, sitting two decisions later. 024's counterfactual says
+varying all five moves first-repeat to **19** and the by-16 rate to **37.5%** — a change of kind, not
+degree — and that the wall after *that* is the three hub cards, which are string literals in
+`advance.ts` rather than content.
+
+**Why the seven are not simply approved on that counterfactual.** It is analytic, not played, and it
+rests on the premise 030 itself flagged as untested: that skimming is a function of cumulative
+**dose** rather than of **onset**. If skimming is triggered by the first repeat, moving it from
+decision 13 to 19 buys six decisions and the phase's largest authoring budget buys very little. If it
+is trained by dose, the 37.5% → 17.5% re-showing figure is the whole game. **A and B in 024 §10 are
+the correct answer under opposite answers to that one question, and no harness can supply it.**
+
+**The call: the next playtest carries that question, and the seven-event decision is the user's,
+taken after it.** The playtest was already the next queued action for independent reasons (wave 9's
+balance and transfer changes have never met a player), so this costs nothing and converts a guess
+into a measurement — DECISION 003 and 037's habit.
+
+**What would change our mind.** The playtest reporting that the player stopped reading bodies at or
+near the *first* repeat regardless of how many followed. That is the onset answer, and it makes 024
+§10 option A correct and retires the authoring budget for good.

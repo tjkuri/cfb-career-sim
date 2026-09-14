@@ -31,25 +31,144 @@ export const MILESTONE_EVENTS: GameEvent[] = [
       },
     ],
   },
+  // ---------------------------------------------------------------------------
+  // Season Opener — five per-season variants (DECISIONS 030, 036, 042, 043).
+  //
+  // One card that fired every season was 62% of all first verbatim repeats and
+  // landed the first one at decision 13. These five partition seasons 0-4 on
+  // `seasonIndex`: exactly one matches per season, and `milestones.test.ts`
+  // asserts that directly, because two matching means two openers in one season
+  // and zero means a silent hole in the spine.
+  //
+  // Three constraints shape the prose, and all three are acceptance criteria:
+  //   - Mechanically identical. Only id, title, description and the two outcome
+  //     descriptions differ; every variant keeps the same option, probability
+  //     and effects, so the pilot can be proved to have moved no number.
+  //   - No crowd size, venue or stature (DECISION 043 item 1). The line these
+  //     replace asserted ninety thousand people at schools that do not have
+  //     ninety thousand seats. Write the nerves, not the stadium.
+  //   - No class year. `seasonIndex` 2 is a junior for most players and a
+  //     sophomore for a redshirt, so these name the STAGE instead: the first one
+  //     ever, the one where the room watches you, the last one.
+  // ---------------------------------------------------------------------------
   {
-    id: "milestone-opener",
+    id: "milestone-opener-first",
     kind: "fixed",
     phase: "nonconf",
     weight: 1,
-    conditions: { requiresPlaying: true },
-    title: "Season Opener",
-    description: "Ninety thousand people, a noon kickoff, and a cupcake opponent nobody will forgive you for losing to.",
+    conditions: { requiresPlaying: true, seasonIndex: [0] },
+    title: "The First One",
+    description: "Everything until now was practice for this. Your hands are cold and it is seventy degrees.",
     options: [
       {
         id: "handle-it",
         label: "Take care of business",
         probability: 0.75,
         positiveOutcome: {
-          description: "Comfortable win. You are out by the fourth quarter.",
+          description: "Two snaps in, you are fine. Nobody can tell it was your first.",
           effects: [{ kind: "snaps", amount: 25 }],
         },
         negativeOutcome: {
-          description: "It is 17-14 in the fourth and the boo birds are warming up.",
+          description: "It takes a half to stop feeling like a guest.",
+          effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "milestone-opener-no-excuse",
+    kind: "fixed",
+    phase: "nonconf",
+    weight: 1,
+    conditions: { requiresPlaying: true, seasonIndex: [1] },
+    title: "No Longer New",
+    description: "Last September the nerves were allowed. This year they are just nerves.",
+    options: [
+      {
+        id: "handle-it",
+        label: "Take care of business",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "You play like a man who has done this before, because you have.",
+          effects: [{ kind: "snaps", amount: 25 }],
+        },
+        negativeOutcome: {
+          description: "You are a step late all afternoon and you know exactly why.",
+          effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "milestone-opener-your-team",
+    kind: "fixed",
+    phase: "nonconf",
+    weight: 1,
+    conditions: { requiresPlaying: true, seasonIndex: [2] },
+    title: "Your Team Now",
+    description: "The young guys watch how you take the field now. You noticed in August.",
+    options: [
+      {
+        id: "handle-it",
+        label: "Take care of business",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "You set the tone on the first series and the rest follow.",
+          effects: [{ kind: "snaps", amount: 25 }],
+        },
+        negativeOutcome: {
+          description: "You play tight, and tight travels through a room that watches you.",
+          effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "milestone-opener-counting",
+    kind: "fixed",
+    phase: "nonconf",
+    weight: 1,
+    conditions: { requiresPlaying: true, seasonIndex: [3] },
+    title: "You Start Counting",
+    description: "More of these behind you now than ahead. You did that math in June.",
+    options: [
+      {
+        id: "handle-it",
+        label: "Take care of business",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "You do not waste a snap of it, and the tape says so.",
+          effects: [{ kind: "snaps", amount: 25 }],
+        },
+        negativeOutcome: {
+          description: "Playing like every rep matters is not the same as playing well.",
+          effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+    ],
+  },
+  {
+    // Reachable only with a redshirt used — the eligibility cap is four seasons
+    // plus the year a redshirt returns — so season 4 is always a final season,
+    // and this is the one variant that can safely say so.
+    id: "milestone-opener-last",
+    kind: "fixed",
+    phase: "nonconf",
+    weight: 1,
+    conditions: { requiresPlaying: true, seasonIndex: [4] },
+    title: "The Last One",
+    description: "Last one of these you get. Everybody in the building has mentioned it. Repeatedly.",
+    options: [
+      {
+        id: "handle-it",
+        label: "Take care of business",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "You are not sentimental about it until the second half. Then you are.",
+          effects: [{ kind: "snaps", amount: 25 }],
+        },
+        negativeOutcome: {
+          description: "You spend the whole first half trying to feel something about it.",
           effects: [{ kind: "character", amount: -2 }],
         },
       },
@@ -149,7 +268,13 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "Best three weeks of the year. The game is a blur.",
-          effects: [{ kind: "moment", item: "Had the time of his life at a bowl game", icon: "sun" }],
+          // DECISION 043 items 2 and 3. Third person on a second-person screen,
+          // and — because `enjoy` is the option a tanking player takes to waste
+          // the season — the most congratulatory line on a failed career's end
+          // screen. Not deleted: it also fires for players genuinely having a
+          // good time, and an option with no effects is a worse card. Reworded
+          // to read as what it is, a trip enjoyed rather than a thing achieved.
+          effects: [{ kind: "moment", item: "Enjoyed the bowl trip more than the bowl game", icon: "sun" }],
         },
       },
     ],

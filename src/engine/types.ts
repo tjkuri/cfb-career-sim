@@ -78,6 +78,11 @@ export interface EventOption {
 export interface EventConditions {
   position?: Position[];
   minClass?: ClassYear;
+  // Exact season membership, 0-4 -- NOT a >= like minClass. DECISION 042: it
+  // exists so a beat can have per-season variants that partition cleanly, which
+  // `minClass` cannot do (it is inclusive-upward, and advance.ts caps classYear
+  // at SR, so a five-season redshirt career is FR SO JR SR SR).
+  seasonIndex?: number[];
   tier?: Tier[];
   requiresInjury?: boolean;
   requiresActiveInjury?: boolean;

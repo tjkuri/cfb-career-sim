@@ -94,6 +94,31 @@ describe("eventMatches", () => {
     expect(eventMatches(makeState({ overall: 70 }), ev)).toBe(false);
   });
 
+  // DECISION 042. The pilot's per-season variants are only disjoint if this
+  // condition is an exact set membership test, not a >= like minClass.
+  it("seasonIndex matches only the seasons it lists", () => {
+    const ev = makeEvent({ conditions: { seasonIndex: [2] } });
+    expect(eventMatches(makeState({ seasonIndex: 2 }), ev)).toBe(true);
+    expect(eventMatches(makeState({ seasonIndex: 1 }), ev)).toBe(false);
+    expect(eventMatches(makeState({ seasonIndex: 3 }), ev)).toBe(false);
+  });
+
+  it("seasonIndex accepts several seasons in one condition", () => {
+    const ev = makeEvent({ conditions: { seasonIndex: [0, 4] } });
+    expect(eventMatches(makeState({ seasonIndex: 0 }), ev)).toBe(true);
+    expect(eventMatches(makeState({ seasonIndex: 4 }), ev)).toBe(true);
+    expect(eventMatches(makeState({ seasonIndex: 2 }), ev)).toBe(false);
+  });
+
+  // The field is additive: 102 authored events predate it and none opt in, so
+  // an absent seasonIndex must keep matching every season.
+  it("matches every season when seasonIndex is absent", () => {
+    const ev = makeEvent({ conditions: { requiresPlaying: true } });
+    for (const seasonIndex of [0, 1, 2, 3, 4]) {
+      expect(eventMatches(makeState({ seasonIndex }), ev)).toBe(true);
+    }
+  });
+
   it("requiresActiveInjury counts injuries but not suspensions", () => {
     const ev = makeEvent({ conditions: { requiresActiveInjury: true } });
     const healthy = makeState({});

@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 9 complete and committed · **PM session:** 4 (handing off)
+**Last updated:** 2026-09-14 · **Wave:** 10 complete and committed · **PM session:** 5
 
 ---
 
@@ -43,7 +43,7 @@ records the three things in it we are deliberately *not* taking.
 ## Current state of the build
 
 - Phase 3 MVP complete and committed (`42ba561`), plus the OVR display reversal (`d600e69`).
-- **501 tests passing**, both typecheck passes exit 0, production build clean (~112 kB gz JS).
+- **578 tests passing** (as of wave 9), both typecheck passes exit 0, production build clean.
 - Playable end to end: creation → Signing Day → decisions → draft summary → share text → career log,
   with `localStorage` resume.
 
@@ -675,6 +675,89 @@ reasoning but is no longer an open ask.** Logged as DECISIONS 029, 030 and 031.
 - DECISION 029 stage 2 is **not** automatically approved by 029. The user approves *the numbers*.
   Do not let a stage-1 agent roll on into implementing its own proposal.
 
+
+## Wave 10 — complete and committed (PM session 5)
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/024-the-content-pilot.md` | The content pilot, DECISIONS 030 + 036 + 042 + 043. Per-season variants of `milestone-opener`, the three text defects in `milestones.ts`, and the gate measurement | `src/content/events/milestones.ts`, `src/engine/types.ts`, `src/engine/select-event.ts`, `src/content/schema.ts`, a new probe in `src/sim/` |
+
+**One lane on purpose.** The pilot's gate is a measurement over the whole content bundle, so a
+parallel lane touching *any* content or engine file would pollute it — the wave-9 lesson that
+file-disjointness is not the only kind of conflict. B29 and B24 stay unqueued until the playtest, per
+the PM session 5 action list.
+
+**Three things PM session 5 established before writing the brief** (read `select-event.ts:48-56` if
+you doubt any of them):
+
+- **The pilot was not writeable as approved.** `selectFixedEvent` fires *every* matching fixed event,
+  one per `advance`, in content order — it does not pick one from a pool, and no existing condition
+  partitions seasons into disjoint sets. DECISION **042** authorises one additive optional field,
+  `seasonIndex?: number[]`, and nothing else. Two PM sessions had this queued as a pure content task;
+  it never was.
+- **`classYear` would have failed the players who play the most.** `advance.ts:228-229` caps it at
+  `SR`, so a five-year redshirt career is `FR SO JR SR SR` and two openers would still be verbatim
+  identical. Hence `seasonIndex`, and hence the redshirt cohort is not optional in the measurement.
+- **The 008 harness was never committed** — this phase's headline repetition numbers came from a
+  throwaway script. 024 rebuilds it in `src/sim/` as a committed probe and must reproduce the
+  published baseline (first verbatim repeat at decision 13) on *unmodified* content before touching
+  anything. The repeat key is the rendered `(title, description)` pair, not the event id; an id-based
+  key would show the problem solved by construction.
+
+**The gate, restated so nobody softens it later:** first verbatim repeat moves materially, or the
+other seven events do not get written. DECISION 030 asked for a refutable pilot and this is the
+refutation point.
+
+**Not committed by the agent, deliberately.** DECISION 030's voice constraint moved onto the PM when
+the user chose agent-written prose: the PM read every line before committing.
+
+### What shipped
+
+**613 tests green (was 578), both typecheck passes exit 0, build clean.** Full report:
+`reports/024-the-content-pilot.md`. Prose is in §7 in full; the PM read every line, per DECISION 030.
+
+- Five `milestone-opener` variants on `seasonIndex` 0–4, disjoint and exhaustive, 40–42 words each
+  against the old card's 42. **Zero opener cards repeated in any career, in either cohort.**
+- DECISION 042's field: `seasonIndex?: number[]` on `EventConditions`, its check in `eventMatches`,
+  its validator clause, tests. **Nothing else in `src/engine/**` moved.**
+- Both remaining DECISION 043 defects: the third-person slip (only one in the file; a test now fails
+  on any third-person pronoun anywhere in `MILESTONE_EVENTS`), and the bowl moment reworded to
+  `Enjoyed the bowl trip more than the bowl game` — a trip described, not an achievement cited.
+- `src/sim/repetition-probe.ts` + 20 tests — the 008 harness, committed this time.
+
+### The gate — DECISION 044
+
+**13 → 15 on cohort B, and the by-16 rate flat at 100%.** The PM re-ran the committed probe and got
+the agent's figures exactly. 030's clause fired. **The pilot ships anyway** — its other three
+products do not depend on the gate, and re-shown decisions fell **45.0% → 37.5%** (B) and
+**43.2% → 36.4%** (C).
+
+**What it actually measured: the milestone skeleton is a queue.** The opener now repeats never; the
+first repeat is `milestone-rivalry` in 112/144 careers, two decisions later. 024's counterfactual
+says varying all five moves first-repeat to **19** and the by-16 rate to **37.5%**, and that the wall
+after that is the three hub cards — string literals in `advance.ts`, not content, so they would need
+their own decision.
+
+**The seven-event decision is with the user, and the playtest informs it.** See DECISION 044: the
+counterfactual rests on the untested premise that skimming is a function of cumulative *dose* rather
+than *onset*, and 024 §10's options A and B are correct under opposite answers to that one question.
+
+### Four things worth not rediscovering
+
+- **The repeat key must be the rendered `(title, description)` pair, not the event id.** Five variants
+  carry five ids; an id-keyed harness reports the problem solved by construction. The agent proved the
+  two keys byte-identical on *unmodified* content before changing a word — that validation is the
+  reason the +2 is trustworthy.
+- **Neither cohort alone exercises all five variants.** Cohort C never fires `seasonIndex: [1]` (the
+  redshirt sit always lands in season 1); cohort B never fires `seasonIndex: [4]` (no season 4).
+  Any future run of this gate needs both, and not only for the class-year reason.
+- **DECISION 042 is confirmed by measurement, not just argument.** `milestone-opener-last` fired in
+  143/144 cohort-C careers; under class-year gating every one of those would have been served a
+  verbatim repeat in its final season.
+- **The PM's own edit:** two of five variants opened their positive outcome with *"You play like a
+  man…"*. In a pilot whose premise is that sameness trains players out of reading, a shared
+  construction across two cards in the same five-card set is the defect the voice review exists to
+  catch. `seasonIndex: [3]` now reads *"You do not waste a snap of it, and the tape says so."*
 
 ## Next actions — for PM session 5, in order
 

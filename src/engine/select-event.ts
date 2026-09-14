@@ -18,6 +18,7 @@ export function eventMatches(state: GameState, ev: GameEvent, content: ContentBu
     const trait = schoolTraitOf(state, content);
     if (!trait || !c.schoolTrait.includes(trait)) return false;
   }
+  if (c.seasonIndex && !c.seasonIndex.includes(state.seasonIndex)) return false;
   if (c.minClass) {
     const need = CLASS_ORDER.indexOf(c.minClass);
     const have = CLASS_ORDER.indexOf(state.eligibility.classYear);

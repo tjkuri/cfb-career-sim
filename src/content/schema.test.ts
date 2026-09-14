@@ -151,6 +151,54 @@ describe("validateContent", () => {
     expect(errors.some((e) => e.includes("bad-tier") && e.toLowerCase().includes("tier"))).toBe(true);
   });
 
+  // DECISION 042. seasonIndex is 0-4 because eligibility caps at five seasons
+  // (four, plus one if a redshirt is used), so anything outside that is a
+  // variant that can never fire — silently, and only for some careers.
+  it("rejects an out-of-range seasonIndex condition value", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "bad-season",
+      kind: "random",
+      phase: "nonconf",
+      weight: 1,
+      conditions: { seasonIndex: [5] },
+      title: "t",
+      description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("bad-season") && e.toLowerCase().includes("seasonindex"))).toBe(true);
+  });
+
+  it("rejects a negative and a non-integer seasonIndex condition value", () => {
+    const bundle = goodBundle();
+    const ev = (id: string, seasonIndex: number[]) => ({
+      id, kind: "random" as const, phase: "nonconf" as const, weight: 1,
+      conditions: { seasonIndex },
+      title: "t", description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    bundle.events.push(ev("negative-season", [-1]), ev("fractional-season", [1.5]));
+    const errors = validateContent(bundle);
+    expect(errors.some((e) => e.includes("negative-season"))).toBe(true);
+    expect(errors.some((e) => e.includes("fractional-season"))).toBe(true);
+  });
+
+  it("accepts a seasonIndex condition covering the whole 0-4 range", () => {
+    const bundle = goodBundle();
+    bundle.events.push({
+      id: "good-season",
+      kind: "random",
+      phase: "nonconf",
+      weight: 1,
+      conditions: { seasonIndex: [0, 1, 2, 3, 4] },
+      title: "t",
+      description: "d",
+      options: [{ id: "o", label: "o", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+    });
+    expect(validateContent(bundle).filter((e) => e.includes("good-season"))).toEqual([]);
+  });
+
   it("rejects a condition position not defined in the bundle", () => {
     const bundle = goodBundle();
     // Remove a position from the bundle's own table; a condition referencing it
