@@ -28,6 +28,14 @@ export interface SeasonLine {
   stats: Record<string, number>;
   teamWins: number;
   teamLosses: number;
+  // Recorded, never recomputed. `overall` is the OVR the line is finalized at:
+  // written at kickoff so a truncated career still has a number, then rewritten
+  // once at the season boundary with the end-of-season value, before offseason
+  // development (which belongs to the next line). `classYear` is the year the
+  // season was PLAYED AS -- written once at creation, never on the boundary
+  // where enterOffseason advances eligibility into the next year.
+  overall: number;
+  classYear: ClassYear;
 }
 
 export type EffectTiming = "immediate" | "deferred";

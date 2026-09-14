@@ -11,7 +11,7 @@ function stateAt(tier: 1 | 2 | 3 | 4, overall: number, lastSnaps: number) {
   const s = createCareer(setup, "xfer");
   s.overall = overall;
   s.school = { schoolId: "unt", tier }; // North Texas is tier 2 in the base ladder
-  s.seasons.push({ seasonIndex: 0, schoolId: "unt", snaps: lastSnaps, stats: {}, teamWins: 0, teamLosses: 0 });
+  s.seasons.push({ seasonIndex: 0, schoolId: "unt", snaps: lastSnaps, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
   return s;
 }
 

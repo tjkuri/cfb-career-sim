@@ -187,10 +187,29 @@ describe("development curve", () => {
     const s = createCareer(setup, "hub-dev");
     s.overall = 70;
     s.phase = "offseason";
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     const expected = 70 + developmentDelta(400, CONTENT.progression, setup.position); // floor(400/180)=2 -> 72
     enterOffseason(s, CONTENT, createRng("hub-dev-rng"));
     expect(s.overall).toBe(expected);
+  });
+
+  // enterOffseason both finalizes the completed season line and advances
+  // eligibility into the next year. Recording the line's classYear on the wrong
+  // side of that boundary shifts every row of the career ledger by one year
+  // (a true freshman season labelled SO) and no other test would catch it.
+  it("finalizes the completed line with the class year it was PLAYED AS, not the one advanced into", () => {
+    const s = createCareer(setup, "class-year-boundary");
+    s.overall = 70;
+    s.phase = "offseason";
+    s.eligibility = { classYear: "SO", yearsUsed: 1, redshirtUsed: false, draftEligible: false };
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: 64, classYear: "SO" });
+    enterOffseason(s, CONTENT, createRng("class-year-boundary"));
+    expect(s.eligibility.classYear).toBe("JR"); // the player advances
+    expect(s.seasons[0]!.classYear).toBe("SO"); // the finished season does not
+    // and overall is the end-of-season value, taken before offseason
+    // development (which is earned for the NEXT line).
+    expect(s.seasons[0]!.overall).toBe(70);
+    expect(s.overall).toBe(70 + developmentDelta(400, CONTENT.progression, setup.position));
   });
 });
 
@@ -199,7 +218,7 @@ describe("soft-washout bust", () => {
     const s = createCareer(setup, "washout-ovr");
     s.overall = 40; // below washoutOverallFloor (45)
     s.phase = "offseason";
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     enterOffseason(s, CONTENT, createRng("washout-ovr"));
     expect(s.status).toBe("busted");
     expect(s.endingReason).toBeTruthy();
@@ -210,7 +229,7 @@ describe("soft-washout bust", () => {
     const s = createCareer(setup, "healthy");
     s.overall = 75;
     s.phase = "offseason";
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     enterOffseason(s, CONTENT, createRng("healthy"));
     expect(s.status).toBe("active");
   });
@@ -222,7 +241,7 @@ describe("soft-washout bust", () => {
     const floor = CONTENT.progression.washoutSnapFloor;
     const belowFloor = Math.max(0, floor - 1);
     for (let i = 0; i < CONTENT.progression.washoutConsecutiveSeasons; i++) {
-      s.seasons.push({ seasonIndex: i, schoolId: "x", snaps: belowFloor, stats: {}, teamWins: 0, teamLosses: 0 });
+      s.seasons.push({ seasonIndex: i, schoolId: "x", snaps: belowFloor, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     }
     enterOffseason(s, CONTENT, createRng("buried"));
     expect(s.status).toBe("busted");
@@ -338,7 +357,7 @@ function redshirtDecisionState(seed: string) {
   // season line for the sit year instead of merging its (near-zero) snaps into the
   // already-completed one (which would pollute the next enterOffseason's dev calc).
   s.seasonIndex = 1;
-  s.seasons.push({ seasonIndex: 0, schoolId: "unt", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0 });
+  s.seasons.push({ seasonIndex: 0, schoolId: "unt", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
   s.currentEventId = "redshirt";
   // createCareer already consumed schoolSampler.offerCount rng draws generating
   // Signing Day offers (and set pendingOptions for that recruiting event). Reset

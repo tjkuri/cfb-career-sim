@@ -199,6 +199,12 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   // Develop from last season's playing time before advancing eligibility.
   const lastSeason = s.seasons[s.seasons.length - 1];
   if (lastSeason) {
+    // Finalize the completed line's OVR *before* development is applied: the
+    // development points come from last season's snaps but are earned for the
+    // next season, so they belong to the next line. classYear is deliberately
+    // not touched here -- it was recorded at kickoff, and CLASS_ORDER advances
+    // a few lines below.
+    lastSeason.overall = s.overall;
     s.overall = clampOverall(
       s.overall + developmentDelta(lastSeason.snaps, content.progression, s.setup.position),
     );
@@ -273,7 +279,10 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
       if (ON_FIELD_PHASES.has(s.phase)) {
         const last = s.seasons[s.seasons.length - 1];
         if (!last || last.seasonIndex !== s.seasonIndex) {
-          s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+          // classYear is the year this season is PLAYED AS: enterOffseason has
+          // already advanced eligibility into it before kickoff, so the value
+          // read here is the correct one and must not be rewritten later.
+          s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
         }
         // Before production, so a fire costs this phase's snaps too.
         rollAmbientInjury(s, content, rng, injuryOf);

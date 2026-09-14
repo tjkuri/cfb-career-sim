@@ -41,7 +41,7 @@ describe("simulatePhaseProduction", () => {
     const mk = () => {
       const s = createCareer(setup, "snapmod");
       s.phase = "nonconf";
-      s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+      s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
       return s;
     };
     const full = mk();
@@ -55,7 +55,7 @@ describe("simulatePhaseProduction", () => {
   it("a kicker accumulates non-zero countable stats over a phase", () => {
     const s = createCareer({ lastName: "K", jerseyNumber: 9, homeState: "TX", position: "K" }, "kicker");
     s.phase = "nonconf";
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     simulatePhaseProduction(s, CONTENT, createRng("kicker"));
     const line = s.seasons[0]!;
     expect(line.snaps).toBeGreaterThan(0);

@@ -119,7 +119,7 @@ describe("runPostseasonResolver", () => {
   it("writes a full team record to the current season line", () => {
     const s = createCareer(resolverSetup, "resolve");
     s.school = { schoolId: "smu", tier: 3 };
-    s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 480, stats: { passYards: 1500 }, teamWins: 0, teamLosses: 0 });
+    s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 480, stats: { passYards: 1500 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     runPostseasonResolver(s, CONTENT, createRng("resolve"), injuryOf);
     const line = s.seasons[0]!;
     expect(line.teamWins + line.teamLosses).toBe(CONTENT.postseason.gamesPerSeason);
@@ -138,7 +138,7 @@ describe("runPostseasonResolver", () => {
       const s = createCareer({ lastName: "K", jerseyNumber: 9, homeState: "TX", position: "K" }, `k-${i}`);
       s.overall = 90;
       s.school = { schoolId: "smu", tier: 3 };
-      s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 180, stats: { fieldGoals: 20, points: 90 }, teamWins: 0, teamLosses: 0 });
+      s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 180, stats: { fieldGoals: 20, points: 90 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
       runPostseasonResolver(s, CONTENT, createRng(`k-${i}`), injuryOf);
       if (s.awards.includes("allConference")) honored++;
     }
@@ -151,7 +151,7 @@ describe("runPostseasonResolver", () => {
       const s = createCareer(resolverSetup, `elite-${i}`);
       s.overall = 96;
       s.school = { schoolId: "bama", tier: 4 };
-      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0 });
+      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
       runPostseasonResolver(s, CONTENT, createRng(`elite-${i}`), injuryOf);
       if (Object.keys(s.trophies).length > 0 || s.awards.length > 0) honored++;
     }
@@ -164,7 +164,7 @@ describe("runPostseasonResolver", () => {
       s.overall = 96; // would very likely earn awards if not redshirting
       s.redshirtSeasonActive = true;
       s.school = { schoolId: "bama", tier: 4 };
-      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0 });
+      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
       runPostseasonResolver(s, CONTENT, createRng("redshirt-resolve"), injuryOf);
       expect(s.awards).toEqual([]); // suppressed
       const line = s.seasons[0]!;
@@ -177,7 +177,7 @@ describe("runPostseasonResolver", () => {
         const s = createCareer(resolverSetup, `ctrl-${i}`);
         s.overall = 96;
         s.school = { schoolId: "bama", tier: 4 };
-        s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0 });
+        s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
         runPostseasonResolver(s, CONTENT, createRng(`ctrl-${i}`), injuryOf);
         if (s.awards.length > 0) honored++;
       }

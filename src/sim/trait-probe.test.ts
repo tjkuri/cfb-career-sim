@@ -14,7 +14,9 @@ const setup: Setup = { lastName: "P", jerseyNumber: 1, homeState: "TX", position
 // A season line is only ever read for its `schoolId` by traitsExperienced, but
 // build whole ones so this test keeps compiling honestly if SeasonLine grows.
 function seasonAt(seasonIndex: number, schoolId: string): SeasonLine {
-  return { seasonIndex, schoolId, snaps: 480, stats: {}, teamWins: 6, teamLosses: 6 };
+  // overall/classYear are inert here for the same reason: traitsExperienced
+  // reads only schoolId. Fixed values keep the fixture a complete SeasonLine.
+  return { seasonIndex, schoolId, snaps: 480, stats: {}, teamWins: 6, teamLosses: 6, overall: 70, classYear: "FR" };
 }
 
 // Start from a real career so every GameState field is populated by the engine

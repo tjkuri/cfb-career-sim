@@ -50,6 +50,8 @@ function newSeasonLine(state: GameState): SeasonLine {
     stats: {},
     teamWins: 0,
     teamLosses: 0,
+    overall: state.overall,
+    classYear: state.eligibility.classYear,
   };
 }
 

@@ -65,6 +65,7 @@ describe("schoolSnapModifier", () => {
     for (const seasonsPlayed of [0, 1, 2, 3]) {
       s.seasons = Array.from({ length: seasonsPlayed }, (_, i) => ({
         seasonIndex: i, schoolId: wide.id, snaps: 400, stats: {}, teamWins: 6, teamLosses: 6,
+        overall: s.overall, classYear: s.eligibility.classYear,
       }));
       expect(schoolSnapModifier(s, wideContent), `season ${seasonsPlayed}`).toBe(expected);
     }

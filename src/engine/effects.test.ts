@@ -35,7 +35,7 @@ describe("applyEffect (immediate)", () => {
 
   it("adds stat and snap totals to the current season line", () => {
     const s = fresh();
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0 });
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
     applyEffect(s, { kind: "stat", stat: "passYards", amount: 250 }, injuryOf);
     applyEffect(s, { kind: "snaps", amount: 40 }, injuryOf);
     expect(s.seasons[0]!.stats.passYards).toBe(250);
