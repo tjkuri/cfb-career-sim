@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-13 · **Wave:** 3 complete, 4 written and ready to re-dispatch · **PM session:** 2 (handing off)
+**Last updated:** 2026-09-13 · **Wave:** 4 complete and committed; 5 (playtest) in flight · **PM session:** 3
 
 ---
 
@@ -43,7 +43,7 @@ records the three things in it we are deliberately *not* taking.
 ## Current state of the build
 
 - Phase 3 MVP complete and committed (`42ba561`), plus the OVR display reversal (`d600e69`).
-- **430 tests passing**, both typecheck passes exit 0, production build clean (~109 kB gzipped).
+- **492 tests passing**, both typecheck passes exit 0, production build clean (~110 kB gz JS / 3.65 kB gz CSS).
 - Playable end to end: creation → Signing Day → decisions → draft summary → share text → career log,
   with `localStorage` resume.
 
@@ -245,47 +245,110 @@ rail's snaps and stat line into the stamp costs the delta nothing and makes the 
 one moment. `SeasonStamp`'s comment excludes *progression* values for the delta's sake; snaps and
 stats are not progression and were never the reason.
 
-## Wave 4 — written, dispatched, killed by a session limit. Re-dispatch as-is.
+## Wave 4 — complete and committed (PM session 3)
 
-Both agents died **during their reading phase** — one had just opened the context docs, the other
-had just started capturing its baseline. **Tree verified clean afterwards:** no `src/**` edits, no
-partial reports, nothing to salvage and nothing to distrust. This is the second time a session limit
-has taken a whole wave (see DECISION 016 for the first). The briefs are intact and correct.
+**First attempt died to a session limit.** Both agents died **during their reading phase** — one had
+just opened the context docs, the other had just started capturing its baseline. **Tree was verified
+clean afterwards:** no `src/**` edits, no partial reports, nothing to salvage and nothing to distrust.
+This was the second time a session limit took a whole wave (see DECISION 016 for the first).
+
+**Re-dispatched unchanged on 2026-09-13 by PM session 3**, both at once, against a clean tree
+(`git status` empty at `7feb63a`) and a dev server already serving 200 on 5173. Neither brief was
+edited: they were correct, and the failure was the session, not the work. **Both landed.** The
+CSS/TSX ownership split held exactly — `git status` showed lane B's six session/screen files and
+lane A's six stylesheets with zero overlap, so unlike wave 3 the lanes committed separately.
+
+### What shipped
+
+```
+d621732 fix(a11y): raise --chalk-faint to clear AA at the new 11px floor
+3e5c8ce feat(ui): invert the type register, and clamp what can overflow
+cdfd2f2 fix(ui): the rail describes one moment, not two
+```
+
+**012 (type + clamps).** Six steps in `tokens.css` (11/12/13/15/18/34px, authored in rem) plus a
+figure step and a fluid display step; prose 500, 900 reserved for numerals; tabular figures wherever
+a number changes in place; no raw `font-size` outside the token block. All 9 overflow-capable nodes
+clamped against the *bundle's* worst strings (241-char outcome, 194 description, 107 engine-built
+label), not against what happened to be on screen. Audit **Bug 3 decided**: `body{font-size:17px}`
+deleted, `html` left unset, so `rem` tracks the reader's root; no existing rem literal changed pixel
+value. Two calls outside the brief's letter, both flagged and both accepted: `--measure` 34rem →
+30rem, and `.card-title` widened to `wdth 84` because a condensed 18px headline read *smaller* than
+13px prose at `wdth 100`.
+
+**013 (rail).** `SeasonStamp` now carries the season line, captured in `play()` before `advance()`;
+a new `railView()` assembles every rail cell from one moment — stamp when resolved, live otherwise,
+no third case. Stamp stays nullable and normalizes for pre-field saves. Verified on 21 resolved
+cards across two careers: zero mismatches against the decision card each answered, and `npm run
+play` byte-identical on two seeds.
+
+**The PM's own verification before committing:** 492 tests, both typecheck passes exit 0, build
+clean, and a hand click-through of creation → Signing Day → a decision card → a resolved card with a
+visible `+3 OVR` → the draft summary. B4 is visibly fixed — options are filled cards with gold edge
+bars, no longer grey form fields.
+
+### DECISION 022 — a palette call the PM made on top of the wave
+
+012 flagged, and correctly did **not** fix, that `--chalk-faint` carried thirteen 11px text roles at
+3.0–3.8:1, under the AA floor. Colour was not its brief. The PM re-measured, found the report's
+proposed `#7e9488` **fails on `--card-raised` (4.42:1)** — a ground it is actually set on at
+`career.css:245`/`:392` — and shipped `#849a8d` instead (6.09 / 5.36 / 4.76 across turf / card /
+card-raised). Committed separately so it can be reverted alone. **Its cost is real and is now a
+playtest question:** the ramp's bottom two greys are ~7 L* apart, and if they no longer read as two
+tiers the answer is to collapse the tier, not to darken back below AA. Added to brief 014.
+
+**A code check worth keeping:** DECISION 012's hue rule was verified in source rather than by
+hunting for a negative delta in the browser — `magnitude()` uses `Math.abs` and the hue is
+`--emphasis` at every tier, so a +8 and a −8 are equally loud and indistinguishable by colour. No
+`--good`/`--bad` exists. The *perceptual* half of that question still belongs to the playtest.
+
+### Two things 012 found that need a `.tsx` and therefore a future brief
+
+- **Labelled rail cells.** The `--t-meta` role ("rail labels at 11px/700 uppercase", the `AGE` /
+  `VALUE` / `APPS` box-score header the teardown describes) has no markup to live on — our rail is
+  four bare values (`CareerScreen.tsx:14-17`). The CSS role is ready if we want the header.
+- **A clamped `.option`/`.outcome` has no accessible full text.** Nothing is hidden today, because
+  the clamps only fire past what the bundle can produce — but a `title` attribute would need placing
+  in the tsx if the `factory`/`developmental` traits are ever assigned.
+- Also open: a remaining **1px card shift** that 013 traced to `.standing`'s height (46.9/47.9px),
+  not the rail. A `rem` `line-height` there would pin it as it pinned the rail.
 
 | Brief | What | Owns |
 |---|---|---|
 | `briefs/012-type-scale-and-clamps.md` | DECISION 008's register inversion — six-step scale in tokens, raised floor, `leading-none` on numerals, tabular figures; plus clamps (zero exist, 9 overflow-capable nodes, longest real outcome 241 chars); plus a deliberate call on audit Bug 3 | **all of `src/ui/styles/`**, and forbidden from touching any `.tsx` |
 | `briefs/013-rail-one-moment.md` | Freeze the season line into `SeasonStamp` so a resolved card's rail describes one moment. Found by the PM by hand — see the section above | `types.ts`, `view-model.ts`, `reducer.ts`, `CareerScreen.tsx` + tests; **no CSS** |
 
-These two are deliberately shaped to run **concurrently**: 012 owns every stylesheet and no
+These two were deliberately shaped to run **concurrently**: 012 owns every stylesheet and no
 component, 013 owns components and no stylesheet. That split is the only reason a type pass can run
-in parallel with anything. Keep it if you re-dispatch.
+in parallel with anything, and **it worked** — reuse the shape.
 
-**Wave 5 is also already written:** `briefs/014-post-wave4-playtest.md`. Dispatch it once wave 4 is
-committed. It is the north-star check, and it carries two questions that decide standing decisions:
+**Wave 5 — `briefs/014-post-wave4-playtest.md` — is dispatched and in flight** (2026-09-13, PM
+session 3), against a cleared `localStorage` (the PM's own click-through *and* a dozen `snap:*`
+scratch keys lane A left in the shared origin were both cleared first, and the PM's tab closed). It is the north-star check, and it carries two questions that decide standing decisions:
 the leak check (DECISION 012's own "would change our mind") and whether a dimmed-gold washout
 headline reads as congratulatory (DECISION 021's). Playtesting is **serial** — one browser agent at
 a time, they share a `localStorage` origin.
 
 ## Next actions
 
-1. **Re-dispatch wave 4** — `briefs/012` and `briefs/013`, unchanged, both at once. Nothing blocks
-   them and the tree is clean.
-2. **Then wave 5: `briefs/014`, the playtest.** Then decide what is left from what it says, not from
+1. ~~**Re-dispatch wave 4**~~ — **done and committed** as three commits. See the wave 4 section.
+2. ~~**Then wave 5: `briefs/014`, the playtest.**~~ **Dispatched, in flight.** Then decide what is left from what it says, not from
    this table.
-3. **Still queued behind wave 4:** the ledger component. `src/ui/session/ledger.ts` is built, tested
-   and committed; `reports/010-ledger-logic.md` ends with the exact two-file wiring diff. It needs
-   `CareerScreen.tsx` and `career.css`, so it collides with **both** wave-4 lanes — it cannot join
-   them. Remaining after that: (a) the ledger component + the wiring diff 010 specifies — it collides with
-   009's `CareerScreen.tsx`, which is why it was not in wave 3; (b) **the type scale, alone**
-   (DECISION 008 + audit G4; owns all CSS; decide audit Bug 3 — `body{font-size:17px}` at
-   `base.css:11` does not scale rem declarations — rather than inherit it); (c) clamps (audit G3;
-   zero exist, 9 overflow-capable nodes, longest real outcome 241 chars; a hard prerequisite for any
-   height-locked shell).
-4. **Then re-playtest**, using `briefs/003-baseline-playtest-v2.md` as the shape — it is the one that
-   worked. Playtesting is **serial**: two browser agents share one `localStorage` origin. The brief
-   must ask the playtester to confirm *or refute*, and must ask directly whether they wanted a
-   fourth career, because that is the north star and nothing else measures it.
+3. **The ledger component is now the top unstarted item, and nothing blocks it.**
+   `src/ui/session/ledger.ts` is built, tested (6,418 snapshots over 240 careers, zero invariant
+   violations) and committed; `reports/010-ledger-logic.md` ends with the **exact two-file wiring
+   diff**. It needs `CareerScreen.tsx` and `career.css` — which is why it could join neither wave 3
+   nor wave 4 — and both are now free. Rows are `Year 1`–`Year 5` per DECISION 020; read 020 before
+   starting, and do **not** re-derive the snaps inference — 020 withdrew 015's "would change our
+   mind" clause precisely to stop a future agent re-measuring a clean number that answers the wrong
+   question.
+   **Sequencing note:** it wants the same two files the playtest is currently forming opinions
+   about. Wait for 014 rather than racing it — the ledger is the single largest remaining layout
+   change, and the playtest's read of the decision screen is worth more taken before it lands.
+4. **The type scale and clamps are DONE** (wave 4, commits `3e5c8ce` and `d621732`) — they are
+   struck from this list rather than left to be redone. What the type pass *opened* is smaller and
+   listed in the wave 4 section: labelled rail cells (needs markup), a `title` on clamped options,
+   and a 1px `.standing` height shift.
 5. Increment the **PM session** counter at the top of this file when you take over.
 
 ## For the user — one open scope call

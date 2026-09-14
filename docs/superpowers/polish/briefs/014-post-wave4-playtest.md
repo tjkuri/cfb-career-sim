@@ -101,6 +101,14 @@ confirmed — how much it actually cost or gave you as a player.
   We know it is there; what we do not know is what it costs.
 - **Career length.** Do you ever know how many seasons you have left, or whether a fifth year is
   possible? Report what you believed at the time, even if it was wrong.
+- **The two quietest greys** (added by PM session 3 — this settles DECISION 022). The type pass just
+  made the smallest text much smaller, and a palette value had to be lightened so it would still
+  clear a legibility floor. The side effect is that the *second*-quietest grey and the *quietest*
+  grey are now closer together than they were. So: **is there still a visible difference between
+  ordinary dim text and the really-in-the-background text** — the little labels, the stat lines
+  under a season, the "you chose X" line on a resolved card? Or does the small print all read as one
+  flat tone now? Do not hunt for it with your face against the screen; the question is whether it
+  registers at a normal glance. If it does not, say so plainly — that reverses a call we just made.
 
 ## What not to do
 
