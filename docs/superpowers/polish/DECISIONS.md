@@ -1457,3 +1457,155 @@ It is a balance observation, not a polish one, and it goes to the user rather th
 
 **Also confirmed in passing, with evidence:** B34 is real and reproducible. The fixture career's
 moments list carries *"Enjoyed the bowl trip more than the bowl game"* in **four consecutive seasons**.
+
+## 053 — B42 is refuted. `Undrafted` is a common ending, and the screen keeps its prominence
+
+**Date:** 2026-09-14 · **Made by:** PM session 7 · **Answers:** B42 · **Evidence:** `reports/032-how-losable-is-it-now.md` §1
+
+DECISION 052 recorded, from a fixture-building accident, that *400 careers under a deliberately bad
+policy produced zero undrafted results*, and raised B42: the ending screen may be giving headline
+treatment to an outcome almost nobody reaches. **Measured over 57,600 careers, that is wrong.**
+
+| policy | undrafted |
+|---|---|
+| `good` (plays well, stays) | **0.0%** |
+| `baselineRandom` (ordinary play) | **12.4–17.1%** |
+| `lazyFull` (plays badly, **stays**) | 0.17–2.7% |
+| `lazyEarly` (plays badly, **leaves early**) | **35.8–65.5%** |
+
+**The anecdote is explained rather than contradicted.** 052's policy never declared early, and that
+cell genuinely is ~0.2% for a QB — zero in 400 is the expected draw. **The variable that produces an
+undrafted career is leaving early, not playing badly.** Roughly one ordinary career in eight ends
+undrafted. The screen's treatment is earned; nothing changes.
+
+**This also closes the "I could not lose" complaint** from the 014 playtest as a live concern. The
+two failure axes both work and do not collapse into each other: tanking ability produces low picks,
+tanking character produces **busts at 12–15%** through the authored bust events.
+
+**What would change our mind.** Nothing on the rate. The open question is the *reverse* one — whether
+12–17% is too punishing for an unoptimised first-time player — and that is a balance question nobody
+has asked yet. It is not raised as one now because no playtester has complained of it.
+
+## 054 — Declaring early is strictly dominated, so B32's planned fix does not exist. It goes to the user
+
+**Date:** 2026-09-14 · **Made by:** PM session 7 · **Supersedes the framing of:** B32 · **Evidence:** `reports/032-how-losable-is-it-now.md` §2
+
+B32 was scoped as *"a gamble should look like one before it is taken."* **A paired identical-seed
+A/B says it is not a gamble.** Base profile `good` — everything else played optimally — 2,400 careers
+per arm, the only difference being which offer of the Declare card is taken:
+
+| declare at | seasons | undrafted | **round 1** | stock P50 |
+|---|---|---|---|---|
+| offer #1 | 2.00 | **22.8%** | **0.0000** | 41 |
+| offer #2 | 2.98 | 0.6% | **0.0000** | 60 |
+| offer #3 | 3.95 | 0.0% | 7.8% | 73 |
+| never | 4.91 | 0.0% | **44.0%** | 89 |
+
+**Monotonic in every column, with no crossover at any position.** The sole thing staying costs is
+bust risk, **2.2% → 4.5%** — 2.3 percentage points bought at the price of 44 points of round-1
+probability. A gamble widens the outcome distribution; this one shifts it down and **truncates the
+top**. Round 1 is not unlikely after an early declaration, it is very nearly arithmetically excluded:
+`computeDraftResult` needs stock ≥ 91, `draft.ts:54` subtracts 8 first, so a non-senior needs a raw
+`deriveDraftStock` of ≥ 99 out of a cap of 100.
+
+**The authored penalty is not what does the damage, and this is the part that matters for any fix.**
+`EARLY_DECLARE_PENALTY` (8) plus the lost senior `classPart` (2) is **10 points**. The measured gap
+is **48**. The other ~38 are foregone development, production, trophies and awards — opportunity cost
+the player is never told about. DECISION 038 calibrated the tax correctly and the tax is not the
+problem.
+
+**Therefore the planned UI fix is unavailable.** Making a dominated option *look* like a fair gamble
+would be the interface lying in the opposite direction from today's *"Cash in now."* Two honest and
+mutually exclusive routes, and choosing between them is a game-balance call:
+
+- **Route A — say it is a bad idea.** UI-only, no balance movement, no `draftStock` and no projected
+  round (DECISION 025 refused both by name; neither is needed, because "you have two years of
+  eligibility left" is a fact the player already owns). Cost: the option stays dominated, so one of
+  two offseason decisions becomes a formality.
+- **Route B — give it a real upside.** The fiction already implies declaring protects you from
+  something; today it protects you from 2.3pp of bust risk. Making the downside of *staying* real
+  would turn the existing prose accurate without rewriting it. Cost: `src/engine/**`, every seed
+  moves, and it is larger than anything this phase has attempted.
+
+**PM recommendation: A now, B only on an explicit user decision.** Escalated rather than taken,
+because B32 is now a balance question wearing a UI question's clothes, and DECISION 030's shape says
+those go to the user.
+
+**What would change our mind on A.** A playtester who reads the reworded card, declines, and reports
+the offseason as having become a non-choice — that would mean the decision needed balance, not
+wording.
+
+## 055 — DECISION 051's falsifier fired. The redshirt season is thin, and the card pays the gamble out before the season starts
+
+**Date:** 2026-09-14 · **Made by:** PM session 7 · **Reverses the "kept" clause of:** 051 · **Evidence:** `reports/031-post-wave13-playtest.md` Question A
+
+051 kept DECISION 048's gate after measuring that collapsing a redshirt season's event pool from
+**81 to 12** moved the career-wide repetition metric by only +3.4pp. It wrote its own falsifier:
+
+> *A playtester redshirting and reporting the season as thin or repetitive in a way the career-wide
+> numbers do not capture. The next playtest brief should send someone through a redshirt season
+> deliberately and ask.*
+
+**It was asked, and it fired.** The playtester took the redshirt on purpose and reported the season
+as **thin — five cards where a played season gets eight, none of them about being redshirted, and
+two actively wrong for a player who is not playing.** The career-wide metric did not notice because
+a redshirt season is one of five; the player noticed immediately because they were living in it.
+
+**The gate is not reversed.** 048 closed a real defect — a player who sits was making plays, 1,655
+production cards firing at a sitting player — and that is worth more than pool size. What 051 got
+wrong was concluding that a +3.4pp career-wide number meant the cost was small. **A career-wide
+average was the wrong instrument for a single-season experience**, and that is the transferable
+lesson: when a change is scoped to one season, measure that season, not the career.
+
+**The remedy is content, not the removal of the gate.** Twelve events for a season the player chose
+to enter is the actual defect. A redshirt season needs beats *about redshirting* — the scout team,
+the year of watching, the four-game rule — which is the smallest and best-aimed authoring target
+this phase has identified, and it is better aimed than DECISION 045's offseason target because the
+player is *already* choosing to be there.
+
+**A second and worse finding sits underneath it, and it is not about pool size.** The redshirt card
+**pays +5 before the season it is gambling on.** The playtester: *"a free lunch dressed as a
+gamble."* The card says it might backfire; the mechanics hand over the reward up front. That is
+logged as **B43**.
+
+**What would change our mind.** Nothing on the thinness; it is a direct observation against a
+pre-specified falsifier. On the remedy, a second playtester who redshirts on a build with
+redshirt-specific beats and still reports the season as dead would mean the problem is the mechanic
+rather than its coverage.
+
+## 056 — B30's fix works where it was measured and fails where it was not. Two holes, both known at ship time, both found by the first player through
+
+**Date:** 2026-09-14 · **Made by:** PM session 7 · **Amends:** 046 · **Evidence:** `reports/031-post-wave13-playtest.md`, verified by the PM at `reducer.ts:93` and `CareerScreen.tsx:80-87, 349`
+
+Waves 12–13's central claim was *a card accounts for what it did*. Report 026 measured 12,847
+resolved cards and found **0** it could not identify. The playtester found it failing in all three
+careers. **Both are correct**, and the gap between them is the finding.
+
+**Hole 1 — hub cards were excluded by construction, and that is where the defect surfaced.**
+`reducer.ts:93` reads `outcome === null ? null : cardAccount(...)`. A one-option hub card has no
+authored outcome, so its account is `null` and the card falls back to the whole-`advance` total —
+exactly what 026 documented it would do, and what DECISION 037 wanted for the transfer hub. The
+playtester's reproducible case is that hole: **`"You chose: Stay at Memphis" → +5 OVR with no
+sentence at all`**, in all three careers, being the deferred injury refund landing on an unrelated
+card. 026's denominator was *cards with prose*; hub cards have none, so the measurement that proved
+the fix could not see the case that breaks it. **The fix is right and its coverage was wrong.**
+
+**Hole 2 — the character sentence renders, and loses.** `lockerRoomLine` produces *"Cost you in the
+locker room."* and `CareerScreen.tsx:349` renders it, so 026's 4,117 cards are real. The playtester
+still read *"Compliance flags the resale listing with your name still in the metadata"* → **+1 OVR**
+as a reward. **The remedy for DECISION 046 cause 2 was built and it is not winning the card.** A
+grey sentence does not outrank a bold signed integer, which is a hierarchy problem, not a missing
+feature — and hierarchy is the one thing this phase knows how to fix.
+
+**Neither is a reason to revisit DECISION 002.** Character still needs no integer. Hole 2 is about
+which element the eye reaches first.
+
+**Also unfixed and now named by a player: `EVERYTHING ELSE` is never explained.** It is a labelled
+bucket with no sentence, which is the same defect as hole 1 wearing a label.
+
+**The transferable lesson, and the reason this is a decision and not a bug report.** 026 measured
+the population its fix was defined over and reported zero failures inside it. The failures were all
+outside it. **A measurement that shares its fix's assumptions cannot falsify the fix** — future
+briefs of this shape must state the excluded population and say who checks it.
+
+**What would change our mind.** Nothing; both holes are read from source.

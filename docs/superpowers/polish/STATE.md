@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Wave:** 12 complete and committed · **Wave 13:** complete and committed · **PM session:** 6 (handing off)
+**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete · **PM session:** 7
 
 ---
 
@@ -823,6 +823,11 @@ briefs this as "fix the six cards" will rewrite good writing and leave the cause
 | B37 | **The redshirt card lies** — *"sit this season"* cost −3 and the season was played anyway | B13 was closed as a wording fix. The wording is still wrong |
 | B41 | **Off-field beats should not author `snaps` at all** — *Cutting the Line*, *Bed Check* and *On the Sideline, On Camera* award ±15/−20 snaps, which is why DECISION 048's gate had to sweep them in | DECISION 051. The gate is the approximation; this is the clean fix. It changes those cards for every player, not just redshirts, so it is a balance question and goes to the user |
 | B42 | **`Undrafted` may be a much rarer ending than the screen's prominence implies** — 400 careers under a deliberately bad policy produced **zero** undrafted results (59 drafted : 1 busted in a 60-career sample) | DECISION 052. Found while building a fixture to render the undrafted screen at all. Wave 9 made careers losable and 048's A/B puts the redshirt cohort at ~96% drafted. Balance observation, for the user |
+| B43 | **The redshirt card pays the gamble out before the gamble** — it says it might backfire, then hands over **+5 OVR on the offer card**, before the season it is betting on | DECISION 055. The playtester: *"a free lunch dressed as a gamble."* The exact mirror of B32, where the card promises a gamble and delivers a dominated option. **The two offseason decisions mislabel their risk in opposite directions** |
+| B44 | **Redshirt seasons need beats about redshirting** — 12 eligible events, none of them about sitting out; two actively wrong for a player who is not playing | DECISION 055. The best-aimed authoring target found in this phase: smaller than 045's offseason target, and the player has *chosen* to be there |
+| B45 | **Hub cards still print an unattributed number** — `"You chose: Stay at Memphis" → +5 OVR with no sentence`, in 3/3 careers | DECISION 056 hole 1. `reducer.ts:93` gives a one-option hub `account = null` by construction, so it falls back to the whole-`advance` total. Known at ship time; 026's denominator could not see it |
+| B46 | **The character sentence renders and loses to the number** — *"Cost you in the locker room."* beside a bold **+1 OVR** still reads as a reward | DECISION 056 hole 2. Hierarchy, not a missing feature. Does **not** reopen DECISION 002 |
+| B47 | **`EVERYTHING ELSE` is a labelled bucket with no sentence** — never once explained to the player | DECISION 056. Same defect as B45 wearing a label |
 | B38 | **A playing-time phrase is printed beside `0 snaps`** — at Signing Day and preseason the header reads `ON THE FIELD: in the rotation` with `0 snaps` directly above it | Found by the PM's own click-through, wave 12. It is defect 2's mirror image: 027 fixed the low-phrase-beside-high-snaps direction and deliberately did not gate on `season.inProgress` (027 §7). A pre-season zero is "has not played yet", not "is not playing" — the phrase should probably be suppressed, not lowered. Small, `bands.ts` + `view-model.ts` |
 | B39 | **`delayPhases: 2` does not exist in practice** — all 14 deferred effects are `delayPhases: 1` and land inside their own card's `advance`, so "this will cost you later" never does | 026 §6.1. Content, frozen. Cheap (one field on 14 effects) and it is the only way an author can write a genuinely-later consequence |
 | B40 | **`suspension` is unaccounted on the card** — it zeroes snaps for two phases, moves no OVR, and the card says nothing | 026 §6.3. Same class as B30, out of that brief's scope |
@@ -1002,7 +1007,135 @@ milestone four times) is content, which 028 holds. B30/B31's follow-ons — 026 
 report the whole movement, by DECISION 037's choice) and §6.3 (`suspension` is unaccounted on the
 card) — are both real and both unqueued.
 
-## Next actions — for PM session 7, in order
+## Wave 14 — in flight (PM session 7)
+
+**Baseline verified by the PM before dispatch:** `1bf7a1c`, tree clean, **644 tests green**, both
+typecheck passes exit 0, dev server serving 200 on 5173.
+
+Two lanes. They share no files, and — the constraint that actually shaped the wave — **no browser.**
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/031-post-wave13-playtest.md` | Playtest, three careers. The first fresh eyes since 025, four waves of change ago | the browser; `reports/031-*`, `PLAYTEST-LOG.md` |
+| `briefs/032-how-losable-is-it-now.md` | Terminal-only measurement: the undrafted rate (B42) and the true cost of declaring early (B32) | `reports/032-*` only. Probes go to the scratchpad, **not** into `src/` |
+
+**Why no development lane this wave.** Not caution — the playtest would be invalid with one. Vite
+hot-reloads the dev server on any `src/` write, so a dev lane would be changing the build underneath
+the playtester mid-career. That is also why 032 is told to keep its probe scripts out of the repo
+tree: it is a terminal agent, but a new file under `src/` still touches the watcher. The serial-browser
+rule (one browser agent at a time, always) is the other half of the same constraint.
+
+**Both lanes died on their first turn and were re-dispatched.** An API session limit (HTTP 429)
+killed both agents at *"I'll start by reading the brief"* — zero tool calls, zero output, nothing
+written. This is the third distinct way an agent has died in this phase (foreground `npm run dev`,
+mid-flight session limit, and now a limit hit *before any work at all*). The re-dispatch adds one
+rule that every future brief should carry, because it is the only defence that works against a kill
+you cannot predict:
+
+> **Write incrementally.** Append each career's notes, or each section's numbers, to the report file
+> as you get them. A report file with one career in it is worth more than a complete report that dies
+> in an agent's context.
+
+The measurement lane was re-dispatched on **Sonnet** rather than Opus — it is mechanical (run
+committed probes, write one A/B, report numbers) and the judgment content is low, so it is the right
+lane to spend less capacity on. The playtester stayed on Opus: its entire value is nuanced
+qualitative self-observation, and that is exactly what does not survive a model downgrade.
+
+**What 031 carries that this session could not answer itself** — the three questions are DECISION
+051's falsifier (redshirt deliberately; did that season feel thin now its pool is 81 → 12?), whether
+waves 12–13 actually made the card's number agree with its words, and the skimming-onset number that
+DECISION 045's redirected authoring budget is waiting on.
+
+**What 032 exists for.** Both of its numbers are currently anecdotes that are about to be put to the
+user as balance questions, and the house style is that a contested call gets a number first. B42 came
+from a fixture-building accident (400 bad-policy careers, zero undrafted); B32's fix cannot be
+designed without knowing the size of the gamble. 032 is explicitly forbidden from proposing a fix
+that shows `draftStock` or a projected round — DECISION 025 refused that by name.
+
+### Lane 032 — done. Both questions answered, and one of them changes what the next wave is
+
+**The PM measured this lane personally.** The dispatched agent stalled at 600s having written
+nothing; the probe then turned out to run 57,600 careers in **25 seconds**, so re-dispatching into
+the same capacity wall would have cost more than doing it inline. 74,400 careers measured in total.
+Report: `reports/032-how-losable-is-it-now.md`. Nothing under `src/` was touched.
+
+- **B42 is REFUTED — DECISION 053.** `Undrafted` is not rare: **12.4–17.1%** of ordinary
+  (`baselineRandom`) careers end there. 052's "zero in 400" used a policy that plays badly *and stays
+  all five seasons*, where the true rate is ~0.2% — so zero in 400 was the expected draw. **The
+  variable that produces an undrafted career is leaving early, not playing badly.** The ending
+  screen keeps its prominence; nothing to build.
+- **"I could not lose" is dead as a live concern.** Both failure axes work and stay separate: tanking
+  ability gives low picks, tanking character gives **busts at 12–15%** via the authored bust events.
+- **B32 is reframed and escalated — DECISION 054.** Declaring early is **strictly dominated at every
+  offer**, monotonic across all four arms of a paired identical-seed A/B with no crossover at any
+  position. Round 1 is **0.0000 over 2,400 careers** at the first *and* second offer — not unlikely,
+  very nearly arithmetically excluded, because `draft.ts:54` subtracts 8 before a round-1 threshold
+  of 91. **The planned fix — "make a gamble look like a gamble" — does not exist**, because it is not
+  a gamble. Two honest routes, A (reword; UI-only) and B (give it real upside; engine, every seed
+  moves). **On the user's desk.**
+- **The authored penalty is not the culprit.** `EARLY_DECLARE_PENALTY` + the lost senior `classPart`
+  is 10 points; the measured gap is **48**. The other ~38 is foregone development the player is never
+  told about. DECISION 038's tax is correctly calibrated and is not what is wrong.
+- **One tooling defect recorded, not fixed.** `lazyFull` and `saboteurFull` produce **byte-identical
+  output across all ~45 fields** (JSON-diffed at n=400), as do their `Early` variants — so does
+  nothing in the tooling actually maximise for career-ending outcomes. `saboteur`'s own comment
+  claims it is "the upper bound on reachable failure"; it is `lazy` under another name. Any future
+  decision citing it as a distinct cohort is citing the wrong thing. `src/sim/` was out of bounds for
+  this brief, so it is written up as a proposal.
+
+### Lane 031 — the playtest. It refuted the last two waves' central claim
+
+**Three careers, 1456px** (the harness was *not* pinned narrow this time, so the layout answers are
+real desktop answers). Report: `reports/031-post-wave13-playtest.md`.
+
+- **The north-star curve did not move, and it broke one career earlier than the best previous run:
+  yes → no → no**, with a fourth career refused *"not from curiosity either."* Career 2's verbatim
+  line is the one to keep: *"By the middle of this one I was no longer playing, I was auditing."*
+- **Skimming onset: 15 → 1 → 1.** Exactly as predicted, and the third independent confirmation.
+  **DECISION 045's redirected authoring budget now has its number and is unblocked.**
+- **DECISION 051's falsifier fired — DECISION 055.** The redshirt season is thin (5 cards against a
+  played season's 8, none about redshirting, two actively wrong for a player who is not playing).
+  The career-wide +3.4pp was the wrong instrument for a single-season change. **B44.**
+- **Waves 12–13's central claim is refuted in practice — DECISION 056**, and the PM verified both
+  causes in source rather than taking the report at face value. Hole 1 (**B45**): hub cards get
+  `account = null` at `reducer.ts:93` by construction, so `"Stay at Memphis" → +5 OVR` prints bare —
+  026's denominator was *cards with prose* and could not see it. Hole 2 (**B46**): the character
+  sentence **does** render; it just loses to a bold signed integer. **The fix is right; its coverage
+  was wrong.**
+- **Declare independently confirmed as a trap** from the player side, matching 032's numbers from
+  the engine side.
+
+**The convergence that should drive the next wave.** 032 and 031 met in the middle without being
+told about each other: **the two offseason decisions mislabel their risk in opposite directions.**
+The *declare* card has no risk language and is strictly dominated (B32); the *redshirt* card says
+*"it might backfire"* and pays +5 before the season it is betting on (B43). That is one problem, not
+two, and it is why the offseason reads as a menu.
+
+**The methodological lesson, logged because it will recur:** a measurement that shares its fix's
+assumptions cannot falsify the fix. 026 found 0 failures in 12,847 cards and every real failure was
+outside its population. Future briefs of this shape must state the excluded population and name who
+checks it.
+
+## Next actions — for PM session 8, in order
+
+**Read this section, `DECISIONS.md` 053–056, and the wave 14 section above. Nothing else.**
+
+1. **B45 + B46 + B47 are the top of the board** — they are waves 12–13 finished, not new work, and
+   they are the reason reading still does not pay. B45 is a real code gap at `reducer.ts:93`; B46 is
+   pure hierarchy, which is this phase's strongest muscle; B47 is one sentence. All three are UI and
+   none needs the user.
+2. **B32/B43 is ONE item and it is blocked on the user** — routes A and B in DECISION 054. Do not
+   start it without an answer; A and B produce different cards.
+3. **B44 — redshirt beats.** The best-aimed authoring target this phase has found. Content, frozen,
+   so it is a proposal. Smaller than DECISION 045's offseason target.
+4. **Onset is settled at decision 1** for replays, three playtests running. Stop re-measuring it.
+5. **The engine is frozen.** 049's lift is spent.
+6. **Do not reopen type, colour or contrast.** Three playtests, zero visual defects.
+7. **A playtest measured at 1456px is now available** — previous layout answers were taken at a
+   pinned ~800px and should not be trusted over 031's.
+8. Increment the **PM session** counter at the top of this file.
+
+## Next actions — for PM session 7 (executed by session 7; kept for anything unstruck)
 
 **Read this section, `DECISIONS.md` 045–052, and the wave 12 and 13 sections above. Nothing else.**
 
