@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete and committed · **Wave 15:** complete and committed · **Wave 16:** in flight · **PM session:** 7
+**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete and committed · **Wave 15:** complete and committed · **Wave 16:** complete and committed · **PM session:** 7 (handing off)
 
 ---
 
@@ -815,7 +815,7 @@ briefs this as "fix the six cards" will rewrite good writing and leave the cause
 |---|---|---|
 | B30 | **Cards do not account for what they did** — deferred effects and progression land on whichever card is on screen | DECISION 046 cause 1. `reducer.ts` + `view-model.ts`, both unfrozen. **Top of the board** |
 | B31 | **Character is the invisible half of an outcome**, so cards whose real cost is character read as rewards — *"compliance flags the resale listing"* = **+1 OVR** | DECISION 046 cause 2. B17 with a mechanism. A fix needing an integer is a proposal against DECISION 002 and goes to the user |
-| B32 | **Declaring early reads as a trap, not a gamble** — claim 2 **REFUTED**. The Declare card shows no projection, no stock, no warning, and frames it as *"Cash in now"* | Wave 9 made the penalty real; nothing tells the player a gamble is being taken. Note DECISION 025 refused a round projection by name — the fix is not `draftStock` |
+| B32 | ~~**Declaring early reads as a trap, not a gamble**~~ **DONE — the decision is deleted (DEC 057/058)** — claim 2 **REFUTED**. The Declare card shows no projection, no stock, no warning, and frames it as *"Cash in now"* | Wave 9 made the penalty real; nothing tells the player a gamble is being taken. Note DECISION 025 refused a round projection by name — the fix is not `draftStock` |
 | B33 | **`Undrafted` is set in the same gold display type, size and position as `Round 5, Pick 14`** | DECISION 032 said the fix for a congratulatory bad ending is hierarchy. It was applied to *drafted* endings; the undrafted case kept the trophy treatment |
 | B34 | **The Moments reel printed 🏆 "Carried the team through bowl season" four times** on a player with no bowl win | The milestone fires every season. Repetition has now reached the ending screen |
 | B35 | **Silent resolutions remain** — "Play this season", "Return to school" and "Stay at [school]" produce no outcome screen. **"Stay at Ole Miss" paid +10 as a bare number on a card with no sentence** | Wave 9 proved three hubs deserved silence *on the data then*. +10 is not silence-worthy. Re-measure before re-deciding |
@@ -825,9 +825,9 @@ briefs this as "fix the six cards" will rewrite good writing and leave the cause
 | B42 | **`Undrafted` may be a much rarer ending than the screen's prominence implies** — 400 careers under a deliberately bad policy produced **zero** undrafted results (59 drafted : 1 busted in a 60-career sample) | DECISION 052. Found while building a fixture to render the undrafted screen at all. Wave 9 made careers losable and 048's A/B puts the redshirt cohort at ~96% drafted. Balance observation, for the user |
 | B43 | **The redshirt card pays the gamble out before the gamble** — it says it might backfire, then hands over **+5 OVR on the offer card**, before the season it is betting on | DECISION 055. The playtester: *"a free lunch dressed as a gamble."* The exact mirror of B32, where the card promises a gamble and delivers a dominated option. **The two offseason decisions mislabel their risk in opposite directions** |
 | B44 | **Redshirt seasons need beats about redshirting** — 12 eligible events, none of them about sitting out; two actively wrong for a player who is not playing | DECISION 055. The best-aimed authoring target found in this phase: smaller than 045's offseason target, and the player has *chosen* to be there |
-| B45 | **Hub cards still print an unattributed number** — `"You chose: Stay at Memphis" → +5 OVR with no sentence`, in 3/3 careers | DECISION 056 hole 1. `reducer.ts:93` gives a one-option hub `account = null` by construction, so it falls back to the whole-`advance` total. Known at ship time; 026's denominator could not see it |
-| B46 | **The character sentence renders and loses to the number** — *"Cost you in the locker room."* beside a bold **+1 OVR** still reads as a reward | DECISION 056 hole 2. Hierarchy, not a missing feature. Does **not** reopen DECISION 002 |
-| B47 | **`EVERYTHING ELSE` is a labelled bucket with no sentence** — never once explained to the player | DECISION 056. Same defect as B45 wearing a label |
+| B45 | ~~**Hub cards still print an unattributed number**~~ **DONE (`e414bea`)** — `"You chose: Stay at Memphis" → +5 OVR with no sentence`, in 3/3 careers | DECISION 056 hole 1. `reducer.ts:93` gives a one-option hub `account = null` by construction, so it falls back to the whole-`advance` total. Known at ship time; 026's denominator could not see it |
+| B46 | ~~**The character sentence renders and loses to the number**~~ **DONE (`e414bea`)** — *"Cost you in the locker room."* beside a bold **+1 OVR** still reads as a reward | DECISION 056 hole 2. Hierarchy, not a missing feature. Does **not** reopen DECISION 002 |
+| B47 | ~~**`EVERYTHING ELSE` is a labelled bucket with no sentence**~~ **DONE (`e414bea`)** — never once explained to the player | DECISION 056. Same defect as B45 wearing a label |
 | B38 | **A playing-time phrase is printed beside `0 snaps`** — at Signing Day and preseason the header reads `ON THE FIELD: in the rotation` with `0 snaps` directly above it | Found by the PM's own click-through, wave 12. It is defect 2's mirror image: 027 fixed the low-phrase-beside-high-snaps direction and deliberately did not gate on `season.inProgress` (027 §7). A pre-season zero is "has not played yet", not "is not playing" — the phrase should probably be suppressed, not lowered. Small, `bands.ts` + `view-model.ts` |
 | B39 | **`delayPhases: 2` does not exist in practice** — all 14 deferred effects are `delayPhases: 1` and land inside their own card's `advance`, so "this will cost you later" never does | 026 §6.1. Content, frozen. Cheap (one field on 14 effects) and it is the only way an author can write a genuinely-later consequence |
 | B40 | **`suspension` is unaccounted on the card** — it zeroes snaps for two phases, moves no OVR, and the card says nothing | 026 §6.3. Same class as B30, out of that brief's scope |
@@ -1176,7 +1176,7 @@ in `reports/034-a-career-can-go-wrong.md`; the two findings worth carrying forwa
   undrafted line sits at **35**, below all three. Raising it to 50 leaves a good career
   byte-identical and fails 15% of lazy ones.
 
-## Wave 16 — in flight (PM session 7)
+## Wave 16 — complete and committed (PM session 7)
 
 One lane, deliberately alone: `briefs/035-remove-declare-and-restore-the-downside.md`. It implements
 DECISIONS 057 + 058 — delete the declare decision, raise the draft bar, add upperclass decline.
@@ -1189,9 +1189,80 @@ wave-10 and wave-13 lesson restated.
 **stop and report** rather than tune if its numbers miss. The hard disqualifier is restated in the
 brief: if a well-played career starts failing above ~1%, or its round-1 rate drops below 28%, stop.
 
+### Wave 16 result — shipped, commit `d310e87`. The game is losable
+
+**PM-verified independently before commit**, and the verification caught a ship-blocker (below).
+650 tests green, both typecheck passes exit 0, build clean. Constants confirmed in place and
+**untuned**. Report: `reports/035-remove-declare-and-restore-the-downside.md`.
+
+| profile | undrafted | round 1 | before this wave |
+|---|---|---|---|
+| `good` | **0.10%** | **44.31%** | 0.0% / 45.1% |
+| `randomFull` | 3.22% | 9.09% | 0.1% / 9.9% |
+| `lazyFull` | **15.18%** | 0.01% | **0.7%** |
+| `antisocialFull` | 1.27% | busted **13.71%** | busted 13.7% |
+
+- **A well-played career is as safe as it was before any of this** (0.10% undrafted, 44.31% round 1)
+  and a badly-played one now fails **22× more often**. That is the whole point of the wave.
+- **`EARLY_DECLARE_PENALTY` deleted as provably dead** — the only path to `declared` is
+  out-of-eligibility, which is always SR: SR in **36,000 of 36,000** careers.
+- **The agent found and fixed a defect the change introduced**: the card printed *"A season of
+  development came in."* over a −3 drop. It now reads *"A season on the sideline cost you ground."*
+  **That is DECISION 058's own falsifier being served** — the decline exists to be legible.
+- **DECISION 059 — the ship-blocker the acceptance test could not see.** Aggregate `good` hit its
+  target exactly (0.86% vs ~0.9%), while **K alone was 4.53% undrafted and 5.47% round 1** against a
+  QB's 0.07% / 50.7%. A flat 200-snap decline floor sits *above a kicker's entire season*. Fixed by
+  position-scaling both decline numbers on the 0.34 workload factor `postseason.ts` already documents
+  and already applies to development. It improved everything: `good` 0.86% → **0.10%**, round 1
+  40.73% → **44.31%**.
+- **Second granularity error of the wave.** 034 §5 calibrated a replacement failure rate against the
+  trap it replaces; 058 specified acceptance on an aggregate that hid a per-position failure. **State
+  acceptance tests at the granularity the defect can hide in** — for this game that means
+  per-position, because the engine already treats K differently everywhere else.
+
+### Three things wave 16 leaves open, all for PM session 8
+
+1. **B43 is only half-fixed, and the half that is fixed is the half nobody sees.** A *junior* redshirt
+   went from +2.0 mean OVR / +7.4pts round 1 to **−1.0 OVR / +3.2pts undrafted** — a real gamble at
+   last. But the hub offers the redshirt **at SO in 2,991 of 3,000 careers**, and a sophomore is
+   exempt by design, so **the card players actually see is still a free buy.**
+2. **The upperclass offseason is now the flattest part of the game, exactly where the stakes are
+   highest.** Removing declare took a beat out of a sequence three playtests already called
+   repetitive. This is DECISION 045's target and it now has a hole in it.
+3. **K's round-1 rate is 26.9% against 44–51% for field positions.** **Pre-existing** — it measured
+   28.7% before this wave — and deliberately not tuned in a wave that was not about position balance.
+   Worth a decision, not an assumption.
+
 ## Next actions — for PM session 8, in order
 
-**Read this section, `DECISIONS.md` 053–056, and the wave 14 section above. Nothing else.**
+**Read this section, `DECISIONS.md` 053–059, and the wave 14, 15 and 16 sections above. Nothing else.**
+
+**The build has never been in better shape, and it has never been less playtested.** 650 tests green,
+both typecheck passes exit 0, build clean, three waves committed this session — and the largest
+behavioural change of the entire phase (`d310e87`) has not been seen by a single player.
+
+1. **The next wave is a PLAYTEST and it is not optional.** The game can now be lost. Nothing else on
+   this board matters until someone has lost a career and told us whether they understood why.
+   **DECISION 058's stated falsifier is exactly this:** *a playtester who loses a career and cannot
+   say why.* If that fires, the decline is not doing the job it was chosen for and the cheaper
+   floor-only version was the better buy. The brief must:
+   - send someone through a career **deliberately played badly**, and ask — at the moment it
+     happened, not in hindsight — **did you see it going wrong, and what told you?**
+   - **play a Kicker.** Two open items ride on it: DECISION 059's falsifier (is K too easy now?) and
+     K's pre-existing round-1 gap.
+   - ask whether the offseason feels emptier now that the declare card is gone (open item 2 above).
+   - re-ask the north star. The curve has been *yes → no → no* for three playtests running; this is
+     the first wave that changed what the game **is** rather than how it reads.
+   Copy `briefs/031-post-wave13-playtest.md`'s shape. **Serial — one browser agent at a time, always.**
+2. **Then B43's remaining half** — the redshirt card is still a free buy at SO, which is when
+   essentially every player sees it. Small, and it finishes what wave 16 started by accident.
+3. **Then B44** — redshirt-specific beats. Best-aimed authoring target in the phase, and open item 2
+   makes the upperclass offseason a second target beside it.
+4. **The engine is re-frozen.** DECISION 057's lift was for the declare removal and the downside
+   mechanism. Both spent.
+5. **Do not reopen type, colour or contrast.** Three playtests, zero visual defects.
+6. **Do not re-measure skimming onset.** Settled at decision 1 for replays across three playtests.
+7. Increment the **PM session** counter at the top of this file.
 
 1. **B45 + B46 + B47 are the top of the board** — they are waves 12–13 finished, not new work, and
    they are the reason reading still does not pay. B45 is a real code gap at `reducer.ts:93`; B46 is
