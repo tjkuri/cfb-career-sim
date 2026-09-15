@@ -1732,3 +1732,136 @@ per-position, because the engine already treats one position differently everywh
 **What would change our mind.** A playtester who plays a kicker and reports it as too easy now. K's
 remaining round-1 gap (26.9% against 44–51%) is pre-existing — it measured 28.7% before this wave —
 and is deliberately left alone rather than tuned in a wave that was not about position balance.
+
+## 060 — DECISION 058's falsifier did not fire as written. Something worse did, and every bad-play number this phase has taken may describe a player who does not exist
+
+**Date:** 2026-09-15 · **Made by:** PM session 8 · **Amends:** 058, 059 · **Evidence:** `reports/036-the-losable-career-playtest.md`, and the PM's own read of `src/content/events/offfield.ts`
+
+058 named its falsifier: *a playtester who loses a career and cannot say why.* The 036 playtester
+played five seasons of deliberate sabotage — *"ducked, cheated and quit"* — and **did not lose.**
+They finished **drafted in Round 4 with an All-American**, five overall points behind a career played
+straight, and wrote the sentence this phase should be most afraid of:
+
+> *"I stopped believing the game is counting what I do."*
+
+**The literal falsifier is untouched; the premise underneath it is not.** 058 and 059 were calibrated
+on the `lazy` policy, which fails 15.2% of the time. The playtester's sabotage career cruised. Those
+two facts are only compatible if `lazy` and a human playing badly are **different players** — and the
+PM found the mechanism that makes them different.
+
+**`src/content/events/offfield.ts` contains 14 effect blocks that pair a character LOSS with an
+overall GAIN.** `offfield-group-chat` / *"Let the screenshot ride"* awards `character -6` **and**
+`overall +1` on its **negative** outcome — the branch whose prose reads *"The coordinator does not
+think it is funny."* The clean option, *"Text the coordinator and own it"*, awards **nothing**.
+`offfield-ticket-hookup` is identical: sell the tickets, get caught by compliance, **+1 overall**.
+
+At the draft-stock weights in `sim/policies.ts` — overall **1.4**/point, character **0.15**/point —
+`-6 character, +1 overall` is **net +0.5 draft stock**. **Off-field misbehaviour is strictly
+profitable**, and the clean choice is strictly dominated. This is B32's defect class exactly, the one
+DECISION 057 deleted the declare card to be rid of, still alive in fourteen places.
+
+**And it is invisible to every measurement this phase has taken.** `lazy` picks the *worst-scoring*
+option by draft stock, so at these cards it scores `apologize` at 0 against `let-it-fly` at +0.5 and
+**takes the clean one.** The simulated bad player systematically *declines* the exact cards a human
+bad player is drawn to. Every failure rate in 034, 058 and 059 was measured on a bad player who
+behaves well off the field.
+
+**This is the third granularity error in three waves, and they rhyme.** 034 calibrated against the
+trap it was replacing; 058 specified acceptance on an aggregate that hid a per-position failure; now
+060 finds that the *policy standing in for the player* does not play like the player. **A measurement
+is only as good as its definition of the thing being measured** — and this project has now been
+bitten once per wave on that.
+
+**What is decided now:**
+
+1. **Nothing is changed in content or balance yet.** The pattern is 14 blocks and a weights table; the
+   playtester's career is n=1. `briefs/037` measures a `humanLazy` policy that chooses by authored
+   intent rather than draft-stock score, per position, with award rates. **The DECISION 003 habit: get
+   the number before making the call.**
+2. **The ending screen's honours hierarchy is held, deliberately.** The playtester's sharpest finding
+   is that the **HONORS** panel — gold, boxed, the loudest thing under the round and pick — gave
+   *All-American* to the sabotage career while the straight career, drafted a full round higher, got
+   no honours block at all. The endings **rank backwards at a glance.** But whether the fix is
+   *hierarchy* or *the award itself* depends on 037: if a saboteur genuinely earns All-American at
+   high rate, demoting the panel would be hiding a true thing rather than fixing a false one. **Fix
+   the cause, not the display, and find out which it is first.**
+3. **The off-field pattern goes to the user**, as balance and content both. It is not a PM call.
+
+**What would change our mind.** 037 showing that `humanLazy` fails at a rate close to `lazy`'s 15.2%
+and earns honours no more often than `good` — in which case the playtester met bad luck, the 14 blocks
+are priced acceptably, and the ending screen's hierarchy is the whole of the problem after all.
+
+## 061 — Two content fixes the PM took without escalating, under DECISION 043's and 050's precedent
+
+**Date:** 2026-09-15 · **Made by:** PM session 8 · **Precedent:** 043, 050 · **Evidence:** `reports/036-the-losable-career-playtest.md` claim 5
+
+Both are factual incoherence in prose, with **no effect, weight, probability or condition changed**,
+which is the exact class 043 established and 050 exercised. Logged rather than escalated because the
+freeze makes silent content edits the thing that erodes it.
+
+**`k.ts` / `bowl-game-winner`.** The card reads *"your team down two"* and offers **"Take the tie and
+send it to overtime."** Down two, a field goal **wins**; there is no tie on the board. The playtester
+caught it. The scenario is only coherent with the score **tied** — then the kick wins it and declining
+sends it to overtime, and both options become true. Fixed as prose.
+
+**Not fixed, deliberately:** the four *"prose says I did badly, number says +1 OVR"* cards from claim 5
+are **not** a prose defect. The prose is accurate; the effects are the problem. Rewriting the words to
+match a reward we may be about to remove would destroy the evidence. They wait for 037. See 060.
+
+## 062 — The user's calls on the off-field economy. Misbehaving pays only when you get away with it, and the honour learns to discriminate
+
+**Date:** 2026-09-15 · **Made by:** the user, on PM session 8's measured options · **Answers:** B48, B49, B53 · **Implements:** 060 · **Evidence:** `reports/037-does-the-game-count-what-you-do.md`
+
+060 sent the off-field economy to measurement. 037 came back with the cause, and it is **inverted
+from how the whole phase has described it**: the policy called `good` takes a character-losing branch
+on **9 of 13** off-field cards and ends with median character **41** — *"a problem they are
+managing"* — while the policy called `lazy` takes the clean option on 5 and the actively virtuous one
+on 4. **Draft-stock-optimal play is to be a jerk.** One overall point is worth 9.33 character points,
+so all 14 paired blocks are net-positive.
+
+| QB, 3,000 careers each | undrafted | round 1 | OVR P50 | All-American | All-Conference |
+|---|---|---|---|---|---|
+| `good` | 0.2% | 50.0% | 92 | 72.2% | 62.1% |
+| `humanLazy` | 0.5% | 19.0% | 87 | 52.6% | **72.9%** |
+
+Deliberately bad play stays **under 1% undrafted at every position**. Its only real cost is a
+1-in-4 bust; conditional on surviving, it ends with **more** honours than a good career.
+
+**Change 1 — the user chose the gamble shape over three alternatives.** The `overall` gain comes off
+the `negativeOutcome` branch only; the `positiveOutcome` keeps it. **The obvious fix was rejected for
+a specific reason:** stripping the gain from both branches makes the selfish option pure downside —
+a strictly-dominated non-choice, *the exact defect class DECISION 057 deleted the declare card to be
+rid of.* The fiction is sound; the price is wrong. Repricing character in `draft.ts` (037's P2) was
+rejected as re-opening 058's calibration and undermining the reason character is a band rather than a
+number: at ×0.6 it would swing ±30 against overall's ±82 and the band would start under-representing
+it.
+
+**Change 2 — All-American gets rungs.** It is currently a **flat 0.60 band from 85 to 99**, so the
+five-point gap between a good and a bad career buys **literally zero** extra probability. The honour
+the player reads as the verdict cannot tell a 92 from an 87. Heisman already demonstrates the shape.
+
+**B49 is answered, and the PM's own framing of it was wrong.** The ending screen is **not** ranking
+backwards. The playtester compared a **Kicker** against a field position, and All-American rates
+differ across positions by more than 10× (K ×0.05, OL ×0.15). The honours gap they read as merit was
+**position**. Holding that screen in wave 18 was right; demoting the panel would have hidden a true
+thing. What remains is telegraphing, not hierarchy.
+
+**B53 is closed as measured, against the playtester's word.** *"Round 3 Pick 8 is not a thing for a
+kicker"* is **refuted as a difficulty claim** — it is the **centre** of K's distribution (median round
+3, median pick 66), and K is hard mode on every other axis (All-American 5.6%, 32.6% undrafted under
+`lazy`). The real complaint is **plausibility**, and the cause is that `deriveDraftStock` has **no
+position term at all**. 037's P5 recommends not adding one until the award economy settles, and the
+PM agrees: K's round-1 rate may move on its own once change 2 lands. **A playtester's feeling was
+right that something was wrong and wrong about what it was** — the fourth time this phase that
+measuring the complaint rather than implementing it has changed the answer.
+
+**All-Conference is left alone deliberately.** It goes to the bad career because it is snap-gated and
+`good`'s transfer-up policy costs snaps (292 a season against 492). **That is a real strategic
+tension — climb the ladder or pile up honours — and it is the most interesting thing 037 found.** It
+is invisible rather than broken. Surfacing it is a UI job for a later wave; changing it is not on the
+table.
+
+**What would change our mind.** Change 1 taking `good`'s round-1 rate down materially, or change 2
+taking OL or K to a near-zero All-American rate. Both are pre-specified per position in
+`briefs/039-misbehaving-stops-paying.md`, and the brief forbids tuning to hit them: a miss is reported,
+not engineered away.

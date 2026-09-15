@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete and committed · **Wave 15:** complete and committed · **Wave 16:** complete and committed · **PM session:** 7 (handing off)
+**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Wave 19:** in flight · **PM session:** 8
 
 ---
 
@@ -43,7 +43,7 @@ records the three things in it we are deliberately *not* taking.
 ## Current state of the build
 
 - Phase 3 MVP complete and committed (`42ba561`), plus the OVR display reversal (`d600e69`).
-- **578 tests passing** (as of wave 9), both typecheck passes exit 0, production build clean.
+- **671 tests passing** (as of wave 18), both typecheck passes exit 0, production build clean.
 - Playable end to end: creation → Signing Day → decisions → draft summary → share text → career log,
   with `localStorage` resume.
 
@@ -1232,6 +1232,204 @@ brief: if a well-played career starts failing above ~1%, or its round-1 rate dro
 3. **K's round-1 rate is 26.9% against 44–51% for field positions.** **Pre-existing** — it measured
    28.7% before this wave — and deliberately not tuned in a wave that was not about position balance.
    Worth a decision, not an assumption.
+
+## Wave 17 — complete (PM session 8)
+
+One lane, deliberately alone: `briefs/036-the-losable-career-playtest.md`. It is the playtest session
+7 ended by declaring not optional. **No code ships while it runs** — a build that changes under the
+player invalidates the run, and the playtest is the only thing that can tell us whether wave 16's
+change did the job it was chosen for.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/036-the-losable-career-playtest.md` | playtester | `reports/036-the-losable-career-playtest.md`, `PLAYTEST-LOG.md` | 2026-09-15 |
+
+**What it is built to answer**, in priority order:
+
+1. **DECISION 058's falsifier** — *a playtester who loses a career and cannot say why.* Career 2 is
+   played deliberately badly, with an **in-the-moment** journal at every season boundary rather than a
+   hindsight read, because hindsight cannot distinguish "the game told me" from "I knew what I was
+   doing." The headline bullet is a yes/no plus a decision number.
+2. **DECISION 059's falsifier** — career 1 is a **Kicker**, the position the flat decline floor was
+   silently punishing and the one no playtest has ever played. Also carries K's pre-existing round-1
+   gap.
+3. **Open item 2 from wave 16** — is the upperclass offseason emptier now that declare is gone.
+4. **B43's remaining half** — the playtester is asked which class year the redshirt was offered in and
+   whether it read as a gamble or a free yes. This is deliberately a question, not an assumption: the
+   measurement says it is a free buy at SO, and we want a player's word before briefing a fix.
+5. The north star, re-asked. The curve has been *yes → no → no* for three playtests; this is the first
+   wave that changed what the game **is** rather than how it reads.
+
+**Deliberately not asked:** skimming onset (settled at decision 1 across three playtests), and type,
+colour or contrast (three playtests, zero visual defects). Both are struck from the brief to buy room
+for the questions above.
+
+**A result to expect and not misread:** a deliberately-bad career goes undrafted **15.2%** of the
+time, so the playtester will most likely be **drafted anyway**. The brief says so and asks them to
+report it plainly with what they had expected. A drafted bad career still answers question A — it is
+"did the game show you it was going wrong", not "did you lose."
+
+### The 036 agent died mid-flight, and the fix is a brief rule every future playtest must carry
+
+The playtester was killed by a session limit **after finishing career 2** and had written **nothing
+to disk** — two careers of findings existed only in its context. It was resumable, so the PM woke it
+and told it to stop playing and write up the two careers it had. Recovered, not lost. But it is the
+third agent this phase to die mid-flight and the second to die holding unwritten work (DECISION 016).
+
+**The brief already said "writing the report is the deliverable" and that was not enough.** An agent
+reads that as an instruction about priorities at the *end*, not about *when* to write. The rule that
+would have made this a non-event:
+
+> **Append to the report file after EACH career, before starting the next one.** Do not hold three
+> careers in your head and write at the end. If you are killed between careers, everything you have
+> not written is gone.
+
+**Put that line in every future playtest brief.** Session length is the stall risk the 003 brief
+already identified; this is the same risk with a different ending, and incremental writing is the
+only defence that does not depend on the agent surviving.
+
+### Wave 17 result — the playtest refuted the wave, and found the cause of the whole phase's problem
+
+Report: `reports/036-the-losable-career-playtest.md`. **Two careers, not three** — the agent was
+killed by a session limit and was resumed to write up what it had. Career 1 a Kicker played straight;
+career 2 five seasons of deliberate sabotage.
+
+**The north-star curve: yes → no. And the "no" is aimed at the game, not at the shaping:**
+
+> *"No — and this one is the game, not the bad-career instruction. I ducked, cheated and quit for
+> five straight seasons and the ending handed me All-American in gold. I don't want a third because
+> **I stopped believing the game is counting what I do.**"*
+
+**DECISION 058's falsifier did not fire as written — the player did not lose.** They finished
+**Round 4 with an All-American**, five overall points behind the straight career. See DECISION 060:
+the literal falsifier is intact and the premise under it is not.
+
+| Claim | Verdict |
+|---|---|
+| A bad career now visibly fails | **REFUTED** — 72 vs 77 OVR after three seasons of sabotage |
+| Sitting out is a real decision | **REFUTED as stated** — offered at SO and JR, pays **+5 OVR on the offer card**, before the season it bets on. *"An obvious free yes."* **This is B43's remaining half, now confirmed by a player** |
+| The ending screen ranks honestly | **REFUTED — sharpest finding.** The sabotage career gets a gold, boxed **HONORS** panel with *All-American*; the straight career, drafted a full round higher, gets **no honours block at all.** The endings **rank backwards at a glance** |
+| You always know where you are | **PARTIAL** — `5TH-YR SR` is exactly right; four defects behind it, all in wave 18's `briefs/038` |
+| The card's number agrees with its words | **REFUTED — four instances, all one direction:** prose says you behaved badly, number says **+1 OVR** |
+| Anything cut off or colliding | One real defect — the disabled START button renders full-opacity gold |
+
+**Did they know it was going wrong? Partly, and on the thing that matters, no.** They knew their
+*standing* was bad from **decision 20** (*"a problem they are managing"*). They never knew the
+*career* was bad — because it was not. At the ending they were surprised **upward**.
+
+### The one thing that works, and it is worth protecting
+
+The **locker-room ladder** — *"the staff trusts you"* → *"just a guy in the building"* → *"a problem
+they are managing"* → *"the staff has stopped defending you."* The playtester: it made them want to
+change how they were playing, **twice**. It is the only mechanism in the game that did that.
+
+**And it is sealed off from every other number on the screen** — it never touches the OVR, the season
+ladder, the draft slot or the honours, so it argues alone against all of them. That is not a reason to
+weaken it. It is the strongest evidence the phase has about what does work, and the rest of the screen
+should be brought into line with **it**, not the other way round.
+
+### The PM's own finding, from the code, after reading the report — this is the headline
+
+**`src/content/events/offfield.ts` has 14 effect blocks pairing a character LOSS with an overall
+GAIN.** Misbehave off the field and the number the player watches **goes up**. At the draft-stock
+weights, `-6 character, +1 overall` is **net positive** — the clean option is strictly dominated.
+
+**Every bad-play measurement this phase has taken is blind to it.** The `lazy` policy scores by draft
+stock and therefore *declines* those cards. The simulated bad player behaves well off the field; the
+human one does not. See **DECISION 060** — this is why 15.2% and Round 4 are both true at once.
+
+### New backlog from 036
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B48 | **Off-field misbehaviour pays overall** — 14 blocks in `offfield.ts`, clean option strictly dominated | **measuring (037), then USER** | DECISION 060. Balance + content. The likely root of *"the game isn't counting what I do"* |
+| B49 | **The ending screen ranks backwards** — HONORS is the loudest element and the saboteur earned it | **held pending 037** | DECISION 060 §2. Fix the cause or the display — 037 says which. PM owns this file in wave 18 |
+| B50 | **The locker-room ladder is sealed off from every other number** | todo | The one mechanism that changed the player's behaviour. Bring the rest of the screen to it |
+| B51 | **Four orientation defects** — rail vs header OVR, rail runs a year ahead, phantom year 5, disabled START button lies | **in flight (038)** | All unambiguous, none a matter of taste |
+| B52 | **`Next Man Up` tells an injured player to take every snap** | in flight (038) — proposal only | Missing `requiresPlaying`-class condition. Content, frozen |
+| B53 | **Kicker is position-neutral outside its stat line and ~4 cards** — and finished **Round 3 Pick 8**, which the playtester called *"not a thing for a kicker"* | **USER** | **DECISION 059's falsifier has fired.** 037 measures the distribution |
+| B54 | **`bowl-game-winner` arithmetic** — *"down two"* offered *"take the tie"* | **DONE (uncommitted)** | DECISION 061. PM prose fix under 043/050 precedent |
+
+## Wave 18 — complete and committed (PM session 8)
+
+Two lanes, file-disjoint. **The ending screen is held by the PM and out of bounds to both.**
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/037-does-the-game-count-what-you-do.md` | research/measurement | `src/sim/**`, `reports/037-*.md` | 2026-09-15 |
+| `briefs/038-where-am-i.md` | developer (UI) | `src/ui/**`, `reports/038-*.md` | 2026-09-15 |
+
+**037 is the important one.** It adds a `humanLazy` policy that chooses by *authored intent* rather
+than draft-stock score, and measures `good` vs `humanLazy` per position on undrafted %, round 1 %,
+overall spread, and **award rates** — the number nobody has ever looked at. It decides B48, B49 and
+B53, all three of which are user calls. It changes nothing: engine and content stay frozen, proposals
+only.
+
+**Uncommitted in the tree:** the B54 prose fix in `src/content/events/k.ts` (PM). Verification is
+deferred to commit time **on purpose** — two agents hold in-flight work, so a test run now would
+measure their half-finished state rather than the change.
+
+### Wave 18 results — shipped in `17b5b2c`, `378e5c1`, `f345e1a`
+
+**PM-verified before commit:** 671 tests green, both typecheck passes exit 0, build clean,
+`src/engine/**` untouched, `src/content/**` limited to the authorized prose fix, and `npm run play`
+**byte-identical to HEAD on 2 seeds × 2 policies** — checked in a detached worktree so the working
+tree was never disturbed. Reports: `reports/037-*.md`, `reports/038-*.md`.
+
+**Lane 038 — the four orientation defects, all fixed.** The important one is defect 1, and it went the
+way the brief's second explanation predicted: **the value was right and the label was wrong.**
+`enterOffseason` finalizes a season line at the overall it ended on and *then* applies development, so
+the rail and the header were two different true quantities. Fixed by relabelling
+`OVR AT SEASON'S END` → `OVR BEFORE THE OFFSEASON`, not by touching a number. The PM matched the
+summary screen's column, which the agent correctly flagged and correctly did not touch.
+
+- A new `LedgerRow.finished` flag lets a boundary row be current and finished at once — which also
+  stopped a genuinely stale kickoff overall printing for a career that ends mid-season. `tentative`
+  and its dashed-row CSS deleted as unreachable.
+- **B52 has no content-only fix.** `requiresPlaying` only tests `redshirtSeasonActive`, not injury, so
+  `Next Man Up` can tell a player in a walking boot to take every snap. The proposal is an engine
+  change at `select-event.ts:37` affecting **~73 events** — a balance change, so it needs the user.
+  The narrower alternative is a new `requiresHealthy` condition. **Not started.**
+
+**Lane 037 — the measurement, and it inverted the phase's vocabulary.** See DECISION 062 for the full
+table and the calls. The finding that matters most:
+
+> **The policy this phase has called `good` is a jerk.** It takes a character-losing branch on 9 of 13
+> off-field cards and ends at median character **41** — *"a problem they are managing"*. The policy
+> called `lazy` takes the clean option on 5 and the virtuous one on 4. Draft-stock-optimal play is to
+> misbehave, and **every bad-play number in waves 15–17 was measured on a bad player who behaves
+> better off the field than the good one.**
+
+### Two PM framings that the measurement corrected — worth not repeating
+
+1. **B49 "the ending screen ranks backwards" was wrong**, and the PM wrote it up as the playtest's
+   sharpest finding before checking. The playtester compared a **Kicker** with a field position, and
+   All-American rates differ across positions by **more than 10×**. The gap they read as merit was
+   position. **Holding that screen rather than fixing it was the only reason this did not ship as a
+   wrong fix** — the hold is the transferable lesson, not the luck.
+2. **B53 "the Kicker is too easy" is refuted as a difficulty claim.** Round 3 Pick 8 is the **centre**
+   of K's distribution, and K is hard mode on every other axis. The complaint was **plausibility**;
+   the cause is that `deriveDraftStock` has no position term. Closed and deferred — DECISION 062.
+
+**That is four times this phase that measuring a complaint instead of implementing it changed the
+answer.** B3, B5, B6, and now B49/B53. The habit is the house's most valuable asset.
+
+## Wave 19 — in flight (PM session 8)
+
+One lane, deliberately alone — a balance change cannot share a wave with anything that touches engine
+or content, which is the wave-10, 13 and 16 lesson.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/039-misbehaving-stops-paying.md` | developer (content + engine, freeze lifted) | `src/content/events/offfield.ts`, the `allAmerican` band table, `src/sim/**` | 2026-09-15 |
+
+Implements **DECISION 062's two user calls**: the `overall` gain comes off the `negativeOutcome`
+branch of the 14 off-field blocks only, and All-American gets rungs above 85.
+
+**The brief forbids tuning.** Acceptance is stated **per position** — `good` stays ≤1% undrafted
+everywhere, `good`'s median character rises out of *"a problem they are managing"*, the All-American
+gap widens beyond 72.2 vs 52.6, and **OL and K do not fall to near-zero**. A miss is reported, not
+engineered away. Seed baselines move by construction (DECISION 040 precedent).
 
 ## Next actions — for PM session 8, in order
 
