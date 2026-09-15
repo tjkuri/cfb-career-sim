@@ -507,6 +507,7 @@ describe("restoring a save written before these fields existed", () => {
       stamp: null,
       overallBefore: null,
       account: null,
+      remainder: null,
     });
   });
 
@@ -612,6 +613,39 @@ describe("hub decisions resolve when they carry a consequence", () => {
       }
     }
     expect(checked, "no hub resolved on an overall movement alone").toBeGreaterThan(0);
+  });
+
+  it("gives that movement something to say for itself (B45, DECISION 056)", () => {
+    // The playtester's exact case, in 3/3 careers: "You chose: Stay at
+    // Memphis" -> +5 OVR, with no sentence at all. The number was real -- a
+    // deferred injury refund from an earlier card coming due -- and the only
+    // attribution the card offered was the choice that had just been made,
+    // which is the one thing it could not have been: `applyChoice`'s transfer
+    // branch writes no `overall` at all.
+    //
+    // DECISION 037 is preserved exactly. The figure is untouched; what this
+    // asserts is that a hub card never again reaches the screen with a
+    // movement and nothing to attribute it to.
+    let checked = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-hub-why-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const r = ui.resolved;
+        if (r?.hub && r.overallBefore !== null && r.overallBefore !== ui.state!.overall) {
+          checked++;
+          const f = r.remainder!;
+          expect(f, "a hub card restored without its remainder").not.toBeNull();
+          expect(
+            f.healed || f.landed || f.developed || f.hurt,
+            `"${r.choiceLabel}" moved overall and had nothing to say for it`,
+          ).toBe(true);
+        }
+        const next = step(ui, (ids) => keepPlaying(ids, "stay"));
+        if (next === ui) break;
+        ui = next;
+      }
+    }
+    expect(checked, "no hub card carried an overall movement").toBeGreaterThan(0);
   });
 
   it("shows nothing on Signing Day", () => {

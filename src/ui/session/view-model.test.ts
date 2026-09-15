@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type GameState, type PendingDecision, type Setup } from "../../engine/index";
 import { CONTENT } from "../../content/index";
-import { buildSummary, buildView, cardAccount, hubFacts, railView } from "./view-model";
+import { buildSummary, buildView, cardAccount, hubFacts, railView, remainderFacts } from "./view-model";
 import { reducer, INITIAL_STATE } from "./reducer";
 import type { CardAccount, CareerView, RailView, UiState } from "./types";
 
@@ -25,7 +25,15 @@ const FORBIDDEN_KEYS = [
   "phaseAbs",
 ];
 
-function playThrough(seed: string, position: Setup["position"]): UiState[] {
+// `pick` defaults to the first option, which is what every caller before this
+// wave wanted. It is a parameter now because a first-option walk never reaches
+// a transfer hub -- options[0] on the declare hub is "declare", which ends the
+// career -- so the cards DECISION 056 is about are unreachable without it.
+function playThrough(
+  seed: string,
+  position: Setup["position"],
+  pick: (options: number) => number = () => 0,
+): UiState[] {
   const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position };
   let ui = reducer(INITIAL_STATE, { type: "start", setup, seed });
   const states: UiState[] = [ui];
@@ -38,7 +46,7 @@ function playThrough(seed: string, position: Setup["position"]): UiState[] {
     }
     const d = getDecision(ui.state);
     if (!d) break;
-    ui = reducer(ui, { type: "choose", optionId: d.options[0]!.id });
+    ui = reducer(ui, { type: "choose", optionId: d.options[pick(d.options.length)]!.id });
     states.push(ui);
     if (ui.screen === "summary") break;
   }
@@ -553,6 +561,7 @@ describe("the rail describes one moment, not two", () => {
       stamp: null,
       overallBefore: null,
       account: null,
+      remainder: null,
     };
 
     // No stamp at all -- a save written before it existed. Every cell falls
@@ -1021,5 +1030,143 @@ describe("a card accounts for what it did", () => {
     expect(JSON.stringify(caught)).not.toContain("6");
     const kept = account("bowl-opt-out", "play", "positive")!;
     expect(kept.lockerRoom).toBe("credit");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// What the card did NOT do (DECISION 056; B45, B47)
+// ---------------------------------------------------------------------------
+
+// A partial GameState is enough: `remainderFacts` reads exactly four fields and
+// is deliberately blind to the rest, so a fixture that carried a whole career
+// would hide which four.
+function pair(
+  before: Partial<GameState>,
+  after: Partial<GameState>,
+): [GameState, GameState] {
+  const base = { injuries: [], pendingEffects: [], seasonIndex: 0 };
+  return [{ ...base, ...before } as GameState, { ...base, ...after } as GameState];
+}
+
+const hamstring = (remainingPhases: number) => ({
+  kind: "injury" as const,
+  injuryType: "hamstring",
+  remainingPhases,
+  restoreAmount: 4,
+});
+
+const queued = (amount: number) => ({
+  effect: { kind: "overall" as const, timing: "deferred" as const, amount },
+  firePhaseAbs: 9,
+});
+
+describe("remainderFacts", () => {
+  it("reads a healed injury, and does not read a healing one as healed", () => {
+    // The trap this keying exists to avoid: `remainingPhases` decrements on
+    // every tick, so an injury that is merely getting closer to healing looks
+    // like one record leaving and a different one arriving. It is out of the
+    // key for exactly that reason.
+    const [b1, a1] = pair({ injuries: [hamstring(1)] }, { injuries: [] });
+    expect(remainderFacts(b1, a1).healed).toBe(true);
+
+    const [b2, a2] = pair({ injuries: [hamstring(3)] }, { injuries: [hamstring(2)] });
+    expect(remainderFacts(b2, a2).healed).toBe(false);
+    expect(remainderFacts(b2, a2).hurt).toBe(false);
+  });
+
+  it("does not report a suspension expiring as an injury healing", () => {
+    // A suspension lives in the same list with `restoreAmount: 0`. It returns
+    // no points, so it is not part of any number and must not be given a
+    // sentence that says it was.
+    const [before, after] = pair(
+      { injuries: [{ kind: "suspension", injuryType: "suspension", remainingPhases: 1, restoreAmount: 0 }] },
+      { injuries: [] },
+    );
+    expect(remainderFacts(before, after).healed).toBe(false);
+  });
+
+  it("tells a deferred effect landing from a deferred effect being enqueued", () => {
+    const [b1, a1] = pair({ pendingEffects: [queued(-2)] }, { pendingEffects: [] });
+    expect(remainderFacts(b1, a1).landed).toBe(true);
+
+    // The card's own outcome queuing one is the opposite fact: `CardAccount.later`
+    // reports it, and it must not also be claimed as something that landed.
+    const [b2, a2] = pair({ pendingEffects: [] }, { pendingEffects: [queued(-2)] });
+    expect(remainderFacts(b2, a2).landed).toBe(false);
+  });
+
+  it("reads a season boundary as development, and a new injury as a knock", () => {
+    const [b1, a1] = pair({ seasonIndex: 1 }, { seasonIndex: 2 });
+    expect(remainderFacts(b1, a1).developed).toBe(true);
+    expect(remainderFacts(...pair({ seasonIndex: 1 }, { seasonIndex: 1 })).developed).toBe(false);
+
+    const [b2, a2] = pair({ injuries: [] }, { injuries: [hamstring(3)] });
+    expect(remainderFacts(b2, a2).hurt).toBe(true);
+  });
+
+  it("carries no size, only presence -- so no hidden quantity can cross", () => {
+    // The diff cannot apportion a number between two causes that both fired,
+    // and a card that named a split would be inventing one. Presence is what
+    // the screen is given, and presence is all there is to give.
+    const [before, after] = pair(
+      { injuries: [hamstring(1)], pendingEffects: [queued(-7)], seasonIndex: 0 },
+      { injuries: [], pendingEffects: [], seasonIndex: 1 },
+    );
+    const facts = remainderFacts(before, after);
+    expect(Object.values(facts).every((v) => typeof v === "boolean")).toBe(true);
+    expect(JSON.stringify(facts)).not.toMatch(/[0-9]/);
+  });
+
+  it("explains every unattributed figure the screen can print (B45, B47)", () => {
+    // The falsifier for the claim that the four causes are COMPLETE, which is
+    // what makes the sentence honest rather than plausible.
+    //
+    // DECISION 056's transferable lesson is that a measurement sharing its
+    // fix's assumptions cannot falsify it: report 026 measured cards with
+    // authored prose, found 0 failures, and every real failure was a hub card
+    // outside that population. So this one is defined over the population the
+    // SCREEN draws an unattributed figure for -- hub cards explicitly included
+    // -- and it fails if either population turns out to be empty, which is the
+    // exact way 026's measurement was able to be right and useless at once.
+    //
+    // The policy picks randomly rather than always taking the first option:
+    // options[0] on the declare hub is "declare", which ends the career before
+    // a transfer hub is ever reached, and a first-option walk therefore sees
+    // zero of the cards this test exists to cover.
+    let rng = 1;
+    const pick = (n: number) => Math.floor(((rng = (rng * 1103515245 + 12345) % 2147483648) / 2147483648) * n);
+
+    let hubCards = 0;
+    let remainders = 0;
+    for (const position of ALL_POSITIONS) {
+      for (let s = 0; s < 8; s++) {
+        for (const ui of playThrough(`rf${s}-${position}`, position, pick)) {
+          const r = ui.resolved;
+          if (!r || !ui.state || r.overallBefore === null) continue;
+          const total = ui.state.overall - r.overallBefore;
+          const hubCard = r.hub !== null && r.account === null;
+          const unattributed = hubCard ? total : r.account ? total - r.account.own : 0;
+          if (unattributed === 0) continue;
+          if (hubCard) hubCards += 1;
+          else remainders += 1;
+
+          // Not just "a cause fired" but "a cause the screen will actually
+          // SAY": an injury the card's own outcome caused is suppressed down
+          // here, because `accountNotes` is already describing it upstairs,
+          // and a card left with only that flag would print the bare figure
+          // this whole entry is about.
+          const f = r.remainder!;
+          const ownInjury = r.account?.injury ?? false;
+          expect(
+            f.healed || f.landed || f.developed || (f.hurt && !ownInjury),
+            `an unattributed ${unattributed} with nothing to say for it on "${r.choiceLabel}"`,
+          ).toBe(true);
+        }
+      }
+    }
+    // Both populations have to be non-empty or the assertion above proved
+    // nothing -- which is the exact failure mode 056 is about.
+    expect(hubCards).toBeGreaterThan(0);
+    expect(remainders).toBeGreaterThan(0);
   });
 });

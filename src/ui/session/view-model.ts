@@ -25,6 +25,7 @@ import type {
   HubFacts,
   MomentView,
   RailView,
+  Remainder,
   Resolved,
   SeasonLineView,
   SeasonStamp,
@@ -410,6 +411,93 @@ export function cardAccount(
       a.later === first.later,
   );
   return agree ? first : null;
+}
+
+// ---------------------------------------------------------------------------
+// What moved the number that the card itself did not move.
+// ---------------------------------------------------------------------------
+
+/**
+ * Count a list by a key, so a diff can tell "one of these left" from "one of
+ * these arrived" without matching identities the engine does not keep.
+ *
+ * Both lists this is used on hold structurally identical entries -- two 3-phase
+ * hamstrings, or two queued −2s, are the same record twice -- so identity
+ * matching is impossible in principle and counting is the honest read. It also
+ * fails in the safe direction: an entry that left while an identical one
+ * arrived nets to zero and the card says nothing, rather than saying something
+ * wrong.
+ */
+function tally<T>(items: T[], key: (item: T) => string): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    const k = key(item);
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function fewerAfter(before: Map<string, number>, after: Map<string, number>): boolean {
+  for (const [k, n] of before) if ((after.get(k) ?? 0) < n) return true;
+  return false;
+}
+
+function moreAfter(before: Map<string, number>, after: Map<string, number>): boolean {
+  for (const [k, n] of after) if ((before.get(k) ?? 0) < n) return true;
+  return false;
+}
+
+// `remainingPhases` is deliberately NOT in the key: it decrements on every
+// tick, so including it would make every surviving injury look like one that
+// left and a different one that arrived. `restoreAmount` is, because a
+// suspension is stored in the same list with `restoreAmount: 0` and its
+// departure returns no points and must not be reported as a heal.
+const injuryKey = (i: { kind: string; injuryType: string; restoreAmount: number }) =>
+  `${i.kind}:${i.injuryType}:${i.restoreAmount}`;
+
+// `delayPhases` defaults to 1 in the engine (`applyEffect`), and `firePhaseAbs`
+// is absolute, so it is not comparable across an advance that ticked. The pair
+// below is the same signature `stillPending` matches on, for the same reason.
+const pendingKey = (p: { effect: { amount: number; delayPhases?: number } }) =>
+  `${p.effect.amount}:${p.effect.delayPhases ?? 1}`;
+
+/**
+ * Everything that moved `overall` during this advance EXCEPT the chosen
+ * outcome, as facts (DECISION 056; B45, B47).
+ *
+ * This exists because a number with no sentence is the defect. `cardAccount`
+ * answers "what did this card do"; on a hub card the answer is *nothing* --
+ * `applyChoice`'s recruiting, declare and transfer branches write no `overall`
+ * -- and on an authored card the leftover is whatever `own` did not explain.
+ * Either way the player was shown a bare signed integer and left to invent an
+ * attribution, and the one they invent is the choice they just made, which is
+ * the one thing it is guaranteed not to be.
+ *
+ * Read from the state pair rather than stored by the engine, and deliberately
+ * coarse: presence only, never size. The diff cannot apportion the number
+ * between two causes that both fired, and a card that names the causes it can
+ * prove is strictly better than one that splits the total by guesswork -- the
+ * same rule `cardAccount` follows when its candidates disagree.
+ */
+export function remainderFacts(before: GameState, after: GameState): Remainder {
+  const injuriesBefore = tally(before.injuries, injuryKey);
+  const injuriesAfter = tally(after.injuries, injuryKey);
+  const pendingBefore = tally(before.pendingEffects, pendingKey);
+  const pendingAfter = tally(after.pendingEffects, pendingKey);
+
+  return {
+    // A suspension keys with `restoreAmount: 0`, so its expiry cannot reach
+    // this: it returns no points and is not part of any number.
+    healed: before.injuries.some(
+      (i) => i.restoreAmount > 0 && (injuriesAfter.get(injuryKey(i)) ?? 0) < (injuriesBefore.get(injuryKey(i)) ?? 0),
+    ),
+    landed: fewerAfter(pendingBefore, pendingAfter),
+    // The season index advances only in `advancePhase`'s postseason branch,
+    // and `enterOffseason` -- the one place development is applied -- runs on
+    // the far side of it. One is exactly the other.
+    developed: after.seasonIndex > before.seasonIndex,
+    hurt: moreAfter(injuriesBefore, injuriesAfter),
+  };
 }
 
 // The declare card's one line of fact (DECISION 038, B25).

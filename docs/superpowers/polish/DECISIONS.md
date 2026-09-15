@@ -1609,3 +1609,44 @@ outside it. **A measurement that shares its fix's assumptions cannot falsify the
 briefs of this shape must state the excluded population and say who checks it.
 
 **What would change our mind.** Nothing; both holes are read from source.
+
+## 057 — The user's call: the declare decision is removed, and a real downside is built to replace what it was carrying
+
+**Date:** 2026-09-14 · **Made by:** the user, on PM session 7's escalation · **Answers:** 054, B32, B43 · **Evidence:** `reports/032-how-losable-is-it-now.md` §2, `reports/031-post-wave13-playtest.md`
+
+054 put three routes to the user: reword the card (A), give declaring a real upside (B), or the
+user's own fourth option — delete the decision. The PM surfaced the consequence that made the
+choice non-obvious: **declaring early is where essentially all the losing comes from.** Ordinary
+play with the decision present goes undrafted **12–17%** of the time; the same play with the
+decision removed goes undrafted **0–0.3%**. Deleting it alone would delete the game's only failure
+mode along with it.
+
+**The user chose: remove the decision AND restore the downside elsewhere.** This is the largest
+scope decision of the phase and it is deliberately larger than a polish task.
+
+**Why "always wrong" beats "honestly labelled".** A choice that is dominated at every offer, at
+every position, with no crossover, is not a decision that needs better wording — it is a button
+whose only correct use is never. 054's route A would have shipped an honestly-labelled non-choice.
+Removing it is the stronger form of the same honesty.
+
+**The root cause of unlosability is identified and it is one line.** `developmentDelta`
+(`advance.ts:172`) returns `Math.min(cfg.devCap, Math.floor(seasonSnaps / perPoint))` — **it cannot
+return a negative number.** Play and you improve; sit and you stay flat. Overall is a one-way
+ratchet, the washout floor is 45, and an ordinary career peaks in the 80s, so the floor is never
+approached. **Every other failure path in the game is an event rolling badly; none of them is the
+career itself going wrong.** That is why a bad player still gets drafted, and it is a better target
+than anything 054's route B named.
+
+**The engine freeze is lifted for this work, and only for this work.** Scope: the declare hub, and
+whatever downside mechanism is chosen after measurement. `npm run play` bit-identity moves by
+construction and will be re-baselined at commit — the DECISION 040 precedent.
+
+**Nothing is implemented until the mechanism is measured and chosen.** Candidates are prototyped
+against a scratch copy of the engine, measured over thousands of careers, and brought back with
+numbers. The PM does not pick a balance mechanism from a list of plausible ones — that is the
+DECISION 003 habit and it is the reason this phase's calls have held.
+
+**What would change our mind.** A measurement showing that no downside mechanism restores a
+failure rate near the 12–17% the declare card was providing without also making a
+well-played career fail. In that case removing declare costs more than it saves, and 054 route A
+comes back.

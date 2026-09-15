@@ -114,6 +114,57 @@ export interface Resolved {
       movement across the `advance`, which is what it always did. See
       `cardAccount`. */
   account: CardAccount | null;
+  /** What ELSE moved `overall` inside this card's `advance()`, as a set of
+      facts rather than as a number. The number is already carried (it is
+      `total − own`, or the whole movement on a hub card); this is what the
+      card needs in order to say what that number IS. Null for a save written
+      before this field existed; such a card prints the figure with no
+      explanatory line, exactly as it did when it was saved. See
+      `remainderFacts`. */
+  remainder: Remainder | null;
+}
+
+/**
+ * The four things other than the chosen outcome that can move `overall` inside
+ * one `advance()`, each present or absent (DECISION 056, B45 and B47).
+ *
+ * They are the COMPLETE set, which is what makes an explanatory sentence
+ * honest rather than a plausible guess. Every `overall` write in the engine is
+ * one of: `applyChoice` resolving the option the player took (that is `own`,
+ * and `cardAccount` owns it), `tickPhaseStart` restoring a healed injury's
+ * points, `tickPhaseStart` firing a deferred effect that has come due,
+ * `enterOffseason` applying a season of development, and `applyEffect`'s
+ * `injury` case reached from an ambient roll rather than from a card.
+ *
+ * The hub cards B45 is about are the extreme case: `applyChoice`'s recruiting,
+ * declare and transfer branches write no `overall` at all, so a hub's ENTIRE
+ * movement is some combination of these four. That is why the hub's number can
+ * keep the value DECISION 037 wants on it and still be truthfully attributed:
+ * the attribution was never "the transfer did this" in the first place.
+ *
+ * Each flag is derived by diffing the before/after `GameState` pair in
+ * `view-model.ts` -- the only module allowed to read `GameState` -- so nothing
+ * here needs an engine change and no hidden quantity crosses the boundary.
+ * Sizes and timings are deliberately absent: the card says WHAT happened and
+ * never how much of the number each part was, which is not knowable from the
+ * diff and would be the confident fiction `cardAccount` already refuses.
+ */
+export interface Remainder {
+  /** An injury that was active before is gone after, and healing is the only
+      way one leaves the list -- `tickPhaseStart` restores its full
+      `restoreAmount` on the way out. */
+  healed: boolean;
+  /** A queued deferred effect from an EARLIER card fired during this advance.
+      The mirror of `CardAccount.later`: that promises a card is not finished,
+      this is the card where the promise is kept. */
+  landed: boolean;
+  /** A season boundary was crossed, which is the only place `enterOffseason`
+      applies development. */
+  developed: boolean;
+  /** An injury appeared that was not in the list before. Reported only when
+      the card's own outcome did not cause one, since then it is already the
+      card's own number and `CardAccount.injury` is saying so. */
+  hurt: boolean;
 }
 
 // A resolved card's own accounting (DECISION 046 cause 1).

@@ -1,6 +1,6 @@
 import { advance, createCareer, getDecision, type GameState, type PendingDecision } from "../../engine/index";
 import { CONTENT } from "../../content/index";
-import { buildSummary, cardAccount, hubFacts, schoolName, seasonStamp } from "./view-model";
+import { buildSummary, cardAccount, hubFacts, remainderFacts, schoolName, seasonStamp } from "./view-model";
 import { appendLog } from "./storage";
 import type { Action, HubFacts, LogEntry, Resolved, SeasonStamp, UiState } from "./types";
 
@@ -92,6 +92,18 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
   // the answer has to survive being written to `localStorage` and read back.
   const account = outcome === null ? null : cardAccount(state, next, decision, option.id);
 
+  // The other half of the same sentence, and the half DECISION 056 found
+  // missing. `account` says what the card did; this says what the REST of the
+  // number was, so no figure on the card is left unattributed.
+  //
+  // Computed for every card, not only for the ones with a remainder to
+  // explain. A hub card's `account` is null by construction -- `applyChoice`
+  // writes no `overall` on the recruiting, declare or transfer branches -- so
+  // its whole movement is this, and it is the case B45 is about. Taken here
+  // for the same reason the stamp and `overallBefore` are: both states are
+  // gone once this returns, and the answer has to survive `localStorage`.
+  const remainder = remainderFacts(state, next);
+
   const resolved: Resolved | null =
     outcome === null && hub === null
       ? null
@@ -107,6 +119,7 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
           stamp,
           overallBefore,
           account,
+          remainder,
         };
 
   return { next, resolved };
@@ -184,6 +197,12 @@ export function normalize(ui: UiState): UiState {
       // Re-deriving it here is not possible -- the option id and the baseline
       // it was computed from are both gone by the time a save is read.
       account: r.account ?? null,
+      // A save written before the card could say what the remainder WAS
+      // restores without this, and null is the honest answer: the figure
+      // renders with no line under it, exactly as it did when it was saved.
+      // Re-deriving it is not possible -- it is a diff of two states, and the
+      // earlier one is gone by the time a save is read.
+      remainder: r.remainder ?? null,
     },
   };
 }

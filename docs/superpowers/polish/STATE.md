@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete · **PM session:** 7
+**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete and committed · **Wave 15:** in flight · **PM session:** 7
 
 ---
 
@@ -1115,6 +1115,33 @@ two, and it is why the offseason reads as a menu.
 assumptions cannot falsify the fix. 026 found 0 failures in 12,847 cards and every real failure was
 outside its population. Future briefs of this shape must state the excluded population and name who
 checks it.
+
+## Wave 15 — in flight (PM session 7)
+
+Two lanes. File-disjoint, and only one of them uses the browser.
+
+| Brief | What | Owns |
+|---|---|---|
+| `briefs/033-the-card-finishes-the-job.md` | **B45 + B46 + B47.** Finish waves 12–13: hub cards stop printing a bare number, the character sentence stops losing to it, `EVERYTHING ELSE` gets a sentence | `reducer.ts`, `view-model.ts`, `types.ts`, `CareerScreen.tsx`, `career.css` + tests. **The browser.** |
+| `briefs/034-a-career-can-go-wrong.md` | **DECISION 057.** Design + measure the declare removal *and* its replacement downside. **Proposal only — changes nothing** | `reports/034-*` only. Prototypes in a scratch copy outside the tree |
+
+**033 is finishing a correct fix, not redoing a wrong one**, and the brief says so in those words —
+the failure mode here is an agent rewriting six pieces of working code. It is pointed at DECISIONS
+056, 046, 037 and 002 before it writes anything. The live tension it must resolve rather than ignore:
+DECISION 037 *wants* the transfer hub to report the whole movement, so the defect is not "hubs lack
+an account", it is **a number with no sentence.**
+
+**034 is the largest thing this phase has attempted and it deliberately builds nothing.** The
+mechanism gets chosen from measurements, not from plausibility — the DECISION 003 habit. Its two
+acceptance tests are pre-specified so a candidate cannot be talked into looking good: restore
+failure to roughly the **12–17% undrafted** the declare card was providing under `baselineRandom`,
+**and** leave a well-played `good` career at ~0% undrafted / 95–97% drafted / 28–52% round 1. **A
+mechanism that makes good play fail is disqualified regardless of how it scores on the first test.**
+
+**The root cause is handed to 034 rather than left for it to find:** `developmentDelta`
+(`advance.ts:172`) cannot return a negative number, so overall is a one-way ratchet and the
+washout floor at 45 is never approached. Every other failure path is an event rolling badly; none
+is the career itself going wrong.
 
 ## Next actions — for PM session 8, in order
 

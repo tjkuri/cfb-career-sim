@@ -1,7 +1,7 @@
 import { railView } from "../session/view-model";
 import { classYearLabel, type LedgerRow } from "../session/ledger";
 import { countedStatLabel } from "../session/labels";
-import type { CardAccount, CareerView, Resolved, StatView } from "../session/types";
+import type { CardAccount, CareerView, Remainder, Resolved, StatView } from "../session/types";
 
 interface Props {
   view: CareerView;
@@ -113,6 +113,38 @@ function accountNotes(account: CardAccount, own: number): string[] {
   if (account.later === "cost") notes.push("The cost of this one lands later.");
   if (account.later === "credit") notes.push("The rest of this one lands later.");
   return notes;
+}
+
+/**
+ * What the figure that this card did NOT earn actually was (DECISION 056; B45,
+ * B47).
+ *
+ * Two figures on this screen were printed with no sentence attached: a hub
+ * card's whole movement, and the `EVERYTHING ELSE` remainder. A player reading
+ * a bare **+5 OVR** under *"You chose: Stay at Memphis"* has one attribution
+ * available to them -- the choice they just made -- and it is the one thing the
+ * number is guaranteed not to be, because `applyChoice` writes no `overall` on
+ * a hub branch at all.
+ *
+ * `Remainder` carries presence, never size, so this states what happened and
+ * never how much of the number each part was. Where two causes fired, both are
+ * said: apportioning them would be the confident fiction `cardAccount` refuses
+ * when its candidates disagree. Where none can be proved, the figure keeps its
+ * label and gets no sentence -- a vague truth beats a precise invention, and
+ * the four causes are the complete set, so this is a save-compatibility path
+ * rather than a real card.
+ *
+ * `ownInjury` suppresses the fourth clause: an injury the card's own outcome
+ * caused is already in `own`, where `accountNotes` is describing it, and
+ * naming it again down here would report one injury as two.
+ */
+function remainderLine(remainder: Remainder, ownInjury: boolean): string | null {
+  const parts: string[] = [];
+  if (remainder.healed) parts.push("An injury healed and gave the points back.");
+  if (remainder.landed) parts.push("An earlier card's effect came due.");
+  if (remainder.developed) parts.push("A season of development came in.");
+  if (remainder.hurt && !ownInjury) parts.push("You got hurt between decisions.");
+  return parts.length ? parts.join(" ") : null;
 }
 
 // `1 Game-Winners` was printed here (017 playtest, claim 10.2), and the same
@@ -337,6 +369,21 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   const elsewhere = account ? total - own : 0;
   const loudness = magnitude(own);
 
+  // A hub card, which is the one card whose figure is the whole `advance` ON
+  // PURPOSE (DECISION 037) and was therefore the one card with no way to say so
+  // (B45, DECISION 056 hole 1). Told apart by carrying hub facts rather than by
+  // a null account, which an old save also has -- such a save is an authored
+  // card and keeps the fallback it was written with.
+  //
+  // The figure itself is untouched: same value, same accent, same magnitude
+  // scaling. 037 wants the whole movement reported on this card and it still
+  // is. What changes is that it is now named and explained, because a number
+  // with no sentence is the defect. It is NOT re-attributed to the choice --
+  // `applyChoice` writes no `overall` on a hub branch, so "the transfer did
+  // this" would be false, and 037's real ~0.43-0.91 price is an expectation
+  // across seeds rather than a term in this card's arithmetic.
+  const hubCard = resolved?.hub != null && account === null;
+
   // Once there are two numbers they both need naming; one number on its own
   // needs no label and does not get one, which keeps the 46.6%-of-cards common
   // case exactly as it was. A zero own-delta is PRINTED rather than omitted
@@ -347,6 +394,40 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   const showOwn = own !== 0 || showElsewhere;
   const notes = account ? accountNotes(account, own) : [];
   const locker = account ? lockerRoomLine(account) : null;
+
+  // The sentence under whichever figure this card did not earn: the hub's
+  // whole movement, or the remainder beside an authored card's own number.
+  // Never both -- a card is one or the other -- so one string serves both and
+  // the two defects get literally the same fix, which is what DECISION 056
+  // means by "the same defect wearing a label".
+  const why =
+    resolved?.remainder && (hubCard || showElsewhere)
+      ? remainderLine(resolved.remainder, account?.injury ?? false)
+      : null;
+
+  // The label on the hub's figure. "This card" would be false here (the hub
+  // moved nothing) and "Everything else" needs a "this card" to be else FROM,
+  // so the hub gets the one name that is true of it: the window the number
+  // covers.
+  const ownLabel = hubCard ? "Since your last card" : "This card";
+  const showOwnLabel = hubCard || showElsewhere;
+
+  // DECISION 056 hole 2 (B46). The block has exactly one emphasis slot --
+  // `--emphasis` on the figure, scaled by `--rule`/`--delta-size` -- and it is
+  // attached to the only element carrying a numeral. On *The Ticket Hookup*'s
+  // negative outcome the card did `character −6` and `overall +1`, so the slot
+  // went to the smaller of the two things the card did and the playtester read
+  // "compliance flags the resale listing" as a reward.
+  //
+  // So the slot moves to whichever element is the card's largest movement. It
+  // fires on BOTH directions of the character effect, never on `cost` alone:
+  // an accent that appeared only on a cost would be valence told by colour,
+  // which DECISION 012 forbids and which the words already do properly.
+  //
+  // DECISION 002 is untouched and no integer appears. The threshold is the
+  // magnitude scale's own bottom tier (|own| <= 2, 89% of cards), so a card
+  // that moved OVR by a visible amount keeps the slot on the number.
+  const characterLeads = locker !== null && magnitude(own) <= 1;
 
   return (
     // The decision column comes first in the DOM and the ledger follows it, so
@@ -442,7 +523,11 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                 rendered at all when it would hold none of the three, so the
                 rule never draws beside an empty card. */}
             {(resolved.outcome || resolved.hub?.to || showOwn || locker) && (
-            <div className="consequence" data-magnitude={loudness}>
+            <div
+              className="consequence"
+              data-magnitude={loudness}
+              data-lead={characterLeads ? "character" : undefined}
+            >
               {resolved.outcome && <p className="outcome">{resolved.outcome}</p>}
 
               {/* The one thing a transfer resolution knows that the chosen
@@ -477,13 +562,22 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
 
               {showOwn && (
                 <p className="delta">
-                  {showElsewhere && <span className="account-label">This card</span>}
+                  {showOwnLabel && <span className="account-label">{ownLabel}</span>}
                   <span aria-hidden="true">{own === 0 ? "No change" : ovrText(own)}</span>
                   <span className="sr-only">
-                    {ownSentence(own, !showElsewhere, view.overall)}
+                    {hubCard
+                      ? `Since your last card: overall ${upDown(own)} ${Math.abs(own)}, now ${view.overall}.`
+                      : ownSentence(own, !showElsewhere, view.overall)}
                   </span>
                 </p>
               )}
+
+              {/* B45. On a hub card the figure above is the whole movement and
+                  nothing on the card explains it, so the explanation goes
+                  directly under it -- the same place, and the same quiet
+                  register, that `accountNotes` already uses for a footnote on
+                  the figure it sits beneath. */}
+              {hubCard && why && <p className="account-note">{why}</p>}
 
               {notes.map((note) => (
                 <p className="account-note" key={note}>
@@ -504,12 +598,24 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                   <span className="account-figure" aria-hidden="true">
                     {ovrText(elsewhere)}
                   </span>
+                  {/* The explanatory sentence is deliberately NOT repeated in
+                      here. It is visible text in the paragraph directly below
+                      and is read from there; appending it would make a screen
+                      reader say it twice. */}
                   <span className="sr-only">
                     Everything else: overall {upDown(elsewhere)} {Math.abs(elsewhere)}, now{" "}
                     {view.overall}.
                   </span>
                 </p>
               )}
+
+              {/* B47. `EVERYTHING ELSE` was a labelled bucket that was never
+                  once explained to the player, which is B45 wearing a label --
+                  so it gets B45's sentence. Outside the row rather than inside
+                  it: the row is a label and a figure on one baseline, and a
+                  clause appended to it would read as a third column of the
+                  same statistic. */}
+              {showElsewhere && why && <p className="account-note else-why">{why}</p>}
             </div>
             )}
 

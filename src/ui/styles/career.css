@@ -969,6 +969,77 @@
   margin-bottom: 0;
 }
 
+/* B47. The row above is a label and a figure on one baseline; this is the
+   sentence that says what the figure WAS, and it belongs under the row rather
+   than appended to it, where it would read as a third column of the same
+   statistic. Set one notch tighter to the row than a free-standing note,
+   because it is bound to the line directly above it and to nothing else. */
+.else-why {
+  margin-top: 0.45rem;
+}
+
+/* ---------- the card's one emphasis slot (DECISION 056 hole 2, B46) ----------
+
+   The block has exactly one loud element and `--emphasis` is what marks it.
+   Until now that was always the OVR figure, for the plain reason that it was
+   the only element carrying a numeral -- so on *The Ticket Hookup*'s negative
+   outcome, `character −6, overall +1`, the slot went to the SMALLER of the two
+   things the card did. A grey sentence does not outrank a bold signed integer,
+   and the playtester read getting caught as a reward.
+
+   So the slot moves rather than being duplicated. When the card's OVR movement
+   is in the magnitude scale's bottom tier and a character effect fired, the
+   character sentence takes the figure's size, weight, hue and entrance, and
+   the figure drops to --chalk-dim at --t-label -- which is not a demotion
+   invented here, it is exactly the register `.account-figure` already uses for
+   "real, and not the headline". One loud thing, and it is the largest thing
+   the card did.
+
+   Three properties of this are load-bearing:
+
+   NO INTEGER. DECISION 002 is untouched. Character still has no number, no
+   bar and no dot count; what it gains is the size and hue the system already
+   spends on importance, which is the one lever 002 leaves open.
+
+   NO VALENCE IN THE HUE. It fires on a character CREDIT exactly as it fires on
+   a character cost. An accent that appeared only on a cost would be DECISION
+   012's forbidden signal -- valence told by colour -- arriving through the back
+   door. The words carry the direction, as they always have.
+
+   NO GRADATION. There is one tier, not three. `--delta-size` is read from the
+   OVR magnitude the block was already carrying, so the character line is as
+   loud as this card's figure would have been and never louder; sizing it by
+   the character effect itself would be the resolution 002 says character does
+   not have, dressed as typography. */
+.consequence[data-lead="character"] .locker-room {
+  margin-top: 1rem;
+  /* Wider than the figure's 68: a condensed setting is what makes a numeral
+     read as a numeral, and the same treatment on a sentence reads as a
+     compressed headline rather than as speech. 84 is the width the card title
+     uses to out-weigh the prose beneath it, and this line is doing that job. */
+  font-variation-settings: "wdth" 84;
+  font-size: var(--delta-size);
+  font-weight: var(--delta-weight);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--emphasis);
+  animation: delta-in var(--dur-enter) ease both;
+  animation-delay: 90ms;
+}
+
+.consequence[data-lead="character"] .delta {
+  /* Set on `.delta` rather than on the block, so the character line above goes
+     on reading the block's own magnitude and only the figure is demoted. */
+  --delta-size: var(--t-label);
+  --delta-weight: var(--w-ui);
+  margin-top: 0.6rem;
+  line-height: var(--lh-tight);
+  color: var(--chalk-dim);
+  /* The entrance belongs to whatever holds the slot; two staggered arrivals
+     would restage the contest this rule exists to settle. */
+  animation: none;
+}
+
 @keyframes delta-in {
   from { opacity: 0; transform: translateY(var(--delta-lift)); }
   to { opacity: 1; transform: none; }
@@ -1027,6 +1098,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fade-in,
-  .delta { animation: none; }
+  .delta,
+  .consequence[data-lead="character"] .locker-room { animation: none; }
   * { transition-duration: 0ms !important; }
 }
