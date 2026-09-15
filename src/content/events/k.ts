@@ -338,7 +338,7 @@ export const K_EVENTS: GameEvent[] = [
     conditions: { position: ["K"], tier: [1, 2], requiresPlaying: true },
     title: "Bowl Game Winner",
     description:
-      "Zero seconds on the clock, your team down two, and the distance is well within what you've hit a hundred times in an empty practice stadium and never once cared about the way you care right now.",
+      "Zero seconds on the clock, the game tied, and the distance is well within what you've hit a hundred times in an empty practice stadium and never once cared about the way you care right now.",
     options: [
       {
         id: "trot-out-for-the-walk-off",
@@ -367,7 +367,7 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description:
-            "You ask the coordinator for the shorter, safer look that ties the score instead of the correct-but-longer shot at the outright win. Nobody argues, and the game just keeps going.",
+            "You tell the coordinator you would rather have it in overtime than have it be your fault in regulation. Nobody argues, the clock runs out, and the game just keeps going.",
           effects: [],
         },
       },
