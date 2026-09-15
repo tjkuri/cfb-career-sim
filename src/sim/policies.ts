@@ -161,7 +161,7 @@ export function optionCharacterScore(option: EventOption): number {
   return p * pos + (1 - p) * neg;
 }
 
-export type EventStrategy = "first" | "random" | "lazy" | "saboteur" | "antisocial" | "best";
+export type EventStrategy = "first" | "random" | "lazy" | "saboteur" | "antisocial" | "humanLazy" | "best";
 export type RecruitStrategy = "first" | "random" | "highestTier" | "lowestTier";
 export type TransferStrategy = "stay" | "up" | "upOrLateral" | "lateral" | "down" | "random";
 export type RedshirtStrategy = "take" | "decline" | "random";
@@ -173,11 +173,15 @@ export interface PolicyProfile {
   redshirt: RedshirtStrategy;
 }
 
-const ENDING_WEIGHT: Record<"lazy" | "saboteur" | "antisocial" | "best", number> = {
+const ENDING_WEIGHT: Record<"lazy" | "saboteur" | "antisocial" | "humanLazy" | "best", number> = {
   lazy: 0,
   saboteur: ENDING_PENALTY,
   // The antisocial player is careless, not suicidal: same weighting as lazy.
   antisocial: 0,
+  // The human bad player is misbehaving, not quitting the game: he does not
+  // want the career to end. Inert outside bust.ts in any case -- every `ending`
+  // effect in the bundle lives there, which `saboteur vs lazy` already asserts.
+  humanLazy: ENDING_PENALTY,
   // A good player treats a career-ending outcome as the catastrophe it is.
   best: ENDING_PENALTY,
 };
@@ -253,8 +257,55 @@ export function makePolicy(profile: PolicyProfile, content: ContentBundle = CONT
     // decision is handled above). Fall back to the first option rather than
     // throwing, so a content change can never break a measurement run.
     if (!ev) return options[0]!.id;
-    const weight = ENDING_WEIGHT[profile.events];
     const position = state.setup.position;
+
+    // ---- humanLazy (brief 037) ------------------------------------------
+    // Every bad-play policy before this one is defined against the engine's
+    // own objective function, draft stock. That is a machine's definition of
+    // bad play, and it produces a player no human resembles: `lazy` minimises
+    // stock, so it DECLINES the off-field temptations (they pay +1 overall
+    // against -6 character, which is net POSITIVE stock) and instead throws
+    // away overall on the football cards. It ducks the cheating and tanks the
+    // rating. A human bad player does the exact opposite.
+    //
+    // `humanLazy` is defined against AUTHORED INTENT instead, lexicographically:
+    //
+    //   1. Take the most self-serving option: the one with the most negative
+    //      expected CHARACTER delta. Character loss is the only marker the
+    //      content carries for "this is the corrosive branch" -- offfield.ts
+    //      states the convention outright ("the corrosive option charges
+    //      character on the branch you take"), and every authored temptation
+    //      obeys it. There is no authored marker for `effort`, which is itself
+    //      a finding: see the report.
+    //   2. Break ties -- and most options carry no character effect at all --
+    //      by MAXIMISING draft stock. This is the load-bearing half. A human
+    //      who ducks meetings and sells his tickets still wants to be good at
+    //      football on Saturday; he is misbehaving, not sandbagging. It is why
+    //      the playtester who "ducked, cheated and quit for five straight
+    //      seasons" still finished with an All-American.
+    //
+    // So humanLazy = `best` on the football cards, `most corrosive available`
+    // on the character cards. It is NOT `antisocial`: antisocial shares rule 1
+    // but breaks ties by MINIMISING stock, i.e. it sandbags the football cards
+    // too.
+    if (profile.events === "humanLazy") {
+      const EPS = 1e-9;
+      let chosen = ev.options[0]!;
+      let chosenChar = optionCharacterScore(chosen);
+      let chosenStock = optionScore(chosen, position, content, ENDING_PENALTY);
+      for (const o of ev.options) {
+        const c = optionCharacterScore(o);
+        const st = optionScore(o, position, content, ENDING_PENALTY);
+        if (c < chosenChar - EPS || (Math.abs(c - chosenChar) <= EPS && st > chosenStock + EPS)) {
+          chosen = o;
+          chosenChar = c;
+          chosenStock = st;
+        }
+      }
+      return chosen.id;
+    }
+
+    const weight = ENDING_WEIGHT[profile.events];
     const scored = ev.options.map((o) => ({
       id: o.id,
       score: optionScore(o, position, content, weight)
@@ -287,6 +338,18 @@ export const PROFILES = {
   // Q1: the second definition of "bad" — the player who tanks CHARACTER, which
   // is the axis the six authored bust events are gated on.
   antisocialFull: { events: "antisocial", recruiting: "lowestTier", transfer: "stay", redshirt: "decline" },
+  // Brief 037: the HUMAN bad player. Two of them, because the event policy and
+  // the offseason policy are different questions and conflating them is how a
+  // measurement ends up comparing two things at once.
+  //   humanLazyFull      — identical to `lazyFull` except the event strategy.
+  //                        Isolates "what does picking the corrosive option do?"
+  //   humanLazyAmbitious — identical to `good` except the event strategy.
+  //                        The playtester's actual career: playing to get
+  //                        drafted, behaving badly on every card. This is the
+  //                        one the headline comparison against `good` uses,
+  //                        because it is the only variable that differs.
+  humanLazyFull: { events: "humanLazy", recruiting: "lowestTier", transfer: "stay", redshirt: "decline" },
+  humanLazyAmbitious: { events: "humanLazy", recruiting: "highestTier", transfer: "up", redshirt: "take" },
   randomFull: { events: "random", recruiting: "random", transfer: "random", redshirt: "random" },
   // The five `*Early` profiles (lazyEarly, saboteurEarly, antisocialEarly,
   // randomEarly, goodEarly) were DELETED with the declare decision they
