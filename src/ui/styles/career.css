@@ -310,9 +310,12 @@
 
 /* ---------- the career ledger ---------- */
 
-/* Five rows, always (DECISION 010). The table never grows a row when the
-   redshirt lands, because a table that grows moves the "how much is left"
-   signal underneath the player -- the one job it exists to do (DECISION 007).
+/* Four rows, and a fifth once a redshirt has been taken. DECISION 010 drew
+   five always, so that the table could never grow underneath the player; the
+   036 playtest weighed the other side of that and it is heavier -- a career
+   with no redshirt ends after four seasons and went to the ending screen with
+   an empty Year 5 that had been on screen the whole way. The table states the
+   years the career HAS. See `BASE_SLOTS` in session/ledger.ts.
 
    Rows are labelled by sequence, Year 1 to Year 5 (DECISION 020), and that
    single fact is most of what this component is for. The 014 playtester played
@@ -358,12 +361,11 @@
   border-top: 1px solid var(--line);
 }
 
-/* The block closes -- but only when its last row is a row rather than a
-   possibility. While slot 5 is still an unspent redshirt it hangs off a dashed
-   rule and the table stops under it with an OPEN edge, which is the whole of
-   how DECISION 010 refuses to promise a fifth season. A closing rule under a
-   dashed row would draw exactly that promise. */
-.ledger-row:last-child:not([data-tentative="yes"]) {
+/* The block closes. It always closes now: the table only ever draws rows the
+   career actually has, so there is no possibility hanging off the bottom of it
+   to leave an open edge for. The dashed fifth row that used to live here went
+   with the phantom fifth season it was hedging. */
+.ledger-row:last-child {
   border-bottom: 1px solid var(--line);
 }
 
@@ -457,7 +459,13 @@
    place to invent one (DECISIONS 006, 012, 021). */
 .ledger-row[data-state="played"] .ledger-ovr,
 .ledger-row[data-state="played"] .ledger-school,
-.ledger-row[data-state="played"] .ledger-record { color: var(--chalk); }
+.ledger-row[data-state="played"] .ledger-record,
+/* A finished row is filled whether or not it is also the row the header is
+   naming -- which, on the last card of a season, it is. The figures belong to
+   a season that is over; the lift belongs to where the player is standing. */
+.ledger-row[data-finished="yes"] .ledger-ovr,
+.ledger-row[data-finished="yes"] .ledger-school,
+.ledger-row[data-finished="yes"] .ledger-record { color: var(--chalk); }
 
 .ledger-row[data-state="current"] {
   background: var(--card-raised);
@@ -469,21 +477,12 @@
 
 .ledger-row[data-state="future"] { color: var(--chalk-faint); }
 
-/* The fifth row while the redshirt is still unspent. It hangs off a dashed
-   rule and the table simply stops under it: an open edge, not a closed one.
-   DECISION 010's risk is a player reading slot 5 as a promise, and a row drawn
-   as a solid block of table would be exactly that promise.
-
-   The dash is now the whole signal. It used to carry a `redshirt year` caption
-   saying what would buy the row, and DECISION 033 removed it: the UI cannot
-   check that condition, the 017 playtester met it and watched the row not
-   change, and a caption that asserts an unverifiable fact is worse than no
-   caption. The dash asserts nothing except "possible", and the playtester read
-   it correctly with no help at all -- "not really part of the plan". */
-.ledger-row[data-tentative="yes"] {
-  border-top-style: dashed;
-  color: var(--chalk-faint);
-}
+/* The dashed fifth row is gone with the row it hedged. DECISION 010 drew five
+   slots always and softened the last one; the 036 playtest found the softening
+   does not carry the meaning -- "nothing ever told me why year 5 existed, or
+   why I didn't get one" -- for a career that ends after four. The table now
+   draws four rows, or five once the redshirt is a stored fact, so there is
+   nothing left to hedge and no treatment needed for it. */
 
 /* The career so far, said in the words the ending screen will use again:
    `Across 3 seasons  59 -> 68  +9`. It is the read the 017 playtester called

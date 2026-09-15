@@ -1,5 +1,5 @@
 import { railView } from "../session/view-model";
-import { classYearLabel, type LedgerRow } from "../session/ledger";
+import { classYearLabel, followHeader, type LedgerRow } from "../session/ledger";
 import { countedStatLabel } from "../session/labels";
 import type { CardAccount, CareerView, Remainder, Resolved, StatView } from "../session/types";
 
@@ -180,17 +180,19 @@ function statLine(stats: StatView[]): string {
  * *rated* row is the baseline, so a season with no stored OVR (a pre-DECISION
  * 009 save) is skipped over rather than reported as a change of zero.
  *
- * Never drawn on the current row. `advance.ts:285` stamps the in-progress line
- * with the OVR the season STARTED at, so a delta against it would be a season
- * old -- the same stale number the row's own OVR cell has always refused to
- * print (DECISION 019).
+ * Read off `finished`, never off `state`. The in-progress line is stamped with
+ * the OVR the season STARTED at (`advance.ts:319`) and is not overwritten until
+ * `enterOffseason`, so a delta against it would be a season old -- the same
+ * stale number the row's own OVR cell refuses to print. `finished` is exactly
+ * that distinction, and it is the one that survives the row ALSO being current,
+ * which is what a season boundary is.
  */
 function ledgerDelta(rows: LedgerRow[], index: number): number | null {
   const row = rows[index];
-  if (!row || row.state !== "played" || row.overall === null) return null;
+  if (!row || !row.finished || row.overall === null) return null;
   for (let j = index - 1; j >= 0; j--) {
     const prev = rows[j];
-    if (prev && prev.state === "played" && prev.overall !== null) return row.overall - prev.overall;
+    if (prev && prev.finished && prev.overall !== null) return row.overall - prev.overall;
   }
   return null;
 }
@@ -204,7 +206,7 @@ function ledgerDelta(rows: LedgerRow[], index: number): number | null {
  * DECISION 014 forbids everywhere else in this table.
  */
 function ledgerArc(rows: LedgerRow[]): { first: number; last: number; net: number; count: number } | null {
-  const rated = rows.filter((r) => r.state === "played" && r.overall !== null);
+  const rated = rows.filter((r) => r.finished && r.overall !== null);
   if (rated.length < 2) return null;
   const first = rated[0]!.overall!;
   const last = rated[rated.length - 1]!.overall!;
@@ -219,10 +221,10 @@ function signed(delta: number): string {
  * The career ledger (DECISIONS 007 / 010 / 013 / 020), built in
  * `session/ledger.ts` and only drawn here.
  *
- * Five rows, always -- a table that grew a row when the redshirt landed would
- * move the "how much is left" signal underneath the player, which is the one
- * job it exists to do. Completed rows are filled, the current row is lifted,
- * future rows are visible as empty chrome.
+ * Four rows, or five once a redshirt has been used -- the table states the
+ * years the career HAS rather than promising one most careers never get (see
+ * `BASE_SLOTS`). Completed rows are filled, the current row is lifted, future
+ * rows are visible as empty chrome.
  *
  * WAVE 13. The rows now carry what the ending screen's seasons block carries:
  * school, the year it was played as, the record, the snaps, and the OVR it
@@ -234,16 +236,18 @@ function signed(delta: number): string {
  *
  * Three things it deliberately does NOT draw:
  *
- *   * The current row's season-end OVR, or a step against it. `advance.ts:285`
+ *   * An UNFINISHED season's OVR, or a step against it. `advance.ts:319`
  *     stamps a line with the OVR it STARTED at and `enterOffseason` overwrites
- *     it with the OVR it ended at, so the in-progress row's stored number is a
- *     season old. The live OVR is the hero numeral in the other column;
- *     printing a stale one beside it would report two moments at once, which is
- *     the bug DECISION 019 just finished closing on the rail.
- *   * A record for the current season. There isn't one until the postseason
+ *     it with the OVR it ended at, so a season still being played carries a
+ *     number a season old. The live OVR is the hero numeral in the other
+ *     column; printing a stale one beside it would report two moments at once,
+ *     which is the bug DECISION 019 just finished closing on the rail. Note the
+ *     gate is `finished`, not `state`: on the last card of a season the row is
+ *     current AND finished, and its figures are real.
+ *   * A record for an unfinished season. There isn't one until the postseason
  *     resolver runs, and `0-0` is the absence of a record rather than a value
  *     for it (DECISION 014). The cell stays empty.
- *   * The current season's snaps. They accumulate live, and the rail two
+ *   * An unfinished season's snaps. They accumulate live, and the rail two
  *     columns over is FROZEN to the card being read (DECISION 019) -- so the
  *     two cells would print different snap counts for the same season every
  *     time an outcome was on screen. The row states where the player is; the
@@ -251,23 +255,38 @@ function signed(delta: number): string {
  */
 function Ledger({ rows }: { rows: LedgerRow[] }) {
   const arc = ledgerArc(rows);
-  const rated = rows.some((row) => row.state === "played" && row.overall !== null);
+  const rated = rows.some((row) => row.finished && row.overall !== null);
 
   return (
     <aside className="ledger" aria-label="Career ledger">
-      {/* The same words the summary's column head uses, for the same reason
-          (DECISION 035): this column is each season AS PLAYED, and the hero
-          numeral in the other column is the live one. Absent until there is a
-          figure in the column to name. */}
+      {/* The head names the quantity, and the quantity is NOT the one in the
+          header. `enterOffseason` finalizes a season line with the OVR the
+          season ended at and THEN adds the development those snaps earned,
+          because the points are earned for the next season (advance.ts:228-240,
+          pinned by an engine test). So at every season boundary the header read
+          63 and this column read 61 for the same year, under a head that said
+          `Ovr at season's end` -- two parts of one screen answering the same
+          question with two numbers. The 036 playtester reported it at all four
+          boundaries of the career.
+
+          The value is right; the head was not. The column is the figure each season
+          finished on, before the offseason that follows it does anything --
+          which is exactly the +2 the card on screen has just attributed to "a
+          season of development". Said that way the two numbers stop being a
+          contradiction and become the two ends of the sentence the card is
+          already saying. Absent until there is a figure in the column to name.
+
+          The ending screen's `.arc-head-ovr` still carries the old words for
+          the same column; it is owned elsewhere this wave and is flagged in the
+          report rather than edited here. */}
       {rated && (
         <p className="ledger-head" aria-hidden="true">
-          Ovr at season&rsquo;s end
+          Ovr before the offseason
         </p>
       )}
 
       <ol className="ledger-rows">
         {rows.map((row, index) => {
-          const played = row.state === "played";
           const delta = ledgerDelta(rows, index);
           const year = classYearLabel(rows, row.slot, row.classYear);
           return (
@@ -275,7 +294,7 @@ function Ledger({ rows }: { rows: LedgerRow[] }) {
               key={row.slot}
               className="ledger-row"
               data-state={row.state}
-              data-tentative={row.tentative ? "yes" : "no"}
+              data-finished={row.finished ? "yes" : "no"}
               {...(row.state === "current" ? { "aria-current": "step" as const } : {})}
             >
               <span className="ledger-year">{row.label}</span>
@@ -283,14 +302,14 @@ function Ledger({ rows }: { rows: LedgerRow[] }) {
                 <span className="ledger-school">{row.schoolName ?? ""}</span>
                 <span className="ledger-line">
                   {year && <span className="ledger-class">{year}</span>}
-                  {played && row.record && <span className="ledger-record">{row.record}</span>}
-                  {played && row.snaps !== null && (
+                  {row.finished && row.record && <span className="ledger-record">{row.record}</span>}
+                  {row.finished && row.snaps !== null && (
                     <span className="ledger-snaps">{NUM.format(row.snaps)} snaps</span>
                   )}
                 </span>
               </span>
               <span className="ledger-ovr">
-                {played && row.overall !== null && (
+                {row.finished && row.overall !== null && (
                   <span className="ledger-ovr-num">
                     {row.overall}
                     <span className="sr-only"> overall</span>
@@ -347,6 +366,15 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   // (`Offseason - 175 snaps`). Every cell now comes from one moment. The
   // assembly, and the nullable-stamp fallback, live in the view-model.
   const rail = railView(view, resolved);
+
+  // The table follows the player, not the cursor. `buildLedger` keys the
+  // current row to the live season index, which is a season ahead of the header
+  // on the last card of every season -- the header is frozen to the card being
+  // read (DECISION 019) and the engine has already crossed the boundary. Moving
+  // the highlight with `rail.seasonNumber`, the same number the header prints,
+  // is what makes them one statement. With no card on screen the rail IS the
+  // live view and this is a no-op.
+  const ledgerRows = followHeader(view.ledger, rail.seasonNumber);
 
   // The record is still absent until the postseason resolver has made it real
   // (DECISION 014); freezing the line cannot manufacture one, because the line
@@ -460,7 +488,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                   ledger, so the header and the table can never qualify the same
                   year differently. */}
               <span className="rail-class">
-                {classYearLabel(view.ledger, rail.seasonNumber, rail.classYear)}
+                {classYearLabel(ledgerRows, rail.seasonNumber, rail.classYear)}
               </span>
             </span>
           </div>
@@ -655,7 +683,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
         ) : null}
       </div>
 
-      <Ledger rows={view.ledger} />
+      <Ledger rows={ledgerRows} />
     </div>
   );
 }

@@ -97,6 +97,15 @@
   font-variation-settings: "wdth" 76;
 }
 
+/* The note on the one field that starts empty. Lower-case against the label's
+   caps: same line, same size, plainly a different kind of word. */
+.field-required {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: var(--w-prose);
+  color: var(--chalk-faint);
+}
+
 .primary {
   margin-top: 1.6rem;
   width: 100%;
@@ -108,13 +117,43 @@
   text-transform: uppercase;
   color: var(--action-ink);
   background: var(--action);
-  border: none;
+  /* Transparent rather than none: the disabled state lights this edge, and a
+     border that appears would move the button by a pixel as it did. */
+  border: 1px solid transparent;
   border-radius: var(--radius-control);
   padding: 0.9rem;
   cursor: pointer;
+  transition: background-color var(--dur-state), color var(--dur-state),
+    border-color var(--dur-state);
+}
+
+/* --action is "the one button that moves the career forward" (tokens.css).
+   A button that cannot move it forward must not be wearing that role: the fill
+   goes, and what is left is the same empty chrome the ledger draws a season
+   that has not happened yet with -- a hairline edge and faint ink. It is the
+   interface's existing word for "not yet", and it cannot be mistaken for the
+   filled state at any width, in any light, or by anyone reading the shape
+   rather than the colour.
+
+   `not-allowed` is the other half of the same answer: the pointer says it
+   before the click does. */
+.primary:disabled {
+  background: none;
+  border-color: var(--line);
+  color: var(--chalk-faint);
+  cursor: not-allowed;
 }
 
 .primary:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+/* The line under the button. --chalk-dim, not --chalk-faint: it is read once,
+   at the moment a click did nothing, and it must be easier to see than the
+   button it is explaining. */
+.start-blocker {
+  margin: 0.6rem 0 0;
+  font-size: var(--t-meta);
+  color: var(--chalk-dim);
+}
 
 .ghost {
   font: inherit;

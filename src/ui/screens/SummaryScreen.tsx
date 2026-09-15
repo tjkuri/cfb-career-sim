@@ -287,7 +287,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
           <div className="arc" data-span={arcSpanLength}>
             {hasArc && (
               <div className="arc-head" aria-hidden="true">
-                <span className="arc-head-ovr">Ovr at season&rsquo;s end</span>
+                <span className="arc-head-ovr">Ovr before the offseason</span>
               </div>
             )}
             {s.seasons.map((season, i) => {

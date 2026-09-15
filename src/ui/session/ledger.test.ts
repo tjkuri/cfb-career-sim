@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
+  BASE_SLOTS,
   buildLedger,
   classYearLabel,
+  followHeader,
   LEDGER_SLOTS,
   type LedgerInput,
   type LedgerSeason,
@@ -13,7 +15,7 @@ import {
   type GameState,
   type Setup,
 } from "../../engine/index";
-import { buildView } from "./view-model";
+import { buildView, seasonStamp } from "./view-model";
 import { knownPhases } from "./labels";
 import type { SeasonView } from "./types";
 
@@ -57,18 +59,12 @@ const REDSHIRT_FIVE: LedgerSeason[] = [
 ];
 
 describe("buildLedger — shape", () => {
-  it("returns exactly five rows for a career that has not kicked off", () => {
+  it("returns the four years every career gets, for a career that has not kicked off", () => {
     const rows = buildLedger(input());
-    expect(rows).toHaveLength(LEDGER_SLOTS);
+    expect(rows).toHaveLength(BASE_SLOTS);
     // Signing Day is season 1's offseason and the header already reads
-    // `Season 1`, so Year 1 is current and the four behind it are empty.
-    expect(rows.map((r) => r.state)).toEqual([
-      "current",
-      "future",
-      "future",
-      "future",
-      "future",
-    ]);
+    // `Season 1`, so Year 1 is current and the three behind it are empty.
+    expect(rows.map((r) => r.state)).toEqual(["current", "future", "future", "future"]);
   });
 
   it("returns exactly five rows for a full five-season career", () => {
@@ -97,9 +93,9 @@ describe("buildLedger — shape", () => {
 });
 
 describe("buildLedger — a four-year career", () => {
-  it("fills the four played rows and leaves the fifth empty", () => {
+  it("fills the four played rows and stops there", () => {
     const rows = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 4, active: false }));
-    expect(rows.map((r) => r.state)).toEqual(["played", "played", "played", "played", "future"]);
+    expect(rows.map((r) => r.state)).toEqual(["played", "played", "played", "played"]);
     expect(rows[2]).toMatchObject({
       schoolName: "Mercer State",
       record: "11-2",
@@ -110,8 +106,8 @@ describe("buildLedger — a four-year career", () => {
   });
 
   it("renders a future row as empty chrome, not as zeroes", () => {
-    const rows = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 4, active: false }));
-    expect(rows[4]).toMatchObject({
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 2), currentSeasonIndex: 2 }));
+    expect(rows[3]).toMatchObject({
       state: "future",
       schoolName: null,
       record: null,
@@ -125,7 +121,7 @@ describe("buildLedger — a four-year career", () => {
 describe("buildLedger — the row being written now", () => {
   it("marks the season matching the current index as current", () => {
     const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 3), currentSeasonIndex: 2 }));
-    expect(rows.map((r) => r.state)).toEqual(["played", "played", "current", "future", "future"]);
+    expect(rows.map((r) => r.state)).toEqual(["played", "played", "current", "future"]);
   });
 
   it("passes the current row's record through as null and never substitutes 0-0 (DECISION 014)", () => {
@@ -144,7 +140,7 @@ describe("buildLedger — the row being written now", () => {
   // the fifth, where the unhighlighted row was also dashed and captioned.
   it("marks the season the header is naming as current all through an offseason", () => {
     const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 2), currentSeasonIndex: 2 }));
-    expect(rows.map((r) => r.state)).toEqual(["played", "played", "current", "future", "future"]);
+    expect(rows.map((r) => r.state)).toEqual(["played", "played", "current", "future"]);
     // Nothing is invented to fill it. The row is current and empty.
     expect(rows[2]).toMatchObject({ schoolName: null, record: null, snaps: null, overall: null });
   });
@@ -166,38 +162,47 @@ describe("buildLedger — the row being written now", () => {
   });
 });
 
-describe("buildLedger — the fifth row is the redshirt slot (DECISION 010)", () => {
-  it("marks slot five as the redshirt slot and no other row", () => {
-    const rows = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 3 }));
-    expect(rows.map((r) => r.redshirtSlot)).toEqual([false, false, false, false, true]);
+// The phantom fifth year (036 playtest): the table promised a season 60% of
+// careers never get, and said nothing when it did not arrive.
+describe("buildLedger — the fifth row exists only when the redshirt does", () => {
+  it("draws no fifth row at all while no redshirt has been taken", () => {
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 1), currentSeasonIndex: 0 }));
+    expect(rows).toHaveLength(BASE_SLOTS);
+    expect(rows.map((r) => r.label)).toEqual(["Year 1", "Year 2", "Year 3", "Year 4"]);
   });
 
-  it("draws the fifth row as tentative while no redshirt has been taken", () => {
-    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 1), currentSeasonIndex: 0, redshirtUsed: false }));
-    expect(rows[4]!.tentative).toBe(true);
-    expect(rows.slice(0, 4).every((r) => r.tentative === false)).toBe(true);
+  it("still draws four rows at the very end of a four-season career", () => {
+    // The moment the 036 playtester ended on: four seasons played, career over,
+    // and an empty Year 5 that had been on screen the whole way.
+    const rows = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 4, active: false }));
+    expect(rows).toHaveLength(BASE_SLOTS);
   });
 
-  it("stops being tentative the moment the redshirt is used, before the season is played", () => {
+  it("grows the fifth row the moment the redshirt is used, before the season is played", () => {
     const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 2), currentSeasonIndex: 1, redshirtUsed: true }));
-    expect(rows[4]!.state).toBe("future");
-    expect(rows[4]!.tentative).toBe(false);
+    expect(rows).toHaveLength(LEDGER_SLOTS);
+    expect(rows[4]).toMatchObject({ state: "future", redshirtSlot: true, snaps: null });
+  });
+
+  it("marks slot five as the redshirt slot and no other row", () => {
+    const rows = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 3, redshirtUsed: true }));
+    expect(rows.map((r) => r.redshirtSlot)).toEqual([false, false, false, false, true]);
   });
 
   it("is an ordinary played row once a redshirted career reaches its fifth season", () => {
     const rows = buildLedger(input({ seasons: REDSHIRT_FIVE, currentSeasonIndex: 4, redshirtUsed: true }));
-    expect(rows[4]).toMatchObject({ state: "current", tentative: false, redshirtSlot: true, snaps: 580 });
+    expect(rows[4]).toMatchObject({ state: "current", redshirtSlot: true, snaps: 580 });
   });
 
-  // The 017 playtester's "one place I was genuinely lost": arriving in season 5
-  // happens in season 5's OFFSEASON, before any line for index 4 exists. The
-  // row stayed dashed, uncaptioned-from-now-on but still hedging, and still
-  // unhighlighted, for three consecutive decisions.
-  it("stops hedging the moment the header says season five, not when a line appears", () => {
-    const rows = buildLedger(
-      input({ seasons: REDSHIRT_FIVE.slice(0, 4), currentSeasonIndex: 4, redshirtUsed: true }),
-    );
-    expect(rows[4]).toMatchObject({ state: "current", tentative: false, snaps: null });
+  // Never hide a row the career actually holds: a save that carries a fifth
+  // season, or an active career standing in one, is drawn with it whatever the
+  // redshirt flag says.
+  it("never drops a row a season line or the live season needs", () => {
+    const five = buildLedger(input({ seasons: REDSHIRT_FIVE, currentSeasonIndex: 5, redshirtUsed: false }));
+    expect(five).toHaveLength(LEDGER_SLOTS);
+    const standing = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 4, redshirtUsed: false }));
+    expect(standing).toHaveLength(LEDGER_SLOTS);
+    expect(standing[4]!.state).toBe("current");
   });
 
   it("labels the redshirted year by sequence and never as a second SR guess", () => {
@@ -220,7 +225,6 @@ describe("buildLedger — careers that do not run straight", () => {
       "Mercer State",
       "Lakeside Tech",
       null,
-      null,
     ]);
   });
 
@@ -240,7 +244,7 @@ describe("buildLedger — careers that do not run straight", () => {
       season({ seasonIndex: 2, classYear: "JR" }),
     ];
     const rows = buildLedger(input({ seasons: gapped, currentSeasonIndex: 2 }));
-    expect(rows.map((r) => r.state)).toEqual(["played", "future", "current", "future", "future"]);
+    expect(rows.map((r) => r.state)).toEqual(["played", "future", "current", "future"]);
     expect(rows[2]!.classYear).toBe("JR");
   });
 });
@@ -273,7 +277,7 @@ describe("buildLedger — a save written before DECISION 009", () => {
 
   it("survives a season history that is missing entirely", () => {
     const rows = buildLedger(input({ seasons: undefined as unknown as LedgerSeason[] }));
-    expect(rows).toHaveLength(LEDGER_SLOTS);
+    expect(rows).toHaveLength(BASE_SLOTS);
     expect(rows.every((r) => r.overall === null && r.snaps === null)).toBe(true);
     expect(rows.slice(1).every((r) => r.state === "future")).toBe(true);
   });
@@ -350,8 +354,6 @@ describe("the header and the current row cannot disagree", () => {
           headerSeasonNumber,
         );
         expect(current[0]!.label).toBe(`Year ${headerSeasonNumber}`);
-        // The row the header is naming is never also hedged as a maybe.
-        expect(current[0]!.tentative, `season ${headerSeasonNumber}, ${phase}`).toBe(false);
       }
     }
   });
@@ -402,7 +404,6 @@ describe("the header and the current row agree over a real five-season career", 
       }
       expect(current, where).toHaveLength(1);
       expect(current[0]!.slot, where).toBe(view.seasonNumber);
-      expect(current[0]!.tentative, where).toBe(false);
 
       if (view.seasonNumber === LEDGER_SLOTS) {
         sawSeasonFive = true;
@@ -413,6 +414,125 @@ describe("the header and the current row agree over a real five-season career", 
     // The assertions above pass vacuously if the career never got there.
     expect(sawSeasonFive).toBe(true);
     expect(sawFiveOffseason).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The two numbers a season boundary used to print for one year (036 playtest)
+// ---------------------------------------------------------------------------
+
+describe("buildLedger — which rows carry final figures", () => {
+  it("does not call the season being played now finished", () => {
+    const live = [...FOUR_YEAR.slice(0, 2), season({ seasonIndex: 2, record: null, snaps: 145, overall: 68 })];
+    const rows = buildLedger(input({ seasons: live, currentSeasonIndex: 2 }));
+    expect(rows.map((r) => r.finished)).toEqual([true, true, false, false]);
+  });
+
+  // `enterOffseason` is the only place a line's OVR is finalized, and a career
+  // that ended in the middle of a season never reached it -- so that line still
+  // carries the figure it KICKED OFF at. The row is played; its number is not a
+  // season's end and must not be drawn as one.
+  it("does not call the season a career ended in the middle of finished", () => {
+    const cut: LedgerSeason[] = [
+      season({ seasonIndex: 0, record: "5-7", snaps: 210, overall: 52 }),
+      season({ seasonIndex: 1, record: null, snaps: 96, overall: 44 }),
+    ];
+    const rows = buildLedger(input({ seasons: cut, currentSeasonIndex: 1, active: false }));
+    expect(rows[1]).toMatchObject({ state: "played", finished: false, overall: 44 });
+    expect(rows[0]!.finished).toBe(true);
+  });
+
+  it("calls every completed season finished, including the one just ended", () => {
+    // The season boundary itself: the index has rolled to 2, so season 1's line
+    // has been through `enterOffseason` and is final.
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 1), currentSeasonIndex: 1 }));
+    expect(rows[0]).toMatchObject({ state: "played", finished: true, overall: 54 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The rail running ahead of the header (036 playtest, defect 2)
+// ---------------------------------------------------------------------------
+
+describe("followHeader", () => {
+  it("moves the highlight back to the season the header is naming", () => {
+    // The last card of season 1: the engine is in season 2's offseason, the
+    // header is frozen at `Season 1 - Postseason`.
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 1), currentSeasonIndex: 1 }));
+    expect(rows.map((r) => r.state)).toEqual(["played", "current", "future", "future"]);
+    const followed = followHeader(rows, 1);
+    expect(followed.map((r) => r.state)).toEqual(["current", "future", "future", "future"]);
+  });
+
+  it("leaves the finished figures on the row it highlights", () => {
+    const rows = followHeader(buildLedger(input({ seasons: FOUR_YEAR.slice(0, 1), currentSeasonIndex: 1 })), 1);
+    expect(rows[0]).toMatchObject({
+      state: "current",
+      finished: true,
+      overall: 54,
+      record: "6-6",
+      snaps: 180,
+    });
+  });
+
+  it("sends a row that a season line had filled back to played, not to empty chrome", () => {
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 3), currentSeasonIndex: 2 }));
+    const followed = followHeader(rows, 1);
+    expect(followed.map((r) => r.state)).toEqual(["current", "played", "played", "future"]);
+  });
+
+  it("does nothing when the header and the table already agree", () => {
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 3), currentSeasonIndex: 2 }));
+    expect(followHeader(rows, 3)).toEqual(rows);
+  });
+
+  it("never gives a finished career a current row", () => {
+    const rows = buildLedger(input({ seasons: FOUR_YEAR, currentSeasonIndex: 4, active: false }));
+    for (const n of [1, 2, 3, 4, 5]) {
+      expect(followHeader(rows, n).some((r) => r.state === "current"), `season ${n}`).toBe(false);
+    }
+  });
+
+  it("does not mutate the rows it is handed", () => {
+    const rows = buildLedger(input({ seasons: FOUR_YEAR.slice(0, 1), currentSeasonIndex: 1 }));
+    const before = JSON.stringify(rows);
+    followHeader(rows, 1);
+    expect(JSON.stringify(rows)).toBe(before);
+  });
+});
+
+// The same claim made against a real career rather than against hand-built
+// rows: at EVERY decision, including the last card of every season, the season
+// the header prints and the slot the table lifts are the same number. This is
+// the exact pair the screen composes -- `seasonStamp` before `advance`, the
+// ledger after it -- so it fails the way the screen failed.
+describe("the header and the highlighted row agree on a resolved card", () => {
+  const SETUP: Setup = { lastName: "Ivey", jerseyNumber: 9, homeState: "TX", position: "QB" };
+
+  it("never lifts a year the card being read has not reached", () => {
+    let state = createCareer(SETUP, "follow-header");
+    let boundaries = 0;
+
+    for (let guard = 0; guard < 500 && state.status === "active"; guard++) {
+      const decision = getDecision(state);
+      if (!decision) break;
+      const stamp = seasonStamp(state);
+      const next = advance(state, decision.options[0]!.id);
+      const rows = followHeader(buildView(next).ledger, stamp.seasonNumber);
+      const current = rows.filter((r) => r.state === "current");
+      const where = `card from season ${stamp.seasonNumber} ${stamp.phaseLabel}`;
+
+      if (next.status === "active") {
+        expect(current, where).toHaveLength(1);
+        expect(current[0]!.slot, where).toBe(stamp.seasonNumber);
+        if (next.seasonIndex + 1 !== stamp.seasonNumber) boundaries++;
+      }
+      state = next;
+    }
+
+    // The assertions above are vacuous unless the career actually crossed a
+    // boundary with a card on screen, which is the only case that ever failed.
+    expect(boundaries).toBeGreaterThan(0);
   });
 });
 
@@ -437,7 +557,6 @@ describe("classYearLabel", () => {
       "SO",
       "JR",
       "SR",
-      "",
     ]);
   });
 

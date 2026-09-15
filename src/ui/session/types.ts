@@ -377,11 +377,14 @@ export interface CareerView {
       -- which is exactly where the redshirt and transfer cards ask for it
       (DECISION 013). Null until the first on-field phase of the career. */
   season: SeasonLineView | null;
-  /** The career ledger: always exactly five rows, whatever has happened
-      (DECISIONS 007/010). Slot 5 is the redshirt slot and carries its own
-      `redshirtSlot` / `tentative` flags, so a renderer never re-derives it.
-      Rows are labelled by sequence, not class year -- DECISION 015 chose
-      option 2 after the redshirt inference measured unusable (report 010). */
+  /** The career ledger: four rows, and a fifth once `redshirtUsed` is true --
+      the table states the years the career HAS rather than promising one most
+      careers never get (`BASE_SLOTS`). Slot 5 carries its own `redshirtSlot`
+      flag, so a renderer never re-derives it. Rows are labelled by sequence,
+      not class year -- DECISION 015 chose option 2 after the redshirt inference
+      measured unusable (report 010). The highlight is keyed to the LIVE season;
+      a screen showing a resolved card moves it to the header's own season with
+      `followHeader`. */
   ledger: LedgerRow[];
   /** The live OVR. Shown as an integer: see the spec's §6 note on why the
       qualitative-only treatment was reversed. */
