@@ -148,8 +148,10 @@ export interface FailureReport {
   // so any counterfactual undrafted floor can be evaluated exactly against the
   // measured distribution instead of re-running the sim per candidate value.
   stockHistogram: Record<number, number>;
-  // Draft-stock counts split by the class year the career declared in. The
-  // engine only offers the declare decision to a JR or a SR (advance.ts), so
+  // Draft-stock counts split by the class year the career declared in. With
+  // the declare decision deleted (DECISION 057) this is always SR -- the split
+  // is kept because it is the assertion that it IS always SR, which is what
+  // makes the removed EARLY_DECLARE_PENALTY provably unreachable. Formerly:
   // this is the split that makes a class-keyed lever — a penalty on leaving
   // with eligibility unused — evaluable against the same measurement as a
   // global floor change.

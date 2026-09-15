@@ -8,12 +8,12 @@ const SETUP: Setup = { lastName: "Player", jerseyNumber: 7, homeState: "TX", pos
 
 type Decision = NonNullable<ReturnType<typeof getDecision>>;
 
-// A policy that keeps the career alive: declining the draft and declining the
-// redshirt, so the walk can reach hub steps that sit behind them. A plain
-// first-option policy declares the moment it is eligible, which makes the
-// transfer step (after `declare` in HUB_ORDER) unreachable.
+// A policy that keeps the career alive: declining the redshirt, so the walk
+// can reach the hub step that sits behind it. It used to decline the draft
+// too -- a first-option policy declared the moment it was eligible, which made
+// the transfer step unreachable -- and that clause went with the declare
+// decision (DECISION 057).
 function survivingChoice(d: Decision): string {
-  if (d.eventId === "declare") return "return";
   if (d.eventId === "redshirt") return "decline";
   return d.options[0]!.id;
 }
@@ -63,7 +63,7 @@ describe("lastOutcome", () => {
       for (let guard = 0; guard < 1000 && s.status === "active"; guard++) {
         const d = getDecision(s);
         if (!d) break;
-        const isHub = d.eventId === "recruiting" || d.eventId === "transfer" || d.eventId === "declare";
+        const isHub = d.eventId === "recruiting" || d.eventId === "transfer";
         if (isHub && s.lastOutcome) {
           expect(advance(s, survivingChoice(d)).lastOutcome).toBeUndefined();
           observed++;
@@ -81,11 +81,10 @@ describe("lastOutcome", () => {
     expect(advance(s, d.options[0]!.id).lastOutcome).toBeUndefined();
   });
 
-  it("is undefined after a declare choice", () => {
-    const found = playUntil("declare-1", (_s, d) => d !== null && d.eventId === "declare");
-    expect(found).not.toBeNull();
-    expect(advance(found!.state, "declare").lastOutcome).toBeUndefined();
-  });
+  // REMOVED (DECISION 057): "is undefined after a declare choice". The declare
+  // branch of `applyChoice` authored no prose and the test pinned that; the
+  // branch is deleted. The recruiting and transfer cases below cover the same
+  // rule for every hub branch that is left.
 
   it("is undefined after a transfer choice", () => {
     const found = playUntil("transfer-1", (_s, d) => d !== null && d.eventId === "transfer");

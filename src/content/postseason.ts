@@ -49,6 +49,20 @@ export const PROGRESSION: ProgressionConfig = {
   // capped its draft stock below the round-1 threshold outright. 180 x 0.34.
   snapsPerDevPointByPosition: { K: 62 },
   devCap: 3,
+  // DECISION 058, measured in report 034 §4 (candidate F2, 9,000 careers per
+  // profile). Do not re-derive these by eye: 200/60 is the gentle end of the
+  // sweep, chosen because it makes a failing career visible in the number the
+  // player already watches without touching a well-played one (`good` stays at
+  // 0.9% undrafted / 40.7% round 1).
+  declineSnapFloor: 200,
+  snapsPerDeclinePoint: 60,
+  // 200 x 0.34 and 60 x 0.34, the same workload factor as snapsPerDevPoint's
+  // K entry above. Without these a well-played kicker -- ~559 career snaps
+  // against a field player's ~1,450 -- sits under the flat 200 floor every
+  // season and declines all career: measured at 4.53% undrafted and 5.47%
+  // round 1, against 0.07% and 50.7% for a QB played identically well.
+  declineSnapFloorByPosition: { K: 68 },
+  snapsPerDeclinePointByPosition: { K: 20 },
   washoutOverallFloor: 45,
   washoutSnapFloor: 60,
   washoutConsecutiveSeasons: 2,

@@ -77,7 +77,7 @@ describe("summarizeTraces", () => {
   });
 
   it("is reproducible for a fixed seed prefix, profile and position", () => {
-    expect(runProbe(60, "repro", "lazyEarly")).toEqual(runProbe(60, "repro", "lazyEarly"));
+    expect(runProbe(60, "repro", "lazyFull")).toEqual(runProbe(60, "repro", "lazyFull"));
   });
 
   it("actually simulates the position it is given", () => {
@@ -87,7 +87,7 @@ describe("summarizeTraces", () => {
   });
 
   it("summarizes an empty-ish sample without dividing by zero", () => {
-    const one = runProbe(1, "single", "lazyEarly");
+    const one = runProbe(1, "single", "lazyFull");
     expect(one.runs).toBe(1);
     expect(Number.isFinite(one.avgDraftStock)).toBe(true);
   });

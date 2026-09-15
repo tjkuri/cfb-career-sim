@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createCareer } from "./create-career";
-import { advance, getDecision, developmentDelta, enterOffseason } from "./advance";
+import { advance, getDecision, developmentDelta, seasonOverallDelta, enterOffseason } from "./advance";
 import { STAT_MODEL } from "./simulate";
 import { ALL_POSITIONS } from "./types";
 
@@ -31,8 +31,12 @@ function autoplayAlwaysReturn(seed: string) {
   while (s.status === "active" && guard++ < 500) {
     const decision = getDecision(s);
     if (!decision) throw new Error("active career with no decision");
-    // Policy: whenever asked to declare, return to school instead; otherwise take the first option.
-    const choiceId = decision.eventId === "declare" ? "return" : decision.options[0]!.id;
+    // Formerly "whenever asked to declare, return to school". There is no
+    // declare decision any more (DECISION 057), so this is a plain first-option
+    // policy and identical to `autoplay` -- kept under its own name because the
+    // assertions below are about the career that plays out its eligibility, and
+    // that is now every career.
+    const choiceId = decision.options[0]!.id;
     s = advance(s, choiceId);
   }
   return s;
@@ -61,8 +65,10 @@ describe("advance / getDecision", () => {
 
   it("advances eligibility across seasons (reaches at least JR before ending)", () => {
     const s = autoplay("eligibility");
-    // The declare decision lists "declare" first, so a first-option policy declares
-    // as soon as it becomes draft-eligible (JR), i.e. after yearsUsed reaches 2.
+    // A first-option policy used to press "declare" the moment it became
+    // draft-eligible, which is why 2 is the bar here. It now plays the career
+    // out, so 2 is a floor the career clears comfortably -- kept as written
+    // because the assertion is about eligibility advancing at all.
     const reachedUpperclass = s.eligibility.yearsUsed >= 2;
     expect(reachedUpperclass).toBe(true);
   });
@@ -94,13 +100,27 @@ describe("advance / getDecision", () => {
   });
 
   it("populates a team record for every played season and can accrue honors", () => {
-    // Play many careers; every completed season must have a full record, and
+    // Play many careers; every COMPLETED season must have a full record, and
     // across the sample at least one career earns a trophy or award.
+    //
+    // The "completed" qualifier is new (DECISION 057). A record is written by
+    // the postseason resolver, so a career that ends mid-season -- a character
+    // bust, or the washout the new upperclass decline can now reach -- leaves a
+    // final line with no record. Careers used to end at the declare card,
+    // between seasons, so the case did not arise; now that every career plays
+    // to the end of its eligibility it does, and a 0-0 final line on a career
+    // that ended mid-season is correct rather than missing.
     let honored = 0;
     let checkedSeasons = 0;
     for (let i = 0; i < 30; i++) {
       const s = autoplay(`records-${i}`);
-      for (const line of s.seasons) {
+      for (const [idx, line] of s.seasons.entries()) {
+        const isPartialFinal = idx === s.seasons.length - 1 && line.teamWins + line.teamLosses === 0;
+        if (isPartialFinal) {
+          // Only a career that ended inside the season may hold one.
+          expect(s.status, `seed ${i}: a completed career left a 0-0 line`).toBe("busted");
+          continue;
+        }
         expect(line.teamWins + line.teamLosses).toBe(12);
         checkedSeasons++;
       }
@@ -110,12 +130,15 @@ describe("advance / getDecision", () => {
     expect(honored).toBeGreaterThan(0);
   });
 
-  it("still offers declare at JR and force-declares when out of eligibility (post-refactor)", () => {
-    // First-option policy declares at JR (declare is option 0).
+  it("offers no declare decision and force-declares when out of eligibility", () => {
+    // UPDATED (DECISION 057): the declare decision is deleted. What used to be
+    // "still offers declare at JR" is now its opposite -- it must never be
+    // offered -- and the forced declaration on empty eligibility is the only
+    // way a career reaches the draft.
     const s = autoplay("refactor-declare");
     expect(["drafted", "busted"]).toContain(s.status);
 
-    // Always-return plays all years then force-declares (no phantom season). With
+    // Plays all years then force-declares (no phantom season). With
     // redshirt now first-option at the hub, this policy takes it once, so the cap
     // is 5 (4 base + 1 redshirt) rather than 4.
     const r = autoplayAlwaysReturn("refactor-force");
@@ -125,18 +148,24 @@ describe("advance / getDecision", () => {
     expect(r.seasons.length).toBe(5);
   });
 
-  it("rejects a bogus choiceId at the declare decision", () => {
+  it("never raises a declare decision, and still rejects a bogus choiceId at the hub", () => {
+    // REPLACED (DECISION 057). This walked to the declare card and checked its
+    // guard clause rejected "banana". The card is gone, so the walk asserts it
+    // is never offered; the guard clause itself still has to be exercised, and
+    // the redshirt hub is the surviving synthetic card that has one.
     let s = createCareer(setup, "declare-guard");
     let guard = 0;
+    let checkedGuard = false;
     while (s.status === "active" && guard++ < 500) {
       const d = getDecision(s)!;
-      if (d.eventId === "declare") {
-        expect(() => advance(s, "banana")).toThrow(/declare/i);
-        return;
+      expect(d.eventId).not.toBe("declare");
+      if (d.eventId === "redshirt" && !checkedGuard) {
+        expect(() => advance(s, "banana")).toThrow(/redshirt/i);
+        checkedGuard = true;
       }
       s = advance(s, d.options[0]!.id);
     }
-    throw new Error("never reached the declare decision");
+    expect(checkedGuard, "never reached a hub card with a guard clause").toBe(true);
   });
 });
 
@@ -174,6 +203,54 @@ describe("development curve", () => {
         `${position} earns no development from a full ${Math.round(fullSeason)}-snap season`,
       ).toBeGreaterThanOrEqual(1);
     }
+  });
+
+  // DECISION 058: the upperclass decline. This is the one place a season can
+  // COST overall, and it is the mechanism the whole change rests on, so the
+  // gate and the arithmetic are pinned separately.
+  describe("upperclass decline", () => {
+    const cfg = CONTENT.progression;
+
+    it("charges a JR or SR one point per 60 snaps short of 200", () => {
+      expect(seasonOverallDelta(199, "JR", cfg, "QB")).toBe(-1); // ceil(1/60)
+      expect(seasonOverallDelta(140, "SR", cfg, "QB")).toBe(-1); // ceil(60/60)
+      expect(seasonOverallDelta(139, "SR", cfg, "QB")).toBe(-2); // ceil(61/60)
+      expect(seasonOverallDelta(0, "JR", cfg, "QB")).toBe(-4); // ceil(200/60)
+    });
+
+    it("leaves freshmen and sophomores untouched -- the gate that was measured, not a detail", () => {
+      // An ungated version was measured over ~150,000 careers and DISQUALIFIED:
+      // freshmen do not play, so a flat threshold taxes every career for two
+      // years and ends up punishing luck rather than play (report 034 §2).
+      for (const cls of ["FR", "SO"] as const) {
+        // Never negative, whatever the snap count, and otherwise exactly the
+        // development they always earned.
+        for (const snaps of [0, 120, 199, 400]) {
+          expect(seasonOverallDelta(snaps, cls, cfg, "QB")).toBe(
+            developmentDelta(snaps, cfg, "QB"),
+          );
+          expect(seasonOverallDelta(snaps, cls, cfg, "QB")).toBeGreaterThanOrEqual(0);
+        }
+      }
+    });
+
+    it("an upperclassman who plays still develops exactly as before", () => {
+      for (const snaps of [200, 400, 2000]) {
+        expect(seasonOverallDelta(snaps, "SR", cfg, "QB")).toBe(
+          developmentDelta(snaps, cfg, "QB"),
+        );
+      }
+    });
+
+    it("enterOffseason applies the decline to the number the player watches", () => {
+      const s = createCareer(setup, "decline-offseason");
+      s.overall = 70;
+      s.phase = "offseason";
+      s.eligibility.classYear = "JR";
+      s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 20, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "JR" });
+      enterOffseason(s, CONTENT, createRng("decline-rng"));
+      expect(s.overall).toBe(70 - 3); // ceil(180/60)
+    });
   });
 
   it("a returning player's overall rises across seasons from playing", () => {

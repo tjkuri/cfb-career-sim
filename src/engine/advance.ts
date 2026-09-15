@@ -1,4 +1,4 @@
-import type { GameEvent, GameState, Position } from "./types";
+import type { ClassYear, GameEvent, GameState, Position } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
@@ -13,13 +13,16 @@ import type { ContentBundle } from "../content/schema";
 import { generateTransferOffers } from "./transfer";
 import { rollAmbientInjury } from "./school-effects";
 
-const DECLARE_EVENT_ID = "declare";
 const TRANSFER_EVENT_ID = "transfer";
 const REDSHIRT_EVENT_ID = "redshirt";
 const ON_FIELD_PHASES = new Set(["nonconf", "conference", "postseason"]);
 
-type HubStep = "entry" | "redshirt" | "declare" | "transfer";
-const HUB_ORDER: Exclude<HubStep, "entry">[] = ["redshirt", "declare", "transfer"];
+// The declare decision was DELETED (DECISION 057). It was strictly dominated at
+// every offer -- a button whose only correct use is never -- so it was removed
+// rather than reworded. A career now ends exactly one way short of a washout:
+// eligibility runs out and `enterOffseason` declares for the player.
+type HubStep = "entry" | "redshirt" | "transfer";
+const HUB_ORDER: Exclude<HubStep, "entry">[] = ["redshirt", "transfer"];
 
 export interface PendingDecision {
   eventId: string;
@@ -45,17 +48,6 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
       title: "Signing Day",
       description: "Where do you commit?",
       options: opts.map((o) => ({ id: o.id, label: o.label })),
-    };
-  }
-  if (state.currentEventId === DECLARE_EVENT_ID) {
-    return {
-      eventId: DECLARE_EVENT_ID,
-      title: "Declare for the Draft?",
-      description: "You're draft-eligible. Cash in now, or return for another season?",
-      options: [
-        { id: "declare", label: "Declare for the NFL Draft" },
-        { id: "return", label: "Return to school" },
-      ],
     };
   }
   if (state.currentEventId === TRANSFER_EVENT_ID) {
@@ -106,15 +98,6 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     applyRecruitingChoice(s, offer.schoolId, content);
     s.pendingOptions = undefined;
     s.currentEventId = null;
-    return;
-  }
-  if (s.currentEventId === DECLARE_EVENT_ID) {
-    if (choiceId !== "declare" && choiceId !== "return") {
-      throw new Error(`Invalid declare choice: ${choiceId}`);
-    }
-    if (choiceId === "declare") { s.status = "declared"; s.currentEventId = null; return; }
-    // return to school: proceed to the next hub decision (transfer, once wired).
-    raiseNextHubDecision(s, content, rng, "declare");
     return;
   }
   if (s.currentEventId === TRANSFER_EVENT_ID) {
@@ -184,6 +167,46 @@ export function developmentDelta(
   return Math.min(cfg.devCap, Math.floor(seasonSnaps / perPoint));
 }
 
+// What a completed season does to `overall` -- development, or, for an
+// upperclassman who barely played, decline (DECISION 058).
+//
+// `developmentDelta` cannot return a negative number, which made `overall` a
+// one-way ratchet and was the identified root cause of an unlosable game
+// (DECISION 057). This wrapper is the only place a season can cost overall.
+//
+// The JR/SR gate is the mechanism, not a detail. An ungated snap threshold was
+// measured over ~150,000 careers (report 034 §2) and disqualified: it taxes
+// every freshman -- freshmen do not play, so the threshold charges a career for
+// its first two years -- and at the intensity where it finally produces failure
+// it stops discriminating (good 7.6%, random 8.4%, lazy 7.7%), punishing luck
+// rather than play. Gated to upperclassmen it discriminates 1:45 and reads
+// true: a freshman who does not play is normal, a junior who does not is
+// falling behind.
+export function seasonOverallDelta(
+  seasonSnaps: number,
+  classYear: ClassYear,
+  cfg: {
+    snapsPerDevPoint: number;
+    devCap: number;
+    snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
+    declineSnapFloor: number;
+    snapsPerDeclinePoint: number;
+    declineSnapFloorByPosition?: Partial<Record<Position, number>>;
+    snapsPerDeclinePointByPosition?: Partial<Record<Position, number>>;
+  },
+  position: Position,
+): number {
+  const upperclass = classYear === "JR" || classYear === "SR";
+  // Position-scaled for the same reason development is: a flat floor sits above
+  // a kicker's entire season and declines a well-played K for its whole career.
+  const floor = cfg.declineSnapFloorByPosition?.[position] ?? cfg.declineSnapFloor;
+  const perPoint = cfg.snapsPerDeclinePointByPosition?.[position] ?? cfg.snapsPerDeclinePoint;
+  if (upperclass && seasonSnaps < floor) {
+    return -Math.ceil((floor - seasonSnaps) / perPoint);
+  }
+  return developmentDelta(seasonSnaps, cfg, position);
+}
+
 // The two soft-washout endings. Named so the balance harness can tell this
 // path from the character spiral without matching a literal that might drift.
 export const WASHOUT_REASONS = {
@@ -205,8 +228,18 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
     // not touched here -- it was recorded at kickoff, and CLASS_ORDER advances
     // a few lines below.
     lastSeason.overall = s.overall;
+    // `classYear` here is the year the completed season was PLAYED as: it was
+    // recorded at kickoff and CLASS_ORDER has not advanced yet, so the gate
+    // asks "was the player an upperclassman for the season that just ended?",
+    // which is the question DECISION 058 answers.
     s.overall = clampOverall(
-      s.overall + developmentDelta(lastSeason.snaps, content.progression, s.setup.position),
+      s.overall +
+        seasonOverallDelta(
+          lastSeason.snaps,
+          lastSeason.classYear,
+          content.progression,
+          s.setup.position,
+        ),
     );
   }
 
@@ -256,9 +289,6 @@ function raiseNextHubDecision(s: GameState, content: ContentBundle, rng: Rng, fr
     if (step === "redshirt") {
       if (redshirtOffered(s)) { s.currentEventId = REDSHIRT_EVENT_ID; return; }
       continue;
-    }
-    if (step === "declare") {
-      if (s.eligibility.draftEligible) { s.currentEventId = DECLARE_EVENT_ID; return; }
     }
     if (step === "transfer") {
       s.pendingOptions = generateTransferOffers(s, content, rng);
@@ -320,7 +350,7 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
     s.phaseSimulated = false;
     if (s.phase === "offseason") {
       enterOffseason(s, content, rng);
-      // Hub may set a declare decision (stop) or force-declare (ending).
+      // Hub may raise a decision (stop) or force-declare on empty eligibility.
       if (s.currentEventId !== null || s.status !== "active") return;
     }
   }
@@ -328,8 +358,8 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
 
 function finalizeIfEnded(s: GameState, rng: Rng, injuryOf: InjuryLookup): void {
   if (s.status === "active") return;
-  // The declare paths return before autoProgress reaches tickPhaseStart, so the
-  // queue's only drain never runs. Flush on every terminal status, busted
+  // A forced declaration returns before autoProgress reaches tickPhaseStart, so
+  // the queue's only drain never runs. Flush on every terminal status, busted
   // included, so a reported final overall is never inflated by a penalty that
   // was earned and then orphaned.
   flushPendingEffects(s, injuryOf);

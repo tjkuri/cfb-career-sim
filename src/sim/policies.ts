@@ -163,14 +163,12 @@ export function optionCharacterScore(option: EventOption): number {
 
 export type EventStrategy = "first" | "random" | "lazy" | "saboteur" | "antisocial" | "best";
 export type RecruitStrategy = "first" | "random" | "highestTier" | "lowestTier";
-export type DeclareStrategy = "asap" | "never" | "random";
 export type TransferStrategy = "stay" | "up" | "upOrLateral" | "lateral" | "down" | "random";
 export type RedshirtStrategy = "take" | "decline" | "random";
 
 export interface PolicyProfile {
   events: EventStrategy;
   recruiting: RecruitStrategy;
-  declare: DeclareStrategy;
   transfer: TransferStrategy;
   redshirt: RedshirtStrategy;
 }
@@ -239,14 +237,6 @@ export function makePolicy(profile: PolicyProfile, content: ContentBundle = CONT
       return transferChoice(offers, state.school.tier, profile.transfer, rng);
     }
 
-    if (id === "declare") {
-      switch (profile.declare) {
-        case "asap": return "declare";
-        case "never": return "return";
-        case "random": return rngInt(rng, 0, 1) === 0 ? "declare" : "return";
-      }
-    }
-
     if (id === "redshirt") {
       switch (profile.redshirt) {
         case "take": return "redshirt";
@@ -282,41 +272,46 @@ export function makePolicy(profile: PolicyProfile, content: ContentBundle = CONT
 // The named profiles the 018 measurement runs. Kept here rather than in the
 // probe so a later stage can re-run the identical policy by name.
 export const PROFILES = {
-  // Controls.
-  baselineRandom: { events: "random", recruiting: "random", declare: "random", transfer: "random", redshirt: "random" },
-  good: { events: "best", recruiting: "highestTier", declare: "never", transfer: "up", redshirt: "take" },
-  // Q1: bad play, full career (never declares until eligibility forces it).
-  lazyFull: { events: "lazy", recruiting: "lowestTier", declare: "never", transfer: "stay", redshirt: "decline" },
-  saboteurFull: { events: "saboteur", recruiting: "lowestTier", declare: "never", transfer: "stay", redshirt: "decline" },
-  // Q1: the 014 playtester — bad play, declares at the first opportunity.
-  lazyEarly: { events: "lazy", recruiting: "lowestTier", declare: "asap", transfer: "stay", redshirt: "decline" },
-  saboteurEarly: { events: "saboteur", recruiting: "lowestTier", declare: "asap", transfer: "stay", redshirt: "decline" },
+  // Controls. `baselineRandom` is kept under its historical name -- it is
+  // `failure-probe`'s CLI default and every measurement in reports 018-034
+  // cites it -- but note that it no longer means what it did: it used to
+  // declare early at random, and essentially all of the 12-17% failure rate
+  // those reports attribute to "ordinary play" was that coin flip firing
+  // (DECISION 058). With the declare decision deleted it is ordinary play and
+  // nothing else, identical in behaviour to `randomFull`.
+  baselineRandom: { events: "random", recruiting: "random", transfer: "random", redshirt: "random" },
+  good: { events: "best", recruiting: "highestTier", transfer: "up", redshirt: "take" },
+  // Q1: bad play, full career.
+  lazyFull: { events: "lazy", recruiting: "lowestTier", transfer: "stay", redshirt: "decline" },
+  saboteurFull: { events: "saboteur", recruiting: "lowestTier", transfer: "stay", redshirt: "decline" },
   // Q1: the second definition of "bad" — the player who tanks CHARACTER, which
   // is the axis the six authored bust events are gated on.
-  antisocialFull: { events: "antisocial", recruiting: "lowestTier", declare: "never", transfer: "stay", redshirt: "decline" },
-  antisocialEarly: { events: "antisocial", recruiting: "lowestTier", declare: "asap", transfer: "stay", redshirt: "decline" },
-  // Q1: is early declaring the loophole on its own, with ordinary play?
-  randomEarly: { events: "random", recruiting: "random", declare: "asap", transfer: "random", redshirt: "random" },
-  randomFull: { events: "random", recruiting: "random", declare: "never", transfer: "random", redshirt: "random" },
+  antisocialFull: { events: "antisocial", recruiting: "lowestTier", transfer: "stay", redshirt: "decline" },
+  randomFull: { events: "random", recruiting: "random", transfer: "random", redshirt: "random" },
+  // The five `*Early` profiles (lazyEarly, saboteurEarly, antisocialEarly,
+  // randomEarly, goodEarly) were DELETED with the declare decision they
+  // existed to exercise (DECISION 057). Each differed from its `*Full`
+  // counterpart in the `declare` field alone, so keeping them would have left
+  // five names promising a behaviour the engine can no longer produce. Use the
+  // `*Full` profile; that is now the only career shape there is.
+  //
   // Q2: transfer strategy is the ONLY variable. Everything else is held at the
   // house baseline so the difference between these rows is the offseason.
-  offseasonStay: { events: "random", recruiting: "random", declare: "random", transfer: "stay", redshirt: "random" },
-  offseasonUp: { events: "random", recruiting: "random", declare: "random", transfer: "up", redshirt: "random" },
-  offseasonUpOrLateral: { events: "random", recruiting: "random", declare: "random", transfer: "upOrLateral", redshirt: "random" },
-  offseasonLateral: { events: "random", recruiting: "random", declare: "random", transfer: "lateral", redshirt: "random" },
-  offseasonRandom: { events: "random", recruiting: "random", declare: "random", transfer: "random", redshirt: "random" },
+  offseasonStay: { events: "random", recruiting: "random", transfer: "stay", redshirt: "random" },
+  offseasonUp: { events: "random", recruiting: "random", transfer: "up", redshirt: "random" },
+  offseasonUpOrLateral: { events: "random", recruiting: "random", transfer: "upOrLateral", redshirt: "random" },
+  offseasonLateral: { events: "random", recruiting: "random", transfer: "lateral", redshirt: "random" },
+  offseasonRandom: { events: "random", recruiting: "random", transfer: "random", redshirt: "random" },
   // Q2, long careers: the "transfer up every year" line only has room to pay
-  // off if the career runs long enough for the tier to matter, so the A/B is
-  // repeated with declare held at "never".
-  longStay: { events: "random", recruiting: "random", declare: "never", transfer: "stay", redshirt: "random" },
-  longUp: { events: "random", recruiting: "random", declare: "never", transfer: "up", redshirt: "random" },
+  // off if the career runs long enough for the tier to matter. Every career is
+  // now a full career, so these differ from their `offseason*` twins only in
+  // the redshirt policy they inherit; they are kept because the 018-024
+  // measurements are quoted by name.
+  longStay: { events: "random", recruiting: "random", transfer: "stay", redshirt: "random" },
+  longUp: { events: "random", recruiting: "random", transfer: "up", redshirt: "random" },
   // Q2, good players: the same A/B for someone who is actually optimising.
-  goodStay: { events: "best", recruiting: "highestTier", declare: "never", transfer: "stay", redshirt: "take" },
-  goodUp: { events: "best", recruiting: "highestTier", declare: "never", transfer: "up", redshirt: "take" },
-  // The control for any early-declare penalty: someone who played WELL and
-  // still leaves as a junior. A change aimed at the two-season loophole must
-  // not quietly reprice this player.
-  goodEarly: { events: "best", recruiting: "highestTier", declare: "asap", transfer: "up", redshirt: "take" },
+  goodStay: { events: "best", recruiting: "highestTier", transfer: "stay", redshirt: "take" },
+  goodUp: { events: "best", recruiting: "highestTier", transfer: "up", redshirt: "take" },
 } satisfies Record<string, PolicyProfile>;
 
 export type ProfileName = keyof typeof PROFILES;

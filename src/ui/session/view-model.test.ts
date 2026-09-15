@@ -759,87 +759,14 @@ describe("hubFacts", () => {
 });
 
 // ---------------------------------------------------------------------------
-// B25 / DECISION 038. The declare card is now a real gamble and carried no
-// warning of any kind. DECISION 025's refusal of `draftStock`, a round
-// estimate and "you would go undrafted" is untouched; what goes in is the
-// number of seasons of eligibility left, which is a rule of the game.
+// REMOVED with the declare decision (DECISION 057). This file held a suite --
+// "the declare card states the eligibility that remains" (B25 / DECISION 038)
+// -- asserting that one line of fact printed under the declare prompt, counted
+// down correctly, appeared on no other card, and leaked nothing about the
+// player. The card is gone, `CareerView.decisionNote` is gone with it, and
+// there is nothing left to assert. DECISION 025's refusal still stands for
+// every card that remains: no projection, no draft stock, no round estimate.
 // ---------------------------------------------------------------------------
-describe("the declare card states the eligibility that remains", () => {
-  const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
-
-  /** Walk to the first declare card, declining the redshirt on the way. */
-  function atDeclare(seed: string, position: Setup["position"]) {
-    let state = createCareer({ ...setup, position }, seed);
-    for (let guard = 0; guard < 500 && state.status === "active"; guard++) {
-      const d = getDecision(state);
-      if (!d) break;
-      if (d.eventId === "declare") return state;
-      const ids = d.options.map((o) => o.id);
-      state = advance(state, ids.includes("decline") ? "decline" : ids[0]!);
-    }
-    return null;
-  }
-
-  it("prints the note on the declare card and nowhere else", () => {
-    let sawDeclare = 0;
-    for (const position of ALL_POSITIONS) {
-      const state = atDeclare(`vm-note-${position}`, position);
-      expect(state, `${position}: no declare card was reachable`).not.toBeNull();
-      const view = buildView(state!);
-      expect(view.decisionNote).toMatch(/^(One season|Two seasons|Three seasons) of eligibility remains?\.$/);
-      sawDeclare++;
-    }
-    expect(sawDeclare).toBe(ALL_POSITIONS.length);
-
-    // Every other decision in a full career carries none. The note is a
-    // one-off fact, not a general annotation channel: anything that
-    // characterised an option or estimated its result would be the leak
-    // DECISIONS 012 and 025 forbid.
-    let ui: UiState = reducer(INITIAL_STATE, { type: "start", setup, seed: "vm-note-other" });
-    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
-      if (ui.state) {
-        const d = getDecision(ui.state);
-        const note = buildView(ui.state).decisionNote;
-        if (d && d.eventId !== "declare") expect(note, d.eventId).toBeNull();
-      }
-      const next = ui.resolved
-        ? reducer(ui, { type: "continue" })
-        : reducer(ui, { type: "choose", optionId: getDecision(ui.state!)?.options[0]?.id ?? "" });
-      if (next === ui) break;
-      ui = next;
-    }
-  });
-
-  it("counts down as seasons are used, and includes the one about to be played", () => {
-    // A junior who returns has two more seasons in him and the card says two;
-    // by the senior offseason it says one. `enterOffseason` forces a
-    // declaration the moment the count would reach zero, so the note can never
-    // read "no seasons remain" beside a live choice.
-    const notes: string[] = [];
-    let state = createCareer(setup, "vm-note-countdown");
-    for (let guard = 0; guard < 500 && state.status === "active"; guard++) {
-      const d = getDecision(state);
-      if (!d) break;
-      if (d.eventId === "declare") notes.push(buildView(state).decisionNote!);
-      const ids = d.options.map((o) => o.id);
-      const pick = d.eventId === "declare" ? "return" : ids.includes("decline") ? "decline" : ids[0]!;
-      state = advance(state, pick);
-    }
-    expect(notes.length).toBeGreaterThan(1);
-    expect(notes[0]).toBe("Two seasons of eligibility remain.");
-    expect(notes[notes.length - 1]).toBe("One season of eligibility remains.");
-  });
-
-  it("leaks nothing: the note is the same sentence for every player in the class", () => {
-    // DECISION 025's test, applied. The sentence is a function of eligibility
-    // alone, so it cannot be inverted into overall, character or draft stock.
-    const strong = atDeclare("vm-note-leak", "QB")!;
-    const weak = { ...strong, overall: 40, character: 20 };
-    const great = { ...strong, overall: 95, character: 95 };
-    expect(buildView(weak).decisionNote).toBe(buildView(great).decisionNote);
-    expect(buildView(strong).decisionNote).not.toContain(String(strong.overall));
-  });
-});
 
 // DECISION 046, cause 1 and cause 2. A resolved card's number described
 // everything that happened inside its `advance()` -- its own outcome, plus an
@@ -1061,6 +988,42 @@ const queued = (amount: number) => ({
 });
 
 describe("remainderFacts", () => {
+  // DECISION 058. Crossing a season boundary used to mean one thing --
+  // development -- so the card said so. An upperclassman under the snap floor
+  // now LOSES overall at that same boundary, and a sentence reading "a season
+  // of development came in" over a three-point drop is worse than the bare
+  // number the sentence was added to explain.
+  it("separates a season that cost overall from one that granted it", () => {
+    const season = (seasonIndex: number, snaps: number, classYear: "SO" | "JR") => ({
+      seasonIndex, schoolId: "x", snaps, stats: {}, teamWins: 6, teamLosses: 6,
+      overall: 70, classYear,
+    });
+    const setup = { lastName: "K", jerseyNumber: 7, homeState: "TX", position: "QB" as const };
+
+    // A junior who barely played: the boundary cost him ground.
+    const [b1, a1] = pair(
+      { seasonIndex: 2, setup, seasons: [season(2, 25, "JR")] },
+      { seasonIndex: 3, setup, seasons: [season(2, 25, "JR")] },
+    );
+    expect(remainderFacts(b1, a1).developed).toBe(true);
+    expect(remainderFacts(b1, a1).declined).toBe(true);
+
+    // The same junior, having played: development, as always.
+    const [b2, a2] = pair(
+      { seasonIndex: 2, setup, seasons: [season(2, 520, "JR")] },
+      { seasonIndex: 3, setup, seasons: [season(2, 520, "JR")] },
+    );
+    expect(remainderFacts(b2, a2).declined).toBe(false);
+
+    // A sophomore who barely played is exempt by design -- the gate that was
+    // measured, not a detail (report 034 §2).
+    const [b3, a3] = pair(
+      { seasonIndex: 1, setup, seasons: [season(1, 25, "SO")] },
+      { seasonIndex: 2, setup, seasons: [season(1, 25, "SO")] },
+    );
+    expect(remainderFacts(b3, a3).declined).toBe(false);
+  });
+
   it("reads a healed injury, and does not read a healing one as healed", () => {
     // The trap this keying exists to avoid: `remainingPhases` decrements on
     // every tick, so an injury that is merely getting closer to healing looks

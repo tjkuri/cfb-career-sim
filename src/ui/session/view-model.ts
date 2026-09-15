@@ -1,17 +1,18 @@
 import { getDecision, WASHOUT_REASONS, type GameState, type PendingDecision } from "../../engine/index";
-// The one import that does not come through `engine/index`, because the barrel
-// does not re-export it and the barrel is another agent's file this wave.
-// `CLASS_ORDER` is the length of a career's eligibility, and `eligibilityLeft`
-// below is arithmetic on it; writing the 4 out as a literal here would be a
-// second copy of an engine rule that can change. Type-only imports from this
-// module are already the norm across `src/ui/session/**`.
-import { CLASS_ORDER, type Effect, type Outcome } from "../../engine/types";
+// Type-only imports from this module are already the norm across
+// `src/ui/session/**`; the barrel does not re-export these.
+import { type Effect, type Outcome } from "../../engine/types";
 // Same reasoning, one module over. `clampOverall` is the engine's own bound on
 // `overall` (0-99), and `cardAccount` below has to reproduce the engine's
 // arithmetic exactly or the remainder it hands the card is off by the clamp.
 // Importing the function is what makes "exactly" true; re-spelling `Math.min(99,
 // ...)` here would be a second copy of an engine rule, drifting silently.
 import { clampOverall } from "../../engine/effects";
+// Same reasoning again: `seasonOverallDelta` is the engine's own answer to
+// "did the season that just ended cost overall or grant it?" (DECISION 058),
+// and re-implementing the JR/SR gate here would be a second copy of a rule that
+// can move.
+import { seasonOverallDelta } from "../../engine/advance";
 import { CONTENT } from "../../content/index";
 import { standingPhrase, trustPhrase } from "./bands";
 import { buildLedger } from "./ledger";
@@ -98,8 +99,8 @@ function currentRecord(state: GameState): string | null {
 }
 
 // The most recent line: in progress during the on-field phases, and the season
-// just completed during an offseason -- which is where the redshirt, transfer
-// and declare cards ask for it. Null before the first on-field phase, because
+// just completed during an offseason -- which is where the redshirt and
+// transfer cards ask for it. Null before the first on-field phase, because
 // `advance.ts:273-277` only pushes a line on entering one; during recruiting
 // there is no season to report, which is a state to name, not a row of zeroes.
 function currentSeasonLine(state: GameState): SeasonLineView | null {
@@ -170,7 +171,7 @@ export function seasonStamp(state: GameState): SeasonStamp {
  * `seasonStamp` is taken before it: the "before" state is gone by the time
  * anything is rendered.
  *
- * B23 / DECISION 037. Signing Day, the transfer portal and the declare card
+ * B23 / DECISION 037. Signing Day and the transfer portal
  * author no prose, and the reducer read the missing prose as "nothing
  * happened". It is not: the 017 playtester's "Stay at Baylor" moved `overall`
  * 75 -> 82 in the gap between two clicks, and the one transfer of the career
@@ -222,7 +223,7 @@ export function hubFacts(before: GameState, after: GameState): HubFacts | null {
 const EVENTS_BY_ID = new Map(CONTENT.events.map((e) => [e.id, e]));
 
 // A structural mirror of `advance.ts`'s `REDSHIRT_EVENT_ID`, which is not
-// exported, for the same reason `DECLARE_EVENT_ID` below is one. The redshirt
+// exported. The redshirt
 // hub is the one decision outside `content.events` that authors prose: the
 // engine reads its two descriptions and its bump/sink amounts straight off
 // `content.redshirt`, so its card can be accounted for from content like any
@@ -378,7 +379,7 @@ function accountOf(
  * movement across the `advance`, which is what every card did before this
  * existed. It is returned for:
  *
- *   * a hub card (Signing Day, transfer, declare) -- no authored prose, so
+ *   * a hub card (Signing Day, transfer) -- no authored prose, so
  *     nothing to match, and DECISION 037 already settled that its number is
  *     the movement across the click and is the point of the card;
  *   * an event id or option id that is no longer in the bundle, which is the
@@ -461,13 +462,25 @@ const injuryKey = (i: { kind: string; injuryType: string; restoreAmount: number 
 const pendingKey = (p: { effect: { amount: number; delayPhases?: number } }) =>
   `${p.effect.amount}:${p.effect.delayPhases ?? 1}`;
 
+// Did the season that just ended cost overall rather than grant development?
+// Recomputed from the completed season line with the engine's own function, so
+// it cannot drift from what `enterOffseason` actually did.
+function seasonCost(after: GameState, before: GameState): boolean {
+  // Defensive on both reads: a save written before a field existed, or a
+  // partial state, answers "no decline" rather than throwing. A wrong `false`
+  // costs one sentence; a throw costs the screen.
+  const line = after.seasons?.find((l) => l.seasonIndex === before.seasonIndex);
+  if (!line || !after.setup) return false;
+  return seasonOverallDelta(line.snaps, line.classYear, CONTENT.progression, after.setup.position) < 0;
+}
+
 /**
  * Everything that moved `overall` during this advance EXCEPT the chosen
  * outcome, as facts (DECISION 056; B45, B47).
  *
  * This exists because a number with no sentence is the defect. `cardAccount`
  * answers "what did this card do"; on a hub card the answer is *nothing* --
- * `applyChoice`'s recruiting, declare and transfer branches write no `overall`
+ * `applyChoice`'s recruiting and transfer branches write no `overall`
  * -- and on an authored card the leftover is whatever `own` did not explain.
  * Either way the player was shown a bare signed integer and left to invent an
  * attribution, and the one they invent is the choice they just made, which is
@@ -496,55 +509,27 @@ export function remainderFacts(before: GameState, after: GameState): Remainder {
     // and `enterOffseason` -- the one place development is applied -- runs on
     // the far side of it. One is exactly the other.
     developed: after.seasonIndex > before.seasonIndex,
+    // ...and since DECISION 058 that same call can SUBTRACT, for an
+    // upperclassman who barely played. The engine's own function answers which
+    // it was, for the same reason `clampOverall` is imported rather than
+    // re-spelled: a card that says "a season of development came in" while the
+    // number falls three points is the exact defect this block exists to
+    // remove. The line read is the one that just ended -- `after`'s last
+    // completed season, whose `classYear` is the year it was played as.
+    declined: after.seasonIndex > before.seasonIndex && seasonCost(after, before),
     hurt: moreAfter(injuriesBefore, injuriesAfter),
   };
 }
 
-// The declare card's one line of fact (DECISION 038, B25).
-//
-// DECISION 025 stands and is not reopened here: no projection, no draft stock,
-// no round estimate, no "you would go undrafted". What goes in is the number of
-// seasons of eligibility that remain, which is a rule of the game rather than a
-// reading of the player -- it is identical for a 45-overall walk-on and a
-// 95-overall All-American in the same class year, so it cannot be used to infer
-// anything hidden.
-//
-// The count is `cap - yearsUsed`, exactly the arithmetic `enterOffseason` uses
-// to force a declaration, and it INCLUDES the season about to be played: a
-// junior who returns has two more seasons in him, and the card says two.
-function eligibilityLeft(state: GameState): number {
-  const cap = CLASS_ORDER.length + (state.eligibility.redshirtUsed ? 1 : 0);
-  return cap - state.eligibility.yearsUsed;
-}
-
-// Spelled out rather than set as a numeral. Every numeral on this screen is a
-// measured quantity -- the OVR, the snap count, the record -- and a season
-// count is not one of those; "2" beside them reads as a fourth statistic.
-const COUNT_WORDS = ["no", "one", "two", "three", "four", "five"];
-
-function seasonsPhrase(n: number): string {
-  const word = COUNT_WORDS[n] ?? String(n);
-  return n === 1 ? `${word} season` : `${word} seasons`;
-}
-
-// A structural mirror of `advance.ts`'s `DECLARE_EVENT_ID`, which is not
-// exported. `view-model.test.ts` asserts the note actually appears on the
-// declare card the engine builds, so a drift in the id fails a test rather
-// than silently dropping the line.
-const DECLARE_EVENT_ID = "declare";
-
-function decisionNote(state: GameState, decision: PendingDecision | null): string | null {
-  if (!decision || decision.eventId !== DECLARE_EVENT_ID) return null;
-  const left = eligibilityLeft(state);
-  // The card is only raised while the career is active, so this is at least 1;
-  // the guard is for a save whose eligibility has drifted, where saying
-  // nothing is right and saying "no seasons remain" beside a live choice is
-  // not.
-  if (left < 1) return null;
-  const verb = left === 1 ? "remains" : "remain";
-  const phrase = seasonsPhrase(left);
-  return `${phrase[0]!.toUpperCase()}${phrase.slice(1)} of eligibility ${verb}.`;
-}
+// `decisionNote` -- one line of rule-of-the-game fact under a decision's prompt
+// -- lived here and was DELETED with the declare decision (DECISION 057), which
+// was its only user. It stated how much eligibility remained (DECISION 038,
+// B25), a warning that existed because declaring early was a hidden trap; with
+// the trap gone the warning has nothing to warn about, and the eligibility
+// arithmetic it needed (`CLASS_ORDER.length + redshirt`) went with it. It was
+// never a general annotation channel -- anything characterising, ranking or
+// estimating an option is the leak DECISIONS 012 and 025 forbid -- so it is
+// removed rather than left empty for a future card to misuse.
 
 // The rail, assembled in one place so no screen has to decide cell by cell
 // which side of `advance()` a value comes from. With a resolved card on screen
@@ -786,7 +771,6 @@ export function buildView(state: GameState): CareerView {
     trust: trustPhrase(state.character),
     status: state.status,
     decision,
-    decisionNote: decisionNote(state, decision),
     summary: terminal ? buildSummary(state) : null,
   };
 }

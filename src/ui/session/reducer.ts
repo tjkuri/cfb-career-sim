@@ -65,7 +65,7 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
   const next = advance(state, option.id);
   const outcome = next.lastOutcome?.description ?? null;
 
-  // Hub decisions (Signing Day, transfer, declare) author no prose, and the
+  // Hub decisions (Signing Day, transfer) author no prose, and the
   // absence of prose used to end the matter: `outcome === null` meant no card.
   // The 017 playtest falsified the reasoning behind that -- "the result is the
   // next screen" is not true when the consequence is a seven-point overall
@@ -98,7 +98,7 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
   //
   // Computed for every card, not only for the ones with a remainder to
   // explain. A hub card's `account` is null by construction -- `applyChoice`
-  // writes no `overall` on the recruiting, declare or transfer branches -- so
+  // writes no `overall` on the recruiting or transfer branches -- so
   // its whole movement is this, and it is the case B45 is about. Taken here
   // for the same reason the stamp and `overallBefore` are: both states are
   // gone once this returns, and the answer has to survive `localStorage`.

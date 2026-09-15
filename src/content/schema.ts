@@ -26,6 +26,25 @@ export interface ProgressionConfig {
   // player's. Absent an entry, snapsPerDevPoint applies.
   snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
   devCap: number;
+  // Upperclass decline (DECISION 058). A JR or SR who finishes a season below
+  // `declineSnapFloor` snaps LOSES overall instead of developing, one point per
+  // `snapsPerDeclinePoint` snaps short. Freshmen and sophomores are exempt and
+  // that gate is load-bearing, not a nicety: an ungated version was measured
+  // over ~150,000 careers (report 034 §2, candidate A) and disqualified --
+  // snaps are largely sim-driven early, so a flat threshold charges every
+  // career for its first two years and stops discriminating between good play
+  // and bad luck (good 7.6% / random 8.4% / lazy 7.7% undrafted). Gated to
+  // upperclassmen it discriminates 1:45 and the fiction is right too: a
+  // freshman who does not play is normal, a junior who does not play is
+  // falling behind.
+  declineSnapFloor: number;
+  snapsPerDeclinePoint: number;
+  // Both scale by position for exactly the reason snapsPerDevPointByPosition
+  // does: a kicker's season is ~34% of a field player's workload, so a flat
+  // floor puts K below it EVERY season and declines a well-played kicker for
+  // its whole career. Absent an entry, the flat value applies.
+  declineSnapFloorByPosition?: Partial<Record<Position, number>>;
+  snapsPerDeclinePointByPosition?: Partial<Record<Position, number>>;
   washoutOverallFloor: number;
   washoutSnapFloor: number;
   washoutConsecutiveSeasons: number;

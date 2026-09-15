@@ -51,7 +51,7 @@ export interface SeasonStamp {
 
 // The facts a HUB resolution is composed from.
 //
-// Signing Day, the transfer portal and the declare card author no prose --
+// Signing Day and the transfer portal author no prose --
 // there is no content entry behind them, `src/content/**` is frozen, and the
 // reducer used to conclude from the missing prose that there was nothing to
 // show. The 017 playtest falsified that: "Stay at Baylor" ran 75 -> 82 between
@@ -136,8 +136,8 @@ export interface Resolved {
  * `enterOffseason` applying a season of development, and `applyEffect`'s
  * `injury` case reached from an ambient roll rather than from a card.
  *
- * The hub cards B45 is about are the extreme case: `applyChoice`'s recruiting,
- * declare and transfer branches write no `overall` at all, so a hub's ENTIRE
+ * The hub cards B45 is about are the extreme case: `applyChoice`'s recruiting
+ * and transfer branches write no `overall` at all, so a hub's ENTIRE
  * movement is some combination of these four. That is why the hub's number can
  * keep the value DECISION 037 wants on it and still be truthfully attributed:
  * the attribution was never "the transfer did this" in the first place.
@@ -161,6 +161,12 @@ export interface Remainder {
   /** A season boundary was crossed, which is the only place `enterOffseason`
       applies development. */
   developed: boolean;
+  /** The season that just ended COST overall instead of granting development:
+      an upperclassman under the snap floor (DECISION 058). Optional because a
+      card resolved before this field existed is still in `localStorage`, and a
+      missing flag reads as "not a decline", which is what those saves were.
+      Presence only, never size -- the same rule as every other flag here. */
+  declined?: boolean;
   /** An injury appeared that was not in the list before. Reported only when
       the card's own outcome did not cause one, since then it is already the
       card's own number and `CardAccount.injury` is saying so. */
@@ -368,8 +374,8 @@ export interface CareerView {
   seasonNumber: number;
   /** The most recent season line: the one in progress during nonconf,
       conference and postseason, and the one just completed during an offseason
-      -- which is exactly where the redshirt, transfer and declare cards ask for
-      it (DECISION 013). Null until the first on-field phase of the career. */
+      -- which is exactly where the redshirt and transfer cards ask for it
+      (DECISION 013). Null until the first on-field phase of the career. */
   season: SeasonLineView | null;
   /** The career ledger: always exactly five rows, whatever has happened
       (DECISIONS 007/010). Slot 5 is the redshirt slot and carries its own
@@ -384,14 +390,6 @@ export interface CareerView {
   trust: string;
   status: Status;
   decision: PendingDecision | null;
-  /** One line of fact printed under the pending decision's own prompt, or null
-      when the decision needs none. Today it has exactly one user: the declare
-      card, which states how much eligibility remains (DECISION 038, B25).
-      It is deliberately NOT a general annotation channel -- anything that
-      characterised an option, ranked it, or estimated its result would be the
-      leak DECISIONS 012 and 025 forbid. Remaining eligibility is a rule of the
-      game the player is entitled to know and discloses no hidden value. */
-  decisionNote: string | null;
   summary: CareerSummaryView | null;
 }
 

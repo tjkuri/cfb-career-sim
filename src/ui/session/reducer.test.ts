@@ -60,20 +60,34 @@ describe("choose", () => {
   });
 
   it("shows outcome prose on a multi-option content event", () => {
+    // NARROWED, not weakened (DECISION 057). This walked a career asserting
+    // that EVERY resolved card carried authored prose. That held only because
+    // a first-option policy used to press "Declare for the NFL Draft" the
+    // moment it was offered, which ended the career before the transfer hub --
+    // the one multi-option card that authors no prose -- was ever reachable.
+    // With the declare decision deleted the walk now reaches it, and a hub
+    // card's `outcome` is "" by construction (DECISION 037: it is composed
+    // from facts in `hub`, not read from content). The assertion that matters
+    // is unchanged: a card with authored prose behind it must show it.
     let ui = start("r-4");
-    let sawResolved = false;
+    let sawAuthored = false;
     for (let guard = 0; guard < 200 && ui.screen !== "summary"; guard++) {
       const next = step(ui, (ids) => ids[0]!);
       if (next === ui) break;
       ui = next;
       if (ui.resolved) {
-        sawResolved = true;
-        expect(ui.resolved.outcome.length).toBeGreaterThan(0);
         expect(ui.resolved.title.length).toBeGreaterThan(0);
         expect(ui.resolved.choiceLabel.length).toBeGreaterThan(0);
+        if (ui.resolved.hub === null) {
+          sawAuthored = true;
+          expect(ui.resolved.outcome.length).toBeGreaterThan(0);
+        } else {
+          // A hub card carries facts instead, and must never be empty of both.
+          expect(ui.resolved.hub).not.toBeNull();
+        }
       }
     }
-    expect(sawResolved).toBe(true);
+    expect(sawAuthored).toBe(true);
   });
 
   it("keeps the prose on a single-option beat instead of dropping it", () => {
@@ -412,15 +426,26 @@ describe("one-option cards resolve on arrival and keep their prose", () => {
   });
 
   it("leaves multi-option cards as choices, labelled as chosen", () => {
+    // TIGHTENED for DECISION 057. The old version assumed the card on screen
+    // after a multi-option choice was that card's own resolution. That was safe
+    // only while the declare decision ended a first-option career before the
+    // transfer hub: a multi-option hub that moved nothing resolves to NOTHING,
+    // and `openCard` then auto-resolves the following one-option beat, whose
+    // `narrated` is correctly true. Matching the resolution to the decision it
+    // came from is what the test meant all along.
     let checked = false;
     let ui = start("r-beat-multi");
     for (let guard = 0; guard < 300 && ui.screen !== "summary"; guard++) {
-      const optionCount = !ui.resolved && ui.state ? getDecision(ui.state)?.options.length ?? 0 : 0;
+      const d = !ui.resolved && ui.state ? getDecision(ui.state) : null;
+      const chosen = d?.options[0] ?? null;
       const next = step(ui, (ids) => ids[0]!);
       if (next === ui) break;
       ui = next;
-      if (optionCount > 1 && ui.resolved) {
-        expect(ui.resolved.narrated).toBe(false);
+      const isOwnResolution =
+        d !== null && chosen !== null && ui.resolved !== null &&
+        ui.resolved.title === d.title && ui.resolved.choiceLabel === chosen.label;
+      if (d && d.options.length > 1 && isOwnResolution) {
+        expect(ui.resolved!.narrated).toBe(false);
         checked = true;
       }
     }
@@ -662,26 +687,25 @@ describe("hub decisions resolve when they carry a consequence", () => {
     }
   });
 
-  it("shows nothing when declaring: the summary is the resolution", () => {
-    // A card in front of the draft verdict is a click, not a beat.
-    let checked = 0;
+  it("never puts a card in front of the draft verdict: no declare beat exists", () => {
+    // REPLACED (DECISION 057). This used to walk to the declare card and assert
+    // that pressing "Declare for the NFL Draft" went straight to the summary
+    // with no beat in between -- a card in front of the draft verdict is a
+    // click, not a beat. The card is gone entirely, which is the stronger form
+    // of the same guarantee, so what is pinned now is its absence: no career,
+    // at any position, is ever offered a decision with that id, and the click
+    // that ends the career still lands on the summary.
     for (const position of ALL_POSITIONS) {
       let ui = start(`r-hub-declare-${position}`, { ...SETUP, position });
       for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
         const d = !ui.resolved && ui.state ? getDecision(ui.state) : null;
-        if (d?.eventId === "declare") {
-          const after = reducer(ui, { type: "choose", optionId: "declare" });
-          expect(after.resolved).toBeNull();
-          expect(after.screen).toBe("summary");
-          checked++;
-          break;
-        }
+        expect(d?.eventId, `${position} was offered a declare decision`).not.toBe("declare");
         const next = step(ui, (ids) => ids[0]!);
         if (next === ui) break;
         ui = next;
       }
+      expect(ui.screen, position).toBe("summary");
     }
-    expect(checked, "no declare card was reachable").toBeGreaterThan(0);
   });
 
   it("never renders an empty ceremonial card", () => {

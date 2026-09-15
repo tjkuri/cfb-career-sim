@@ -27,37 +27,41 @@ export function eligibleTiers(state: GameState): Tier[] {
   return tiers;
 }
 
-const UNDRAFTED_FLOOR = 35;
+// The bar the draft applies (DECISION 058, measured in report 034 §3-§4).
+//
+// It was 35. A *lazy* career finishes at stock ~60 and a good one at ~89, so
+// the line sat far below even a deliberately-bad career: nothing was failing
+// because the bar was on the floor, not because the engine could not tell
+// careers apart. At 50 a good career is untouched -- byte-for-byte the same
+// careers, the same round-1 rate -- while a lazy one fails 15% of the time.
+// Measured over 9,000 careers per profile. Do not re-derive it by eye.
+const UNDRAFTED_FLOOR = 50;
 
-// The cost of declaring with eligibility left, charged at the draft and nowhere
-// else (DECISION 038).
-//
-// 8 is the measured gap: the deliberately-bad two-season career scores 42.93
-// mean draft stock (`lazyEarly`, QB, n=3000) against an undrafted floor of 35,
-// so a penalty of 8 removes exactly the cushion it enjoys. It is also
-// 8 / 9.3 = 0.86 of one draft round, encoding "leaving a year of eligibility on
-// the table costs you most of a round."
-//
-// IT MUST NOT MOVE INTO `deriveDraftStock`. That function also feeds
-// `eligibleTiers`, which generates Signing Day and transfer offers; the tier
-// thresholds are 25/45/70 and an 8-point shift there would silently move
-// players across them and rewrite the offer ladder for every junior in the
-// game. Applied at the draft alone it has zero effect on the offer generator,
-// and every full-eligibility profile -- which declares as a SR -- is unchanged
-// to four decimal places. That is the acceptance test, not a nicety.
-export const EARLY_DECLARE_PENALTY = 8;
+// The width of one draft round in stock, and NOT optional alongside the floor.
+// It was 9.3, chosen when the floor was 35 so that 35 -> round 7 and 100 ->
+// round 1. With the floor at 50 the same divisor needs a raw stock of 99 to
+// reach round 1, which puts round 1 out of reach outright; 6.8 restores the
+// band so that the top of the scale is still round 1 and the floor is still
+// round 7.
+const ROUND_BAND_DIVISOR = 6.8;
+
+// EARLY_DECLARE_PENALTY (DECISION 038) was DELETED here, with the declare
+// decision it priced (DECISION 057). It charged a non-senior 8 points of stock
+// at the draft, and it is now unreachable: `computeDraftResult` runs only for a
+// career whose status is `declared`, and the one remaining path to that status
+// is `enterOffseason`'s out-of-eligibility branch, which is reached only after
+// CLASS_ORDER has run out -- i.e. always as a SR. Verified against the
+// class-year split `failure-probe` reports: every profile, every position,
+// 100% SR. If a future change lets a career declare as an underclassman again,
+// this is the cost that has to come back with it.
 
 export function computeDraftResult(state: GameState, rng: Rng): DraftResult {
-  const stock = Math.max(
-    0,
-    deriveDraftStock(state) -
-      (state.eligibility.classYear === "SR" ? 0 : EARLY_DECLARE_PENALTY),
-  );
+  const stock = deriveDraftStock(state);
   if (stock < UNDRAFTED_FLOOR) {
     return { undrafted: true, round: 0, pick: 0, overallPick: 0, draftStock: stock };
   }
-  // Higher stock -> earlier round. Bands chosen so 100 -> round 1, 35 -> round 7.
-  const round = Math.max(1, Math.min(7, 8 - Math.ceil((stock - UNDRAFTED_FLOOR) / 9.3)));
+  // Higher stock -> earlier round. Bands chosen so 100 -> round 1, 50 -> round 7.
+  const round = Math.max(1, Math.min(7, 8 - Math.ceil((stock - UNDRAFTED_FLOOR) / ROUND_BAND_DIVISOR)));
   const pick = rngInt(rng, 1, 32);
   const overallPick = (round - 1) * 32 + pick;
   return { undrafted: false, round, pick, overallPick, draftStock: stock };

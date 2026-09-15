@@ -1700,3 +1700,35 @@ DECISION 040 precedent.
 **What would change our mind.** A playtester who loses a career and cannot say why. The decline
 exists to make failure legible; if it fails that test, the mechanism is not doing the job the user
 picked it for, and the cheaper floor-only version was the better buy.
+
+## 059 — The decline floor is position-scaled, because a flat one declined every well-played kicker for its whole career
+
+**Date:** 2026-09-15 · **Made by:** PM session 7 · **Amends:** 058 · **Evidence:** `reports/035-remove-declare-and-restore-the-downside.md` PM addendum
+
+DECISION 058's `declineSnapFloor: 200` is a flat threshold. A kicker's season is **~34%** of a field
+player's workload — a fact `postseason.ts` already documents, and already compensates for in
+`snapsPerDevPointByPosition: { K: 62 }` (180 × 0.34). The decline floor got no such treatment, so a
+well-played kicker sat **below it every season** and declined for its entire career: **4.53%
+undrafted and 5.47% round 1**, against 0.07% and 50.7% for a quarterback played identically well.
+
+**Fixed with the precedent the file already set:** `declineSnapFloorByPosition: { K: 68 }` and
+`snapsPerDeclinePointByPosition: { K: 20 }` — the same 0.34 factor, applied to both numbers so the
+decline stays proportional rather than merely rarer.
+
+**It improved the whole change.** `good` went 0.86% → **0.10%** undrafted and 40.73% → **44.31%**
+round 1 — a well-played career is now essentially as safe as before this wave began, with its
+round-1 ceiling intact. Bad play fails **15.2%** rather than 19.2%, because K had been absorbing a
+disproportionate share of failures under every profile. 15.2% against a pre-wave 0.7% is still the
+intended order-of-magnitude change.
+
+**Why this is logged as a decision and not a bug fix.** 058's acceptance test was specified on the
+`good` profile *in aggregate*, and the implementation hit it exactly — 0.86% against a ~0.9% target.
+**The aggregate could not see that one position in six was failing 65× more often than the others.**
+That is the second measurement this wave that was right in form and wrong in granularity; the first
+was 034 §5, calibrating a replacement failure rate against the trap being replaced. **Specify
+acceptance tests at the granularity the defect can hide in** — and for this game that means
+per-position, because the engine already treats one position differently everywhere else.
+
+**What would change our mind.** A playtester who plays a kicker and reports it as too easy now. K's
+remaining round-1 gap (26.9% against 44–51%) is pre-existing — it measured 28.7% before this wave —
+and is deliberately left alone rather than tuned in a wave that was not about position balance.

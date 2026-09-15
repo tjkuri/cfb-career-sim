@@ -96,11 +96,18 @@ describe("the deliberately-bad policies", () => {
     expect(a).toEqual(b);
   });
 
-  it("declare:asap ends the career at the first eligible offseason; declare:never plays it out", () => {
-    const early = playCareer(setup, "dec-1", makePolicy(PROFILES.lazyEarly));
-    const full = playCareer(setup, "dec-1", makePolicy(PROFILES.lazyFull));
-    expect(early.seasons.length).toBe(2);
-    expect(full.seasons.length).toBeGreaterThan(early.seasons.length);
+  // UPDATED for DECISION 057. This asserted that `declare:asap` ended a career
+  // after two seasons while `declare:never` played it out. There is no declare
+  // decision and no `*Early` profile any more, so what is worth pinning is the
+  // consequence: every career now runs to the end of its eligibility, which is
+  // four seasons, or five with a redshirt. That is the change that makes
+  // careers longer and is why repetition had to be re-measured.
+  it("every career now plays out its eligibility: four seasons, or five with a redshirt", () => {
+    for (const seed of ["dec-1", "dec-2", "dec-3"]) {
+      const full = playCareer(setup, seed, makePolicy(PROFILES.lazyFull));
+      if (full.status === "busted") continue; // a washout ends early by design
+      expect(full.seasons.length).toBe(full.eligibility.redshirtUsed ? 5 : 4);
+    }
   });
 
   it("transfer:stay never changes school; transfer:up climbs tiers", () => {

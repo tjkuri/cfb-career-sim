@@ -108,12 +108,12 @@ export function repeatShare(
 // where every headline number lives).
 export const REPETITION_COHORTS = {
   // B — the maximum-exposure case and the shape a playtester plays: declines
-  // the redshirt, declines early declare, stays put. Four seasons.
-  B: { events: "random", recruiting: "random", declare: "never", transfer: "stay", redshirt: "decline" },
+  // the redshirt, stays put. Four seasons.
+  B: { events: "random", recruiting: "random", transfer: "stay", redshirt: "decline" },
   // C — the five-season redshirt career. This is the cohort class-year gating
   // would have failed (advance.ts caps classYear at SR, so C is FR SO JR SR SR)
   // and is why DECISION 042 chose seasonIndex. It is not optional.
-  C: { events: "random", recruiting: "random", declare: "never", transfer: "stay", redshirt: "take" },
+  C: { events: "random", recruiting: "random", transfer: "stay", redshirt: "take" },
 } satisfies Record<string, PolicyProfile>;
 
 export type CohortName = keyof typeof REPETITION_COHORTS;

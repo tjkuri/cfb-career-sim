@@ -142,7 +142,14 @@ function remainderLine(remainder: Remainder, ownInjury: boolean): string | null 
   const parts: string[] = [];
   if (remainder.healed) parts.push("An injury healed and gave the points back.");
   if (remainder.landed) parts.push("An earlier card's effect came due.");
-  if (remainder.developed) parts.push("A season of development came in.");
+  // DECISION 058 split this in two. `developed` means a season boundary was
+  // crossed; since the upperclass decline exists, crossing one can SUBTRACT.
+  // Saying "a season of development came in" over a three-point drop is a
+  // number with a sentence that contradicts it, which is worse than the bare
+  // number this block was written to replace -- and the decline was chosen
+  // precisely so a failing career is legible while it is failing.
+  if (remainder.declined) parts.push("A season on the sideline cost you ground.");
+  else if (remainder.developed) parts.push("A season of development came in.");
   if (remainder.hurt && !ownInjury) parts.push("You got hurt between decisions.");
   return parts.length ? parts.join(" ") : null;
 }
@@ -627,22 +634,13 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
           <section className="card">
             <h2 className="card-title">{view.decision.title}</h2>
             <p className="card-body">{view.decision.description}</p>
-            {/* One line of rule-of-the-game fact, under the prompt and above
-                the options, and today only the declare card has one: how much
-                eligibility is left (DECISION 038, B25). Declaring early is now
-                a real gamble and the card carried no warning of any kind,
-                which made it a hidden trap -- the 017 playtester called it "a
-                coin flip dressed as a decision" and it was the exact moment
-                they concluded failure was impossible.
-
-                What it is NOT is a projection. DECISION 025 refused
-                `draftStock`, a round estimate and "you would go undrafted",
-                and that refusal is untouched: this sentence reads the same for
-                every player in the class year, so it cannot be inverted into
-                anything hidden. It is set quiet on purpose -- the ledger's
-                dashed row is still doing most of this work, and a louder line
-                here would start to look like advice. */}
-            {view.decisionNote && <p className="card-note">{view.decisionNote}</p>}
+            {/* `view.decisionNote` was removed here with the declare card it
+                annotated (DECISION 057). It printed one line of rule-of-the-game
+                fact -- how much eligibility remained -- and the declare card was
+                its only user, because that card was a hidden trap and the line
+                was its warning. No card left needs one, and DECISION 025's
+                refusal of projections means the slot must not be repurposed into
+                advice. */}
             {/* Every option carries identical emphasis. Distinguishing one from
                 its siblings before the player chooses would leak the branch
                 (DECISION 006, DECISION 012). */}
