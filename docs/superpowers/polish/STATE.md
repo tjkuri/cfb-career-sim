@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete and committed · **Wave 15:** in flight · **PM session:** 7
+**Last updated:** 2026-09-14 · **Waves 12 and 13:** complete and committed · **Wave 14:** complete and committed · **Wave 15:** complete and committed · **Wave 16:** in flight · **PM session:** 7
 
 ---
 
@@ -1116,7 +1116,7 @@ assumptions cannot falsify the fix. 026 found 0 failures in 12,847 cards and eve
 outside its population. Future briefs of this shape must state the excluded population and name who
 checks it.
 
-## Wave 15 — in flight (PM session 7)
+## Wave 15 — complete and committed (PM session 7)
 
 Two lanes. File-disjoint, and only one of them uses the browser.
 
@@ -1142,6 +1142,52 @@ mechanism that makes good play fail is disqualified regardless of how it scores 
 (`advance.ts:172`) cannot return a negative number, so overall is a one-way ratchet and the
 washout floor at 45 is never approached. Every other failure path is an event rolling badly; none
 is the career itself going wrong.
+
+### Wave 15 results
+
+**Lane 033 — shipped, commit `e414bea`. 651 tests green.** The PM verified it independently before
+committing: frozen dirs empty, typecheck both passes, build clean, play md5 unchanged at `cd2d3895`,
+and the diff read for constraint leaks (no `draftStock`, no character integer, zero `GameState`
+reads outside the view model).
+
+- **The finding that made a real sentence possible.** `applyChoice`'s recruiting/declare/transfer
+  branches write **no `overall` at all**, so a hub card's whole movement is *always* one of exactly
+  four other causes — heal, a deferred effect landing, development, ambient injury — and all four are
+  derivable in `view-model.ts` from the before/after pair. No engine change was needed.
+  `"Stay at TCU" → +5 OVR` now reads **`SINCE YOUR LAST CARD / +5 OVR / "An injury healed and gave
+  the points back."`**
+- **B46 was fixed by moving the card's single emphasis slot**, which fires on character *credit* as
+  well as cost, so the accent never becomes a valence signal (DECISION 012). DECISION 037 verified
+  intact — the hub figure is unchanged in value *and* loudness (24.48px, accent); it only gained a
+  label and a sentence. DECISION 002 untouched.
+- **A completeness falsifier shipped with it:** 5,325 cards, 58 hub cards, 681 remainders, **0**
+  without a sentence. That is the test 026 needed and did not have.
+- **Gotcha for every future brief:** `npm run play` prints npm's banner on **stdout**, so `| md5`
+  hashes the banner. Use `npx tsx src/sim/play-headless.ts <seed> random | md5`.
+
+**Lane 034 — done, and the PM ran it personally** after two dispatched agents were killed by capacity
+stalls without writing anything. ~150,000 careers. **It produced a user decision (058).** Full detail
+in `reports/034-a-career-can-go-wrong.md`; the two findings worth carrying forward:
+
+- **The obvious fix is disqualified.** Snap-based decline stops discriminating exactly when it starts
+  working — `good` 7.6%, `random` 8.4%, `lazy` 7.7%. It punishes luck, not play. **Gating it to
+  upperclassmen** fixes both the fiction and the maths.
+- **The real cause was never the ratchet.** Stock already separates quality (89 / 75 / 60) and the
+  undrafted line sits at **35**, below all three. Raising it to 50 leaves a good career
+  byte-identical and fails 15% of lazy ones.
+
+## Wave 16 — in flight (PM session 7)
+
+One lane, deliberately alone: `briefs/035-remove-declare-and-restore-the-downside.md`. It implements
+DECISIONS 057 + 058 — delete the declare decision, raise the draft bar, add upperclass decline.
+
+**Why one lane.** The change moves every seed and its acceptance test is a draft-rate measurement
+over the whole bundle; a parallel lane touching engine or content would pollute it. That is the
+wave-10 and wave-13 lesson restated.
+
+**The brief forbids tuning.** Constants are fixed from 034's measurements, and the agent is told to
+**stop and report** rather than tune if its numbers miss. The hard disqualifier is restated in the
+brief: if a well-played career starts failing above ~1%, or its round-1 rate drops below 28%, stop.
 
 ## Next actions — for PM session 8, in order
 

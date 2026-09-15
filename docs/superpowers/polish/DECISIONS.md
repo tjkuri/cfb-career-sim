@@ -1650,3 +1650,53 @@ DECISION 003 habit and it is the reason this phase's calls have held.
 failure rate near the 12–17% the declare card was providing without also making a
 well-played career fail. In that case removing declare costs more than it saves, and 054 route A
 comes back.
+
+## 058 — The mechanism is chosen: raise the bar the draft applies, and let an upperclassman lose ground
+
+**Date:** 2026-09-15 · **Made by:** the user, on PM session 7's measured options · **Implements:** 057 · **Evidence:** `reports/034-a-career-can-go-wrong.md`
+
+057 approved removing the declare decision and restoring a downside, with the mechanism to be chosen
+from measurement. ~150,000 careers later, it is chosen: **candidate F2 — a raised undrafted floor
+with rescaled round bands, plus a gentle decline that applies only to upperclassmen.**
+
+| profile | undrafted | round 1 | today |
+|---|---|---|---|
+| `good` | **0.9%** | 40.7% | 0.0% / 45.1% |
+| `randomFull` | 5.6% | 8.8% | 0.1% / 9.9% |
+| `lazyFull` | **19.2%** | 0.0% | **0.7%** / 0.0% |
+
+**Two findings decided this, and neither was in the brief's candidate list.**
+
+1. **The snap-based decline everyone would reach for first is disqualified.** At the intensity where
+   it finally produces failure it **stops discriminating** — `good` 7.6%, `random` 8.4%, `lazy` 7.7%.
+   It punishes bad luck rather than bad play, because snaps are sim-driven, and it taxes every
+   freshman because freshmen do not play. **Gating it to upperclassmen fixes the fiction and the
+   maths at once**: a freshman who does not play is normal, a junior who does not play is falling
+   behind.
+2. **The larger cause was never the ratchet.** Draft stock *already* separates career quality — 89
+   good, 75 ordinary, 60 lazy — and the undrafted line sits at **35**, below all three. Nothing was
+   failing because the bar was on the floor, not because the engine could not tell careers apart.
+   Raising it to 50 leaves a good career **byte-for-byte identical** while failing 15% of lazy ones.
+
+**Why both, rather than the cheaper floor alone.** The raised floor is two constants and costs good
+careers nothing — but nothing *during* the career tells the player it is going wrong; they find out
+on the final screen. **That is the same defect class this phase just deleted from the declare card**,
+a cost hidden until it is too late to act on. The decline makes a failing career visibly fail, in the
+number the player already watches. The user chose both.
+
+**The acceptance test was miscalibrated and the user was told before choosing.** 034 pre-specified
+restoring ~12–17% undrafted under ordinary play. No candidate reaches it without breaking good
+careers. That figure came from `baselineRandom`, which declares at random — **essentially all of it
+was the declare trap firing**, so calibrating the replacement against it would rebuild the trap's
+severity under a new name. F2 instead moves failure from a gotcha to a judgement: ordinary play fails
+*less* (5.6%), bad play fails *far more* (0.7% → 19.2%). **Recorded because 057's approval cited the
+12–17% number and this does not deliver it.**
+
+**Scope of the engine lift (057's, still open for this work only):** `draft.ts` (the floor and the
+band divisor), the development call site in `advance.ts`, the declare hub, and `sim/policies.ts`'s
+now-meaningless `declare` strategy. Seed baselines move by construction — re-baseline at commit,
+DECISION 040 precedent.
+
+**What would change our mind.** A playtester who loses a career and cannot say why. The decline
+exists to make failure legible; if it fails that test, the mechanism is not doing the job the user
+picked it for, and the cheaper floor-only version was the better buy.
