@@ -2016,3 +2016,56 @@ unattributable, which is the wave-10/13/16 lesson.
 
 **What would change our mind.** The bit-identity check moving on any seed — which would mean the
 clause is not the inert mirror it is claimed to be.
+
+## 067 — The game does count what you do. It narrates the count six times and shows it once, and that is a display problem — measured, not assumed
+
+**Date:** 2026-09-15 · **Made by:** PM session 9 · **Supersedes the framing of:** DECISION 060 · **Evidence:** `reports/041-*.md`, plus the PM's own 400-careers-per-policy sweep
+
+Wave 17's playtester quit saying *"I stopped believing the game is counting what I do."* Waves 19–20
+were built to answer that. The 041 playtester — who played hard on the field and selfishly off it for
+a full career — **withdrew the charge unprompted**:
+
+> *"I do not think that is still true. The redshirt, the shrinking transfer menu at low OVR, the
+> four-tier locker-room ladder, MOMENTS and the per-season delta column all visibly counted me. The
+> broken thing is narrower: **the one track the game narrates most is the one it shows least, and it
+> is completely absent from every ending screen.**"*
+
+**The mechanism, found in the code and confirmed by measurement.** `lockerRoomLine` in
+`CareerScreen.tsx` is **direction-only by design** — it prints "Cost you in the locker room." for any
+negative character delta, whatever the size, because DECISION 002/046 correctly refuse to give
+character a magnitude. The only *state* display is `TRUST_BANDS`, five rungs with 15–30 point widths.
+So a player can be told six times that something cost them and cross **zero** band boundaries. The
+041 playtester got exactly that: **six cost verdicts, one phrase change**, on the final click of the
+career, unhighlighted. Their words: *"Yes in sentences, no in state."*
+
+**It is not a balance problem, and this was checked before briefing a fix** — 400 careers per policy,
+QB:
+
+| policy | avg final character | p25 | % under 55 | band at the average |
+| --- | ---: | ---: | ---: | --- |
+| `good` | **62.3** | 59 | 10.0% | *just a guy in the building* |
+| `humanLazyAmbitious` (selfish off-field) | **6.8** | 0 | 99.3% | *the staff has stopped defending you* |
+
+The ladder has the full range and a selfish career crosses **every rung of it**. The human simply
+could not see it happening. **Widening the deltas would have been the wrong fix to a real complaint**
+— which is why the sweep was run first. That is the sixth time this phase that measuring a complaint
+changed what got built.
+
+**The call: wave 22 makes the existing state visible and changes no number.** `briefs/043`. The
+ending screen gets the standing (the PM verified `SummaryScreen.tsx` never renders `trust` — the view
+model computes it for the live career only), and a band change is marked as the moment it is. No
+integer, no meter, no gradation: DECISION 002 is not reopened, and 046 already rejected
+magnitude-as-typography on this exact axis.
+
+**Why this is the highest-value item on the board.** Asked what would produce the fourth career this
+entire phase exists to earn, the playtester answered with a build instruction:
+
+> *"If the ending screen had a locker-room line on it I would start a fourth right now to try to move
+> it."*
+
+Two playtesters in a row have independently named this ladder as the only mechanism in the game that
+changed how they played. It is also the cheapest thing on the board.
+
+**What would change our mind.** 043 shipping and the next playtester still reporting the ladder as
+invisible — which would mean the band resolution itself is too coarse to register, and that *is* a
+DECISION 002 question rather than a display one.

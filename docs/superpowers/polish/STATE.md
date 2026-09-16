@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Wave 21:** in flight · **PM session:** 9
+**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **PM session:** 9 (handing off)
 
 ---
 
@@ -1348,7 +1348,10 @@ human one does not. See **DECISION 060** — this is why 15.2% and Round 4 are b
 |---|---|---|---|
 | B48 | **Off-field misbehaviour pays overall** — 14 blocks in `offfield.ts`, clean option strictly dominated | **measuring (037), then USER** | DECISION 060. Balance + content. The likely root of *"the game isn't counting what I do"* |
 | B49 | **The ending screen ranks backwards** — HONORS is the loudest element and the saboteur earned it | **held pending 037** | DECISION 060 §2. Fix the cause or the display — 037 says which. PM owns this file in wave 18 |
-| B50 | **The locker-room ladder is sealed off from every other number** | todo | The one mechanism that changed the player's behaviour. Bring the rest of the screen to it |
+| B50 | **The locker-room ladder is sealed off from every other number** | **in flight (043)** | **Now the top item on the board.** Second playtester in a row to name it the only mechanism that changed how they played — and it is absent from every ending screen. DECISION 067 |
+| B59 | **Prose/number contradictions, round 2 — four quotable cards** | todo | *"Cost you in the locker room"* → **+1 OVR** ×2; *"Earned you credit"* → **−3 OVR** ×2. None carried the THIS CARD / EVERYTHING ELSE split that exists to prevent exactly this. **The +1 cases are the upside DECISION 063 deliberately preserved** — so this is a legibility fix, not an economy one. The −3 cases are different and may be B57 |
+| B60 | **`Fall Camp Battle`: the button says "Win the job", the outcome says you panicked** | todo | Fired in **all three** careers. A label that reads as a promise resolving to −1. PM-sized prose fix under the 043/050 precedent, but check first whether it is the negative branch of an honest gamble |
+| B61 | **A per-season locker-room trajectory is impossible today** | **CLOSED — do not build it** | `SeasonLine` records `overall` and not `character`. 043's agent was asked to propose and **recommended against it even as an engine change**: most careers would print the same phrase four times, which reads as broken rather than as an arc. Accepted. The ladder on the ending screen is the better answer to the same want |
 | B51 | **Four orientation defects** — rail vs header OVR, rail runs a year ahead, phantom year 5, disabled START button lies | **in flight (038)** | All unambiguous, none a matter of taste |
 | B52 | **`Next Man Up` tells an injured player to take every snap** | in flight (038) — proposal only | Missing `requiresPlaying`-class condition. Content, frozen |
 | B53 | **Kicker is position-neutral outside its stat line and ~4 cards** — and finished **Round 3 Pick 8**, which the playtester called *"not a thing for a kicker"* | **USER** | **DECISION 059's falsifier has fired.** 037 measures the distribution |
@@ -1563,7 +1566,205 @@ once. It asks for the headline the phase has never had — *what percentage of t
 one career show a player* — and it is explicitly permitted to conclude "rounding error, go author new
 content." Either answer saves a wave, which is why it is worth running now rather than after B44.
 
-## Next actions — for PM session 9, in order
+### Wave 21 result — lane 041, the playtest. It withdrew the charge the whole wave was built to answer
+
+Report: `reports/041-does-the-game-count-what-you-do.md`. Three careers, 46 + 40 + 48 decisions,
+**written to disk after each one — the wave 17 postmortem's rule worked and should stay in every
+playtest brief forever.**
+
+**The north-star curve: yes → no (asked) → no.** Still not won. But read the two "no"s, because they
+are not the same animal and neither is the wave-17 "no":
+
+- C2: *"No, but I did it because you asked — and not because of the shape of the run. Playing the jerk
+  was the most **fun** I had and the writing on those cards is the best in the game. It is that I
+  found out the villainy was free."*
+- C3: *"No. A softer no — the kicker was the most interesting run of the three and I finished it
+  wanting more kicker cards. **If the ending screen had a locker-room line on it I would start a
+  fourth right now to try to move it.**"*
+
+**The correction that reframes the phase — the playtester volunteered it, unasked.** They do **not**
+think *"the game isn't counting what I do"* is still true: the redshirt, the shrinking transfer menu
+at low OVR, the four-tier ladder, MOMENTS and the per-season delta column all visibly counted them.
+**The defect is narrower and sharper: the one track the game narrates most is the one it shows least,
+and it is absent from every ending screen.** DECISION 067, and it is now B50 at the top of the board.
+
+**The PM measured before briefing, and the measurement changed the fix.** A selfish career
+(`humanLazyAmbitious`, 400 careers) ends at average character **6.8**, p25 **0**, 99.3% under 55,
+against `good`'s **62.3** — it crosses every rung in the table. The ladder has the full range; the
+player cannot see it move, because the per-card line is direction-only by design and the only state
+display is five bands 15–30 points wide. **Six "Cost you in the locker room" verdicts, one phrase
+change, on the final click, unhighlighted.** Widening the deltas would have been a wrong fix to a real
+complaint. Sixth time this phase.
+
+| Claim | Verdict |
+|---|---|
+| Getting caught costs you something you can see | **REFUTED as state, CONFIRMED as prose** — see above |
+| The card's number agrees with its words | **REFUTED — four quotable cards.** B59 |
+| You always know where you are | Clean — wave 18's four fixes held |
+| Each ending matches its own career | Held. The Kicker's *"Undrafted / No team called."* matched honestly |
+| The program's opinion is something you track | **REFUTED as stated** — they tracked it because they went looking |
+| Anything cut off or colliding | **Zero visual defects in ~130 decisions.** Sixth playtest running. Type/colour/contrast stays closed |
+
+**The Kicker is vindicated and B53 is fully closed.** *"A different career, and the best-served
+position I played"* — five bespoke cards against one for offensive skill over four seasons — *"
+interrupted by generic cards that read worse on a kicker than on anyone else."* The position that two
+sessions ago was suspected of being too easy and too thin is the one the playtester wanted more of.
+
+## Wave 22 — in flight (PM session 9)
+
+Two lanes, file-disjoint: one owns `src/ui/**`, the other owns two named files under the frozen
+directories and nothing else.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/043-the-ladder-the-game-narrates-but-never-shows.md` | developer (UI) | `src/ui/**`, `reports/043-*.md` | 2026-09-15 |
+| `briefs/044-a-card-can-say-it-is-for-the-season-you-sit.md` | developer (engine + schema, DECISION 066 lift) | `src/engine/select-event.ts`, `src/content/schema.ts` + tests, `reports/044-*.md` | 2026-09-15 |
+
+**043 is the wave**, and it is the cheapest top item the board has had: the data already exists, the
+view model already computes `trust`, and `SummaryScreen.tsx` simply never renders it. The brief
+forbids any integer, bar, meter or magnitude-encoding — DECISION 002 is not reopened and 046 already
+rejected magnitude-as-typography on this exact axis. It also explicitly **forbids** the per-season
+trajectory, because the PM checked and `SeasonLine` has no `character` field (B61).
+
+### Lane 044 — done, awaiting commit with 043. Inert, and the proof is not vacuous
+
+Report: `reports/044-a-card-can-say-it-is-for-the-season-you-sit.md`. **8/8 byte-identical**, 693 tests
+(684 + 9 new), both typecheck passes, build clean. **PM audited the diff line by line:** 131 lines,
+**all additive**, across exactly five files, zero cards authored, no probability/weight/effect touched.
+
+- **The pass is not vacuous and the agent proved it rather than asserting it** — the 8 outputs are
+  mutually distinct and **6 of the 8 careers ran five seasons**, so the new clause is evaluated inside
+  a live sit season on most runs and still moves nothing. That is the difference between "the check
+  passed" and "the check could have failed."
+- **One deviation, flagged and not buried, and the agent was right.** The brief said the field goes in
+  `schema.ts`; `EventConditions` actually lives at `src/engine/types.ts:78`. **The brief named the
+  wrong file.** The agent put the one-line optional field where the type is, rejected module
+  augmentation as worse, and said so. Type-only, erased at compile, covered by the 8/8. **Accepted.**
+- **The contradiction question, ruled and implemented:** both flags together is unsatisfiable by
+  construction, so it is now a schema error worded to match the existing `minOverall > maxOverall`
+  precedent — and the engine selects nothing in *both* season types rather than letting one flag win,
+  so an impossible card can never look like it worked.
+- A new schema test asserts **zero shipped cards set the field**, as a standing property. That is the
+  lift's premise turned into a test so it cannot rot before the pack wave — the DECISION 064 habit,
+  applied without being asked.
+
+**One follow-up the pack wave must not lose:** `src/sim/prose-probe.ts:407` (`gatesOf`) enumerates
+gate labels by hand and has no arm for `requiresRedshirt`. **The first sit-season card authored will
+be silently under-reported by the prose probe until one line is added there** — and the prose probe is
+the instrument the pack wave's acceptance is measured on. Fix it in the same wave as the pack.
+
+**044 is inert by construction and that is its acceptance test** — byte-identity on 4 seeds × 2
+policies, reported as eight explicit results, with "a single difference means stop and report
+`needs-decision`, do not adjust the clause to make it pass." It unblocks the redshirt pack without
+authoring a word of it.
+
+### Wave 22 result — shipped in `5ce88c5` and `c4c4487`. Both lanes did better than their briefs
+
+**PM-verified before commit:** **698 tests green** (671 → 684 → 693 → 698 across the two waves), both
+typecheck passes exit 0, build clean, and **byte-identical to HEAD on 4 seeds × 2 policies with all 8
+outputs mutually distinct** — the non-vacuous form of the check, by the DECISION 064 worktree method.
+The engine lift is committed **separately** from the UI so the freeze lift stays reviewable on its own.
+
+**Lane 043 — the ending screen got a ladder, not the line the brief asked for, and the agent was
+right.** All five rungs render in order with the one the career ended on filled in and tagged *"You
+ended here."* The reasoning, which is better than the brief's: *what a rung has that a phrase does not
+is four other rungs — the building could have thought something else about you, and here is what.*
+That is the read that makes a fourth career worth starting, and it is still only position-in-an-order,
+never distance.
+
+- **The no-number constraint is enforced structurally, not promised.** `trustMove()` returns only
+  `"up" | "down" | null`, so a three-rung fall and a one-rung fall are **literally the same value**
+  (asserted in a test); the card freezes the band **phrase** (`Resolved.trustBefore: string | null`),
+  never a `character` integer, **so the arithmetic that would produce a distance is not available to
+  any screen** — nothing subtractable reaches `localStorage` either. This is the right way to hold
+  DECISION 002: make the violation unrepresentable instead of forbidden.
+- **No accent colour in the new work, and the agent said why:** gold on *"the staff has stopped
+  defending you"* would put a trophy treatment on the worst outcome in the game — DECISIONS 021/032
+  inverted. Nobody asked it to check that.
+- One deliberate deviation, flagged: the previous rung is derived from the pre-`advance` state rather
+  than from the card's character delta as the brief suggested, **because recovering that delta would
+  have meant widening `CardAccount` with a character magnitude — the one thing the task must not
+  create.** The brief's suggested route was the unsafe one. Accepted.
+- Verified by playing a full career to a Round 3 Pick 16 ending, catching a live rung fall mid-career,
+  exercising the `up` path, and checking a 360px frame.
+
+**Both lanes rejected something they were asked to consider, on reasoning, and both were right.** 043
+recommended against B61's per-season column; 044 rejected the brief's file placement. **A wave where
+two agents push back on the brief and the PM accepts both is the wave working as designed** — the
+alternative is a PM's guess executed faithfully into the tree.
+
+## Next actions — for PM session 10, in order
+
+**Read this section, `DECISIONS.md` 065–067, and the wave 21–22 sections above. Nothing else.**
+
+**The phase's central complaint was withdrawn this session, by the player who was in a position to
+make it.** *"Does the game count what you do?"* — the sentence session 8 lost on — got a **yes** from
+someone who spent a career being a bad teammate, with a much narrower defect named in its place: the
+ladder the game narrates most was the one it showed least. Wave 22 shipped the fix. **Nobody has
+played it.**
+
+1. **B43 and the redshirt pack, in that order, then a playtest.** They are the same subsystem and they
+   must not share a wave — three simultaneous changes to redshirt EV would be unattributable
+   (the wave-10/13/16 lesson, restated in DECISION 066).
+   - **B43 first, alone:** the redshirt offer is made in 2,991 of 3,000 careers, pays **+5 OVR on the
+     offer card** — before the season it bets on — and two playtesters have now called it *"an obvious
+     free yes."* Small, well-understood, and it is a **balance** change, so state acceptance in
+     advance and report a miss rather than tuning it away (the wave-19 precedent, which is this
+     phase's best argument for the no-tuning rule).
+   - **Then the pack:** `requiresRedshirt` now exists and is proven inert. Author ~9–12 sit-season
+     cards — scout team, the weight room, look-team scripting, watching a rival take your reps, the
+     November Saturday in street clothes. **Target from `reports/042`: sit-season on-field pools 3/3/3
+     → 6/6/6, cross-replay collision ~33.8% → ≤17%** (a played season is 14.7%).
+   - **The pack wave must also add one line to `src/sim/prose-probe.ts:407` (`gatesOf`)**, which
+     enumerates gate labels by hand and has no arm for `requiresRedshirt`. Without it **the first card
+     authored is silently under-reported by the exact instrument the wave is measured on.** This is
+     DECISION 064's failure shape — an instrument drifting from what it measures — caught early for
+     once.
+   - **Do not hold "% of corpus read" as the target.** Authoring grows the denominator, so a
+     successful wave can lower it. Use 042's metric table.
+2. **Then the playtest, and it carries DECISION 067's falsifier.** *A playtester who still reports the
+   locker-room ladder as invisible* — which would mean the band resolution itself is too coarse, and
+   that is a DECISION 002 question rather than a display one. Also re-ask the north star: the curve is
+   *yes → no (asked) → no*, and the 041 player named the precise thing that would buy a fourth career.
+   **Keep the write-after-each-career rule in every playtest brief.**
+3. **B59 — the four prose/number contradictions.** *"Cost you in the locker room"* → **+1 OVR** ×2,
+   *"Earned you credit"* → **−3 OVR** ×2, none carrying the THIS CARD / EVERYTHING ELSE split that
+   exists to prevent exactly this. **The +1 cases are the upside DECISION 063 deliberately preserved,
+   so this is legibility, not economy — do not reopen the user's call.** The −3 cases are a different
+   animal and may be B57.
+4. **B57 needs the user** — 1,413 words (15.6% of the corpus, 2.2× the whole B55 band) sit behind
+   strictly dominated options (`gym-grind:rest`, `the-knee:cart`, ~15 more). Largest block of unread
+   writing in the game. **Must not be fixed by re-gating** — it is draft-stock pricing. Bring it with
+   a measurement.
+5. **B52 needs the user** — `requiresPlaying` only tests for a redshirt, not injury, so `Next Man Up`
+   tells a player in a walking boot to take every snap. ~73 events. Bring it with a measurement.
+6. **The engine is re-frozen.** DECISION 066's lift is spent — it covered `requiresRedshirt` and
+   nothing else. `src/sim/**` stays open.
+7. **Do not reopen type, colour or contrast.** Six playtests, zero visual defects. 041 found none in
+   ~130 decisions.
+8. **B53 is fully closed.** The Kicker is *"a different career, and the best-served position I
+   played."* Two sessions ago it was suspected of being too easy and too thin.
+9. **Verify with the worktree diff, not recorded hashes** (DECISION 064), and check that the 8 outputs
+   are **mutually distinct** — 044 showed a byte-identity pass can be vacuous if no run reaches the
+   code path.
+10. Increment the **PM session** counter at the top of this file.
+
+### What session 9 would tell session 10 if it could only say one thing
+
+**Measure the complaint, then check whether the fix you inferred from it is the one the measurement
+supports.** Session 9 was handed *"the villainy was free"* and *"six cost verdicts, one phrase
+change."* The obvious fix — make misbehaving hurt more — was wrong, and 400 careers per policy said so
+before a line was written: a selfish career already ends at character **6.8** and crosses every rung.
+The defect was that the player could not *see* a mechanism that was working perfectly. Session 9 also
+went hunting for buried writing on a premise it had inherited, and found **100% of the corpus
+reachable** and the real hole somewhere nobody had looked — an empty redshirt season.
+
+**Six calls have now been reversed by measurement — B3, B5, B49, B53, B55, and the character-penalty
+fix that was never written. None has been reversed by argument.** And this session added a corollary
+worth keeping: **two agents pushed back on their briefs and both were right.** Write briefs that can
+be argued with.
+
+## Next actions — for PM session 9, in order (executed by session 9; kept for anything unstruck)
 
 **Read this section, `DECISIONS.md` 060–064, and the wave 17–20 sections above. Nothing else.**
 
