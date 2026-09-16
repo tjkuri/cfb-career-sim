@@ -2069,3 +2069,45 @@ changed how they played. It is also the cheapest thing on the board.
 **What would change our mind.** 043 shipping and the next playtester still reporting the ladder as
 invisible — which would mean the band resolution itself is too coarse to register, and that *is* a
 DECISION 002 question rather than a display one.
+
+## 068 — Wave 22 gets played before the redshirt pack is authored, and the third career is not assigned
+
+**Date:** 2026-09-15 · **Made by:** PM session 10 · **Reorders:** session 9's next-action list, item 1 vs item 2 · **Evidence:** DECISION 067's own falsifier; the wave-10/13/16 attribution lesson
+
+Session 9 left the order **B43 → redshirt pack → playtest**. Session 10 runs **playtest ‖ B43
+measurement**, and leaves the pack unauthored until the playtest is back.
+
+**The reason is session 9's own rule, applied one level up.** DECISION 066 forbids B43 and the pack
+from sharing a wave because three simultaneous changes to redshirt EV would be unattributable. But
+wave 22 — the ladder on the ending screen, the highest-value item the board has had — **is committed
+and no player has seen it.** Authoring the pack first would put the next playtester in front of two
+unrelated changes at once, which is the same attribution error the rule exists to prevent. DECISION
+067 pre-registered a falsifier (*a playtester who still reports the ladder as invisible*); a
+falsifier is only worth having if it is fired on a build where the thing it tests is the newest
+thing on the screen.
+
+**The pack is also the largest authoring job left on the board, and it is being deferred
+deliberately.** Committing ~9–12 cards to a sit season is a real spend, and the question it is
+downstream of — *did the ending screen earn the fourth career?* — is answerable this week for the
+cost of one playtest. Spending the authoring wave before that answer is spending it on a guess.
+
+**B43 runs concurrently but implements nothing.** It is a balance change, so under the engine freeze
+it is the user's call, and DECISION 066's lift was explicitly spent on `requiresRedshirt` alone.
+`briefs/046` prototypes in a throwaway worktree and returns a table plus an acceptance criterion
+stated in advance; the PM escalates from that table. This also puts a check under a complaint that
+two playtesters have made and **nobody has measured** — 042/065 is the fifth time this phase that
+measuring a complaint changed what got built, and *"an obvious free yes"* is exactly the shape of
+claim that has been wrong before.
+
+**The third career is not assigned, and that is the point.** Every playtest so far has assigned three
+careers and then asked whether the player wanted to play them — which destroys the measurement the
+phase is defined by (*a playtester who has never seen it plays three careers in a row without being
+asked to*). `briefs/045` assigns two, then asks the question at career 2's ending screen and tells
+the playtester to act on their own answer, including *"no, do not play a third."* The 041 playtester
+made a testable prediction — *"if the ending screen had a locker-room line on it I would start a
+fourth right now to try to move it"* — and wave 22 shipped exactly that line. An unasked-for third
+career is now a real result the instrument can return.
+
+**What would change our mind.** A playtest that comes back with the ladder confirmed, the north star
+still a *no*, and the reason naming the redshirt season — which would mean the pack was the blocking
+item all along and the deferral cost a wave.

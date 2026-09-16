@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **PM session:** 9 (handing off)
+**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Wave 23:** in flight · **PM session:** 10
 
 ---
 
@@ -1692,6 +1692,55 @@ never distance.
 recommended against B61's per-season column; 044 rejected the brief's file placement. **A wave where
 two agents push back on the brief and the PM accepts both is the wave working as designed** — the
 alternative is a PM's guess executed faithfully into the tree.
+
+## Wave 23 — in flight (PM session 10)
+
+Two lanes, file-disjoint. One is a browser playtest of the live build; the other implements nothing
+at all and prototypes in a throwaway worktree, so the served tree does not move under the player.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/045-the-fourth-career.md` | playtester | `reports/045-*.md`, `PLAYTEST-LOG.md` | 2026-09-15 |
+| `briefs/046-is-the-redshirt-actually-a-free-yes.md` | measurement + proposal | `reports/046-*.md` only | 2026-09-15 |
+
+**The order was changed from session 9's list, and DECISION 068 says why.** Session 9 left
+B43 → pack → playtest. Session 10 runs playtest ‖ B43-measurement and leaves the pack unauthored.
+Wave 22 is committed and **no player has seen it**; authoring the pack first would put the next
+playtester in front of two changes at once, which is the attribution error DECISION 066's own rule
+exists to prevent. The pack is also the biggest spend left on the board and it is downstream of a
+question answerable this week for the cost of one playtest.
+
+**045's instrument is new and it is the point of the brief.** Two careers are assigned — one
+straight, one deliberately selfish — and **the third is not.** At career 2's ending screen the
+playtester answers *"do I want to play again right now, and what am I going to try to do
+differently"*, writes it down, and then acts on their own answer, including *"no."* Every previous
+playtest assigned three careers and then asked whether the player wanted them, which destroys the
+measurement this phase is defined by. DECISION 067's falsifier rides on it, and the 041 playtester's
+prediction — *"if the ending screen had a locker-room line on it I would start a fourth right now"* —
+is now testable, because wave 22 shipped exactly that line. The brief never names the ladder; it asks
+whether anything **besides the rating** was being tracked, so a *"no, just the rating"* is reachable.
+
+**045 also explicitly parks the redshirt** — two playtesters have already called the offer a free
+yes, it is confirmed, and re-asking would spend words on a closed question. The one exception is a
+single line on whether a sat season felt like *a season* or *a gap*, which is the pack's premise.
+
+**046 implements nothing.** B43 is a balance change; under the engine freeze that is the user's call,
+and DECISION 066's lift was spent on `requiresRedshirt` alone. The brief measures the status quo
+first (Part 1, written to disk before Part 2 begins) and asks whether the complaint is even true —
+`developmentDelta` cannot return a negative number, so a sit season may cost nothing, in which case
+the gamble has no stake regardless of when it resolves. Four routes are priced including **R0, change
+nothing and fix the telling**, and the deliverable is a table plus an acceptance criterion stated in
+advance so the implementing wave can report a miss instead of tuning until it passes.
+
+### Done by the PM directly, committed as `808fb99`
+
+`src/sim/prose-probe.ts:421` — `gatesOf` now has an arm for `requiresRedshirt`. Session 9 flagged
+that the first sit-season card authored would otherwise be **silently under-reported by the exact
+instrument the pack is measured on**. One additive line; 698 tests green, both typecheck passes exit
+0, build clean, and `npm run play` byte-identical to HEAD on seeds 1337 and 424242 by the DECISION
+064 worktree method (both sides recomputed, no transcribed hash trusted). No shipped card sets the
+field, so the new line does not execute yet — the check is real but not yet non-vacuous, and the pack
+wave is what makes it fire.
 
 ## Next actions — for PM session 10, in order
 
