@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Wave 19:** in flight · **PM session:** 8
+**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **PM session:** 8 (handing off)
 
 ---
 
@@ -974,6 +974,10 @@ and ask.*
 
 **New `npm run play` md5 baselines** (bit-identity moved by approval, precedent 040):
 `24 random cd2d3895e9c68e8dc485bfa5cc0fc832` · `77 random 7d6ee0df708a92555edb968ccc65ce64`
+
+> **STALE — do not use these. Correct at `ce36cbf`, moved at `d310e87` (wave 16) and never updated.
+> See DECISION 064: the recorded-hash method is replaced by a detached-worktree diff.** Current
+> values are in the "Verification method" section near the end of this file.
 (**unchanged** — that career never sits and never draws a gated card) ·
 `101 random f2ffe2b55fdbf8bf710182f64b871edb`.
 
@@ -1348,7 +1352,8 @@ human one does not. See **DECISION 060** — this is why 15.2% and Round 4 are b
 | B51 | **Four orientation defects** — rail vs header OVR, rail runs a year ahead, phantom year 5, disabled START button lies | **in flight (038)** | All unambiguous, none a matter of taste |
 | B52 | **`Next Man Up` tells an injured player to take every snap** | in flight (038) — proposal only | Missing `requiresPlaying`-class condition. Content, frozen |
 | B53 | **Kicker is position-neutral outside its stat line and ~4 cards** — and finished **Round 3 Pick 8**, which the playtester called *"not a thing for a kicker"* | **USER** | **DECISION 059's falsifier has fired.** 037 measures the distribution |
-| B54 | **`bowl-game-winner` arithmetic** — *"down two"* offered *"take the tie"* | **DONE (uncommitted)** | DECISION 061. PM prose fix under 043/050 precedent |
+| B54 | **`bowl-game-winner` arithmetic** — *"down two"* offered *"take the tie"* | **DONE (`17b5b2c`)** | DECISION 061. PM prose fix under 043/050 precedent |
+| B55 | **Three low-character cards now fire ~0.06×/career for a good player** (`entourage`, `curfew-check`, `exit-interview`, gated `maxCharacter: 55`) | todo | Wave 20 side effect. Correct behaviour, but the third time a fix has shrunk an event pool (cf. DECISION 051). **Nobody has counted how much writing is now rarely reachable** |
 
 ## Wave 18 — complete and committed (PM session 8)
 
@@ -1414,7 +1419,7 @@ table and the calls. The finding that matters most:
 **That is four times this phase that measuring a complaint instead of implementing it changed the
 answer.** B3, B5, B6, and now B49/B53. The habit is the house's most valuable asset.
 
-## Wave 19 — in flight (PM session 8)
+## Wave 19 — complete and committed (PM session 8)
 
 One lane, deliberately alone — a balance change cannot share a wave with anything that touches engine
 or content, which is the wave-10, 13 and 16 lesson.
@@ -1430,6 +1435,120 @@ branch of the 14 off-field blocks only, and All-American gets rungs above 85.
 everywhere, `good`'s median character rises out of *"a problem they are managing"*, the All-American
 gap widens beyond 72.2 vs 52.6, and **OL and K do not fall to near-zero**. A miss is reported, not
 engineered away. Seed baselines move by construction (DECISION 040 precedent).
+
+### Wave 19 result — it shipped exactly as specified and changed nothing. Commit `2ed2f9c`
+
+`reports/039-misbehaving-stops-paying.md`. **The agent was told not to tune and did not.** The
+honest miss is why wave 20 exists and is correctly aimed — this is the single best argument for the
+no-tuning rule the phase has produced.
+
+- `good` made the **identical pick on all 13 off-field cards**. Median character **41 → 41** at every
+  position. Expected stock fell on all four edited options and **stayed above the clean option's
+  0.00** everywhere.
+- **The structural reason nobody predicted:** only **4** paired blocks sat on a caught branch;
+  **17 sit on the branch where you get away with it**, which DECISION 062 deliberately kept. The
+  upside the user preserved *is* where the economy lives.
+- **What it did buy, invisible to the policy measurement:** the caught branch stopped paying +1 OVR,
+  killing one of the four prose/number contradictions the 036 playtester quoted. **Change 1 fixed the
+  legibility defect, not the economy defect** — the two had been conflated by 037, by the PM, and by
+  062 itself.
+- All-American rungs kept. Every position's good-vs-bad ratio improved (QB 1.37× → 1.66×). **K falls
+  to 3.2% All-American, ~1 career in 31 — thin, and the thing to watch.**
+
+## Wave 20 — complete and committed (PM session 8)
+
+`briefs/040-getting-caught-has-to-bite.md` → `reports/040-getting-caught-has-to-bite.md`, commit
+`bec5736`. **All four acceptance criteria pass.**
+
+**PM-verified independently before commit:** 671 tests green, both typecheck passes exit 0, build
+clean, and the content diff audited line by line — **six `character` amounts changed, all six on
+`negativeOutcome` branches, zero `positiveOutcome` branches touched**, and no `overall`, probability,
+condition or weight anywhere in the diff. The PM re-derived two of the six penalties by hand and both
+reproduced exactly.
+
+| | before | after |
+|---|---|---|
+| `good` median character | 40–44 | **61–65** |
+| `good` at *"staff has stopped defending you"* | 12.7–19.1% | **0.0%** |
+| `good` careers ending for a character reason | 24 per 3,000 | **0** |
+| `good` undrafted | 0.2–0.5% | 0.2–0.5% |
+| `good` round 1 | — | **−1.1 to −5.5pp**, median round unchanged |
+
+- **Six of thirteen cards flipped their pick.** The penalties were **derived, not searched**:
+  `a > [p·S(pos) − S(alt)] / (0.15·(1−p))` from the shipped `optionScore`, with one further point
+  where the bound hit an exact integer and the strict-`>` tiebreak kept the incumbent.
+- **`humanLazy` now bottoms out at median character 0** and busts ~9pp more often. The locker-room
+  ladder finally has something driving it.
+- **Round 1 fell and was deliberately not protected** — DECISION 063 reversed that criterion, because
+  the figure was partly purchased by cheating.
+
+### The side effect worth not rediscovering — and it is DECISION 051's pattern again
+
+Three cards (`entourage`, `curfew-check`, `exit-interview`) sit on `ride-it-out`, a `probability: 1`
+option with **no `negativeOutcome`**, gated behind `maxCharacter: 55`. Because `good` now rarely falls
+that low (**90.4% → 12.6%** of careers), those three fire **~0.06× per career instead of 1.0×**.
+
+**This is correct behaviour, not a bug** — content written for a player whose standing is in the tank
+should not fire for a player whose standing is fine. But it is the third time this phase that a
+correctness fix has quietly shrunk an event pool (DECISION 051: a redshirt season's pool fell 81 → 12).
+**Logged as B55.** The content authored for a bad character arc is now mostly seen only by players
+having one, which is either good design or buried writing depending on how much of it there is — and
+nobody has counted.
+
+## Next actions — for PM session 9, in order
+
+**Read this section, `DECISIONS.md` 060–064, and the wave 17–20 sections above. Nothing else.**
+
+**The economy is fixed and nobody has played it.** Four waves landed this session: the playtest that
+refuted the last one, the orientation defects, the measurement that inverted the phase's vocabulary,
+and the two-stage fix that finally made misbehaving cost something. 671 tests green, both typecheck
+passes exit 0, build clean, five commits. **And the last player to touch this game quit after two
+careers saying the game was not counting what they did — which is exactly the thing waves 19 and 20
+changed, and it has not been seen by anyone.**
+
+1. **The next wave is a PLAYTEST and it is not optional.** Same standing as session 8's, for the same
+   reason. Copy `briefs/036-the-losable-career-playtest.md`'s shape. The brief must:
+   - **Add the rule that would have saved the last one: append to the report after EACH career,
+     before starting the next.** 036's agent was killed holding two careers of unwritten findings and
+     was only recovered because it was resumable. See the postmortem in the wave 17 section.
+   - Send someone through a career **playing selfishly off the field** — the ticket hookup, the NIL
+     money, ghosting the media — and ask whether the cost ever became visible, **in the moment**.
+     DECISION 063's mechanism routes it through the locker-room ladder, which the 036 playtester
+     named as the only thing in the game that made them want to change how they played. **Does it
+     still do that when it is carrying real weight?**
+   - Ask directly: **does the game count what you do?** That is the sentence the last playtest lost
+     on, verbatim, and it is the one to re-ask.
+   - **Play a Kicker again** if the session has room — K's All-American rate is now 3.2%, about one
+     career in 31, and nobody has seen what a kicker's ending screen looks like with no honours on it.
+   - Re-ask the north star. The curve is *yes → yes → no*, *yes → yes → no → no*, *yes → no → no*,
+     *yes → no*. **Nothing has moved it yet.**
+2. **Then B43's remaining half** — the redshirt card is offered at SO in 2,991 of 3,000 careers and
+   the 036 playtester confirmed it reads as *"an obvious free yes"* that pays **+5 OVR on the offer
+   card**, before the season it bets on. Small, well-understood, and it finishes what wave 16 started
+   by accident.
+3. **Then B44** — redshirt-specific beats. Still the best-aimed authoring target in the phase.
+4. **B52 needs the user** — `requiresPlaying` only tests for a redshirt, not for injury, so
+   `Next Man Up` tells a player in a walking boot to take every snap. The one-line fix at
+   `select-event.ts:37` changes eligibility across **~73 events**, which makes it balance. Bring it
+   with a measurement, not a guess.
+5. **B55 is worth one cheap count** before anyone authors new content: how much of the existing
+   writing is now gated behind a character band that a good player no longer reaches?
+6. **The engine is re-frozen.** 057's and 062's lifts are both spent. `src/sim/**` stays open.
+7. **Do not reopen type, colour or contrast.** Four playtests, zero visual defects.
+8. **Do not re-measure skimming onset.** Settled at decision 1 for replays.
+9. **Verify with the worktree diff, not the recorded hashes** — see the Verification method section.
+   DECISION 064: the written-down baselines rotted for two waves and nobody noticed.
+10. Increment the **PM session** counter at the top of this file.
+
+### What session 8 would tell session 9 if it could only say one thing
+
+**Measure the complaint before you implement it, and check the instrument before you trust the
+reading.** This session refuted its own playtester twice (the ending screen was not ranking backwards;
+the Kicker was not too easy), shipped a user-chosen fix that provably did nothing, and found a
+verification step that had silently decayed into a ritual two waves earlier. **Every one of those was
+caught by measuring rather than assuming, and every one would have shipped as a wrong fix otherwise.**
+Four of this phase's calls have now been reversed by measurement — B3, B5, B49, B53 — and not one has
+been reversed by argument.
 
 ## Next actions — for PM session 8, in order
 
@@ -1683,6 +1802,46 @@ only shape worth recommending. Cost and style are the user's call.
 - **The measurement habit is the house style.** DECISION 003 reversed a design call on 300 careers of
   data; 014 overturned the playtest's own top finding by source-checking it; 006 proved an engine
   change additive on three seeds. When a call is contested, get a number.
+
+## Verification method — read this before committing anything
+
+**The PM commits.** Agents never do. Before a commit, the PM verifies:
+
+1. `npm test` — all green (**671** as of `2ed2f9c`).
+2. `npm run typecheck` — **both** passes exit 0.
+3. `npm run build` — clean.
+4. `git status --porcelain src/engine src/content` — **empty**, unless this wave carries an explicit,
+   logged freeze lift, in which case read the whole diff and confirm it matches what was authorized.
+5. **Bit-identity, by detached worktree — not by comparing against a written-down hash.**
+
+### The bit-identity check, the way that does not rot
+
+**DECISION 064.** The md5s recorded in this file went stale at wave 16 and nobody noticed for two
+waves, because a hand-copied hash is evidence of what someone once saw, not of what the code does
+now. Recompute **both** sides instead:
+
+```sh
+SCRATCH=<your scratchpad dir>
+git worktree add -q --detach $SCRATCH/head-check HEAD
+ln -sfn $PWD/node_modules $SCRATCH/head-check/node_modules
+for seed in 12345 98765; do for pol in random first; do
+  npm run play -- $seed $pol > $SCRATCH/now-$seed-$pol.json
+  (cd $SCRATCH/head-check && npm run play -- $seed $pol > $SCRATCH/head-$seed-$pol.json)
+  diff -q $SCRATCH/now-$seed-$pol.json $SCRATCH/head-$seed-$pol.json
+done; done
+git worktree remove --force $SCRATCH/head-check && git worktree prune
+```
+
+It never touches the working tree, which matters because the tree routinely holds two agents'
+uncommitted work. **Do not `git stash` or `git checkout` to get a clean baseline — use a worktree.**
+
+**Current md5s** (at `2ed2f9c`; recorded as an eyeball aid, *not* as the check):
+`24 random` and `77 random` moved with wave 19 by construction — recompute rather than trusting any
+number written here. The banner gotcha still applies: `npm run play` prints npm's banner on stdout,
+so hash with `npx tsx src/sim/play-headless.ts <seed> random | md5`.
+
+**When a wave legitimately moves the seeds** (any engine or content change), say so in the commit
+message and move on — bit-identity is a check on *unintended* movement, not a prohibition.
 
 ## Handoff protocol
 

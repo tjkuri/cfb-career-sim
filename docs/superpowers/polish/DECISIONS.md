@@ -1865,3 +1865,81 @@ table.
 taking OL or K to a near-zero All-American rate. Both are pre-specified per position in
 `briefs/039-misbehaving-stops-paying.md`, and the brief forbids tuning to hit them: a miss is reported,
 not engineered away.
+
+## 063 — DECISION 062's change 1 missed, and the shape of the miss says where the economy actually lives
+
+**Date:** 2026-09-15 · **Made by:** the user, on PM session 8's report of a measured miss · **Amends:** 062 · **Evidence:** `reports/039-misbehaving-stops-paying.md`
+
+062's change 1 — strip the `overall` gain from the caught branch, keep it on the branch where you get
+away with it — **shipped exactly as specified and changed no behaviour at all.** The `good` policy
+makes the **identical pick on all 13 off-field cards** afterwards. Expected stock fell on all four
+edited options and **every one stayed above the clean option's 0.00**, so nothing flipped. `good`'s
+median final character: **41 before, 41 after, at every position.**
+
+**The structural reason, which nobody predicted and which aims the next wave.** Only **4** of the
+paired character-loss/overall-gain blocks sat on a `negativeOutcome`. **17 sit on `positiveOutcome`
+branches** — the ones 062 deliberately preserved. The upside the user chose to keep *is* where
+essentially all of the economy lives, so removing the caught-branch gain was never going to move the
+arithmetic. **The measurement was right and the prediction underneath it was wrong**, which is the
+fourth time this phase and the reason the brief forbade tuning.
+
+**What it did buy, which the policy measurement cannot see.** The caught branch no longer pays
+`+1 overall`, which kills one of the four prose/number contradictions the 036 playtester quoted
+verbatim: *"Compliance flags the resale listing with your name still in the metadata"* → **+1 OVR**.
+**Change 1 fixes the legibility defect and not the economy defect.** The two were conflated — by
+report 037, by the PM, and by 062 itself.
+
+**The user's call: keep change 1 and complete it with a bite.** Raise the **character** cost on the
+caught branches until the selfish option's expected stock falls below the clean option's, deriving
+each penalty from the shipped scorer rather than searching for it. This fixes both defects at once,
+stays content-only, preserves the gamble, and routes the cost through the **locker-room ladder** —
+the mechanism the 036 playtester named as the only one in the game that made them want to change how
+they were playing. `briefs/040-getting-caught-has-to-bite.md`.
+
+**An acceptance criterion is deliberately reversed, and the reversal is the interesting part.**
+039 treated a fall in `good`'s round-1 rate as a cost to be protected against. **That was wrong.**
+`good`'s 50% round-1 rate was *partly purchased by cheating*; a clean player's number is the honest
+one, and the safety test that actually matters — undrafted ≤1% at every position — passed everywhere.
+040 reports round-1 per position and **does not protect it**. Recorded because it inverts a criterion
+the PM wrote two waves earlier, and because protecting a figure an exploit was inflating would have
+locked the exploit in.
+
+**The All-American rungs are kept.** Every position's good-vs-bad ratio improved (QB 1.37× → 1.66×,
+DL 1.49× → 1.91×) and the honour is now genuinely scarce. The counter-reading was recorded and
+rejected by the user: the *percentage-point* gap barely moved (+19.6 → +20.2) and shrank at four of
+six positions, and a player only ever experiences "did I get it or not". **K falls to 3.2%**, about
+one career in 31, which is thin and is logged as the thing to watch.
+
+**What would change our mind.** 040's derived penalties flipping `good`'s picks but taking a
+well-played career's undrafted rate above 1% at any position — in which case the character route is
+exhausted and 037's P2 (repricing character in `draft.ts`, with a full re-sweep of 034) is the only
+remaining mechanism.
+
+## 064 — The `npm run play` baselines in STATE.md rotted for two waves, and the method is replaced, not just the numbers
+
+**Date:** 2026-09-15 · **Made by:** PM session 8 · **Evidence:** PM verification in a detached worktree
+
+The bit-identity baseline is this project's main safety net for engine and content changes: a wave
+that must not move a seed is checked against a recorded md5. **Those recorded hashes have been wrong
+since wave 16.** `24 random` is documented as `cd2d3895…`; it hashes to `6ef539d4…` at `f345e1a`.
+
+**Traced precisely:** correct at `ce36cbf` (wave 13), moved at `d310e87` (wave 16) — **the very
+commit whose decision said "re-baseline at commit, DECISION 040 precedent."** Wave 16 moved every
+seed by construction, as approved, and did not update the recorded numbers. Two waves then passed
+with a documented check that would have failed against anything.
+
+**It cost nothing only by luck of method.** PM session 8 verified wave 18's byte-identity by checking
+out HEAD into a detached worktree and diffing freshly-computed output on both sides, rather than
+comparing against the written-down hash. That method cannot rot, because it recomputes both sides and
+never trusts a transcribed value.
+
+**The call: the worktree diff replaces the recorded md5 as the documented method.** Hashes are still
+recorded — they are useful for a quick eyeball — but **a hand-copied hash is evidence of what someone
+once saw, not of what the code does now.** A check whose failure mode is silent staleness is worse
+than no check, because it is trusted.
+
+**The general lesson, which is this phase's third of its kind.** 034 calibrated against the thing it
+was replacing; 058 specified acceptance on an aggregate that hid a per-position failure; 060 found the
+policy standing in for the player did not play like the player. **Now a verification step decayed into
+a ritual.** Every one is the same error: *the measurement drifted from the thing it was supposed to
+measure.* Check the instrument, not only the reading.
