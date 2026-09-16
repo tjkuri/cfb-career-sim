@@ -325,6 +325,40 @@ describe("soft-washout bust", () => {
     expect(s.endingReason).toMatch(/buried/i);
   });
 
+  // DECISION 072. A redshirt season is ~25 snaps, so it used to satisfy the
+  // buried predicate on its own and bust the exact player the redshirt exists
+  // for: an injured freshman who then sits. A sit season is a coach's decision,
+  // not evidence of being buried, so it is SKIPPED by the consecutive-seasons
+  // window -- skipped, not streak-breaking, so it cannot launder a prior
+  // buried season either.
+  it("does not count a redshirt season as a buried season", () => {
+    const s = createCareer(setup, "redshirt-not-buried");
+    s.overall = 64; // nineteen clear of washoutOverallFloor (45): this player was not washed out
+    s.phase = "offseason";
+    const belowFloor = Math.max(0, CONTENT.progression.washoutSnapFloor - 1);
+    // FR wrecked by injury, then a redshirt season sat on purpose.
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 25, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "FR" });
+    s.seasons.push({ seasonIndex: 1, schoolId: "x", snaps: 26, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "SO", redshirt: true });
+    enterOffseason(s, CONTENT, createRng("redshirt-not-buried"));
+    expect(s.status).toBe("active");
+    void belowFloor;
+  });
+
+  it("still busts when the two PLAYED seasons around a redshirt are both buried", () => {
+    // The redshirt is skipped, not streak-breaking: it must not launder the
+    // buried season that preceded it.
+    const s = createCareer(setup, "redshirt-no-launder");
+    s.overall = 70;
+    s.phase = "offseason";
+    const belowFloor = Math.max(0, CONTENT.progression.washoutSnapFloor - 1);
+    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: belowFloor, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "FR" });
+    s.seasons.push({ seasonIndex: 1, schoolId: "x", snaps: 26, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "SO", redshirt: true });
+    s.seasons.push({ seasonIndex: 2, schoolId: "x", snaps: belowFloor, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "JR" });
+    enterOffseason(s, CONTENT, createRng("redshirt-no-launder"));
+    expect(s.status).toBe("busted");
+    expect(s.endingReason).toMatch(/buried/i);
+  });
+
   it("drives a full career to the busted terminal via advance()", () => {
     // Play one season, then force overall low and advance to the next offseason;
     // the engine must transition to busted and stop (no decision, no draft).

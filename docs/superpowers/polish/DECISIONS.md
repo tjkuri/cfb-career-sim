@@ -2256,3 +2256,57 @@ season be *skipped* by the consecutive-seasons window, or *break* the streak?
 **What would change our mind.** On the trapdoor, nothing — it is read from source and reproduced over
 8,000 careers per cell. On the reframing of B43, a playtester who understands the redshirt's real
 terms and still calls it an obvious yes.
+
+## 072 — The redshirt trapdoor is closed by skipping, not streak-breaking. The user's call, and the fix reveals the buried-washout path was ~95% artifact
+
+**Date:** 2026-09-15 · **Made by:** the user, on PM session 10's escalation · **Closes:** B63 · **Evidence:** `reports/046-*.md` §Trapdoor, plus the PM's own before/after sweep at n = 6,000 per cell
+
+DECISION 071 escalated B63 with one open question: should a redshirt season be **skipped** by the
+consecutive-seasons buried window, or **break the streak**? **The user chose skip.**
+
+**The change, one clause at `advance.ts:251`:** `s.seasons.slice(-n)` becomes
+`s.seasons.filter((line) => !line.redshirt).slice(-n)`. `SeasonLine.redshirt` was already recorded
+(`types.ts:48`, written at `advance.ts:319`); the check simply never consulted it.
+
+**Skip, not streak-break, and the distinction is tested.** Two tests were added, and the first one
+**failed before the fix and passes after** — the bug was reproduced before it was repaired:
+
+- *"does not count a redshirt season as a buried season"* — FR 25 snaps (injury-wrecked), SO 26 snaps
+  (redshirt), overall 64. Busted before; active after.
+- *"still busts when the two PLAYED seasons around a redshirt are both buried"* — FR buried, SO
+  redshirt, JR buried. Still busts. **A sit cannot launder a prior buried season**, which is exactly
+  what "skip" buys over "break".
+
+**Measured, before and after, both sides recomputed by the DECISION 064 worktree method, n = 6,000:**
+
+| profile/pos | busted% | washout% | drafted% | round1% |
+| --- | ---: | ---: | ---: | ---: |
+| good/QB | 2.27 → **0.63** | 1.67 → **0.03** | 97.73 → 99.37 | 38.32 → 38.55 |
+| good/DL | 2.13 → **0.42** | 1.73 → **0.02** | 97.87 → 99.58 | 34.37 → 34.67 |
+| baselineRandom/QB | 6.72 → **5.67** | 1.13 → **0.00** | 93.28 → 94.33 | 8.77 → 8.78 |
+| baselineRandom/DL | 6.80 → **5.73** | 1.12 → **0.00** | 93.20 → 94.27 | 7.43 → 7.43 |
+| humanLazyAmbitious/QB | 35.38 → **35.00** | 0.47 → **0.00** | 64.62 → 65.00 | 12.88 → 12.90 |
+
+**The consequence that is larger than "one clause" implies, and it is stated rather than buried: the
+*"Buried on the depth chart"* ending is now nearly extinct** — 0.03% for a good player, and below
+1-in-6,000 for an ordinary one. It was not doing the work its name claimed. **~95% of it was
+redshirts being misread as benchings.** A genuinely buried career needs two consecutive sub-60-snap
+*played* seasons against a median of 343, which almost never happens.
+
+**The game does not become less losable, and that was checked because wave 16 exists.** Ordinary play
+still busts 5.67% (6.72% before) and a badly-behaved career still busts 35.00% (35.38% before) — the
+character spiral and the overall collapse carry the failure rate, as DECISION 057 intended. **What was
+removed is a failure mode that fired on the wrong player**, not a failure mode.
+
+**Verified end to end, and non-vacuously.** 700 tests (698 + 2), both typecheck passes, build clean.
+`npm run play` is **byte-identical on 12 seed/policy pairs**, all 12 outputs mutually distinct — but
+byte-identity here means the fix is *narrow*, not that it is inert, so a differing seed was hunted
+down to prove it fires: **seed 113/best was busted `"Buried on the depth chart"` at overall 73, and
+now survives to overall 82 before busting as `"Ran out of rope with the staff"`.** The mislabelled
+ending was replaced by an honest one. That is the 044 lesson applied in reverse: when a change is
+*supposed* to move something, a passing identity check is only meaningful once you have found the
+case that moves.
+
+**What would change our mind.** A playtester reporting that a career which should clearly have ended
+on the bench instead ran to the draft — which would mean the buried path needed to survive in some
+form rather than being a near-pure artifact.

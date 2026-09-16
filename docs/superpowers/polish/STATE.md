@@ -1795,7 +1795,7 @@ all seven one-way cards in place.
 | ID | Item | Status | Notes |
 |---|---|---|---|
 | B62 | **Seven one-button cards can only cost standing; zero can earn it** — five are the Season Opener milestones and fire in 100% of careers | **MEASURED — DECISION 070. Top of the board** | *"Being punished for something you were not asked about is the only thing in this game that felt unfair rather than hard."* **The target is the no-choice cards, not the virtue economy.** Content-economy change → user |
-| B63 | **The redshirt trapdoor** — `advance.ts:251` counts a ~25-snap sit season as a "buried" season, so an injured freshman who then redshirts is busted **100%** of the time at overall ~64 | **MEASURED — DECISION 071. Unambiguous bug** | `SeasonLine.redshirt` already exists and is already recorded (`types.ts:48`); the check just never consults it. One clause. Engine → user. Open question: should a redshirt season be *skipped* by the window, or *break* the streak? |
+| B63 | **The redshirt trapdoor** — `advance.ts:251` counted a ~25-snap sit season as a "buried" season, so an injured freshman who then redshirted was busted **100%** of the time at overall ~64 | **DONE — DECISION 072, committed** | User chose *skip*. One clause; `SeasonLine.redshirt` was already recorded. Bug reproduced in a failing test first. **Side effect, stated not buried: the "Buried on the depth chart" ending is now nearly extinct (0.03% good/QB) — ~95% of it was redshirts being misread as benchings.** Ordinary bust rate 6.72% → 5.67%; the game stays losable |
 | B64 | **The season ledger disagrees with the season the player played** — a cluster, all from 045 career 3 | todo — needs a debugging lane | SR recorded **9-3, 0 snaps, 87 overall, +15** after a season the player played through; header read **"0 snaps — 2 Sacks Allowed"** for four screens; **"A season on the sideline cost you ground" (−4) while the sidebar scored the year +15**; final overall 83 vs the row's 87 |
 | B65 | **Stats mutate after a season closes** | todo | Season 2 finished at **47 Pancakes**; the next screen said **46** for the same completed season; the ending screen says 46. Snaps seen decreasing **308 → 300** |
 | B66 | **Effects with no card** | todo | *"You got hurt between decisions"* attached to a −3/−4 with no screen and no injury, twice. Once with two contradictory explanations in one line: *"An injury healed and gave the points back. You got hurt between decisions."* |
@@ -1804,6 +1804,24 @@ all seven one-way cards in place.
 | B69 | **Staying gets no ceremony** — claim 5 PARTIAL | todo | Transferring now gets a card; **staying** produces nothing at all. B16's other half |
 | B70 | **Two prose/number contradictions reproduce deterministically** across careers and positions | todo — **merge into B59** | *"Win the job"* → *"pressing looks exactly like panicking on film"* → **−1 OVR**; *"Stay on campus and train"* → *"in August it shows that you did"* → **cost + −1 OVR**. Not bad luck — the same text and sign both times |
 | B71 | **Does standing do anything?** — still invisible after three careers | todo | Career 2 ended on the bottom rung and still went round 3 with a Washington offer; career 3 ended mid-ladder, also round 3. *"If it is wired to something, the player cannot see it; if it is not, then the best-written thing in the game is scenery."* It **is** wired (±7.5 draft stock) — so this is a legibility item, and it is the natural companion to B62 |
+
+## Wave 24 — complete and committed (PM session 10)
+
+**B63, the redshirt trapdoor. The user was asked *skip* vs *break the streak* and chose skip.** Done
+by the PM directly — it is one clause and the decision was already made. Full numbers in DECISION 072.
+
+- `advance.ts:251`: `s.seasons.slice(-n)` → `s.seasons.filter((line) => !line.redshirt).slice(-n)`.
+- **The bug was reproduced in a failing test before it was fixed**, and a second test pins the *skip*
+  semantics against *break*: a redshirt cannot launder a buried season on the other side of it.
+- **700 tests** (698 + 2), both typecheck passes exit 0, build clean.
+- **`npm run play` byte-identical on 12 seed/policy pairs, all 12 mutually distinct** — but this fix
+  is *supposed* to move ~1.6% of careers, so identity alone would have been the vacuous kind of pass.
+  A differing seed was hunted: **113/best was busted `"Buried on the depth chart"` at overall 73 and
+  now runs to overall 82 before busting as `"Ran out of rope with the staff"`.**
+- **The side effect, stated rather than buried:** the buried-washout ending drops to ~0 everywhere
+  (good/QB 1.67% → 0.03%). It was ~95% artifact. The game does not get less losable — ordinary play
+  still busts 5.67% and a badly-behaved career 35.00% — because the character spiral and the overall
+  collapse were always carrying it.
 
 ## Next actions — for PM session 11, in order
 
@@ -1825,8 +1843,9 @@ session.
      preserved upside is not reopened.
    - Routes for the user, all content-economy: symmetrise the milestone openers so the 75% branch
      earns what the 25% branch costs; or turn them into real choices; or strip their character effect.
-2. **B63 to the user as a bug, with DECISION 071's numbers.** One clause at `advance.ts:251`.
-   `SeasonLine.redshirt` is already recorded. The only real question is *skip* vs *break the streak*.
+2. ~~**B63 to the user as a bug.**~~ **DONE** — the user chose *skip*, wave 24 shipped it, DECISION
+   072. Note its side effect when reading any future bust measurement: the *"Buried on the depth
+   chart"* ending is now nearly extinct and every washout baseline recorded before `f46b64e` is stale.
 3. **B64–B67 are a single debugging lane, and it should be one agent with `systematic-debugging`.**
    They are all the same subsystem — the season ledger — and the *"0 snaps"* senior season is the
    thread to pull. **These are the first hard correctness bugs found in seven playtests**; everything

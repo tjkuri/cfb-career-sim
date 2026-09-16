@@ -244,8 +244,16 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   }
 
   // Soft-washout: collapsed overall, or buried (near-zero snaps) for consecutive seasons.
+  //
+  // DECISION 072: a redshirt season is SKIPPED by this window. It is ~25 snaps
+  // (`sitSnapModifier` 0.05), so it used to satisfy the buried predicate on its
+  // own -- which busted an injured freshman who then sat, i.e. precisely the
+  // player the redshirt is written for, at a healthy overall. Sitting is a
+  // coach's decision, not evidence of being buried. Skipped rather than
+  // streak-breaking: the seasons on either side of a redshirt are still
+  // consecutive for this check, so a sit cannot launder a prior buried season.
   const prog = content.progression;
-  const recent = s.seasons.slice(-prog.washoutConsecutiveSeasons);
+  const recent = s.seasons.filter((line) => !line.redshirt).slice(-prog.washoutConsecutiveSeasons);
   const buried =
     recent.length >= prog.washoutConsecutiveSeasons &&
     recent.every((line) => line.snaps < prog.washoutSnapFloor);
