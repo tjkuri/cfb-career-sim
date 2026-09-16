@@ -2111,3 +2111,148 @@ career is now a real result the instrument can return.
 **What would change our mind.** A playtest that comes back with the ladder confirmed, the north star
 still a *no*, and the reason naming the redshirt season — which would mean the pack was the blocking
 item all along and the deferral cost a wave.
+
+## 069 — Wave 22 worked, the falsifier did not fire, and the ladder's success is what exposed the thing underneath it
+
+**Date:** 2026-09-15 · **Made by:** PM session 10 · **Confirms:** DECISION 067 · **Evidence:** `reports/045-the-fourth-career.md`
+
+DECISION 067 pre-registered its own falsifier: *a playtester who still reports the locker-room ladder
+as invisible.* **It did not fire, and the opposite happened.** The 045 playtester tracked the ladder
+constantly, quoted all five rungs back verbatim, called the six-rung list with *"YOU ENDED HERE"*
+**"the best element in the game"**, and said they caught **every** locker-room change across three
+careers because the delta banner sits where their eye already was.
+
+**The 041 prediction came true as stated, and it is the first time this phase has predicted a player's
+behaviour in advance and been right.** 041 said: *"if the ending screen had a locker-room line on it I
+would start a fourth right now to try to move it."* 045 — a different player, never told what shipped
+— reached career 2's ending screen, was asked whether they wanted another, and answered:
+
+> *"Yes — but it is a narrow yes... there is one line I have never reached and I want to find out if
+> it is reachable."*
+
+They then played an unassigned third career **as a controlled experiment to reach the top rung.** The
+brief did not ask for it. That is the north star's mechanism working, and it came from a display
+change that cost one wave.
+
+**And it is also how the phase learned its real problem.** The experiment came back negative, and the
+*"no"* to a fourth career is the sharpest one yet recorded because it is conditional and specific:
+
+> *"If a fix makes the team-first branch reliably pay — even a little, even invisibly-but-consistently
+> — I would come straight back, because the thing the ladder promises is genuinely the best idea in
+> this game."*
+
+**The lesson, and it reframes four sessions of work.** Sessions 8 and 9 treated *"the game does not
+count what you do"* as a display problem and were right to. But the display was the **lid**: while the
+standing was invisible, nobody could see that it was also unearnable. **Making a mechanism visible is
+what makes it falsifiable.** The correct sequence was the one that happened — and the next wave is
+only possible because wave 22 shipped.
+
+**What would change our mind.** Nothing on 067; it is confirmed by a player who did not know it
+existed. The open question moved to 070.
+
+## 070 — The standing ladder is a one-way ratchet, but not for the reason the playtester said. Seven one-button cards can only cost, and five of them fire in every career
+
+**Date:** 2026-09-15 · **Made by:** PM session 10 · **Opens:** B62 · **Evidence:** `reports/045-*.md`, plus the PM's own pass over all 106 events / 199 options
+
+The 045 playtester ran a maximum-virtue career — team-first on every card, one school, no transfers,
+four seasons — and finished **one rung lower than it started**, with **zero** *"Earned you credit in
+the locker room"* and **five** *"Cost you."* Their diagnosis:
+
+> *"The good-teammate branch is a coin flip, so the reputation the whole second track is built on is
+> something you cannot actually earn."*
+
+**The observation is real and the diagnosis is wrong, and the difference is the whole fix.** Measured
+over the entire corpus:
+
+| | n | mean E[character] | mean success | mean p |
+|---|---:|---:|---:|---:|
+| options whose success branch pays character (*"virtuous"*) | 42 | **+2.35** | +3.31 | **0.81** |
+| options whose success pays OVR and whose failure costs character (*"selfish"*) | 34 | **−3.14** | +1.29 OVR | 0.60 |
+
+**Virtue is not a coin flip. It pays +2.35 expected at 81% reliability**, only 3 of 42 virtuous
+options have non-positive EV, and the opportunity is **flat across all six positions** (23–26 virtuous
+options each, mean E ≈ +3.2 — so this is not the per-position hole DECISION 058 taught us to check
+for, and that was checked).
+
+**The actual mechanism is one-button cards.** Of 18 single-option cards, **7 move character. All seven
+can only move it down. Zero can move it up:**
+
+```
+fixed   milestone-opener-first      p=0.75  +0/-2   "The First One"
+fixed   milestone-opener-no-excuse  p=0.75  +0/-2   "No Longer New"
+fixed   milestone-opener-your-team  p=0.75  +0/-2   "Your Team Now"
+fixed   milestone-opener-counting   p=0.75  +0/-2   "You Start Counting"
+fixed   milestone-opener-last       p=0.75  +0/-2   "The Last One"
+random  speeding-georgia            p=0.85  +0/-4   "Speeding Ticket in Georgia"
+random  the-missed-tackle-reel      p=0.60  +0/-1   "The Missed Tackle Reel"
+```
+
+The five `milestone-opener-*` cards are the Season Opener, and **B11 established that the
+`milestone-*` events fire in 100% of careers** — one per season. **So every career, every season,
+draws a guaranteed one-button card that can cost standing and can never earn it.** Four seasons at 25%
+is a ~68% chance of at least one hit, and the playtester took two. *Speeding Ticket in Georgia* is the
+same shape and convicted a player who was never asked whether to speed.
+
+**This is why the good career felt unearnable while the numbers say virtue pays.** The *guaranteed*
+traffic is a one-way tax with no choice attached; the *earnable* credit is stochastic and competes in
+a weighted pool. The playtester named the consequence exactly: *"Being punished for something you were
+not asked about is the only thing in this game that felt unfair rather than hard."*
+
+**The call: the target is the no-choice cards, not the virtue economy.** Do not widen virtuous payouts
+— the measurement says they are fine and DECISION 063's preserved upside is not reopened. **A card
+with one button should not be able to move the player's standing in only one direction.** The routes
+(symmetrise the milestone openers so the 75% branch earns what the 25% branch costs; or make them
+choices; or remove their character effect entirely) are content-economy changes and go to the user
+with a measurement, per the freeze.
+
+**This is the seventh time this phase that measuring a complaint changed what got built**, and the
+first time the measurement *confirmed the player's experience while refuting their explanation*. Both
+halves mattered: acting on the report as written would have inflated 42 virtuous payouts and left all
+seven one-way cards in place.
+
+**What would change our mind.** A realized-frequency sweep showing a `good`-policy career actually
+sees more *"Earned"* than *"Cost"* lines — which would mean the playtester's run was unlucky rather
+than structural. **That sweep has not been run and it is session 11's first job.**
+
+## 071 — The redshirt is not a free yes. B43 is reframed from an economy bug to a telling bug, and a real trapdoor was found underneath it
+
+**Date:** 2026-09-15 · **Made by:** PM session 10 · **Reframes:** B43, DECISION 055 · **Opens:** B63 · **Evidence:** `reports/046-is-the-redshirt-actually-a-free-yes.md` Part 1 (5,000–8,000 careers per cell)
+
+Two playtesters called the redshirt offer *"a free lunch dressed as a gamble"* and *"an obvious free
+yes."* **Nobody had measured it. Measured, it is a real fork:**
+
+- **Ceiling-for-floor, both directions large.** Taking roughly **doubles the round-1 rate** (best QB
+  21.8% → 38.6%) and **raises the bust rate 2–4×**. A badly-played career is drafted **80.7%
+  declining vs 65.6% taking** — declining is correct for `humanLazy`, `antisocial` and `lazy`.
+- **The losing branch is genuinely bad and is occupied 40% of the time.** A −3 career does not land
+  where a decline lands: for an ordinary player, round 1 **1.99% vs 4.38%** and undrafted **6.54% vs
+  3.25%** — the sink branch **doubles the chance of going undrafted** relative to just playing.
+- **But the advertised stake is fake.** The card says *"a year of reps you did not get."* A sit season
+  costs **exactly 0 overall** — median *and* mean `seasonOverallDelta` 0.00, every position, every
+  strategy. `developmentDelta` is `floor(25/180) = 0` and cannot go negative. The real cost is the
+  *foregone* +1 to +2 of a played season, so the fiction overstates its own stake by 1.5–3×.
+
+**The call: B43 is reclassified from a balance defect to a telling defect, and its priority drops.**
+The player is not being offered a free lunch; they are being offered a real bet whose terms are
+described wrongly and whose outcome is paid out before the season it names. That is route R0 —
+**change no number, fix the telling** — and it is far cheaper than the retune two playtesters'
+language implied. **This is the sixth call reversed by measurement and the second this session.**
+
+**Underneath it, an unambiguous bug, which nobody asked for.** `advance.ts:251` busts a career when
+the last two season lines are both under `washoutSnapFloor` (60 snaps). **A sit season is ~25 snaps,
+so it always counts as one of the two.** Measured: a player whose freshman year was wrecked by injury
+(<60 snaps, ~1% of careers) and who then takes the redshirt is **busted 100% of the time** for
+*"Buried on the depth chart"* — against 2–5% for the same player declining. A representative career:
+FR 25 snaps (two injuries), SO 26 snaps (redshirt), **busted at overall 64**, nineteen points clear of
+the `washoutOverallFloor` of 45. He was not cut. He was medically redshirted and the engine read it as
+being cut — **on precisely the archetype the redshirt fiction is written for.**
+
+**The PM verified the mechanism in source.** `SeasonLine.redshirt` **already exists and is already
+recorded** (`types.ts:48`, written at `advance.ts:319`); the buried check simply does not consult it.
+The fix is one clause. It is an engine change that moves bust rates, so it goes to the user — but it
+is a **bug**, not a tuning preference, and the open design question is narrow: should a redshirt
+season be *skipped* by the consecutive-seasons window, or *break* the streak?
+
+**What would change our mind.** On the trapdoor, nothing — it is read from source and reproduced over
+8,000 careers per cell. On the reframing of B43, a playtester who understands the redshirt's real
+terms and still calls it an obvious yes.

@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Wave 23:** in flight · **PM session:** 10
+**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Wave 23:** complete · **PM session:** 10 (handing off)
 
 ---
 
@@ -1693,7 +1693,7 @@ recommended against B61's per-season column; 044 rejected the brief's file place
 two agents push back on the brief and the PM accepts both is the wave working as designed** — the
 alternative is a PM's guess executed faithfully into the tree.
 
-## Wave 23 — in flight (PM session 10)
+## Wave 23 — complete (PM session 10)
 
 Two lanes, file-disjoint. One is a browser playtest of the live build; the other implements nothing
 at all and prototypes in a throwaway worktree, so the served tree does not move under the player.
@@ -1741,6 +1741,128 @@ instrument the pack is measured on**. One additive line; 698 tests green, both t
 064 worktree method (both sides recomputed, no transcribed hash trusted). No shipped card sets the
 field, so the new line does not execute yet — the check is real but not yet non-vacuous, and the pack
 wave is what makes it fire.
+
+### Wave 23 result — the falsifier did not fire, the display worked, and it uncovered the real defect
+
+**045 — the playtest. Three careers, ~107 decisions, and the third one was not assigned.** Curve:
+**yes → yes (to check something specific) → no.** DECISION 069 has the full reading; the short form:
+
+- **DECISION 067's falsifier did not fire.** The ladder was tracked constantly, all five rungs quoted
+  back, and the six-rung ending list with *"YOU ENDED HERE"* called **"the best element in the game."**
+  The delta banner caught **every** standing change across three careers.
+- **The unassigned third career happened, and the 041 prediction came true verbatim.** The player
+  reached career 2's ending, was asked, answered *"yes — but narrow... there is one line I have never
+  reached and I want to find out if it is reachable,"* and then played a fourth-wall-free controlled
+  experiment to reach the top rung. **Nobody asked them to.** That is the north star's mechanism,
+  bought with one display wave. Keep the unassigned-third-career instrument — it works.
+- **The experiment came back negative, and that is the wave's real output.** A maximum-virtue career
+  finished **one rung below where it started**: zero *"Earned you credit"*, five *"Cost you."*
+- **The "no" is conditional and it names its own fix:** *"If a fix makes the team-first branch reliably
+  pay — even a little, even invisibly-but-consistently — I would come straight back, because the thing
+  the ladder promises is genuinely the best idea in this game."*
+- Also good, and worth protecting: THIS CARD / EVERYTHING ELSE (*"I never once had to wonder where a
+  point came from"*), *"The OVR comes back when the injury heals"*, `ACROSS N SEASONS, 54 → 85`, and
+  *"All-America caliber"* stacked over *"the staff has stopped defending you"*. **Zero visual defects
+  at 1470px across three careers — the seventh playtest in a row to find none.**
+
+**046 — the redshirt measurement. Part 1 complete and on disk; the agent was killed by a session rate
+limit partway into Part 2 (routes R1–R3 are unpriced).** Part 1 alone changed the plan — see DECISION
+071. Its headline refutes the brief's premise, and it found a bug nobody asked for.
+
+### The PM's own measurement, and it corrects the playtester's diagnosis — DECISION 070
+
+The playtester said *"the good-teammate branch is a coin flip."* **The observation is real; the
+diagnosis is wrong, and the difference is the whole fix.** A pass over all 106 events / 199 options:
+
+- **Virtue is not a coin flip.** 42 options whose success branch pays character: mean **E[character]
+  +2.35** at mean probability **0.81**; only 3 of 42 are non-positive. Selfish options average
+  **−3.14** character for **+1.29** OVR.
+- **The opportunity is flat across all six positions** (23–26 virtuous options each, mean E ≈ +3.2).
+  The DECISION 058 per-position check was run and found nothing.
+- **The defect is one-button cards.** Of 18 single-option cards, **7 move character and all seven can
+  only move it down. Zero can move it up.** Five of those seven are the `milestone-opener-*` Season
+  Opener cards, which **B11 established fire in 100% of careers, one per season**, each `+0/−2` at
+  p=0.75. **Every career, every season, draws a guaranteed no-choice card that can cost standing and
+  never earn it.**
+
+**So the guaranteed traffic is a one-way tax and the earnable credit is stochastic.** That is why a
+maximum-virtue career can end below where it started while the corpus says virtue pays. **Do not widen
+virtuous payouts** — that is the fix the report as written would have bought, and it would have left
+all seven one-way cards in place.
+
+### New backlog from wave 23
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B62 | **Seven one-button cards can only cost standing; zero can earn it** — five are the Season Opener milestones and fire in 100% of careers | **MEASURED — DECISION 070. Top of the board** | *"Being punished for something you were not asked about is the only thing in this game that felt unfair rather than hard."* **The target is the no-choice cards, not the virtue economy.** Content-economy change → user |
+| B63 | **The redshirt trapdoor** — `advance.ts:251` counts a ~25-snap sit season as a "buried" season, so an injured freshman who then redshirts is busted **100%** of the time at overall ~64 | **MEASURED — DECISION 071. Unambiguous bug** | `SeasonLine.redshirt` already exists and is already recorded (`types.ts:48`); the check just never consults it. One clause. Engine → user. Open question: should a redshirt season be *skipped* by the window, or *break* the streak? |
+| B64 | **The season ledger disagrees with the season the player played** — a cluster, all from 045 career 3 | todo — needs a debugging lane | SR recorded **9-3, 0 snaps, 87 overall, +15** after a season the player played through; header read **"0 snaps — 2 Sacks Allowed"** for four screens; **"A season on the sideline cost you ground" (−4) while the sidebar scored the year +15**; final overall 83 vs the row's 87 |
+| B65 | **Stats mutate after a season closes** | todo | Season 2 finished at **47 Pancakes**; the next screen said **46** for the same completed season; the ending screen says 46. Snaps seen decreasing **308 → 300** |
+| B66 | **Effects with no card** | todo | *"You got hurt between decisions"* attached to a −3/−4 with no screen and no injury, twice. Once with two contradictory explanations in one line: *"An injury healed and gave the points back. You got hurt between decisions."* |
+| B67 | **MOMENTS silently skips seasons** | todo | Career 3 skipped season 3; career 2 skipped seasons 2 and 4. No placeholder — the season just is not there. Note 011 deliberately groups by season, so a missing group is a hole in that grouping |
+| B68 | **Signing Day gives three options the same reason** | todo | Career 3: North Texas, Bethune-Cookman **and** San Diego State all read *"— the two-deep is thin"*. *"More confusing than no reason at all."* Compare B4/B16 |
+| B69 | **Staying gets no ceremony** — claim 5 PARTIAL | todo | Transferring now gets a card; **staying** produces nothing at all. B16's other half |
+| B70 | **Two prose/number contradictions reproduce deterministically** across careers and positions | todo — **merge into B59** | *"Win the job"* → *"pressing looks exactly like panicking on film"* → **−1 OVR**; *"Stay on campus and train"* → *"in August it shows that you did"* → **cost + −1 OVR**. Not bad luck — the same text and sign both times |
+| B71 | **Does standing do anything?** — still invisible after three careers | todo | Career 2 ended on the bottom rung and still went round 3 with a Washington offer; career 3 ended mid-ladder, also round 3. *"If it is wired to something, the player cannot see it; if it is not, then the best-written thing in the game is scenery."* It **is** wired (±7.5 draft stock) — so this is a legibility item, and it is the natural companion to B62 |
+
+## Next actions — for PM session 11, in order
+
+**Read this section, `DECISIONS.md` 069–071, and the wave 23 section above. Nothing else.**
+
+**Wave 22 was the right call and it is confirmed by a player who did not know it shipped.** The ladder
+is now the best element in the game and it produced an unasked-for third career. **It also made the
+real defect visible for the first time** — while the standing was invisible, nobody could see it was
+also unearnable. Making a mechanism visible is what makes it falsifiable; that is the lesson of the
+session.
+
+1. **B62 is the top of the board, and it needs one measurement before it goes to the user.** Run the
+   realized-frequency sweep DECISION 070 names as its own falsifier: over a few thousand `good`-policy
+   careers, **how many *"Earned you credit"* vs *"Cost you"* character events does a career actually
+   see, and what is the distribution of final-minus-starting character?** The corpus says virtue pays
+   +2.35 at 81%; the player saw 0 up and 5 down. **One of those is not describing what happens.**
+   Settle it, then escalate B62 with the number.
+   - **Do not widen virtuous payouts.** The measurement says they are fine, and DECISION 063's
+     preserved upside is not reopened.
+   - Routes for the user, all content-economy: symmetrise the milestone openers so the 75% branch
+     earns what the 25% branch costs; or turn them into real choices; or strip their character effect.
+2. **B63 to the user as a bug, with DECISION 071's numbers.** One clause at `advance.ts:251`.
+   `SeasonLine.redshirt` is already recorded. The only real question is *skip* vs *break the streak*.
+3. **B64–B67 are a single debugging lane, and it should be one agent with `systematic-debugging`.**
+   They are all the same subsystem — the season ledger — and the *"0 snaps"* senior season is the
+   thread to pull. **These are the first hard correctness bugs found in seven playtests**; everything
+   before was feel. They may be view-model rather than engine, which would make them cheap.
+4. **046 Part 2 is unfinished** — the agent was rate-limited after Part 1. Routes R1–R3 are unpriced.
+   **Do not re-run Part 1**; it is complete, on disk, and 5,000–8,000 careers per cell. Re-dispatch
+   `briefs/046` scoped to Part 2 only, and note that DECISION 071 already picked **R0** as the likely
+   answer, so Part 2 is now about pricing the alternatives rather than choosing among them.
+5. **The redshirt pack is still unauthored and it is no longer obviously next.** DECISION 068 deferred
+   it to see whether the ending screen earned the fourth career. It did — but the reason the fourth
+   career did not come is B62, not a thin sit season. **Re-rank the pack below B62 and B64.** Its
+   enabling work is done and inert (`requiresRedshirt`, plus the `gatesOf` arm committed in `808fb99`).
+6. **Keep the unassigned-third-career instrument.** `briefs/045` stops assigning the third career and
+   asks the player at career 2's ending whether they want another and what they would chase. It
+   produced the most specific *"no"* on record **and** a self-directed experiment. Every future
+   playtest brief should use this shape.
+7. **Do not reopen type, colour or contrast.** Seven playtests, zero visual defects. 045 found none in
+   ~107 decisions at 1470px.
+8. **Watch the session rate limit.** 046 died mid-task at the limit and lost Part 2. Prefer two lanes
+   over three, and keep the "write Part 1 to disk before starting Part 2" rule in every brief — it is
+   the only reason 046 produced anything at all.
+9. Increment the **PM session** counter at the top of this file.
+
+### What session 10 would tell session 11 if it could only say one thing
+
+**A player's observation and a player's explanation are two different artifacts, and you must take the
+first seriously and check the second.** 045 reported a maximum-virtue career ending below where it
+started — true, and the most important finding of the phase. It also explained why: *"the team-first
+branch is a coin flip."* The corpus says virtue pays **+2.35 at 81% reliability, flat across all six
+positions.** Building the reported fix would have inflated 42 healthy payouts and left the actual
+defect — **seven one-button cards that can only cost standing, five of them firing in every career** —
+completely untouched.
+
+**Seven calls have now been reversed by measurement; none by argument.** This session added two (B43's
+reframing, and the virtue economy) and, for the first time, one where **the measurement confirmed the
+player's experience while refuting their explanation.** Both halves were load-bearing.
 
 ## Next actions — for PM session 10, in order
 
