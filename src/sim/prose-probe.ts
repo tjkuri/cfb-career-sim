@@ -418,6 +418,7 @@ export function gatesOf(ev: GameEvent): GateLabel[] {
   if (c.requiresActiveInjury) out.push("requiresActiveInjury");
   if (c.requiresFinalSeason) out.push("requiresFinalSeason");
   if (c.requiresPlaying) out.push("requiresPlaying (excluded from a redshirt season)");
+  if (c.requiresRedshirt) out.push("requiresRedshirt (only in a redshirt season)");
   if (c.maxCharacter !== undefined) out.push(`maxCharacter<=${c.maxCharacter}`);
   if (c.minOverall !== undefined) out.push(`minOverall>=${c.minOverall}`);
   if (c.maxOverall !== undefined) out.push(`maxOverall<=${c.maxOverall}`);
