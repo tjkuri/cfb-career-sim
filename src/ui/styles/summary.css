@@ -852,6 +852,21 @@
   overflow: hidden;
 }
 
+/* B67. The row a quiet season gets, so the timeline stops printing
+   `Season 1 / Season 2 / Season 4` and leaving the player to decide whether
+   year 3 was empty or lost. Same rule and same rhythm as a moment row so the
+   list keeps its shape; set in the faint chalk the screen uses for every other
+   absence, because the row is an absence and must not compete with the years
+   that have something in them. */
+.moment-quiet {
+  margin: 0;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--line);
+  color: var(--chalk-faint);
+  font-variation-settings: "wdth" 88;
+  line-height: var(--lh-tight);
+}
+
 .moment-count {
   margin-left: auto;
   flex: none;

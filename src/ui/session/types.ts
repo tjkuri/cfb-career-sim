@@ -287,6 +287,38 @@ export interface RailView {
   /** The season line the rail's third row draws, and the source of its record
       cell. Null renders as empty cells that keep their space (DECISION 019). */
   season: SeasonLineView | null;
+  /** Whose season the figures below the heading actually are, named -- or null
+      when they are the season the heading already names, where a second name
+      would be chrome.
+
+      B64 / B65, TASK 048. `seasonNumber` comes from `state.seasonIndex`, which
+      `advancePhase` increments on leaving the postseason; `season` comes from
+      `seasons[seasons.length - 1]`, which the engine does not push for the new
+      season until the first ON-FIELD phase. So for the whole of every offseason
+      the rail printed one season's number over another season's snaps, stat
+      line and W-L -- about eleven screens per career, measured over 360.
+
+      The figures stay where they are: the redshirt and transfer cards are read
+      in the offseason and the season just completed is the context they ask for
+      (DECISION 013). The fix is that the rail now says which season that is,
+      so the heading and the figures stop being read as one statement. */
+  seasonLabel: string | null;
+}
+
+/** One season's worth of the moments timeline, including the seasons that
+    earned none.
+
+    B67, TASK 048. Grouping used to walk the MOMENTS, so a season in which no
+    `moment` effect fired produced no group at all and the timeline read
+    `Season 1 / Season 2 / Season 4` with nothing to say a year was missing
+    rather than empty. Measured over 360 careers, 172 have at least one played
+    season with no moment, so the hole was the common case. A career is a fixed
+    number of years; a quiet year is a fact about the year. */
+export interface MomentGroup {
+  seasonIndex: number;
+  label: string;
+  classYear: ClassYear | null;
+  moments: MomentView[];
 }
 
 export interface MomentView {

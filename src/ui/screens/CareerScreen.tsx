@@ -518,9 +518,31 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
             <span className="rail-phase">{rail.phaseLabel}</span>
             {/* Empty until the postseason resolver has assigned a real W-L
                 (DECISION 014). The cell holds its width either way. */}
+            {/* The same season as the stats row below, and labelled by it: a
+                record only ever exists for a line the postseason resolver has
+                closed (DECISION 014), which is exactly the case where the
+                heading and the figures name different seasons. */}
             <span className="rail-record">{line?.record ?? ""}</span>
           </div>
+          {/* B64 / B65. The heading above says `Season 4`; these figures, and
+              the record beside the phase, are `seasons[last]` -- which the
+              engine does not push for the new season until its first on-field
+              phase, so for the whole of every offseason all three cells belong
+              to the season before. Measured over 360 careers: 3,985 screens,
+              about eleven per career. Read downward that is a season the player
+              just played reporting almost no snaps; read across the boundary it
+              is the same heading swapping 614 snaps for 198, so a finished
+              season appears to lose figures.
+
+              The figures stay -- the redshirt and transfer cards are read here
+              and last season IS the evidence they are decided on (DECISION
+              013). The rail now names whose season they are, and only when that
+              differs from the heading; on every on-field screen this is null
+              and the row is exactly what it was. The label leads the row so it
+              governs the cells after it, and it sits inside the same fixed slot
+              rather than adding one. */}
           <div className="rail-line rail-stats">
+            {rail.seasonLabel && <span className="rail-season-of">{rail.seasonLabel}</span>}
             <span className="rail-snaps">{line ? `${NUM.format(line.snaps)} snaps` : ""}</span>
             <span className="rail-statline">{line ? statLine(line.stats) : ""}</span>
           </div>

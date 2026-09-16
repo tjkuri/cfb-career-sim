@@ -1,46 +1,15 @@
 import { useState } from "react";
-import type { CareerView, HonorView, MomentView, SeasonView } from "../session/types";
+import type { CareerView, HonorView, SeasonView } from "../session/types";
 import { shareText } from "../session/share";
 import { TRUST_LADDER, trustRungOf } from "../session/bands";
 import { countedStatLabel } from "../session/labels";
+import { groupMoments } from "../session/view-model";
 
 interface Props {
   view: CareerView;
   hasLog: boolean;
   onRestart: () => void;
   onViewLog: () => void;
-}
-
-interface MomentGroup {
-  seasonIndex: number;
-  label: string;
-  classYear: string | null;
-  moments: MomentView[];
-}
-
-// The moments timeline reported three identical trophies and two identical
-// rivalry wins, and read "like an event log, not a highlight reel". Measured
-// over 700 careers, every repeat is the same moment earned in a *different*
-// season -- so the repeats are real and the missing information is the season,
-// which `MomentView` has always carried and this list threw away. Grouping is
-// the fix; collapsing would delete three years of a career into one line.
-function groupMoments(moments: MomentView[], seasons: SeasonView[]): MomentGroup[] {
-  const yearOf = new Map(seasons.map((s) => [s.seasonIndex, s.classYear]));
-  const groups: MomentGroup[] = [];
-  for (const moment of moments) {
-    const last = groups[groups.length - 1];
-    if (last && last.seasonIndex === moment.seasonIndex) {
-      last.moments.push(moment);
-      continue;
-    }
-    groups.push({
-      seasonIndex: moment.seasonIndex,
-      label: `Season ${moment.seasonIndex + 1}`,
-      classYear: yearOf.get(moment.seasonIndex) ?? null,
-      moments: [moment],
-    });
-  }
-  return groups;
 }
 
 // The arc, season over season. Both ends must be real numbers: a pre-DECISION
@@ -447,7 +416,13 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
         </>
       )}
 
-      {momentGroups.length > 0 && (
+      {/* Gated on there being a moment to show, NOT on there being a group.
+          `groupMoments` now returns a row per season, so a career that earned
+          nothing would otherwise open a MOMENTS heading over four rows saying
+          so -- which is a section about nothing. The quiet rows exist to stop a
+          year vanishing from a list the player is already reading (B67), not to
+          create the list. */}
+      {s.moments.length > 0 && (
         <>
           <h2 className="section-head">Moments</h2>
           <div className="moments">
@@ -466,6 +441,16 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
                     {m.count > 1 && <span className="moment-count">{`×${m.count}`}</span>}
                   </div>
                 ))}
+                {/* B67. A season with no moment used to produce no row at all,
+                    so the timeline printed `Season 1 / Season 2 / Season 4` and
+                    read as a year that had gone missing rather than a year that
+                    was quiet. 172 careers in 360 have at least one. The row
+                    states which it is, in the same words the screen uses
+                    everywhere else for an absence, and claims nothing about
+                    why. */}
+                {group.moments.length === 0 && (
+                  <p className="moment-quiet">A year with nothing to put on this list.</p>
+                )}
               </div>
             ))}
           </div>

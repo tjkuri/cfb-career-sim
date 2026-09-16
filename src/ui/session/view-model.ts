@@ -24,6 +24,7 @@ import type {
   HonorRarity,
   HonorView,
   HubFacts,
+  MomentGroup,
   MomentView,
   RailView,
   Remainder,
@@ -456,6 +457,11 @@ function moreAfter(before: Map<string, number>, after: Map<string, number>): boo
 const injuryKey = (i: { kind: string; injuryType: string; restoreAmount: number }) =>
   `${i.kind}:${i.injuryType}:${i.restoreAmount}`;
 
+// "Did the player get HURT" is a question about injuries, and `state.injuries`
+// is not only injuries -- `applyEffect`'s `suspension` case pushes into the
+// same list, discriminated by `kind`. See the note in `remainderFacts` (B66).
+const isKnock = (i: { kind: string }) => i.kind === "injury";
+
 // `delayPhases` defaults to 1 in the engine (`applyEffect`), and `firePhaseAbs`
 // is absolute, so it is not comparable across an advance that ticked. The pair
 // below is the same signature `stillPending` matches on, for the same reason.
@@ -495,6 +501,23 @@ function seasonCost(after: GameState, before: GameState): boolean {
 export function remainderFacts(before: GameState, after: GameState): Remainder {
   const injuriesBefore = tally(before.injuries, injuryKey);
   const injuriesAfter = tally(after.injuries, injuryKey);
+  // B66, TASK 048. A suspension is stored in `state.injuries` alongside real
+  // injuries, and `hurt` diffed the whole list -- so a card whose own outcome
+  // SUSPENDED the player (`speeding-georgia/cooperate` is the one the playtest
+  // hit) was reported as an injury that arrived from somewhere else, under a
+  // sentence that also says nobody showed it to you. Reproduced at seed
+  // `p-114`, QB, screen 20, where it printed beside a genuine heal as the
+  // single line "An injury healed and gave the points back. You got hurt
+  // between decisions." -- two clauses, one of them false. Measured over 1,200
+  // careers: 6 rendered lines carry the false clause.
+  //
+  // `healed` has always excluded suspensions, by `restoreAmount > 0`, and for
+  // the same reason: a suspension moves no `overall`, so it is not part of the
+  // number this sentence exists to explain. This is that rule's exact mirror,
+  // which was simply missing. `cardAccount` is unaffected -- a suspension was
+  // never in `own` either.
+  const knocksBefore = tally(before.injuries.filter(isKnock), injuryKey);
+  const knocksAfter = tally(after.injuries.filter(isKnock), injuryKey);
   const pendingBefore = tally(before.pendingEffects, pendingKey);
   const pendingAfter = tally(after.pendingEffects, pendingKey);
 
@@ -517,7 +540,7 @@ export function remainderFacts(before: GameState, after: GameState): Remainder {
     // remove. The line read is the one that just ended -- `after`'s last
     // completed season, whose `classYear` is the year it was played as.
     declined: after.seasonIndex > before.seasonIndex && seasonCost(after, before),
-    hurt: moreAfter(injuriesBefore, injuriesAfter),
+    hurt: moreAfter(knocksBefore, knocksAfter),
   };
 }
 
@@ -548,6 +571,7 @@ export function railView(view: CareerView, resolved: Resolved | null): RailView 
       seasonNumber: view.seasonNumber,
       phaseLabel: view.phaseLabel,
       season: view.season,
+      seasonLabel: seasonLabelFor(view.season, view.seasonNumber),
     };
   }
   return {
@@ -559,7 +583,113 @@ export function railView(view: CareerView, resolved: Resolved | null): RailView 
     // restores a stamp whose `season` is `undefined`. `normalize()` in the
     // reducer fills it, and this is the belt to that pair of braces.
     season: stamp.season ?? null,
+    seasonLabel: seasonLabelFor(stamp.season ?? null, stamp.seasonNumber),
   };
+}
+
+/**
+ * Whose season the rail's figures are, named -- B64 and B65 (TASK 048).
+ *
+ * The heading and the figures come from two different places and there is one
+ * state where they disagree. `seasonNumber` is `state.seasonIndex + 1`, and
+ * `advancePhase` increments that index on leaving the postseason. The line is
+ * `seasons[seasons.length - 1]`, and `advance.ts:317-328` pushes a line for the
+ * new season only on entering its first ON-FIELD phase. Between those two
+ * moments -- the whole of every offseason -- the rail read
+ * `Season 4 - Offseason - 7-5 - 614 snaps - 36 Pancakes` with all three of the
+ * last figures belonging to season 3.
+ *
+ * Measured over 360 careers: 3,985 screens, about eleven per career, i.e. every
+ * offseason screen of every career. It reads as two different defects depending
+ * on which way the player joins the two halves. Read downward it is B64 -- a
+ * season they just played reporting a redshirt's snaps, or an injury year's.
+ * Read across the boundary it is B65 -- the first on-field phase swaps in the
+ * real line under the SAME heading, so 614 snaps becomes 198 and the record
+ * vanishes, and a season the player believes is finished appears to lose snaps
+ * and stats. Nothing in the engine mutates a closed line: `schema.ts:326`
+ * rejects `stat` and `snaps` effects on offseason events and `select-event.ts`
+ * matches `ev.phase === state.phase` exactly, and a probe over 360 careers
+ * found zero closed-line mutations.
+ *
+ * The figures are NOT removed. The offseason is where the redshirt and transfer
+ * cards are read and the season just completed is the evidence those decisions
+ * are made on (DECISION 013, and `currentSeasonLine`'s own contract). What was
+ * missing is the one fact that makes them legible: which season they are.
+ *
+ * Null when the two agree, which is every on-field screen -- the heading has
+ * already said it and a second name would be the chrome this rail is built
+ * without.
+ */
+function seasonLabelFor(season: SeasonLineView | null, seasonNumber: number): string | null {
+  if (!season || season.seasonNumber === seasonNumber) return null;
+  return `Season ${season.seasonNumber}`;
+}
+
+/**
+ * The moments timeline, one row per season the career actually had -- B67
+ * (TASK 048).
+ *
+ * Grouping by season is a previous wave's fix and is kept: three identical
+ * trophies are three real trophies won in three different years, and
+ * collapsing them deletes the career. What that fix left behind is this one.
+ * It walked the MOMENTS and opened a group whenever the season index changed,
+ * so a season in which no `moment` effect fired produced no group, and the
+ * timeline printed `Season 1 / Season 2 / Season 4` with nothing to say whether
+ * season 3 was quiet or lost. Measured over 360 careers, 172 of them have at
+ * least one played season with no moment: the hole is the common case.
+ *
+ * So the walk is over the SEASONS -- the career's own fixed list of years --
+ * and the moments are filed into them. A year with nothing in it comes back
+ * with an empty `moments` array and the screen renders it as a quiet year,
+ * which is a fact about the year rather than a gap in the list.
+ *
+ * A moment whose season has no line is never dropped. It has not been observed
+ * in 360 careers, but a moment is something that happened, and a grouping that
+ * cannot place one must still print it. Those trail the played seasons, in the
+ * order the engine recorded them.
+ */
+export function groupMoments(
+  moments: readonly MomentView[],
+  seasons: readonly SeasonView[],
+): MomentGroup[] {
+  const groups: MomentGroup[] = [];
+  const bySeason = new Map<number, MomentGroup>();
+
+  for (const season of seasons) {
+    const group: MomentGroup = {
+      seasonIndex: season.seasonIndex,
+      label: `Season ${season.seasonIndex + 1}`,
+      classYear: season.classYear,
+      moments: [],
+    };
+    // A duplicate season index cannot come out of the engine, but two lines
+    // sharing one would otherwise silently drop the second row's moments into
+    // the first. First line wins and the second is left out of the map, which
+    // is the same rule `buildLedger` applies to a slot.
+    if (!bySeason.has(season.seasonIndex)) bySeason.set(season.seasonIndex, group);
+    groups.push(group);
+  }
+
+  for (const moment of moments) {
+    const group = bySeason.get(moment.seasonIndex);
+    if (group) {
+      group.moments.push(moment);
+      continue;
+    }
+    // No line for this season. Keep the moment, in its own group, rather than
+    // eat it -- and reuse that group for any sibling, so an unplaceable season
+    // still reads as one year.
+    const orphan: MomentGroup = {
+      seasonIndex: moment.seasonIndex,
+      label: `Season ${moment.seasonIndex + 1}`,
+      classYear: null,
+      moments: [moment],
+    };
+    bySeason.set(moment.seasonIndex, orphan);
+    groups.push(orphan);
+  }
+
+  return groups;
 }
 
 // The playtest read the timeline as "an event log, not a highlight reel":

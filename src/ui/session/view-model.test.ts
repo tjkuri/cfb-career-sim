@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { createCareer, advance, getDecision, ALL_POSITIONS, ALL_SCHOOL_TRAITS, type GameState, type PendingDecision, type Setup } from "../../engine/index";
 import { CONTENT } from "../../content/index";
-import { buildSummary, buildView, cardAccount, hubFacts, railView, remainderFacts } from "./view-model";
+import { buildSummary, buildView, cardAccount, groupMoments, hubFacts, railView, remainderFacts } from "./view-model";
 import { reducer, INITIAL_STATE } from "./reducer";
-import type { CardAccount, CareerView, RailView, UiState } from "./types";
+import type { CardAccount, CareerView, MomentView, RailView, SeasonView, UiState } from "./types";
 
 // The hidden-mechanics rule, enforced at the one boundary that can enforce it.
 // Tier logic and the transfer rebuild loop stay implicit; school traits are
@@ -1133,5 +1133,185 @@ describe("remainderFacts", () => {
     // nothing -- which is the exact failure mode 056 is about.
     expect(hubCards).toBeGreaterThan(0);
     expect(remainders).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B64 / B65 (TASK 048). The rail printed one season's NUMBER over another
+// season's FIGURES.
+//
+// `seasonNumber` comes from `state.seasonIndex`, which `advancePhase`
+// increments on leaving the postseason. The snaps, the stat line and the
+// record come from `seasons[seasons.length - 1]`, which the engine does not
+// push for the new season until the first ON-FIELD phase. So for the whole of
+// EVERY offseason the rail reads `Season 4 - 7-5 - 614 snaps - 36 Pancakes`
+// while all three of those figures belong to season 3. Measured over 360
+// careers: 3,985 screens, about eleven per career.
+//
+// That is both reported symptoms at once. B64 is reading the figures under the
+// number above them -- a redshirt or injury-wrecked line lands under the next
+// season's name and the player sees a season they just played reporting almost
+// no snaps. B65 is the moment the real line finally arrives: at the first
+// on-field phase the same `Season N` heading swaps 614 snaps for 198 and drops
+// the record, so a season the player believes is over appears to LOSE snaps
+// and stats. Nothing in the engine mutates a closed line -- `schema.ts:326`
+// rejects `stat` and `snaps` effects on offseason events and `select-event.ts`
+// matches `ev.phase` exactly.
+//
+// The figures stay: the redshirt and transfer cards are read in the offseason
+// and last season's line is the context they need (DECISION 013). What was
+// missing is whose season it is.
+describe("the rail says which season its figures belong to (B64, B65)", () => {
+  function walk(seed: string, position: Setup["position"]) {
+    const setup: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position };
+    let ui = reducer(INITIAL_STATE, { type: "start", setup, seed });
+    const rails: RailView[] = [];
+    for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+      if (ui.resolved) {
+        if (ui.state) rails.push(railView(buildView(ui.state), ui.resolved));
+        ui = reducer(ui, { type: "continue" });
+        continue;
+      }
+      if (!ui.state) break;
+      const d = getDecision(ui.state);
+      if (!d) break;
+      const next = reducer(ui, { type: "choose", optionId: d.options[0]!.id });
+      if (next === ui) break;
+      ui = next;
+    }
+    return rails;
+  }
+
+  it("labels the line exactly when it is not the season in the header", () => {
+    let labelled = 0;
+    let unlabelled = 0;
+    for (const position of ALL_POSITIONS) {
+      for (const rail of walk(`vm-rail-label-${position}`, position)) {
+        if (!rail.season) {
+          expect(rail.seasonLabel).toBeNull();
+          continue;
+        }
+        if (rail.season.seasonNumber === rail.seasonNumber) {
+          // The figures are this season's. The heading already names it and a
+          // second name would be chrome.
+          expect(rail.seasonLabel).toBeNull();
+          unlabelled++;
+        } else {
+          // The figures are a season the heading is not naming. Saying so is
+          // the whole fix: the number, the record and the stat line are all
+          // one season's and the player is told which.
+          expect(rail.seasonLabel).toBe(`Season ${rail.season.seasonNumber}`);
+          labelled++;
+        }
+      }
+    }
+    // Both populations have to be non-empty, or the assertions above proved
+    // nothing. The mismatch is the bug and it fires in every offseason.
+    expect(labelled).toBeGreaterThan(20);
+    expect(unlabelled).toBeGreaterThan(20);
+  });
+
+  it("never labels a line the rail is not drawing", () => {
+    const live = buildView(
+      createCareer({ lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" }, "vm-rail-label-null"),
+    );
+    expect(railView(live, null).seasonLabel).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B66 (TASK 048). "You got hurt between decisions." on a card where nobody got
+// hurt.
+//
+// `hurt` diffed the WHOLE of `state.injuries`, and a suspension lives in that
+// list alongside real injuries. So a card whose own outcome suspended the
+// player -- `speeding-georgia/cooperate` is the one the playtest hit -- was
+// reported as an injury that arrived from somewhere else, on a card that had
+// just said in prose what happened. Reproduced at seed `p-114`, QB, screen 20,
+// where it printed beside a real heal as the single line
+// "An injury healed and gave the points back. You got hurt between decisions."
+//
+// `healed` has always excluded suspensions, by `restoreAmount > 0`. This is
+// the exact mirror of that rule, which was simply missing.
+describe("remainderFacts and suspensions (B66)", () => {
+  const suspension = (remainingPhases: number) => ({
+    kind: "suspension" as const,
+    injuryType: "suspension",
+    remainingPhases,
+    restoreAmount: 0,
+  });
+
+  it("does not report a suspension arriving as getting hurt", () => {
+    const [before, after] = pair({ injuries: [] }, { injuries: [suspension(2)] });
+    expect(remainderFacts(before, after).hurt).toBe(false);
+  });
+
+  it("still reports a real injury arriving beside a suspension", () => {
+    const [before, after] = pair(
+      { injuries: [suspension(2)] },
+      { injuries: [suspension(1), hamstring(2)] },
+    );
+    expect(remainderFacts(before, after).hurt).toBe(true);
+  });
+
+  it("does not let a suspension mask a heal", () => {
+    // The ankle healed and gave its points back; the suspension is not part of
+    // that number and must not add a second, false clause to the sentence.
+    const [before, after] = pair(
+      { injuries: [hamstring(1), suspension(3)] },
+      { injuries: [suspension(2)] },
+    );
+    const facts = remainderFacts(before, after);
+    expect(facts.healed).toBe(true);
+    expect(facts.hurt).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// B67 (TASK 048). The moments timeline silently skipped seasons.
+//
+// `groupMoments` walked the MOMENTS and started a group whenever the season
+// index changed, so a season in which no `moment` effect fired produced no
+// group at all and the timeline read `Season 1 / Season 2 / Season 4`. Measured
+// over 360 careers, 172 of them have at least one played season with no
+// moment, so the hole is the common case rather than the exception. A career
+// is a fixed number of years and a year with nothing in it is a fact about the
+// year, not a reason to delete it from the list.
+describe("groupMoments (B67)", () => {
+  const season = (seasonIndex: number, classYear: "FR" | "SO" | "JR" | "SR"): SeasonView => ({
+    seasonIndex,
+    schoolName: "Toledo",
+    classYear,
+    record: "9-3",
+    snaps: 500,
+    overall: 70,
+    stats: [],
+  });
+  const moment = (seasonIndex: number, item: string): MomentView => ({
+    seasonIndex,
+    item,
+    glyph: "*",
+    count: 1,
+  });
+
+  it("gives every played season a row, including the quiet ones", () => {
+    const seasons = [season(0, "FR"), season(1, "SO"), season(2, "JR"), season(3, "SR")];
+    const groups = groupMoments([moment(0, "a"), moment(2, "b"), moment(2, "c")], seasons);
+
+    expect(groups.map((g) => g.seasonIndex)).toEqual([0, 1, 2, 3]);
+    expect(groups.map((g) => g.label)).toEqual(["Season 1", "Season 2", "Season 3", "Season 4"]);
+    expect(groups.map((g) => g.moments.length)).toEqual([1, 0, 2, 0]);
+    expect(groups.map((g) => g.classYear)).toEqual(["FR", "SO", "JR", "SR"]);
+  });
+
+  it("drops no moment whose season has no line", () => {
+    // Never observed in 360 careers, but a moment is a thing that happened and
+    // a grouping that cannot place one must still print it rather than eat it.
+    const groups = groupMoments([moment(0, "a"), moment(7, "orphan")], [season(0, "FR")]);
+    expect(groups.flatMap((g) => g.moments.map((m) => m.item))).toEqual(["a", "orphan"]);
+  });
+
+  it("returns nothing at all for a career with no seasons and no moments", () => {
+    expect(groupMoments([], [])).toEqual([]);
   });
 });

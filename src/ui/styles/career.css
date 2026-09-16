@@ -153,6 +153,25 @@
   color: var(--chalk);
 }
 
+/* B64 / B65. Whose season the two cells after it are, drawn only when that is
+   not the season the heading names -- every offseason screen, and nothing else.
+
+   It is set as a label, not as a figure: the same micro/uppercase/tracked
+   treatment row 2 uses, at `--chalk-dim` so it reads as the caption on the
+   figures rather than as another figure beside them. No new colour, no new
+   size, no extra row -- it joins the existing fixed slot and the slot's
+   `min-height` is unchanged, so the strip still does not reflow when it
+   appears. */
+.rail-season-of {
+  flex: none;
+  white-space: nowrap;
+  font-size: var(--t-micro);
+  font-weight: var(--w-ui);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+}
+
 .rail-snaps {
   flex: none;
   white-space: nowrap;
