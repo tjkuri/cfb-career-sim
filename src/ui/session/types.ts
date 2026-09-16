@@ -108,6 +108,20 @@ export interface Resolved {
       before this field existed; such a card shows no delta rather than a
       fabricated zero. */
   overallBefore: number | null;
+  /** The locker-room band PHRASE as it stood immediately before `advance()`,
+      taken at the same point as `overallBefore` and for the same reason -- the
+      state the card belongs to is gone by the time it is rendered.
+
+      A phrase and not a number, deliberately. `overallBefore` is a baseline
+      because `overall` is a quantity the screen is allowed to subtract;
+      `character` is not one (DECISION 002), so what is frozen here is the only
+      character read a screen may hold. The card can then say the rung MOVED,
+      and which way, and can never be made to say by how much -- the arithmetic
+      that would produce a distance is not available to it.
+
+      Null for a save written before this field existed; such a card marks no
+      change rather than inventing one. */
+  trustBefore: string | null;
   /** What the chosen outcome ITSELF did, read from content. Null when the
       outcome could not be identified -- a hub card, or a save written before
       this field existed -- and the card then falls back to reporting the whole

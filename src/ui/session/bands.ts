@@ -103,3 +103,53 @@ export function standingPhrase(overall: number, snapsThisSeason?: number | null)
 export function trustPhrase(character: number): string {
   return bandFor(TRUST_BANDS, character);
 }
+
+// ---------------------------------------------------------------------------
+// The ladder, as a ladder (DECISION 002 held; task 043)
+//
+// Two playtests named the locker room as the only mechanism that made anyone
+// want to change how they were playing, and the same two found it the least
+// visible thing on the screen: one player was told "Cost you in the locker
+// room." six times while the phrase itself moved once, unmarked, on the final
+// click of the career.
+//
+// The fix is not a number and cannot become one. What a rung HAS, that a
+// phrase on its own does not, is a position: four other things the building
+// could have thought instead. That is what the summary draws and what the
+// change marker names -- the ORDER of the bands, never the distance between
+// them. `TRUST_BANDS` is already ordered best-first and the array index is
+// therefore the rung; it is exported as phrases only, so nothing downstream
+// can reach a threshold, a count or a `character` value through it.
+// ---------------------------------------------------------------------------
+
+/** The five rungs, best regard first. Order is the whole payload. */
+export const TRUST_LADDER: readonly string[] = TRUST_BANDS.map((b) => b.phrase);
+
+/** Which rung a phrase sits on -- 0 at the top -- or -1 for a phrase that is
+    not on the ladder, which is what a save written against different words
+    restores as. Callers treat -1 as "cannot place it" and render nothing. */
+export function trustRungOf(phrase: string): number {
+  return TRUST_LADDER.indexOf(phrase);
+}
+
+/**
+ * Whether the standing changed rung between two phrases, and which way.
+ *
+ * Direction ONLY, and that is the constraint rather than a simplification: a
+ * fall of two rungs and a fall of one return the same answer, so nothing
+ * downstream can render a distance. DECISION 002 says character does not have
+ * that resolution and DECISION 046 already refused to smuggle it in as
+ * typography. Both directions are reported -- a playtester watched theirs "go
+ * down three and back up one", and climbing back is the better beat of the two.
+ *
+ * Null when there is nothing to report: no baseline (a save written before the
+ * card carried one), the same rung, or a phrase this ladder does not contain.
+ */
+export function trustMove(before: string | null | undefined, now: string): "up" | "down" | null {
+  if (typeof before !== "string" || before === now) return null;
+  const from = trustRungOf(before);
+  const to = trustRungOf(now);
+  if (from < 0 || to < 0) return null;
+  // Best-first, so a SMALLER index is a higher rung.
+  return to < from ? "up" : "down";
+}

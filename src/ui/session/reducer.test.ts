@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { advance, getDecision, ALL_POSITIONS, type Setup } from "../../engine/index";
 import { INITIAL_STATE, isUnplayable, makeSeed, openCard, reducer } from "./reducer";
 import { buildView } from "./view-model";
+import { trustMove, trustRungOf } from "./bands";
 import type { UiState } from "./types";
 
 const SETUP: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
@@ -513,9 +514,9 @@ describe("the resolved card carries the pre-advance overall", () => {
 describe("restoring a save written before these fields existed", () => {
   it("normalizes the missing properties instead of leaking undefined", () => {
     // `stamp` was already normalized in storage.ts; `description`, `narrated`,
-    // `overallBefore`, `hub` and `account` are all newer than some saves and
-    // arrive as `undefined` from an old one. The reducer is the funnel every
-    // restored UiState passes through.
+    // `overallBefore`, `hub`, `account` and `trustBefore` are all newer than
+    // some saves and arrive as `undefined` from an old one. The reducer is the
+    // funnel every restored UiState passes through.
     const ui = start("r-legacy");
     const legacy = {
       ...ui,
@@ -531,6 +532,10 @@ describe("restoring a save written before these fields existed", () => {
       narrated: false,
       stamp: null,
       overallBefore: null,
+      // A save from before the rung was frozen cannot say which rung it was
+      // on, so the restored card marks no locker-room move rather than
+      // announcing one that may never have happened.
+      trustBefore: null,
       account: null,
       remainder: null,
     });
@@ -865,5 +870,53 @@ describe("a resolved card carries its own accounting", () => {
     }
     expect(next.resolved!.account).not.toBeNull();
     expect(next.resolved!.overallBefore).not.toBeNull();
+  });
+});
+
+// Task 043. The card freezes the rung the career was standing on, so the
+// career screen can mark the click the standing crossed one. Two things have
+// to be true of that field or the marker is either silent or lying.
+describe("the locker-room rung a card is read against", () => {
+  it("is always a ladder phrase, and never a character number", () => {
+    let crossings = 0;
+    let cards = 0;
+    for (const position of ALL_POSITIONS) {
+      let ui = start(`r-rung-${position}`, { ...SETUP, position });
+      for (let guard = 0; guard < 500 && ui.screen !== "summary"; guard++) {
+        const next = step(ui, (ids) => ids[ids.length - 1]!);
+        if (next === ui) break;
+        ui = next;
+        if (!ui.resolved || !ui.state) continue;
+        cards++;
+        const before = ui.resolved.trustBefore;
+        // A phrase, always -- never null on a live card, and never an integer
+        // that a screen could subtract (DECISION 002).
+        expect(typeof before).toBe("string");
+        expect(trustRungOf(before!)).toBeGreaterThanOrEqual(0);
+        // The rule the whole field exists for: what the card can say is that
+        // the rung moved and which way, and there is no third answer.
+        const moved = trustMove(before, buildView(ui.state).trust);
+        expect(moved === null || moved === "up" || moved === "down").toBe(true);
+        if (moved) crossings++;
+      }
+    }
+    expect(cards).toBeGreaterThan(100);
+    // The marker is reachable rather than theoretical. A last-option walk is
+    // the selfish one, so this is mostly falls -- the point is only that a
+    // real career crosses rungs while it is being played, which is the claim
+    // the ending screen's ladder is built on.
+    expect(crossings).toBeGreaterThan(0);
+  });
+
+  it("marks no move on a card restored from a save that predates the field", () => {
+    const ui = start("r-rung-legacy");
+    const chosen = reducer(ui, { type: "choose", optionId: getDecision(ui.state!)!.options[0]!.id });
+    const legacy = {
+      ...chosen,
+      resolved: { ...chosen.resolved!, trustBefore: undefined },
+    } as unknown as UiState;
+    const restored = reducer(ui, { type: "restore", state: legacy });
+    expect(restored.resolved!.trustBefore).toBeNull();
+    expect(trustMove(restored.resolved!.trustBefore, buildView(restored.state!).trust)).toBeNull();
   });
 });

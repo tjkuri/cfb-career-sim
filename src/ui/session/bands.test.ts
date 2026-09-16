@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { PLAYING_SNAP_FLOOR, standingPhrase, trustPhrase } from "./bands";
+import {
+  PLAYING_SNAP_FLOOR,
+  TRUST_LADDER,
+  standingPhrase,
+  trustMove,
+  trustPhrase,
+  trustRungOf,
+} from "./bands";
 import { CONTENT } from "../../content/index";
 import { createCareer, type Setup } from "../../engine/index";
 
@@ -120,5 +127,54 @@ describe("trust bands", () => {
 
   it("starts a career in the trusted band", () => {
     expect(trustPhrase(FRESH.character)).toBe("the staff trusts you");
+  });
+});
+
+// The ladder (task 043). The summary draws all five rungs and the career screen
+// marks the click one is crossed on, so two properties have to hold or both
+// displays start telling the player something `character` cannot support.
+describe("the trust ladder", () => {
+  it("is every band phrase exactly once, best first", () => {
+    expect(TRUST_LADDER).toHaveLength(5);
+    expect(new Set(TRUST_LADDER).size).toBe(5);
+    // Ordered by regard, which is what makes an index a rung. Walking the
+    // whole legal range must never produce a phrase that is off the ladder,
+    // and must never walk it backwards.
+    let rung = trustRungOf(trustPhrase(0));
+    for (let n = 0; n <= 100; n++) {
+      const here = trustRungOf(trustPhrase(n));
+      expect(here).toBeGreaterThanOrEqual(0);
+      expect(here).toBeLessThanOrEqual(rung);
+      rung = here;
+    }
+    expect(trustRungOf(trustPhrase(100))).toBe(0);
+    expect(trustRungOf(trustPhrase(0))).toBe(TRUST_LADDER.length - 1);
+  });
+
+  it("reports direction and cannot report distance", () => {
+    const top = trustPhrase(90);
+    const second = trustPhrase(75);
+    const bottom = trustPhrase(5);
+    expect(trustMove(second, top)).toBe("up");
+    expect(trustMove(top, second)).toBe("down");
+    // The whole constraint in one assertion: a four-rung fall and a one-rung
+    // fall are the SAME value, so nothing downstream can render a magnitude
+    // for `character` (DECISION 002, DECISION 046).
+    expect(trustMove(top, bottom)).toBe(trustMove(top, second));
+    expect(trustMove(bottom, top)).toBe(trustMove(second, top));
+  });
+
+  it("says nothing when there is nothing to say", () => {
+    const now = trustPhrase(75);
+    // No baseline -- a save written before the card froze one.
+    expect(trustMove(null, now)).toBeNull();
+    expect(trustMove(undefined, now)).toBeNull();
+    // Same rung: character moved, the building's read of it did not.
+    expect(trustMove(now, now)).toBeNull();
+    expect(trustMove(trustPhrase(70), trustPhrase(84))).toBeNull();
+    // A phrase this ladder does not contain -- a save written against other
+    // words. It is not placed, so no move is claimed.
+    expect(trustMove("a phrase from another build", now)).toBeNull();
+    expect(trustRungOf("a phrase from another build")).toBe(-1);
   });
 });

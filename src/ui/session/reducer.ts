@@ -1,4 +1,5 @@
 import { advance, createCareer, getDecision, type GameState, type PendingDecision } from "../../engine/index";
+import { trustPhrase } from "./bands";
 import { CONTENT } from "../../content/index";
 import { buildSummary, cardAccount, hubFacts, remainderFacts, schoolName, seasonStamp } from "./view-model";
 import { appendLog } from "./storage";
@@ -62,6 +63,18 @@ export function isUnplayable(state: GameState): boolean {
 function play(state: GameState, decision: PendingDecision, option: { id: string; label: string }) {
   const stamp = seasonStamp(state);
   const overallBefore = state.overall;
+  // The locker-room rung the career was standing on when the choice was made.
+  // Frozen here rather than derived on the screen from the card's character
+  // delta: the delta is what the CARD did, and the rung can also move because
+  // something else in the same `advance()` moved `character`. The question the
+  // marker answers is "did the building's read of you change on this click",
+  // and only the before/after pair can answer that one.
+  //
+  // It is converted to its phrase at the boundary, not stored raw. A
+  // `character` integer on a screen-facing type -- which is also a type that
+  // round-trips through `localStorage` -- is the thing DECISION 002 exists to
+  // prevent, and nothing on the card needs one.
+  const trustBefore = trustPhrase(state.character);
   const next = advance(state, option.id);
   const outcome = next.lastOutcome?.description ?? null;
 
@@ -118,6 +131,7 @@ function play(state: GameState, decision: PendingDecision, option: { id: string;
           narrated: decision.options.length === 1,
           stamp,
           overallBefore,
+          trustBefore,
           account,
           remainder,
         };
@@ -191,6 +205,11 @@ export function normalize(ui: UiState): UiState {
       narrated: r.narrated ?? false,
       stamp: normalizeStamp(r.stamp),
       overallBefore: r.overallBefore ?? null,
+      // A save written before the rung was frozen restores without this. Null
+      // is the honest answer and the card marks no change -- the rung it was
+      // standing on is not recoverable after the fact, and a fabricated one
+      // would announce a move that may never have happened.
+      trustBefore: r.trustBefore ?? null,
       // A save written before the card accounted for itself restores without
       // this, and null is the honest answer: such a card reports the whole
       // movement across its `advance`, exactly as it did when it was saved.

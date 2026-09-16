@@ -560,6 +560,7 @@ describe("the rail describes one moment, not two", () => {
       narrated: false,
       stamp: null,
       overallBefore: null,
+      trustBefore: null,
       account: null,
       remainder: null,
     };

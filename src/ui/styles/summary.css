@@ -384,6 +384,97 @@
   color: var(--chalk-dim);
 }
 
+/* ---------- the locker room ----------
+
+   The ladder the game narrates and never showed. Five rungs, in the order
+   `bands.ts` writes them, with the one the career ended on filled in.
+
+   The rule this block is built to obey: nothing in it may encode HOW FAR. All
+   five rungs are one size, one family setting, one line-height and one row
+   rhythm, and the four that are not the player's are set identically to each
+   other -- the rung directly above theirs looks exactly like the rung three
+   below it. Position in the order is the entire read, which is all DECISION
+   002 allows `character` to have, and DECISION 046 already refused the same
+   magnitude wearing typography.
+
+   There is no accent colour anywhere in here, deliberately. `--milestone` is
+   for a career fact given its headline, and four of the five rungs this can
+   land on are not that -- a gold mark on `the staff has stopped defending
+   you` would perform a trophy over the worst ending in the game, which is the
+   exact inversion DECISIONS 021 and 032 spent two waves undoing. The seasons
+   block below sets its whole arc in chalk for the same reason; this matches
+   it.
+
+   The rows are the seasons block's rows: rule on top, closing rule on the
+   block, one gutter column and one body column. That is not imitation for its
+   own sake -- it is the register a playtester called the best screen in the
+   game, and a second table in a second idiom would read as bolted on. */
+
+.ladder {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* The block closes rather than stops, same as `.arc`. */
+  border-bottom: 1px solid var(--line);
+}
+
+.rung {
+  display: grid;
+  /* Column 1 is the mark and is the same width on every row, filled or not:
+     the list stays a column of phrases with one of them flagged, rather than
+     a column that indents when it reaches the player. */
+  grid-template-columns: 2px minmax(0, 1fr);
+  column-gap: 0.9rem;
+  padding: 0.68rem 0;
+  border-top: 1px solid var(--line);
+}
+
+/* Present on all five rows and inked on one. Two pixels of chalk down the
+   height of the row -- it says "this one" and it cannot be read as a quantity,
+   because it is the same mark at every rung it can ever appear on. */
+.rung-mark {
+  align-self: stretch;
+  background: transparent;
+}
+
+.rung[data-here="yes"] .rung-mark { background: var(--chalk-dim); }
+
+.rung-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+/* One size for all five. The phrases are the asset this block exists to show,
+   so they are set at the size the live career screen sets `.trust` at, and the
+   difference between a rung you are on and a rung you are not is ink, not
+   scale. */
+.rung-phrase {
+  font-size: var(--t-label);
+  font-weight: var(--w-prose);
+  line-height: var(--lh-tight);
+  color: var(--chalk-faint);
+}
+
+.rung[data-here="yes"] .rung-phrase {
+  font-weight: var(--w-ui);
+  color: var(--chalk);
+}
+
+/* Four words, and the reason the other four rungs are on the page: they are
+   places this career did not end. It sits under the phrase rather than beside
+   it so the longest band ("they would run through a wall for you") keeps its
+   own line at 360px. Same label register as `.arc-span-label`. */
+.rung-here {
+  font-variation-settings: "wdth" 74;
+  font-weight: var(--w-ui);
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+}
+
 /* ---------- the career arc ----------
 
    DECISION 009 crossed the frozen-engine line to record one thing: the OVR

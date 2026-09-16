@@ -44,6 +44,7 @@ describe("current save", () => {
       outcome: "O",
       hub: null,
       narrated: false,
+      trustBefore: null,
       account: null,
       remainder: null,
       stamp: {

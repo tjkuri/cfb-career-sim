@@ -289,6 +289,38 @@
   overflow: hidden;
 }
 
+/* The click the rung moved on (task 043).
+
+   The phrase could change under the player with nothing marking it, and the
+   one playtester who noticed only did because it happened on the last click of
+   the career. So the moment gets three things and no more: the phrase steps up
+   to full chalk, the rung it left is named underneath it, and the line arrives
+   rather than being there. All three are gone on the next Continue, which is
+   correct -- this marks an event, it does not describe a state.
+
+   No hue moves. `Up from` and `Down from` are set in the same colour, the same
+   size and the same weight, and the entrance is the same entrance: an emphasis
+   that fired only on a fall would be valence told by colour, which DECISION
+   012 forbids outright and which the two words already do properly. And there
+   is no gradation -- a fall of three rungs renders exactly as a fall of one,
+   because `trustMove` cannot return a size and DECISION 002 says there is no
+   size to return. */
+.standing-room[data-moved] .trust { color: var(--chalk); }
+
+.trust-move {
+  margin-top: 0.3rem;
+  font-size: var(--t-meta);
+  font-weight: var(--w-ui);
+  line-height: var(--lh-tight);
+  color: var(--chalk-dim);
+  animation: trust-move-in var(--dur-enter) ease-out both;
+}
+
+@keyframes trust-move-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
 /* ---------- the play area ---------- */
 
 /* One DOM order, two layouts. The decision column is written first and the
@@ -1098,6 +1130,7 @@
 @media (prefers-reduced-motion: reduce) {
   .fade-in,
   .delta,
+  .trust-move,
   .consequence[data-lead="character"] .locker-room { animation: none; }
   * { transition-duration: 0ms !important; }
 }

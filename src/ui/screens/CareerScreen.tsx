@@ -1,4 +1,5 @@
 import { railView } from "../session/view-model";
+import { trustMove } from "../session/bands";
 import { classYearLabel, followHeader, type LedgerRow } from "../session/ledger";
 import { countedStatLabel } from "../session/labels";
 import type { CardAccount, CareerView, Remainder, Resolved, StatView } from "../session/types";
@@ -464,6 +465,26 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   // that moved OVR by a visible amount keeps the slot on the number.
   const characterLeads = locker !== null && magnitude(own) <= 1;
 
+  // TASK 043. The rung the standing sits on can move under the player with
+  // nothing marking it -- one playtester only noticed theirs move because it
+  // happened on the very last click of the career, after being told "Cost you
+  // in the locker room." six times. The phrase changing IS the event, and an
+  // event that is not marked is not an event.
+  //
+  // Read off the frozen pre-`advance` phrase, so it is true of THIS click and
+  // disappears with the card that caused it. Null whenever there is nothing to
+  // say: no card, no baseline, or the same rung as before.
+  //
+  // Direction, never distance. `trustMove` cannot return a size, which is the
+  // point: a fall of three rungs and a fall of one render identically here,
+  // because DECISION 002 says `character` does not have the resolution that
+  // would tell them apart and DECISION 046 refused the same magnitude dressed
+  // as typography. Both directions are marked, in one hue at one weight -- an
+  // emphasis that appeared only on a fall would be valence told by colour,
+  // which DECISION 012 forbids and which the two words already do properly.
+  const trustBefore = resolved?.trustBefore ?? null;
+  const moved = trustMove(trustBefore, view.trust);
+
   return (
     // The decision column comes first in the DOM and the ledger follows it, so
     // at 360px the table lands BELOW the card rather than pushing it off the
@@ -526,9 +547,25 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
             <span className="claim-where">On the field</span>
             <span className="ovr-band">{view.standing}</span>
           </p>
-          <p className="standing-claim standing-room">
+          <p className="standing-claim standing-room" data-moved={moved ?? undefined}>
             <span className="claim-where">In the locker room</span>
             <span className="trust">{view.trust}</span>
+            {/* The rung that was true one click ago, named. Naming it is what
+                makes this a ladder rather than a phrase that swapped itself:
+                the player reads where they were and where they are, and the
+                four rungs they have not reached are the reason to keep
+                playing (the summary draws all five). No arrow, no count, no
+                second colour -- two words and the previous rung. */}
+            {moved && trustBefore && (
+              <span className="trust-move">
+                <span aria-hidden="true">
+                  {moved === "up" ? "Up from" : "Down from"} “{trustBefore}”
+                </span>
+                <span className="sr-only">
+                  Your standing in the locker room moved {moved}. It was: {trustBefore}.
+                </span>
+              </span>
+            )}
           </p>
         </div>
 

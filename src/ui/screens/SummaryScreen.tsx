@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { CareerView, HonorView, MomentView, SeasonView } from "../session/types";
 import { shareText } from "../session/share";
+import { TRUST_LADDER, trustRungOf } from "../session/bands";
 import { countedStatLabel } from "../session/labels";
 
 interface Props {
@@ -276,6 +277,60 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
           </>
         )}
       </section>
+
+      {/* TASK 043. The one track the game narrated most was not on this screen
+          at all: the view model computes `trust` for the live career and this
+          file never rendered it, so a player was told "Cost you in the locker
+          room." six times across four seasons and then read an ending that did
+          not mention the locker room. A playtester asked for exactly this line
+          and said it was what would make them start another career.
+
+          It is a LADDER and not a line, because a line is what the career
+          screen already has and what did not land. What a rung has that a
+          phrase does not is four other rungs: the building could have thought
+          something else about you, and here is what. That is the read that
+          makes a fourth career worth starting, and it is also the most this
+          screen is permitted to say -- position in an order, never a distance
+          along it (DECISION 002, DECISION 046).
+
+          Nothing here encodes magnitude. All five rungs are set at one size,
+          in one hue, on one rhythm; the player's rung is told apart by being
+          filled in rather than by being bigger, and the four that are not
+          theirs are identical to each other whether they sit one rung away or
+          four. The block carries no accent colour at all -- the seasons block
+          above it does not either, and a gold mark on "the staff has stopped
+          defending you" would put a trophy treatment on the worst outcome in
+          the game (DECISIONS 021, 032).
+
+          Placed directly under the verdict so the two readings of the career
+          are read together: what the league decided, then what the building
+          decided. Guarded on the phrase being a rung this ladder contains, so
+          a save written against different words renders nothing rather than
+          five dim lines with no mark on any of them. */}
+      {trustRungOf(view.trust) >= 0 && (
+        <>
+          <h2 className="section-head">In the locker room</h2>
+          <ol className="ladder">
+            {TRUST_LADDER.map((phrase) => {
+              const here = phrase === view.trust;
+              return (
+                <li
+                  className="rung"
+                  key={phrase}
+                  data-here={here ? "yes" : "no"}
+                  {...(here ? { "aria-current": "true" as const } : {})}
+                >
+                  <span className="rung-mark" aria-hidden="true" />
+                  <span className="rung-body">
+                    <span className="rung-phrase">{phrase}</span>
+                    {here && <span className="rung-here">You ended here</span>}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      )}
 
       {s.seasons.length > 0 && (
         <>
