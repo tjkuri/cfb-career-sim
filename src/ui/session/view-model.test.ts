@@ -822,14 +822,15 @@ describe("a card accounts for what it did", () => {
     });
   });
 
-  it("row 2 — The Ticket Hookup: getting caught is a +1 AND a cost", () => {
-    // `character -6, overall +1`, and accurate: being caught reselling comps
-    // does not make you worse at football. With only the +1 rendered it read
-    // as a reward. DECISION 002 forbids the integer, so the character half is
-    // reported as a direction and the screen says it in words.
+  it("row 2 — The Ticket Hookup: getting caught is a cost and nothing else", () => {
+    // Was `character -6, overall +1`, which rendered as a reward for being
+    // caught. Wave 19 removed the overall gain from the caught branch only:
+    // the card stays a gamble (the got-away-with-it branch still pays +1) but
+    // getting caught is now pure downside. DECISION 002 forbids the integer,
+    // so the character half is reported as a direction and said in words.
     expect(prose("offfield-ticket-hookup", "sell-them", "negative")).toContain("Compliance flags");
     expect(account("offfield-ticket-hookup", "sell-them", "negative")).toEqual({
-      own: 1,
+      own: 0,
       injury: false,
       lockerRoom: "cost",
       later: null,

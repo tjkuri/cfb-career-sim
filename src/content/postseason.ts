@@ -17,7 +17,7 @@ export const POSTSEASON: PostseasonConfig = {
   positionMultiplier: { QB: 1.0, OSKILL: 0.8, DL: 0.4, DSKILL: 0.4, OL: 0.15, K: 0.05 },
   prestige: [
     { id: "heisman", bands: [{ min: 92, prob: 0.5 }, { min: 88, prob: 0.25 }, { min: 84, prob: 0.08 }], teamSuccessBoost: 0.5 },
-    { id: "allAmerican", bands: [{ min: 85, prob: 0.6 }, { min: 80, prob: 0.3 }, { min: 75, prob: 0.1 }], teamSuccessBoost: 0.3 },
+    { id: "allAmerican", bands: [{ min: 92, prob: 0.6 }, { min: 88, prob: 0.4 }, { min: 85, prob: 0.25 }, { min: 80, prob: 0.12 }, { min: 75, prob: 0.04 }], teamSuccessBoost: 0.3 },
   ],
   // All-Conference thresholds are placed at ~27.5% of seasons cleared. Re-placed
   // once already, when the postseason depth pass added shared events: only one

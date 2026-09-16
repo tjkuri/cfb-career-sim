@@ -32,7 +32,6 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "It makes a recruiting Twitter account. The coordinator does not think it is funny.",
           effects: [
             { kind: "character", amount: -6 },
-            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -70,7 +69,6 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Half the money is gone into something he calls 'an opportunity.' Family dinner is tense for a while.",
           effects: [
             { kind: "character", amount: -5 },
-            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -109,7 +107,6 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Compliance calls. The posts come down, the money goes back, and the meeting is ninety minutes long.",
           effects: [
             { kind: "character", amount: -7 },
-            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
@@ -224,7 +221,6 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Compliance flags the resale listing with your name still in the metadata.",
           effects: [
             { kind: "character", amount: -6 },
-            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
       },
