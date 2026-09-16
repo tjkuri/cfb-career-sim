@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **PM session:** 8 (handing off)
+**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Wave 21:** in flight · **PM session:** 9
 
 ---
 
@@ -1353,7 +1353,10 @@ human one does not. See **DECISION 060** — this is why 15.2% and Round 4 are b
 | B52 | **`Next Man Up` tells an injured player to take every snap** | in flight (038) — proposal only | Missing `requiresPlaying`-class condition. Content, frozen |
 | B53 | **Kicker is position-neutral outside its stat line and ~4 cards** — and finished **Round 3 Pick 8**, which the playtester called *"not a thing for a kicker"* | **USER** | **DECISION 059's falsifier has fired.** 037 measures the distribution |
 | B54 | **`bowl-game-winner` arithmetic** — *"down two"* offered *"take the tie"* | **DONE (`17b5b2c`)** | DECISION 061. PM prose fix under 043/050 precedent |
-| B55 | **Three low-character cards now fire ~0.06×/career for a good player** (`entourage`, `curfew-check`, `exit-interview`, gated `maxCharacter: 55`) | todo | Wave 20 side effect. Correct behaviour, but the third time a fix has shrunk an event pool (cf. DECISION 051). **Nobody has counted how much writing is now rarely reachable** |
+| B55 | **Three low-character cards now fire ~0.06×/career for a good player** (`entourage`, `curfew-check`, `exit-interview`, gated `maxCharacter: 55`) | **CLOSED — rounding error (DECISION 065)** | 042 counted it: the band is **5 cards / 653 words**, **67.2% of ordinary careers** still read one, `humanLazy` reads it **2.08×/career**, and **100.0% of the corpus is reachable**. Nothing was buried. Fifth call this phase refuted by measuring it |
+| B56 | **A career shows a player 12.3% of the authored prose** — 1,115 of 9,037 words. Ten careers at one position ≈26%, ten varied ≈39% | context, not a defect | The corpus is deep and each pass is shallow. Argues replay value is real, and warns that *"author more words"* is not automatically a way to be read |
+| B57 | **1,413 words (15.6% of the corpus) sit behind options neither optimiser ever chooses** — `gym-grind:rest`, `the-knee:cart`, ~15 others, all strictly dominated | **USER** — balance | 2.2× the whole B55 band, and the single largest block of unread writing. **Must not be fixed by re-gating** — it is a draft-stock pricing problem. Bring it with a measurement |
+| B58 | **A redshirt season has no content of its own** — 4.0 cards / 195 words from a 14-card pool, ~20% of a career | **aimed — wave 23** | DECISION 065. PM verified the 12 survivors by hand: **every one is an off-field temptation or a bust card.** No football card, nothing about redshirting. Needs DECISION 066's schema field first |
 
 ## Wave 18 — complete and committed (PM session 8)
 
@@ -1494,6 +1497,71 @@ correctness fix has quietly shrunk an event pool (DECISION 051: a redshirt seaso
 **Logged as B55.** The content authored for a bad character arc is now mostly seen only by players
 having one, which is either good design or buried writing depending on how much of it there is — and
 nobody has counted.
+
+## Wave 21 — in flight (PM session 9)
+
+Two lanes, file-disjoint. **No code ships while the playtest runs** — a build that changes under the
+player invalidates the run. Lane 042 is a pure measurement that edits nothing and adds only new,
+unimported files under `src/sim/`, so the running app cannot change underneath 041.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/041-does-the-game-count-what-you-do.md` | playtester | `reports/041-*.md`, `PLAYTEST-LOG.md` | 2026-09-15 |
+| `briefs/042-how-much-of-the-writing-does-a-player-see.md` | research/measurement | `src/sim/**` (new files only), `reports/042-*.md` | 2026-09-15 |
+
+**Baseline verified by the PM before dispatch:** 671 tests green, tree clean at `e6e47a4`, dev server
+serving 200 on 5173.
+
+**041 is the wave.** The economy changed in waves 19–20 and no player has seen it. The shaping is
+deliberately narrower than 036's: career 2 plays **hard on the field and selfishly off it** — the
+ticket hookup, the NIL money, ghosting the media — rather than 036's blanket "lazy at everything."
+That isolates the exact domain waves 19–20 repriced, and it is the only shape that can tell us
+whether the cost now routes through the locker-room ladder in a way a player *feels in the moment*.
+Career 1 is a straight baseline; career 3 is a Kicker (3.2% All-American, the thin position nobody has
+seen an honours-free ending for). The headline question is the sentence 036 lost on, asked verbatim:
+**does the game count what you do?**
+
+Three things carried into 041 from prior failures, all deliberate:
+
+- **The write-after-each-career rule** the wave 17 postmortem demanded. It is in the brief as its own
+  section, framed as *when* to write rather than as a priority at the end — which is how 036's agent
+  read the old wording, and why it nearly lost two careers.
+- **Claim 4 forbids cross-position comparison of endings.** That is the exact mistake that produced
+  B49, which the PM wrote up as the playtest's sharpest finding and which 037 then refuted. The brief
+  names it so it cannot recur.
+- **Struck to buy room:** skimming onset (settled), type/colour/contrast (five playtests, zero
+  defects), and B43's redshirt-year question (already confirmed, fix queued).
+
+### Lane 042 — done and committed. It refuted its own premise, and found the hole somewhere else
+
+Report: `reports/042-how-much-of-the-writing-does-a-player-see.md`. **DECISIONS 065 and 066.**
+**PM-verified before commit:** 684 tests green (671 + 13 new in `src/sim/prose-probe.test.ts`), both
+typecheck passes exit 0, build clean, `src/engine/**` and `src/content/**` untouched in `git status`,
+and **byte-identical to HEAD on 2 seeds × 2 policies** by the DECISION 064 worktree method.
+
+- **B55 is closed as a rounding error.** 100.0% of the 9,037-word corpus is reachable; 67.2% of
+  ordinary careers read a `maxCharacter: 55` card; only 410 words (4.5%) are out of a good player's
+  reach and **358 of those are the bust cards**, which is their entire purpose. **Fifth call this
+  phase refuted by measuring instead of implementing** — B3, B5, B49, B53, B55.
+- **The headline nobody had ever measured: a career shows a player 12.3% of the prose.** Logged B56.
+- **The hole is the redshirt season, and the PM verified it by hand rather than taking the report's
+  word.** 81 → 12 reproduces exactly, and listing the twelve survivors makes it sharper than the
+  report put it: gambling, skipping the install, a ticket hookup, catfished, a speeding ticket, a
+  curfew, ghosting the media, an exit interview, a watch list, a coaching carousel, a failed drug
+  test, an arrest. **Not one football card, and two of the twelve are ways to bust.** The engine
+  promises "scout team and the weight room" in 44 words and then deals four cards about your phone.
+  Logged B58.
+- **The largest block of unread writing is not behind a gate at all** — 1,413 words sit behind
+  strictly dominated options. That is draft-stock pricing, not gating, and it is a user call. B57.
+- 042 asked for the metrics to hold an authoring wave to, and **explicitly warned that "% of corpus
+  read" is the wrong target** — authoring grows the denominator, so a successful wave can lower it.
+  Use its table instead: distinct cards/career, sit-season pool size, cross-replay collision ≤17%.
+
+**042 answers next-actions item 5 before anyone authors a word.** Three correctness fixes have now
+shrunk event pools (DECISION 051's 81 → 12, and B55's 90.4% → 12.6%) and nobody has counted the cost
+once. It asks for the headline the phase has never had — *what percentage of the authored prose does
+one career show a player* — and it is explicitly permitted to conclude "rounding error, go author new
+content." Either answer saves a wave, which is why it is worth running now rather than after B44.
 
 ## Next actions — for PM session 9, in order
 

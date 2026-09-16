@@ -1943,3 +1943,76 @@ was replacing; 058 specified acceptance on an aggregate that hid a per-position 
 policy standing in for the player did not play like the player. **Now a verification step decayed into
 a ritual.** Every one is the same error: *the measurement drifted from the thing it was supposed to
 measure.* Check the instrument, not only the reading.
+
+## 065 — B55 is closed as a rounding error, and the buried-content hunt found the opposite of what it went looking for
+
+**Date:** 2026-09-15 · **Made by:** PM session 9 · **Closes:** B55 · **Evidence:** `reports/042-how-much-of-the-writing-does-a-player-see.md`, 18,000 careers
+
+B55 asked whether waves 19–20 had quietly buried a body of writing behind a character band that a good
+player no longer reaches. **It had not.** The measurement:
+
+- **100.0% of the 9,037-word corpus is reachable.** The union over 18,000 `baselineRandom` careers is
+  9,037 of 9,037 words. Nothing in this game is unreachable, which is the first time anyone has
+  checked and is worth recording on its own.
+- **67.2% of ordinary careers still read at least one `maxCharacter: 55` card.** The band is 5 cards
+  and 653 words, not the 3 cards B55 assumed, and `humanLazy` reads it **2.08× per career**. Band 2
+  of the off-field ladder is working exactly as designed.
+- Only **410 words (4.5%)** are genuinely out of a good player's reach, and **358 of those are the
+  bust cards** — a well-played career is *supposed* never to read the arrest card.
+
+**The pattern this makes five of.** B3, B5, B49, B53 and now B55 were all refuted by measuring them
+instead of implementing them. **Not one call this phase has been reversed by argument.** The cost of
+the check was one agent; the cost of acting on B55 would have been an authoring wave aimed at content
+that was never buried.
+
+**What it found instead, which no one had looked for.** A career shows a player **12.3% of the
+authored prose** (1,115 of 9,037 words, `good`, 18,000 careers). Ten careers at one position is ~26%;
+ten varied is ~39%. The corpus is deep and each pass through it is shallow — which is an argument that
+replay value is real, and a warning that *"add more words"* is not automatically a way to be seen.
+
+**The one real hole, verified by the PM independently.** DECISION 051's 81 → 12 reproduces exactly:
+of 81 on-field events, 12 lack `requiresPlaying` and survive a sit season. The PM listed those twelve
+by hand. Every one is an off-field temptation or a bust card — gambling, skipping the install, a
+ticket hookup, catfished, a speeding ticket, a curfew, ghosting the media, an exit interview, a watch
+list, a coaching carousel, a failed drug test, an arrest. **There is not one football card in a
+redshirt season, and nothing anywhere in the bundle is about redshirting.** The engine writes 44 words
+promising "a year of scout team and the weight room" and then deals the player four cards about his
+phone. A sit season is ~20% of a career and has no content of its own.
+
+**The 5,942 locked-out words stay locked out.** DECISION 048/051 is right: a card that credits snaps
+to a player who did not play writes stats onto a redshirt's permanent ledger. The remedy is to author
+*for* the sit season, never to loosen the gate.
+
+**What would change our mind.** A future content wave growing the corpus enough that "% reachable"
+stops being 100% — in which case something authored has become unreachable and that is a bug, not a
+gating preference.
+
+## 066 — A narrow, provably inert engine lift: `requiresRedshirt`, taken as a PM call and not escalated
+
+**Date:** 2026-09-15 · **Made by:** PM session 9 · **Amends:** the engine freeze · **Evidence:** `reports/042-*.md` §4 proposal R1a
+
+A redshirt pack **cannot be authored today.** `requiresPlaying: true` excludes a sit season and its
+absence puts a card in *both*, so there is no way to say "this card is for the season the player
+sits." DECISION 048 left that deliberately inexpressible; 042 shows it is now the thing in the way.
+
+**The call: take R1a — add `conditions.requiresRedshirt?: boolean`, checked in `eventMatches` as the
+exact mirror of the existing `requiresPlaying` clause at `select-event.ts:38`.** Rejected R1b
+(content-only, phrasing every card to read correctly whether or not the player is on the field),
+because it dilutes the played-season pools with sit-season beats and constrains the writing badly —
+and the writing is the asset.
+
+**Why this is a PM call and not a user escalation.** The freeze says escalate what touches balance.
+This touches none: no existing event sets the field, so no existing event's eligibility changes, and
+the change is falsifiable by the standing bit-identity check — **it must be byte-identical on every
+seed and policy, and if it is not, it is wrong and it comes out.** That is DECISION 006's precedent,
+where an engine change was proved additive on three seeds and taken on the same reasoning.
+
+**What is explicitly NOT covered by this lift.** The *pack* that will use the field. New sit-season
+cards carry effects, and a redshirt season's contents are part of what the redshirt gamble buys — so
+the pack moves balance by construction, must state its acceptance in advance, and is reported rather
+than tuned. **The schema field and the content that uses it are two different waves, and B43's fix to
+the redshirt offer card is a third.** Three simultaneous changes to redshirt EV would be
+unattributable, which is the wave-10/13/16 lesson.
+
+**What would change our mind.** The bit-identity check moving on any seed — which would mean the
+clause is not the inert mirror it is claimed to be.
