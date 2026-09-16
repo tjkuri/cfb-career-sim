@@ -36,6 +36,9 @@ export function eventMatches(state: GameState, ev: GameEvent, content: ContentBu
   // Milestones assume the player is on the field. A redshirt sit season is
   // exactly the case where they are not, so gate those beats out of it.
   if (c.requiresPlaying && state.redshirtSeasonActive) return false;
+  // The mirror (DECISION 066). A card that is FOR the sit season is gated out
+  // of every played one. Inert until a card sets it: no shipped event does.
+  if (c.requiresRedshirt && !state.redshirtSeasonActive) return false;
   if (c.maxCharacter !== undefined && state.character > c.maxCharacter) return false;
   if (c.maxOverall !== undefined && state.overall > c.maxOverall) return false;
   if (c.minOverall !== undefined && state.overall < c.minOverall) return false;

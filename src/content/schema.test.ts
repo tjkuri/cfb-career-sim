@@ -274,6 +274,58 @@ describe("validateContent", () => {
     expect(validateContent(bad).some((e) => e.includes("requiresPlaying"))).toBe(true);
   });
 
+  it("rejects a non-boolean requiresRedshirt", () => {
+    const bad = {
+      ...CONTENT,
+      events: [
+        ...CONTENT.events,
+        {
+          id: "bad-requires-redshirt",
+          kind: "random" as const,
+          phase: "conference" as const,
+          weight: 1,
+          conditions: { requiresRedshirt: "yes" as never },
+          title: "T",
+          description: "D",
+          options: [{ id: "o", label: "L", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+        },
+      ],
+    };
+    expect(validateContent(bad).some((e) => e.includes("requiresRedshirt"))).toBe(true);
+  });
+
+  // The two flags partition the seasons, so together they select nothing. Same
+  // class of author error as minOverall > maxOverall, and caught the same way.
+  it("rejects a card that sets both requiresPlaying and requiresRedshirt", () => {
+    const bad = {
+      ...CONTENT,
+      events: [
+        ...CONTENT.events,
+        {
+          id: "impossible-card",
+          kind: "random" as const,
+          phase: "offseason" as const,
+          weight: 1,
+          conditions: { requiresPlaying: true, requiresRedshirt: true },
+          title: "T",
+          description: "D",
+          options: [{ id: "o", label: "L", probability: 1, positiveOutcome: { description: "d", effects: [] } }],
+        },
+      ],
+    };
+    expect(
+      validateContent(bad).some((e) => e.includes("impossible-card") && e.includes("mutually exclusive")),
+    ).toBe(true);
+  });
+
+  // DECISION 066 lifted the engine freeze for this field on the ground that it
+  // changes no existing card's eligibility, which is only true while nothing
+  // sets it. The redshirt pack is a later wave and will delete this test; until
+  // then it is what keeps the lift's premise honest.
+  it("no shipped card sets requiresRedshirt yet — the field is authored-against in a later wave", () => {
+    expect(CONTENT.events.filter((e) => e.conditions?.requiresRedshirt !== undefined).map((e) => e.id)).toEqual([]);
+  });
+
   it("rejects a prestige award id not in awardIds", () => {
     const b = goodBundle();
     b.postseason = { ...b.postseason, prestige: [{ id: "ghostAward", bands: [{ min: 90, prob: 0.5 }], teamSuccessBoost: 0.3 }] };

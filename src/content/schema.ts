@@ -290,6 +290,14 @@ export function validateContent(bundle: ContentBundle): string[] {
         errors.push(`Event ${ev.id}: requiresFinalSeason must be a boolean`);
       if (c.requiresPlaying !== undefined && typeof c.requiresPlaying !== "boolean")
         errors.push(`Event ${ev.id}: requiresPlaying must be a boolean`);
+      if (c.requiresRedshirt !== undefined && typeof c.requiresRedshirt !== "boolean")
+        errors.push(`Event ${ev.id}: requiresRedshirt must be a boolean`);
+      // Both flags at once is unsatisfiable -- requiresPlaying excludes the sit
+      // season and requiresRedshirt excludes every other one -- so the card can
+      // never fire. Caught here for the same reason minOverall > maxOverall is:
+      // an author writing dead content gets told at validation, not by silence.
+      if (c.requiresPlaying && c.requiresRedshirt)
+        errors.push(`Event ${ev.id}: requiresPlaying and requiresRedshirt are mutually exclusive (the event can never fire)`);
     }
   }
   const recruiting = bundle.events.find((e) => e.id === "recruiting");

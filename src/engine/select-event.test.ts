@@ -252,6 +252,66 @@ describe("requiresPlaying", () => {
   });
 });
 
+// DECISION 066. The exact mirror of the block above. The field exists so a
+// redshirt pack can be authored; no shipped card sets it, and the freeze lift
+// that allowed it was granted on that being provably true.
+describe("requiresRedshirt", () => {
+  const ev: GameEvent = {
+    id: "scout-team-test",
+    kind: "fixed",
+    phase: "conference",
+    weight: 1,
+    conditions: { requiresRedshirt: true },
+    title: "Scout Team",
+    description: "You are the other team all week.",
+    options: [{ id: "go", label: "Go", probability: 1, positiveOutcome: { description: "ok", effects: [] } }],
+  };
+
+  const stateIn = (redshirtSeasonActive: boolean): GameState => {
+    const base = createCareer({ lastName: "S", jerseyNumber: 7, homeState: "TX", position: "QB" }, "rr");
+    return { ...base, phase: "conference", redshirtSeasonActive };
+  };
+
+  it("matches during a redshirt sit season", () => {
+    expect(eventMatches(stateIn(true), ev)).toBe(true);
+  });
+
+  it("does not match when the player is on the field", () => {
+    expect(eventMatches(stateIn(false), ev)).toBe(false);
+  });
+
+  // The regression that matters. Every one of the 81 existing on-field cards and
+  // every off-field card is in this case, so if it ever flipped, the whole
+  // bundle's eligibility would move -- which is what the bit-identity check on
+  // this change was checking for.
+  it("a card with neither flag is offered in both seasons", () => {
+    const plain: GameEvent = { ...ev, conditions: {} };
+    expect(eventMatches(stateIn(true), plain)).toBe(true);
+    expect(eventMatches(stateIn(false), plain)).toBe(true);
+  });
+
+  it("an undefined conditions block is offered in both seasons", () => {
+    const bare: GameEvent = { ...ev, conditions: undefined };
+    expect(eventMatches(stateIn(true), bare)).toBe(true);
+    expect(eventMatches(stateIn(false), bare)).toBe(true);
+  });
+
+  // Both flags is a contradiction an author could write by accident. The engine
+  // resolves it by selecting nothing rather than by preferring one flag, and
+  // validateContent rejects the bundle outright (schema.test.ts) so it cannot
+  // ship as dead content.
+  it("both flags together select nothing", () => {
+    const contradiction: GameEvent = { ...ev, conditions: { requiresPlaying: true, requiresRedshirt: true } };
+    expect(eventMatches(stateIn(true), contradiction)).toBe(false);
+    expect(eventMatches(stateIn(false), contradiction)).toBe(false);
+  });
+
+  it("does not disturb the other conditions on the same card", () => {
+    const gated: GameEvent = { ...ev, conditions: { requiresRedshirt: true, position: ["DL"] } };
+    expect(eventMatches(stateIn(true), gated)).toBe(false); // QB
+  });
+});
+
 describe("selectRandomEvent", () => {
   it("returns null when nothing matches", () => {
     const s = createCareer(setup, "s"); s.phase = "nonconf";

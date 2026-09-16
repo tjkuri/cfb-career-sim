@@ -88,6 +88,14 @@ export interface EventConditions {
   requiresActiveInjury?: boolean;
   requiresFinalSeason?: boolean;
   requiresPlaying?: boolean;
+  // DECISION 066: the exact mirror of requiresPlaying. Absence of BOTH flags
+  // puts a card in a played season and a sit season alike, so before this
+  // existed there was no way to say "this beat is for the season the player
+  // sits" -- which is why a redshirt season has no content of its own. The
+  // field is deliberately unused by every shipped card: the pack that uses it
+  // is a separate wave, because new sit-season cards carry effects and move
+  // redshirt EV, while this field alone cannot.
+  requiresRedshirt?: boolean;
   maxCharacter?: number;
   maxOverall?: number;
   // DECISION 049: the exact mirror of maxOverall. It is the only condition that
