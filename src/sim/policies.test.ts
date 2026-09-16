@@ -124,17 +124,30 @@ describe("the deliberately-bad policies", () => {
     expect(climbed).toBeGreaterThan(0);
   });
 
-  it("the antisocial profile reaches the character band the bust events gate on; the lazy one does not", () => {
+  it("the antisocial profile reaches the character band the bust events gate on far more often than the lazy one", () => {
     // This is the whole reason two definitions of "bad" exist: the draft-stock
     // scorer prices character at 0.15 against overall's 1.4, so minimising
-    // stock dumps OVERALL and leaves character near its starting value.
+    // stock dumps OVERALL rather than character.
+    //
+    // RE-BASELINED, wave 20. This used to assert `under35(lazy) < 0.2`, and it
+    // held because the off-field temptations were net-POSITIVE draft stock, so
+    // a stock-MINIMISER declined them and kept its character near the starting
+    // 70 (measured: under35 0.01, median character 55). Brief 040 raised the
+    // caught-branch character costs until those options went net-negative, so
+    // the stock-minimiser now takes them too and bleeds character as a side
+    // effect (measured: under35 0.35 at these 40 seeds, 0.45 over 400, median
+    // character 38). The separation the two profiles exist to express is still
+    // there and is what is pinned here -- antisocial 0.95 against lazy 0.35 --
+    // but "the lazy one does not reach the band" is no longer true and is not
+    // asserted any more.
     const chars = (name: keyof typeof PROFILES) =>
       Array.from({ length: 40 }, (_, i) => playCareer(setup, `ch-${i}`, makePolicy(PROFILES[name])).character);
     const anti = chars("antisocialFull");
     const lazy = chars("lazyFull");
     const under35 = (xs: number[]) => xs.filter((c) => c <= 35).length / xs.length;
     expect(under35(anti)).toBeGreaterThan(0.5);
-    expect(under35(lazy)).toBeLessThan(0.2);
+    expect(under35(lazy)).toBeLessThan(0.6);
+    expect(under35(anti) - under35(lazy)).toBeGreaterThan(0.4);
   });
 
   it("the best profile beats the lazy one on final overall, every seed", () => {

@@ -31,7 +31,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "It makes a recruiting Twitter account. The coordinator does not think it is funny.",
           effects: [
-            { kind: "character", amount: -6 },
+            { kind: "character", amount: -13 },
           ],
         },
       },
@@ -68,7 +68,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Half the money is gone into something he calls 'an opportunity.' Family dinner is tense for a while.",
           effects: [
-            { kind: "character", amount: -5 },
+            { kind: "character", amount: -23 },
           ],
         },
       },
@@ -106,7 +106,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Compliance calls. The posts come down, the money goes back, and the meeting is ninety minutes long.",
           effects: [
-            { kind: "character", amount: -7 },
+            { kind: "character", amount: -32 },
           ],
         },
       },
@@ -220,7 +220,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Compliance flags the resale listing with your name still in the metadata.",
           effects: [
-            { kind: "character", amount: -6 },
+            { kind: "character", amount: -9 },
           ],
         },
       },
@@ -294,7 +294,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Sports media runs a week of 'availability' takes with your name in the headline.",
-          effects: [{ kind: "character", amount: -6 }],
+          effects: [{ kind: "character", amount: -9 }],
         },
       },
       {
@@ -415,7 +415,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The staff calls the bluff and quietly starts recruiting your replacement anyway.",
-          effects: [{ kind: "character", amount: -9 }],
+          effects: [{ kind: "character", amount: -20 }],
         },
       },
       {
