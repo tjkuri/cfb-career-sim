@@ -219,7 +219,13 @@ export interface CardAccount {
       invisible is worse than imprecise -- *The Ticket Hookup*'s "compliance
       flags the resale listing" is `character −6, overall +1`, and with only
       the `+1` rendered, getting caught reads as a reward (DECISION 046 cause
-      2, B17). A direction is not a resolution. */
+      2, B17). A direction is not a resolution.
+
+      Null below a magnitude floor as well as at zero (DECISION 075 R1,
+      `LOCKER_ROOM_MIN_CHARACTER` in view-model.ts): a single character point is
+      0.15 draft stock against overall's 1.4, and printing the same sentence for
+      it and for *The NIL Deal Nobody Read*'s -32 is what made the verdict
+      wallpaper on a third of the cards that carried it. */
   lockerRoom: "cost" | "credit" | null;
   /** Set when the outcome enqueued a `timing: "deferred"` overall effect that
       was STILL QUEUED when the card was read -- by the sign of the sum. A

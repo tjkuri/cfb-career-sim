@@ -277,6 +277,37 @@ function direction(amount: number): "cost" | "credit" | null {
   return null;
 }
 
+/**
+ * Below this many character points, an outcome gets no locker-room verdict.
+ *
+ * DECISION 075 (R1). Derived in report 051 from a census of the summed
+ * character delta on every outcome branch in `src/content/**` -- which is the
+ * quantity `accountOf` thresholds, not the across-options spread report 050
+ * bucketed by. Every authored amount is an integer and the realized magnitudes
+ * are {1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 20, 23, 32}, so 075's suggested
+ * "≈±1.5" and this 2 are the same function; 2 is the largest value that still
+ * leaves all twelve moral forks their line (The Team Banquet's +2 is the
+ * smallest branch on any of them) and it silences the 37 single-point branches
+ * that were printing the same sentence as a -32.
+ */
+const LOCKER_ROOM_MIN_CHARACTER = 2;
+
+/**
+ * The locker-room verdict for one outcome's character movement, or null.
+ *
+ * `direction` alone maps ANY non-zero delta to a verdict, which is how a -1 and
+ * a -32 came to print the identical sentence *"Cost you in the locker room."*
+ * The line was read on 37.5% of resolved cards and meant nothing on a third of
+ * them. One character point is 0.15 draft stock against overall's 1.4: below
+ * the threshold there is no fact to state, and stating one anyway is what turns
+ * the sentence into wallpaper. Size is still never shown -- this decides only
+ * whether the card speaks at all.
+ */
+function lockerRoomVerdict(character: number): "cost" | "credit" | null {
+  if (Math.abs(character) < LOCKER_ROOM_MIN_CHARACTER) return null;
+  return direction(character);
+}
+
 type OverallEffect = Extract<Effect, { kind: "overall" }>;
 
 /**
@@ -368,7 +399,7 @@ function accountOf(
   return {
     own: overall - before.overall,
     injury,
-    lockerRoom: direction(character),
+    lockerRoom: lockerRoomVerdict(character),
     later: direction(deferred),
   };
 }

@@ -950,6 +950,24 @@ describe("a card accounts for what it did", () => {
     });
   });
 
+  it("says nothing about the locker room for a character delta too small to matter", () => {
+    // R1 (DECISION 075). Every authored character amount in the bundle is an
+    // integer, and the realized magnitudes are 1, 2, 3, 4, 5, 6, 8, 9, 10, 12,
+    // 13, 20, 23, 32 -- so a threshold below 2 is the same function as no
+    // threshold at all. A single +1 is 0.15 draft stock against overall's 1.4,
+    // and printing the identical sentence for it and for a -32 is what made
+    // the line wallpaper on a third of the cards that carried it.
+    expect(account("travel-with-the-no-1", "play-with-safety-help", "positive")?.lockerRoom).toBeNull();
+    expect(account("coverage-install", "lean-on-the-vets", "positive")?.lockerRoom).toBeNull();
+    expect(account("kickoff-duties-too", "stick-to-field-goals", "positive")?.lockerRoom).toBeNull();
+    expect(account("the-blindside", "ask-to-stay-inside", "positive")?.lockerRoom).toBeNull();
+    // ...and the twelve moral forks keep theirs. The smallest branch on any of
+    // them is The Team Banquet's +2, which is why the threshold is 2 and not 3.
+    expect(account("postseason-awards-banquet", "first-to-stand", "positive")?.lockerRoom).toBe("credit");
+    expect(account("offfield-ticket-hookup", "sell-them", "negative")?.lockerRoom).toBe("cost");
+    expect(account("offfield-money-manager", "let-him-handle-it", "negative")?.lockerRoom).toBe("cost");
+  });
+
   it("never reports character as a number, only as a direction", () => {
     // DECISION 002, still standing. The account carries "cost" or "credit" and
     // no magnitude, so no screen can print one: character moves draft stock by

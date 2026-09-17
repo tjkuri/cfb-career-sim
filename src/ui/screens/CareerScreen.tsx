@@ -77,13 +77,21 @@ function ownSentence(own: number, alone: boolean, now: number): string {
  *
  * Direction only. There is no gradation here on purpose: a size would be the
  * resolution DECISION 002 says character does not have, dressed as typography.
+ *
+ * What it does have, since DECISION 075 (R1), is a floor. `cardAccount` returns
+ * `lockerRoom: null` for any outcome whose summed character delta is under
+ * `LOCKER_ROOM_MIN_CHARACTER` (= 2, derived in report 051), so this function
+ * never sees the single-point nudges that used to print the same sentence as a
+ * -32. That is this docblock's stated intent finally implemented, not a new
+ * one: a verdict that arrives on a card worth 0.15 draft stock is not a fact,
+ * it is narration, and it taught players to skim the ones that were.
  */
 function lockerRoomLine(account: CardAccount): string | null {
-  // Terse on purpose. A character effect fires on 37.5% of resolved cards
-  // (measured over 360 careers), so this line is read often -- and a sentence
-  // read that often has to behave like `+1 OVR` does, as a stated fact that
-  // never varies, rather than like narration, which would turn into the
-  // wallpaper this whole wave exists to stop people skimming.
+  // Terse on purpose. Before the floor a character effect fired on 37.5% of
+  // resolved cards (measured over 360 careers), so this line is read often --
+  // and a sentence read that often has to behave like `+1 OVR` does, as a
+  // stated fact that never varies, rather than like narration, which would
+  // turn into the wallpaper this whole wave exists to stop people skimming.
   if (account.lockerRoom === "cost") return "Cost you in the locker room.";
   if (account.lockerRoom === "credit") return "Earned you credit in the locker room.";
   return null;
