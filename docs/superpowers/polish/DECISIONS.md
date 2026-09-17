@@ -2420,3 +2420,87 @@ earned) is the fallback if authoring capacity is unavailable, and is explicitly 
 player *can* tell which option the locker room is watching. That audit is cheap and should run before
 anyone authors R2's prose, because if it fails, **R2 is worth doing anyway and still will not close the
 complaint** — and the next brief is about the 34 cards, not the 5.
+
+## 075 — B72 is refuted by a blind audit with a control group, and the real defect is the opposite shape: character pays for doing less
+
+**Date:** 2026-09-16 · **Made by:** PM session 11 · **Refutes:** B72, and corrects DECISION 074 · **Opens:** B75, B76, B77 · **Evidence:** `reports/050-*.md`, plus the PM's own reads of `k.ts:79-121` and `offfield.ts:54-82`
+
+DECISION 074 proposed that *a card can cost the player standing without ever signalling standing was on
+the table*, on the strength of **34 of 60** character cards where the virtuous option is strictly worse
+on the only visible number. **A blind audit with an unmarked control group refutes it**, and the control
+group is what makes that a result rather than an opinion:
+
+```
+                         THE 34          CONTROLS (26)
+flagged as a standing decision   58.8%           46.2%      z=0.98, p=0.33
+label carried a cue              55.9%           53.8%      flat
+"silent trap"                    26.5%           38.5%      WRONG WAY
+```
+
+Three of four legibility measures are flat and **every one that moves, moves against the hypothesis.**
+
+**Two further corrections to 074's numbers, and they matter more than the verdict.**
+
+1. **The 34 is not one population.** Split by character magnitude: on the **12 genuine moral forks
+   (spread ≥3) the auditor scored 11/12 legible cold and 12/12 on naming the rewarded branch.** On the
+   **13 flavour nudges (spread <1.5) it scored 4/13.** *Difficulty of seeing the cost is inversely
+   correlated with its size* — the unreadable cards are the ones where nothing is at stake (≤0.22 draft
+   stock). **074's "34 of 60" counts a ±1 nudge and a −13.4 moral fork as the same event, and every
+   number downstream of it inherits that.** Re-run the source measurement with a ≥3 character floor.
+2. **The 0.91 mean OVR gap is four cards in a costume** — 3.54 across the four 3-option off-field
+   cards, 0.56 across the other thirty — and **26 of 34 gaps are below one displayed OVR point**, i.e.
+   below the resolution of the very signal 074 says players steer by. Options render label-only at
+   decision time, so that signal does not exist pre-choice anyway.
+
+**074's central inference was also partly circular, and this is the uncomfortable part.** The
+playtester's *"0 Earned, 5 Cost"* was read as 40× evidence for B72. But on the 34, an OVR-steering
+player prints **0/34 "Earned"** *by construction* — the set was drawn as "cards where the virtuous
+option is not the OVR-best one", so a player optimising OVR can never earn credit on them. Against the
+controls the same player earns credit **34.6%** of the time. **The tally is partly an arithmetic
+signature of how the set was defined.** The playtester's experience is still real and still needs
+explaining; it just is not evidence for this mechanism.
+
+**What the audit found instead, unasked, and it is the thing to act on: an effort inversion.** On **22
+of the 34**, character rewards the **lower-effort** branch — *"Decline and rest the injuries"*, *"Ask
+for a series off"*, *"Lean on the veterans"*, *"Enjoy the trip"*. That contradicts the convention
+`offfield.ts` states in its own header — *"the corrosive option charges character on the branch you
+take; the descent is a chosen cost"* — and inverts the intuition every player brings to a locker room.
+
+**The PM verified the reductio in source.** `kickoff-duties-too` (`k.ts:79-121`) offers *"Take both jobs
+and don't complain"* (+1/−1 OVR, **no character effect at all**) against *"Ask them to find someone else
+for kickoffs"* (p=1, **+1 character**). Stated precisely, because the report slightly overstates it: the
+game does not *charge* the player for taking the extra work — **it credits them for declining it and
+gives them nothing for doing it.** The authored justification is in the prose (*"It's not a fight you
+needed to win loudly, and the staff notices you didn't"*), so the card is defensible as written and
+indefensible as a pattern repeated 22 times. **One currency is carrying two authored meanings, and it
+will keep generating bug reports under new names until it is named once.**
+
+**The single card where B72 is genuinely true is `Family Business`** (`offfield.ts:54-82`), verified:
+**−4 character on success, −23 on failure**, for letting a cousin manage NIL money. **There is no locker
+room anywhere in the scene** — a cousin, a business card, some money — and then the UI prints a verdict
+about the locker room. That is not a legibility bug in the label; it is character being narrated as one
+thing while modelling another.
+
+**The calls.**
+
+- **R1 is adopted as a PM call and is wave 27's first item.** Threshold the locker-room line by
+  magnitude in `view-model.ts` (~5 lines, **zero content files**) so a −0.15 and a −13.4 stop printing
+  the same sentence. The line is currently read on 37.5% of resolved cards and means nothing on a third
+  of them. This is the `lockerRoomLine` docblock's stated intent, not a new one. **It is explicitly a
+  one-wave measure: R1 hides the effort inversion, R2 resolves it.** Adopting R1 and then never doing
+  R2 would be silencing a contradiction rather than fixing it, and this entry exists so a later session
+  cannot claim the work was finished.
+- **R2, R3 and R4 are content and go to the user** — see B76, B77, B75.
+- **DECISION 074's route call for B62 is unaffected.** R2-on-the-openers was chosen on its own
+  measurement (one-button cards that can only cost), which this audit does not touch. **What is
+  withdrawn is 074's claim that B62 is "a legibility bug wearing a balance bug's clothes."** The audit
+  says the opposite: the four expensive off-field cards were read **perfectly** — legible, cued, named
+  correctly — and charge ~3 overall anyway. That is a balance question wearing nothing.
+
+**What would change our mind.** On the refutation: a second blind audit, by a different reader, with the
+control group, landing a materially different hit-rate gap. On the effort inversion: an authorial
+statement that character is *meant* to reward protecting yourself, which would make 22 cards correct and
+the `offfield.ts` header wrong.
+
+**This is the eighth call reversed by measurement on this board, the third this session, and the second
+in two days where the refuted claim was the PM's own.**

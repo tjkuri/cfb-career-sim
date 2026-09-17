@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete, one lane committed, two escalations open · **PM session:** 11
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** in flight · **PM session:** 11
 
 ---
 
@@ -1911,11 +1911,71 @@ No re-dispatch needed.** DECISION 074 has the full reading. The short form:
 | B64 | **A played season can store `snaps: 0` beside a live stat line** | **reopened — cause relocated, DECISION 073.** With the user | Not the clamp. One of 123 authored `stat` effects landing on a line with no playing time. Downstream: ledger row, the −4 upperclass decline, the *"season on the sideline"* verdict, and lost draft stock |
 | B72 | **A card can cost standing without signalling standing was on the table** — 34 of 60 character cards make the virtuous option strictly worse on the only visible number | **MEASURED — DECISION 074. Ranks with B62** | Legibility, not balance. **Run the cold label audit before authoring R2's prose** — if it fails, R2 is still correct and still will not close the complaint |
 | B73 | **`good` is misnamed** and a dozen reports lean on it | todo — cheap | Rename/retire, or add the `virtue` strategy beside it (047 Appendix A). Any baseline quoting `good` as "plays well" is describing a stock-maximiser |
+| B75 | **The four expensive off-field cards are a balance question, not a display one** — *Portal Rumor*, *Entourage*, *Exit Interview*, *Bed Check*; −2.7 net draft stock on option C | todo — **user** | They carry 3.54 of the 0.91 mean OVR gap between them. The auditor read all four **perfectly** — legible, cued, correctly named — and the player is charged ~3 overall anyway. **Display work will not touch this** |
+| B76 | **The effort inversion** — on 22 of 34 cards character rewards the lower-effort branch, against the convention `offfield.ts` states in its own header | **MEASURED — DECISION 075. With the user** | One currency carrying two authored meanings. Delete the 22 sub-3 character effects (cheap, costs ≤0.22 draft stock) or rewrite so character tracks integrity. `kickoff-duties-too` is mandatory either way |
+| B77 | **`Family Business` narrates a locker-room verdict for a scene with no locker room in it** | todo — **user**, 1 card | −4/−23 character over NIL money and a cousin. The single unambiguous B72 case in the corpus; highest value per word on the board |
+| B78 | **The invisible thing is forgone *credit*, not hidden cost** — on 10 of the 34, taking the best-OVR option prints no line at all while the player gives up +1 to +2 character | todo | *"You cannot learn a rule you are never shown missing."* The auditor considered a forgone-credit line (R5) and **recommends against it**; the item is kept because the diagnosis outlives the rejected remedy |
 | B74 | **OL is the worst position on the virtue axis** — fewest virtuous options offered (2.87/career vs DL 3.84), only position with a negative median character delta under max-virtue play | todo | Every route helps it least |
 
 **Not dispatched this wave, on purpose:** 046 Part 2 (routes R1–R3 unpriced) and the redshirt pack.
 Both are live and both are below B62 and B64 per session 10's re-ranking. 046 Part 2 is a third
 measurement lane and the rate-limit rule says two.
+
+## Wave 26 — in flight (PM session 11)
+
+**Both of wave 25's escalations went to the user and both came back on the recommended route.**
+B62 → **R2**, and B64 → **measure the routes first, do not fix yet**. Two lanes, file-disjoint.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/049-the-season-opener-becomes-a-decision.md` | content authoring + measurement | `src/content/events/milestones.ts` + its test, `src/sim/policies.ts`, `reports/049-*.md` | 2026-09-16 |
+| `briefs/050-can-a-player-tell-which-option-the-locker-room-is-watching.md` | blind audit | `reports/050-*.md` + scratchpad phase files only | 2026-09-16 |
+
+**049 is the first authorised lift of the content freeze, and it is narrow:** a second option may be
+added to the five `milestone-opener-*` events and **nothing else**; existing options are untouched, so
+no existing prose is rewritten and no existing assertion changes. The brief carries 047's pre-stated
+acceptance criterion verbatim and **requires 10,000 careers per cell rather than 047's 3,000**, because
+one cell (`baselineRandom/QB` bustedRate, 4.83% against a ≥5.00% floor) is a known 0.17pp miss inside
+two standard errors at the smaller sample. **A miss is reported as a miss**; the named repair is a
+character cost on the new option's failure branch, **not** a loosening of the losability floor. The
+brief also warns that five near-identical new options would be a B11 regression — these five cards are
+the exact spine that fires every season.
+
+**050 is a blind audit and the blind is the thing that makes it evidence.** Three phases, each written
+to disk before the next begins: extract what a player sees (labels and prompt only — no effects, no
+EV), judge cold, *then* reveal and score. It carries an **unmarked control group** of cards where the
+virtuous option is *not* worse on OVR; if the 34 and the controls flag at the same rate, B72 is refuted
+and the difficulty is general. Remedies must live inside the constraint that EV, probability and a
+character number can never be shown — the interesting space is prose and framing, and this project has
+a strong precedent that the fix for an invisible mechanism is display, not balance.
+
+### Lane 050 — done. It refuted B72, and corrected two numbers the PM had written into DECISION 074
+
+**Full reading in DECISION 075. The blind held and the control group is what made it evidence.**
+
+- **B72 is REFUTED.** Flagged as standing decisions: **58.8% of the 34 vs 46.2% of the unmarked
+  controls** — indistinguishable at n=60 (p≈0.33) and pointing the *wrong way*. Label-cue rate dead
+  flat; "silent traps" were **more** common among the controls.
+- **The 34 was never one population.** On the **12 real moral forks (spread ≥3): 11/12 legible cold,
+  12/12 on naming the rewarded branch.** On the **13 flavour nudges (spread <1.5): 4/13** — worth ≤0.22
+  draft stock. **The hard-to-read cards are the ones where nothing is at stake.** Re-run the source
+  measurement with a ≥3 character floor; every number downstream of "34 of 60" inherits the conflation.
+- **074's central inference was partly circular** — on the 34, an OVR-steering player prints 0 "Earned"
+  *by construction*, because that is how the set was defined. Against the controls the same player earns
+  credit 34.6% of the time. The playtester's tally is still real and still needs explaining; it is not
+  evidence for this mechanism.
+- **The finding nobody asked for, and the one to act on: an effort inversion.** On **22 of the 34**,
+  character rewards the **lower-effort** branch, contradicting the convention `offfield.ts` states in
+  its own header. **PM-verified reductio:** `kickoff-duties-too` credits *"Ask them to find someone else
+  for kickoffs"* **+1 character** and gives *"Take both jobs and don't complain"* **none**. (Stated
+  precisely: the game does not charge you for taking the work, it credits you for declining it.)
+- **Exactly one card is a true B72 case, PM-verified:** `Family Business`, **−4/−23 character** for
+  letting a cousin manage NIL money, **with no locker room anywhere in the scene.**
+- **`src/ui/session/view-model.ts` is not touched by any in-flight lane**, so R1 is free to dispatch.
+
+**Not dispatched, and it is the next thing:** B64's measurement lane (the user chose *measure, then
+bring me the routes*). It is read-only and independent of both lanes above; it was held only to keep
+the wave at two after the 046 rate-limit death. **It is the top of session 12's list.**
 
 ## Next actions — for PM session 11, in order
 
