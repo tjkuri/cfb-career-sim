@@ -2504,3 +2504,34 @@ the `offfield.ts` header wrong.
 
 **This is the eighth call reversed by measurement on this board, the third this session, and the second
 in two days where the refuted claim was the PM's own.**
+
+## 076 — The user's calls on the character currency: delete the 22 inverted effects, and play the game before authoring anything else
+
+**Date:** 2026-09-16 · **Made by:** the user, brought by PM session 11 · **Closes:** B76 · **Defers:** B75, B77 · **Evidence:** `reports/050-*.md` §4 and §8
+
+**B76 — delete the 22 sub-3 character effects.** The cheapest of the three routes, no prose rewrite,
+and at ≤0.22 draft stock apiece it costs the balance nothing. **`kickoff-duties-too` is mandatory**
+regardless of route: an authored, explicit standing cue pointing at the *uncredited* branch is a bug no
+player can route around. After this, character stops paying for doing less, and the currency carries
+one authored meaning instead of two.
+
+**B75 and B77 — held for a playtest, deliberately, and the reasoning is the better half of the call.**
+Both are small and both are defensible on their own measurement. **No player has seen wave 25's ledger
+fixes or wave 26's Season Opener options.** Authoring two more content items on top of that would put
+the next playtester in front of four changes at once — the attribution error DECISION 066 and 068 both
+exist to prevent, and which this board has now paid for twice. **Play first, then decide what is
+actually worth authoring.**
+
+**The sequencing question this raises, and the PM's answer.** Wave 26 ships the Season Opener options;
+wave 27 will ship R1 (the locker-room line threshold) and B76 (the 22 deletions). That is three changes
+before a playtest, which is exactly what the paragraph above warns against — **and it is still the right
+order.** R1 and B76 are not independent of each other or of the openers: all three are the same
+subsystem answering the same complaint (*"I was told I cost the locker room and never once asked about
+it"*), and shipping them apart would mean playtesting a currency that is half-corrected. The
+attribution rule exists to stop *unrelated* changes being bundled, not to force a coherent fix to ship
+in pieces. **The playtest that follows measures whether standing now reads as something you can earn —
+one question, one bundle.** If it comes back negative, the three are separable after the fact by the
+prose-probe and the realized-frequency sweep, both of which are already built.
+
+**What would change our mind.** If wave 27's measurement shows R1 and B76 pulling in different
+directions on the realized Earned/Cost counts, they ship in separate waves and the playtest waits.

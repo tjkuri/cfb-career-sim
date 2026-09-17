@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** in flight · **PM session:** 11
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **PM session:** 11 (handing off)
 
 ---
 
@@ -1973,9 +1973,129 @@ a strong precedent that the fix for an invisible mechanism is display, not balan
   letting a cousin manage NIL money, **with no locker room anywhere in the scene.**
 - **`src/ui/session/view-model.ts` is not touched by any in-flight lane**, so R1 is free to dispatch.
 
+### Lane 049 — done and committed as `ae03d50`. All eight acceptance cells pass at 10,000 careers
+
+**The first authorised lift of the content freeze, and it held its own pre-stated criterion.**
+
+| | criterion | base (QB/OL/DL) | measured |
+|---|---|---|---|
+| A1 | below-start ≤25% | 43.9 / 50.9 / 38.9 | **8.74 / 11.50 / 7.38** ✓ |
+| A2 | median Δcharacter ≥+2 | 0 / −1 / +1 | **+6 / +5 / +6** ✓ |
+| A3 | Cost lines ≤1.40 | 2.15 | **1.16** ✓ |
+| B1 | busted ≥5.00% | 5.37 / 5.83 / 5.27 | **5.10 / 5.89 / 5.24** ✓ |
+| B2/B3 | badly-behaved unchanged | — | **bit-identical** ✓ |
+| B4 | no virtuous payout widened | — | **39 options byte-identical, 0 edited, 5 added** ✓ |
+| B5 | Earned ≤7.0 | 2.73 | **6.29** ✓ |
+
+- **B1/QB passes by 0.10pp against σ=0.22pp — one cell from binding, and the agent reported it that way
+  rather than as comfortable.** 047's predicted 0.17pp miss did not reproduce at 10k (the 3,000-career
+  base was 5.37; at 10k it is 5.84), so the sample size was the problem, exactly as the brief supposed.
+- **047's named B1 repair was deliberately NOT applied, and the reasoning is a do-not-undo.** A character
+  cost on the new option's failure branch would have added 0.40 Cost lines and **failed A3** at ~1.56.
+  The branch charges `overall −1` instead, which is what the prose says: disappearing in the opener is a
+  tape problem, not a locker-room one.
+- **Seeded output moved as intended** on all five seeds (`demo`: character 37→43, OVR 84→86, stock
+  74→77, matching the 10k table in direction and size). First-option careers are byte-identical **by
+  construction** — the new option is appended second — which is what keeps every prior baseline
+  comparable. **"Earned you credit in the locker room." now appears on a Season Opener for the first
+  time.**
+- Adds the `virtue` event strategy and `virtue-probe` to `src/sim`, so *"plays well"* and *"is a good
+  teammate"* stop being the same row. **727 tests** (708 + 19).
+
+### A latent UI bug that 049 surfaced, landed as its own commit `0a05843` — and the PM verified the latency rather than taking it
+
+049 went red on `remainderFacts`' **own B45/B47 falsifier** once the new option reshuffled the RNG walk.
+The agent repaired it in `view-model.ts` rather than hand back a red suite, flagged it as outside its
+brief, and offered to have it land separately. **It did, ordered first, because it is independent.**
+
+- `healed` tallied injuries by `injuryKey` and compared counts, so **a card that caused an ankle in the
+  same `advance()` that an older ankle healed read as no heal** — and then printed the restored points
+  as a bare unattributed figure with no sentence under it, which is the exact defect DECISION 056 exists
+  to remove. The fix matches each prior injury to a **decremented** survivor (`remainingPhases` is
+  deliberately outside `injuryKey`, which is what makes it the discriminator).
+- **The PM verified "latent, not new" instead of accepting it.** At HEAD *without* wave 26's content,
+  with the falsifier's seed sweep widened **8 → 120**, it fails on *"Wave for the trainer"* with an
+  unattributed 5. **The repair alone, applied to that same HEAD, turns it green.** Both halves were run.
+- **Open question for session 12, cheap:** the falsifier only catches this at 8 seeds *because* the
+  content changed. **Consider widening its sweep permanently** — a falsifier that a future reshuffle can
+  hide is a falsifier that will go quiet exactly when it matters. It is `view-model.test.ts:1107`.
+
 **Not dispatched, and it is the next thing:** B64's measurement lane (the user chose *measure, then
 bring me the routes*). It is read-only and independent of both lanes above; it was held only to keep
 the wave at two after the 046 rate-limit death. **It is the top of session 12's list.**
+
+## Next actions — for PM session 12, in order
+
+**Read this section, `DECISIONS.md` 073–076, and the wave 25–26 sections above. Nothing else.**
+
+**Session 11 in one line: three diagnoses were refuted by measurement — a playtester's, an agent's, and
+the PM's own — and in all three the observation was sound while the explanation was not.**
+
+1. **Wave 27 is written in outline and is two lanes. Both are authorised; neither needs the user.**
+   - **R1 — threshold the locker-room line by magnitude.** `cardAccount` at
+     `src/ui/session/view-model.ts:371` maps *any* non-zero character delta to `direction(character)`,
+     so a −0.15 and a −13.4 print the identical sentence. Suppress below ≈±1.5 (050 §3's bucket split
+     suggests the number; pick it from the data, not from taste). **~5 lines, zero content files.** The
+     line is currently read on 37.5% of resolved cards and means nothing on a third of them. **This is
+     the `lockerRoomLine` docblock's stated intent, not a new one.** DECISION 075 adopted it as a PM
+     call **and recorded it as a one-wave measure** — it hides the effort inversion; item 2 resolves it.
+   - **B76 — delete the 22 sub-3 inverted character effects.** The user's call, DECISION 076. Content
+     files across `oskill.ts`, `dskill.ts`, `ol.ts`, `dl.ts`, `k.ts`, `qb.ts`, `season-life.ts`,
+     `milestones.ts`. **The content freeze is lifted for this specific deletion and nothing else.**
+     `kickoff-duties-too` is mandatory — it credits *"Ask them to find someone else for kickoffs"* +1
+     and gives *"Take both jobs and don't complain"* nothing.
+   - **These two lanes both touch character accounting, so they are NOT file-disjoint in effect even
+     though they are on disk.** Run them in one lane, or run R1 first and B76 second. Measure the
+     realized Earned/Cost counts after each — DECISION 076 says that if they pull in different
+     directions they ship in separate waves and the playtest waits.
+   - **B76 must not start until wave 26's `milestones.ts` work is committed.** Both touch that file.
+
+2. **Then playtest, and it is the highest-value thing on the board.** No player has seen wave 25's
+   ledger fixes, wave 26's Season Opener options, or wave 27. The user explicitly held B75 and B77 for
+   this. **Use `briefs/045`'s shape: two careers assigned, the third NOT assigned** — ask at career 2's
+   ending whether they want another and what they would chase, then let them act on their own answer
+   including *"no."* That instrument produced the most specific *"no"* on record and a self-directed
+   experiment; every future playtest brief should use it. The question this one answers: **does standing
+   now read as something you can earn?**
+
+3. **B64's measurement lane — the user chose *measure, then bring me the routes*.** Held from wave 26
+   only to keep it at two lanes. **Read DECISION 073 first**: the cause is one of the **123 authored
+   `stat` effects** in `src/content/events/**` landing production on a season line with no playing time,
+   **not** the `effects.ts:61` clamp, which was escalated, approved, implemented and reverted when the
+   non-vacuous check showed it touched none of the 29 bad rows in 56,481.
+
+4. **Re-run 047's source measurement with a ≥3 character floor.** DECISION 075 item 1: the "34 of 60"
+   number conflates ±1 flavour nudges with −13 moral forks, and every figure downstream inherits it.
+   Cheap, and it makes B72's neighbourhood legible for whoever looks next.
+
+5. **046 Part 2 is still unfinished** (redshirt routes R1–R3 unpriced; DECISION 071 already picked R0 as
+   the likely answer). **The redshirt pack is still unauthored.** Both remain below the items above.
+
+6. **B73 — `good` is misnamed and a dozen reports lean on it.** 047 measured it at **−8.04 expected
+   character per career**; it is a draft-stock maximiser, not "the player who plays well." The `virtue`
+   strategy added in wave 26 gives it a proper counterpart. Renaming is cheap; **any old baseline
+   quoting `good` as "plays well" is describing a stock-maximiser** and should be read that way.
+
+7. **Do not reopen type, colour or contrast.** Seven playtests, zero visual defects.
+
+8. **Two process rules this session paid for, keep both.** *(a)* When a change is **supposed** to move
+   the numbers, byte-identity is the **vacuous** pass — hunt the difference, and if you cannot find it,
+   the change is not doing what it says. That reverted an approved engine fix. *(b)* A blind audit needs
+   an **unmarked control group**, or a high flag rate reads as confirmation of whatever you went looking
+   for. That refuted the PM's own hypothesis.
+
+9. Increment the **PM session** counter at the top of this file.
+
+### What session 11 would tell session 12 if it could only say one thing
+
+**Check the diagnosis, not just the observation — including your own, and especially when it is your
+own.** Session 10 learned that a player's observation and their explanation are different artifacts.
+Session 11 found the same split in an agent's report (048 reproduced the `0 snaps` row exactly and named
+the wrong line, and the approved fix changed nothing in 56,481 rows) and then in **the PM's own
+DECISION 074**, whose headline number turned out to be partly a tautology of how its own sample was
+drawn. In all three cases the observation was real and worth acting on, and in all three the proposed
+fix would have missed. **The two cheap instruments that caught it are a hunted difference and an
+unmarked control group.** Neither costs a wave. Both belong in every brief that measures anything.
 
 ## Next actions — for PM session 11, in order
 
