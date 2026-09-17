@@ -22,6 +22,8 @@ function playingState(phase: Phase, seasonIndex: number): GameState {
 
 const OPENERS = MILESTONE_EVENTS.filter((e) => e.id.startsWith("milestone-opener"));
 
+const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
+
 describe("milestone slice", () => {
   it("is all fixed events", () => {
     for (const ev of MILESTONE_EVENTS) expect(ev.kind).toBe("fixed");
@@ -110,6 +112,10 @@ describe("Season Opener variants", () => {
   // The no-change proof in reports/022 §8 is only meaningful if the variants
   // differ in prose and in nothing else. This asserts that directly rather than
   // trusting the measurement to notice.
+  // `label` was in this comparison until the second option landed (brief 049).
+  // It is prose, not a number, and the no-change proof it protects is about
+  // numbers: five identical buttons across five seasons is the season-to-season
+  // repetition B11 measured, so the labels are asserted DISTINCT below instead.
   it("is mechanically identical across every variant", () => {
     const shape = (e: GameEvent) => ({
       kind: e.kind,
@@ -118,7 +124,6 @@ describe("Season Opener variants", () => {
       conditions: { ...e.conditions, seasonIndex: undefined },
       options: e.options.map((o) => ({
         id: o.id,
-        label: o.label,
         probability: o.probability,
         positiveEffects: o.positiveOutcome.effects,
         negativeEffects: o.negativeOutcome?.effects,
@@ -130,14 +135,95 @@ describe("Season Opener variants", () => {
 
   it("keeps the option, probability and effects the pre-pilot opener shipped", () => {
     for (const ev of OPENERS) {
-      expect(ev.options).toHaveLength(1);
-      const opt = ev.options[0]!;
-      expect(opt.id).toBe("handle-it");
-      expect(opt.label).toBe("Take care of business");
-      expect(opt.probability).toBe(0.75);
-      expect(opt.positiveOutcome.effects).toEqual([{ kind: "snaps", amount: 25 }]);
-      expect(opt.negativeOutcome?.effects).toEqual([{ kind: "character", amount: -2 }]);
+      const opt = ev.options.find((o) => o.id === "handle-it");
+      expect(opt, `${ev.id} lost handle-it`).toBeDefined();
+      // Position matters as well as presence: `firstOptionPolicy` — the default
+      // for `npm run play` and for every seeded-stability check on this board —
+      // reads options[0], so the original branch staying FIRST is what makes
+      // those runs comparable across brief 049.
+      expect(ev.options[0]!.id).toBe("handle-it");
+      expect(opt!.label).toBe("Take care of business");
+      expect(opt!.probability).toBe(0.75);
+      expect(opt!.positiveOutcome.effects).toEqual([{ kind: "snaps", amount: 25 }]);
+      expect(opt!.negativeOutcome?.effects).toEqual([{ kind: "character", amount: -2 }]);
     }
+  });
+
+  // -------------------------------------------------------------------------
+  // Brief 049 / route R2: the second option.
+  // -------------------------------------------------------------------------
+  describe("the stay-within branch", () => {
+    it("gives every opener exactly two options, the new one second", () => {
+      for (const ev of OPENERS) {
+        expect(ev.options, ev.id).toHaveLength(2);
+        expect(ev.options[1]!.id).toBe("stay-within");
+      }
+    });
+
+    // The whole route in one assertion: a card that could only take standing
+    // away now has a branch that can earn it, and the player chose it.
+    it("can earn standing where the card could previously only cost it", () => {
+      for (const ev of OPENERS) {
+        const opt = ev.options.find((o) => o.id === "stay-within")!;
+        expect(opt.probability).toBe(0.9);
+        expect(opt.positiveOutcome.effects).toEqual([
+          { kind: "snaps", amount: 10 },
+          { kind: "character", amount: 1 },
+        ]);
+      }
+    });
+
+    // Not a preference. `stay-within` failing means you disappeared, which is a
+    // TAPE problem; charging character for it would restore the one-way tax
+    // through the second door, and it is the difference between the acceptance
+    // criterion's A3 (mean Cost lines ≤ 1.40) passing and failing.
+    it("charges its failure in overall, never in character", () => {
+      for (const ev of OPENERS) {
+        const opt = ev.options.find((o) => o.id === "stay-within")!;
+        expect(opt.negativeOutcome?.effects).toEqual([
+          { kind: "overall", timing: "immediate", amount: -1 },
+        ]);
+      }
+    });
+
+    // It has to be a fork, not a dodge: fewer snaps is what the new branch
+    // costs, and it is why `best` does not simply always take it.
+    it("trades snaps for standing rather than strictly beating the old branch", () => {
+      for (const ev of OPENERS) {
+        const old = ev.options.find((o) => o.id === "handle-it")!;
+        const neu = ev.options.find((o) => o.id === "stay-within")!;
+        const snaps = (o: typeof old) =>
+          o.positiveOutcome.effects.reduce((a, e) => a + (e.kind === "snaps" ? e.amount : 0), 0);
+        expect(snaps(neu)).toBeLessThan(snaps(old));
+      }
+    });
+
+    // B11 again. These five cards are the spine that fires every single season,
+    // so a button the player reads four times with the same words on it is the
+    // exact defect the variants were authored to remove.
+    it("writes a distinct label and distinct outcomes for every variant", () => {
+      const labels = OPENERS.map((e) => e.options.find((o) => o.id === "stay-within")!.label);
+      expect(new Set(labels).size, labels.join(" | ")).toBe(OPENERS.length);
+      const prose = OPENERS.flatMap((e) => {
+        const o = e.options.find((x) => x.id === "stay-within")!;
+        return [o.positiveOutcome.description, o.negativeOutcome!.description];
+      });
+      expect(new Set(prose).size).toBe(prose.length);
+    });
+
+    // `cardAccount` (view-model.ts) matches a fired outcome BY ITS PROSE. Two
+    // outcomes on one option sharing a description would make the card's own
+    // accounting ambiguous, and an ambiguous match prints no attribution line
+    // at all — which on these five cards is the entire feature.
+    it("never repeats a description within one card", () => {
+      for (const ev of OPENERS) {
+        const all = ev.options.flatMap((o) => [
+          o.positiveOutcome.description,
+          o.negativeOutcome?.description ?? "",
+        ]);
+        expect(new Set(all).size, ev.id).toBe(all.length);
+      }
+    });
   });
 
   // DECISION 042: seasonIndex 2 is a junior for most players and a sophomore
@@ -147,7 +233,7 @@ describe("Season Opener variants", () => {
     const classYear = /\b(freshman|sophomore|junior|senior|frosh|redshirt)\b/i;
     for (const ev of OPENERS) {
       const prose = [ev.title, ev.description, ...ev.options.flatMap((o) => [
-        o.positiveOutcome.description, o.negativeOutcome?.description ?? "",
+        o.label, o.positiveOutcome.description, o.negativeOutcome?.description ?? "",
       ])].join(" ");
       expect(classYear.test(prose), `${ev.id}: "${prose}"`).toBe(false);
     }
@@ -161,7 +247,7 @@ describe("Season Opener variants", () => {
       /\b(stadium|sellout|sold out|capacity|thousand|packed house|nationally televised|primetime|the whole country|blue ?blood|powerhouse|sec|big ten|playoff)\b/i;
     for (const ev of OPENERS) {
       const prose = [ev.title, ev.description, ...ev.options.flatMap((o) => [
-        o.positiveOutcome.description, o.negativeOutcome?.description ?? "",
+        o.label, o.positiveOutcome.description, o.negativeOutcome?.description ?? "",
       ])].join(" ");
       expect(forbidden.test(prose), `${ev.id}: "${prose}"`).toBe(false);
     }
@@ -169,13 +255,31 @@ describe("Season Opener variants", () => {
 
   // Length is not the fix; sameness is. The card being replaced was 42 words
   // across its title, body and two outcomes.
+  //
+  // Scoped to the ORIGINAL branch when the second option landed (brief 049).
+  // The budget was never "42 words on screen" — a card with two buttons shows
+  // one outcome, not three — it was "do not answer repetition with volume", and
+  // the thing that has to stay inside the old envelope is the part of the card
+  // that already existed. The new branch gets its own, tighter budget below.
   it("writes no more words than the card it replaces", () => {
-    const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
     for (const ev of OPENERS) {
+      const opt = ev.options.find((o) => o.id === "handle-it")!;
       const total = words(ev.title) + words(ev.description)
-        + ev.options.reduce((a, o) => a + words(o.positiveOutcome.description)
-          + words(o.negativeOutcome?.description ?? ""), 0);
+        + words(opt.positiveOutcome.description) + words(opt.negativeOutcome?.description ?? "");
       expect(total, `${ev.id} is ${total} words`).toBeLessThanOrEqual(42);
     }
+  });
+
+  it("keeps the second branch inside its own word budget", () => {
+    let corpus = 0;
+    for (const ev of OPENERS) {
+      const opt = ev.options.find((o) => o.id === "stay-within")!;
+      const total = words(opt.label) + words(opt.positiveOutcome.description)
+        + words(opt.negativeOutcome?.description ?? "");
+      expect(total, `${ev.id}/stay-within is ${total} words`).toBeLessThanOrEqual(32);
+      corpus += total;
+    }
+    // Brief 049 budgeted ~15 strings and ~180 words for the whole route.
+    expect(corpus, `${corpus} words across all five`).toBeLessThanOrEqual(180);
   });
 });

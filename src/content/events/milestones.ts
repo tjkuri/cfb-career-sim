@@ -41,15 +41,50 @@ export const MILESTONE_EVENTS: GameEvent[] = [
   // and zero means a silent hole in the spine.
   //
   // Three constraints shape the prose, and all three are acceptance criteria:
-  //   - Mechanically identical. Only id, title, description and the two outcome
-  //     descriptions differ; every variant keeps the same option, probability
-  //     and effects, so the pilot can be proved to have moved no number.
+  //   - Mechanically identical. Only ids, titles, labels and outcome
+  //     descriptions differ; every variant carries the same two options at the
+  //     same probabilities with the same effects, so the pilot can be proved to
+  //     have moved no number. (Labels were pulled out of that comparison when
+  //     the second option landed: they are prose, and five identical buttons
+  //     across five seasons is the exact repetition B11 measured.)
   //   - No crowd size, venue or stature (DECISION 043 item 1). The line these
   //     replace asserted ninety thousand people at schools that do not have
   //     ninety thousand seats. Write the nerves, not the stadium.
   //   - No class year. `seasonIndex` 2 is a junior for most players and a
   //     sophomore for a redshirt, so these name the STAGE instead: the first one
   //     ever, the one where the room watches you, the last one.
+  //
+  // DECISION 074 / brief 049 — the second option, `stay-within`.
+  //
+  // These five fire in 100% of careers, once a season, and for their whole life
+  // they were ONE button that could only take standing away: `+0 / -2` at
+  // p=0.75. Measured (report 047): they are 40% of every character point a
+  // maximum-virtue career loses and roughly half of every *"Cost you in the
+  // locker room."* line that player reads. The playtester's words were *"being
+  // punished for something you were not asked about is the only thing in this
+  // game that felt unfair rather than hard"*, and they were right about the
+  // mechanism: a guaranteed one-way tax is not a beat, it is a fee.
+  //
+  // The repair is route R2 — ASK. Not "make the opener pay" (route R1, which
+  // hands every player +6.0 character a career for nothing and makes the one
+  // card they cannot influence the largest character source in the game) and
+  // not "delete the effect" (R3, which costs the openers the only thing they
+  // say). The two branches are a real trade and neither is the right answer:
+  //
+  //   handle-it   take the game on. 25 snaps when it works; the nerves show and
+  //               the room sees them when it does not.
+  //   stay-within play inside the call. Less of the game is yours -- 10 snaps --
+  //               but you are the guy who did the job, and the room notices.
+  //               When it fails you were not WRONG, you were invisible, so it
+  //               costs OVERALL and not character. That asymmetry is the point:
+  //               disappearing is a tape problem, not a locker-room problem, and
+  //               pricing it in character would re-open the tax from the other
+  //               side.
+  //
+  // The two are within 0.02 draft-stock points of each other, which is where a
+  // fork belongs. `virtue` takes the new branch, `humanLazy` and `antisocial`
+  // keep the old one -- so the badly-behaved rows come back bit-identical and
+  // the route leaks nothing to the player it is not meant to help.
   // ---------------------------------------------------------------------------
   {
     id: "milestone-opener-first",
@@ -71,6 +106,22 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "It takes a half to stop feeling like a guest.",
           effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+      {
+        id: "stay-within",
+        label: "Let the game come to you",
+        probability: 0.9,
+        positiveOutcome: {
+          description: "You keep it simple, and simple is exactly what the huddle needed.",
+          effects: [
+            { kind: "snaps", amount: 10 },
+            { kind: "character", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You stay so far inside yourself that you never really arrive.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
     ],
@@ -97,6 +148,22 @@ export const MILESTONE_EVENTS: GameEvent[] = [
           effects: [{ kind: "character", amount: -2 }],
         },
       },
+      {
+        id: "stay-within",
+        label: "Trust the work you put in",
+        probability: 0.9,
+        positiveOutcome: {
+          description: "You force nothing, and the guys who watched you all summer notice.",
+          effects: [
+            { kind: "snaps", amount: 10 },
+            { kind: "character", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "Careful is not the same as good, and the tape knows.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
     ],
   },
   {
@@ -121,6 +188,22 @@ export const MILESTONE_EVENTS: GameEvent[] = [
           effects: [{ kind: "character", amount: -2 }],
         },
       },
+      {
+        id: "stay-within",
+        label: "Play it for the room",
+        probability: 0.9,
+        positiveOutcome: {
+          description: "You play inside the call all day and the young guys copy it.",
+          effects: [
+            { kind: "snaps", amount: 10 },
+            { kind: "character", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You wait for the game to come to you. It does not.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
     ],
   },
   {
@@ -143,6 +226,22 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Playing like every rep matters is not the same as playing well.",
           effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+      {
+        id: "stay-within",
+        label: "Take nothing that is not there",
+        probability: 0.9,
+        positiveOutcome: {
+          description: "Nothing forced, nothing wasted, and the sideline says so out loud.",
+          effects: [
+            { kind: "snaps", amount: 10 },
+            { kind: "character", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You take so little that there is almost nothing to show.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
     ],
@@ -170,6 +269,22 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "You spend the whole first half trying to feel something about it.",
           effects: [{ kind: "character", amount: -2 }],
+        },
+      },
+      {
+        id: "stay-within",
+        label: "Let it be a football game",
+        probability: 0.9,
+        positiveOutcome: {
+          description: "You give the day to the guys beside you and enjoy it.",
+          effects: [
+            { kind: "snaps", amount: 10 },
+            { kind: "character", amount: 1 },
+          ],
+        },
+        negativeOutcome: {
+          description: "You hold something back for later. There is no later.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
     ],

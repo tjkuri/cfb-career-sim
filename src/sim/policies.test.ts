@@ -190,3 +190,73 @@ describe("saboteur vs lazy", () => {
     expect(compared).toBeGreaterThan(100);
   });
 });
+
+// Brief 047 Appendix A, adopted permanently by brief 049. `virtue` is the exact
+// mirror of `humanLazy`, and the pair only means anything if that mirroring is
+// asserted rather than described in a comment.
+describe("virtue vs humanLazy", () => {
+  const virtue = makePolicy(PROFILES.virtueLoyal);
+  const lazy = makePolicy(PROFILES.humanLazyAmbitious);
+  const rngless = { next: () => 0.5, cursor: 0 };
+
+  // A state good enough to score options against. The policy reads only
+  // `currentEventId` and `setup.position` on the event branch, so a career at
+  // the starting line is a legitimate stand-in for every card in the bundle.
+  function stateFor(eventId: string): GameState {
+    const s = createCareer(setup, "virtue-sym", CONTENT);
+    s.currentEventId = eventId;
+    return s;
+  }
+
+  // `recruiting` is an authored event id AND a hub decision id, and the hub
+  // branch in `makePolicy` runs first and answers with a school offer. It is
+  // not a card either strategy ever scores, so it is excluded by name.
+  const CARDS = CONTENT.events.filter((e) => e.id !== "recruiting");
+
+  it("always takes an option no worse on expected character than any other", () => {
+    let checked = 0;
+    for (const ev of CARDS) {
+      const opts = ev.options.map((o) => ({ id: o.id, label: o.label }));
+      const chosenId = virtue(stateFor(ev.id), opts, rngless);
+      const chosen = ev.options.find((o) => o.id === chosenId)!;
+      const best = Math.max(...ev.options.map(optionCharacterScore));
+      expect(optionCharacterScore(chosen), `${ev.id} chose ${chosenId}`).toBeCloseTo(best);
+      checked++;
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+
+  // The load-bearing half. If the two ever agreed on a card where character
+  // differentiates the options, one of them would not be measuring what its
+  // name claims -- and every "played well and behaved" row on this board is
+  // read as the opposite of the humanLazy row.
+  it("never agrees with humanLazy unless every option ties on character", () => {
+    let forks = 0;
+    for (const ev of CARDS) {
+      const opts = ev.options.map((o) => ({ id: o.id, label: o.label }));
+      const v = virtue(stateFor(ev.id), opts, rngless);
+      const l = lazy(stateFor(ev.id), opts, rngless);
+      const scores = ev.options.map(optionCharacterScore);
+      const tied = Math.max(...scores) - Math.min(...scores) < 1e-9;
+      if (tied) continue;
+      expect(v, `${ev.id}: both strategies took ${v}`).not.toBe(l);
+      forks++;
+    }
+    expect(forks).toBeGreaterThan(30);
+  });
+
+  // Brief 049's route R2 in one assertion, stated on the policies rather than
+  // on the content: the five Season Openers are the spine that fires in every
+  // career, every season, and they used to offer one button that could only
+  // take standing away. They are now a fork, and the two players take opposite
+  // sides of it.
+  it("takes the new Season Opener branch where humanLazy keeps the old one", () => {
+    const openers = CONTENT.events.filter((e) => e.id.startsWith("milestone-opener-"));
+    expect(openers).toHaveLength(5);
+    for (const ev of openers) {
+      const opts = ev.options.map((o) => ({ id: o.id, label: o.label }));
+      expect(virtue(stateFor(ev.id), opts, rngless), ev.id).toBe("stay-within");
+      expect(lazy(stateFor(ev.id), opts, rngless), ev.id).toBe("handle-it");
+    }
+  });
+});

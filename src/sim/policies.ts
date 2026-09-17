@@ -161,7 +161,7 @@ export function optionCharacterScore(option: EventOption): number {
   return p * pos + (1 - p) * neg;
 }
 
-export type EventStrategy = "first" | "random" | "lazy" | "saboteur" | "antisocial" | "humanLazy" | "best";
+export type EventStrategy = "first" | "random" | "lazy" | "saboteur" | "antisocial" | "humanLazy" | "best" | "virtue";
 export type RecruitStrategy = "first" | "random" | "highestTier" | "lowestTier";
 export type TransferStrategy = "stay" | "up" | "upOrLateral" | "lateral" | "down" | "random";
 export type RedshirtStrategy = "take" | "decline" | "random";
@@ -173,7 +173,11 @@ export interface PolicyProfile {
   redshirt: RedshirtStrategy;
 }
 
-const ENDING_WEIGHT: Record<"lazy" | "saboteur" | "antisocial" | "humanLazy" | "best", number> = {
+const ENDING_WEIGHT: Record<"lazy" | "saboteur" | "antisocial" | "humanLazy" | "best" | "virtue", number> = {
+  // A player behaving well is not trying to end the career either. Inert in
+  // practice -- `virtue` returns before this table is read -- but the record is
+  // total, so the key has to exist for the type to hold.
+  virtue: ENDING_PENALTY,
   lazy: 0,
   saboteur: ENDING_PENALTY,
   // The antisocial player is careless, not suicidal: same weighting as lazy.
@@ -288,6 +292,37 @@ export function makePolicy(profile: PolicyProfile, content: ContentBundle = CONT
     // on the character cards. It is NOT `antisocial`: antisocial shares rule 1
     // but breaks ties by MINIMISING stock, i.e. it sandbags the football cards
     // too.
+    // ---- virtue (brief 047, adopted permanently by brief 049) ------------
+    // The exact mirror of `humanLazy`: always take the option with the HIGHEST
+    // expected character delta, ties -- and most options carry no character
+    // effect at all -- broken by maximising draft stock. This is the
+    // maximum-virtue playtester: team-first on every card, still trying to get
+    // drafted.
+    //
+    // It exists because `best` is NOT this player. `best` maximises draft
+    // stock, which prices a character point at 0.15 against an overall point's
+    // 1.4, so it sells character wherever character is cheap -- measured at
+    // E[character] = -8.04 per career, walking past 1.9 of the 4.0 virtuous
+    // options it is offered (047 Part 1). Without `virtue` the project has no
+    // row for "played well and behaved", which is how most humans play, and
+    // every "good player" number on this board measures a stock-maximiser.
+    if (profile.events === "virtue") {
+      const EPS = 1e-9;
+      let chosen = ev.options[0]!;
+      let chosenChar = optionCharacterScore(chosen);
+      let chosenStock = optionScore(chosen, position, content, ENDING_PENALTY);
+      for (const o of ev.options) {
+        const c = optionCharacterScore(o);
+        const st = optionScore(o, position, content, ENDING_PENALTY);
+        if (c > chosenChar + EPS || (Math.abs(c - chosenChar) <= EPS && st > chosenStock + EPS)) {
+          chosen = o;
+          chosenChar = c;
+          chosenStock = st;
+        }
+      }
+      return chosen.id;
+    }
+
     if (profile.events === "humanLazy") {
       const EPS = 1e-9;
       let chosen = ev.options[0]!;
@@ -350,6 +385,17 @@ export const PROFILES = {
   //                        because it is the only variable that differs.
   humanLazyFull: { events: "humanLazy", recruiting: "lowestTier", transfer: "stay", redshirt: "decline" },
   humanLazyAmbitious: { events: "humanLazy", recruiting: "highestTier", transfer: "up", redshirt: "take" },
+  // Brief 047: the maximum-virtue playtester. Two of them, for the same reason
+  // there are two `humanLazy` rows -- the event policy and the offseason policy
+  // are different questions.
+  //   virtueAmbitious — identical to `good` except the event strategy, so the
+  //                     only variable against `good` is "optimise stock" vs
+  //                     "always take the team-first branch".
+  //   virtueLoyal     — the playtester's literal shape: one school, no
+  //                     transfers, declines the redshirt, four seasons. This is
+  //                     the row brief 049's acceptance criterion is stated on.
+  virtueAmbitious: { events: "virtue", recruiting: "highestTier", transfer: "up", redshirt: "take" },
+  virtueLoyal: { events: "virtue", recruiting: "random", transfer: "stay", redshirt: "decline" },
   randomFull: { events: "random", recruiting: "random", transfer: "random", redshirt: "random" },
   // The five `*Early` profiles (lazyEarly, saboteurEarly, antisocialEarly,
   // randomEarly, goodEarly) were DELETED with the declare decision they
