@@ -1039,6 +1039,30 @@ describe("remainderFacts", () => {
     expect(remainderFacts(b2, a2).hurt).toBe(false);
   });
 
+  // The other half of that trap, and the one that was live until brief 049.
+  // Keying by type alone made "an old hamstring healed AND this card gave you a
+  // new one" indistinguishable from "the same hamstring is still there": one
+  // record before, one after. The restored points then reached the screen as a
+  // bare figure with no sentence under it. `remainingPhases` is the only thing
+  // that tells the two apart -- a survivor has decremented, a fresh one has not
+  // -- which is why it is out of the key and in the matching.
+  //
+  // Caught by the falsifier below once the Season Opener gained a second option
+  // and the walk reshuffled onto it; it reproduces at HEAD-before-049 over a
+  // wider seed sweep, so it was latent, not new.
+  it("reports a heal that happened under a new injury of the same type", () => {
+    const [before, after] = pair({ injuries: [hamstring(1)] }, { injuries: [hamstring(3)] });
+    expect(remainderFacts(before, after).healed).toBe(true);
+  });
+
+  it("does not invent a heal when two of the same injury are both still healing", () => {
+    const [before, after] = pair(
+      { injuries: [hamstring(3), hamstring(2)] },
+      { injuries: [hamstring(2), hamstring(1)] },
+    );
+    expect(remainderFacts(before, after).healed).toBe(false);
+  });
+
   it("does not report a suspension expiring as an injury healing", () => {
     // A suspension lives in the same list with `restoreAmount: 0`. It returns
     // no points, so it is not part of any number and must not be given a

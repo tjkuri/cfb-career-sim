@@ -498,9 +498,51 @@ function seasonCost(after: GameState, before: GameState): boolean {
  * prove is strictly better than one that splits the total by guesswork -- the
  * same rule `cardAccount` follows when its candidates disagree.
  */
+/**
+ * Did an injury that was on the list before this `advance()` leave it, and
+ * therefore give its points back?
+ *
+ * Counting by `injuryKey` cannot answer this, and the gap is not theoretical.
+ * `tickPhaseStart` is the ONLY thing that removes an injury and it always
+ * restores `restoreAmount` when it does, so "left" and "healed" are the same
+ * event -- but a card whose own outcome causes an ankle in the same advance
+ * that an older ankle heals leaves the count at one before and one after, and
+ * the count-based test reported no heal. The card then printed the restored
+ * points as a bare unattributed figure with no sentence under it, which is the
+ * exact defect DECISION 056 exists to remove.
+ *
+ * Found by brief 049 -- `remainderFacts`' own falsifier caught it once the
+ * Season Opener's second option reshuffled the walk, and it reproduces at
+ * HEAD-before-049 over a wider seed sweep, so it is latent and not new.
+ *
+ * The discriminator is `remainingPhases`, which is deliberately out of
+ * `injuryKey` (see the note there) because a SURVIVING injury decrements it
+ * every tick. That is precisely what makes it usable here: a survivor appears
+ * in `after` with a strictly smaller `remainingPhases`, and a freshly caused
+ * injury of the same type appears with a fresh, larger one. So match each prior
+ * injury to a decremented survivor, greedily, smallest first; anything left
+ * unmatched is gone, and gone means healed.
+ *
+ * Still presence only, never size -- one healed injury and three are the same
+ * fact to the sentence this feeds.
+ */
+function someInjuryLeft(before: GameState, after: GameState): boolean {
+  const survivors = after.injuries
+    .filter((i) => i.restoreAmount > 0)
+    .map((i) => ({ key: injuryKey(i), remaining: i.remainingPhases, taken: false }));
+  const prior = before.injuries
+    .filter((i) => i.restoreAmount > 0)
+    .sort((a, b) => a.remainingPhases - b.remainingPhases);
+  for (const inj of prior) {
+    const key = injuryKey(inj);
+    const match = survivors.find((s) => !s.taken && s.key === key && s.remaining < inj.remainingPhases);
+    if (!match) return true;
+    match.taken = true;
+  }
+  return false;
+}
+
 export function remainderFacts(before: GameState, after: GameState): Remainder {
-  const injuriesBefore = tally(before.injuries, injuryKey);
-  const injuriesAfter = tally(after.injuries, injuryKey);
   // B66, TASK 048. A suspension is stored in `state.injuries` alongside real
   // injuries, and `hurt` diffed the whole list -- so a card whose own outcome
   // SUSPENDED the player (`speeding-georgia/cooperate` is the one the playtest
@@ -524,9 +566,7 @@ export function remainderFacts(before: GameState, after: GameState): Remainder {
   return {
     // A suspension keys with `restoreAmount: 0`, so its expiry cannot reach
     // this: it returns no points and is not part of any number.
-    healed: before.injuries.some(
-      (i) => i.restoreAmount > 0 && (injuriesAfter.get(injuryKey(i)) ?? 0) < (injuriesBefore.get(injuryKey(i)) ?? 0),
-    ),
+    healed: someInjuryLeft(before, after),
     landed: fewerAfter(pendingBefore, pendingAfter),
     // The season index advances only in `advancePhase`'s postseason branch,
     // and `enterOffseason` -- the one place development is applied -- runs on
