@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-15 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Wave 23:** complete · **PM session:** 10 (handing off)
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete, one lane committed, two escalations open · **PM session:** 11
 
 ---
 
@@ -1823,6 +1823,100 @@ by the PM directly — it is one clause and the decision was already made. Full 
   still busts 5.67% and a badly-behaved career 35.00% — because the character spiral and the overall
   collapse were always carrying it.
 
+## Wave 25 — in flight (PM session 11)
+
+Two lanes, file-disjoint, and deliberately two rather than three — DECISION 068's successor rule about
+the session rate limit that killed 046 mid-task. Both lanes carry the "write findings to disk before
+moving on" rule for the same reason.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/047-does-virtue-actually-pay.md` | measurement + proposal | `reports/047-*.md` only; prototypes in a detached worktree | 2026-09-16 |
+| `briefs/048-the-ledger-disagrees-with-the-season.md` | debugging + fix | `src/ui/**`, `reports/048-*.md` | 2026-09-16 |
+
+**047 is the falsifier DECISION 070 wrote against itself.** The corpus says virtue pays +2.35 at
+p=0.81; the 045 playtester's maximum-virtue career saw zero *"Earned"* lines and five *"Cost."* One of
+those is not describing what happens, and the realized-frequency sweep settles it before B62 goes to
+the user. The brief states explicitly that a refutation — an ordinary good career *does* see more
+Earned than Cost, so 045 was unlucky rather than structural — is a fully successful outcome that
+shrinks B62 to a variance/legibility item. It also flags that `good` uses `events: "best"`, which is
+**not** "always be a good teammate", and requires a virtue-maximising strategy be added **in the
+worktree** as a fourth cell, because without it Part 1 does not measure the career the playtester
+actually played. Part 2 prices DECISION 070's three routes (symmetrise / make them choices / strip the
+effect) against `bustedRate` and the badly-behaved profiles, because a route that makes standing
+harder to lose helps the antisocial player too. **Widening virtuous payouts is explicitly off the
+table** per DECISION 070 and 063.
+
+**048 is B64–B67 as one debugging lane, not four tickets.** They are all the season ledger and the
+*"0 snaps on a season I played"* symptom is the thread — a wrong snaps count would explain the wrong
+overall delta, the wrong standing phrase, the "sideline" verdict on a played season, and possibly an
+empty moment group. The brief names `view-model.ts:766-770`'s own comment (*"null is the absence of a
+number, never a zero"*) as the shape of the headline symptom, and warns the agent **not** to "fix"
+B64 by hiding low-snap seasons, because wave 24 just made redshirt seasons legitimately low-snap. If
+the cause is in `src/engine/**` the lane stops at a reproduction plus a proposal and reports
+`needs-decision` — the freeze holds, and a reproduction is a successful outcome.
+
+### Wave 25 result — three UI bugs fixed, one diagnosis refuted, and the falsifier fired
+
+**048 — the ledger lane. Committed as `fa399fd`. 708 tests.** B64–B67 are **four** bugs, not one:
+
+- **B64/B65 are one bug and it is not a mutation.** The rail printed season N's *heading* over season
+  N−1's *figures* on **every offseason screen of every career** (3,985 screens / 360 careers). The
+  reported *"stats mutate after a season closes"* was the rail switching which season it described
+  without saying so. The mutation hypothesis was **tested and refuted** — zero closed-line mutations in
+  360 careers; `schema.ts:326` rejects offseason `stat`/`snaps` effects outright. Recorded so nobody
+  reopens it.
+- **B66** — `remainderFacts.hurt` counted suspensions as injuries, so a card that suspended you printed
+  *"You got hurt between decisions."* The *other* source of that sentence is the `wideOpen` trait's
+  ambient injury (108/360 careers), where the sentence is **true** and naming the trait is forbidden.
+  Correctly left alone.
+- **B67** — `groupMoments` walked moments rather than seasons, so a season with nothing in it vanished
+  (172/360 careers). A quiet season now gets a row that says it was quiet.
+- CSS used existing tokens only; no new colour, size or row. `npm run play` byte-identical to HEAD on
+  **12 seed/policy pairs, all 12 mutually distinct**, both sides recomputed in a detached worktree.
+
+**B64's fourth bug — the engine one — was escalated, approved, implemented, and then reverted. See
+DECISION 073, and read it before touching B64 again.** 048 named `effects.ts:61`'s snap clamp. The
+symptom repro was right; the mechanism was inferred from source, not measured. The PM's non-vacuous
+check — the change was *supposed* to move 0.035% of rows — found it changed **nothing**: 29 bad rows
+before, 29 after, across 56,481 season rows, and instrumenting every snap-effect application showed
+**the clamp never touched one of the 29.** The real cause is one of the **123 authored `stat` effects**
+in `src/content/events/**` landing production on a line with no playing time (`oskill.ts:108` matches an
+observed row verbatim). **B64 is reopened with the cause correctly located, and it is now a
+content-semantics question for the user, not a one-line clamp.**
+
+**047 — the virtue sweep. Complete on disk; the agent stalled on hand-back *after* writing everything.
+No re-dispatch needed.** DECISION 074 has the full reading. The short form:
+
+- **DECISION 070's falsifier fired.** A genuinely virtuous career sees **2.71 Earned vs 2.13 Cost**.
+  The `good` profile sees **1.42 vs 4.34** — and `good` is **not a good teammate**, it is a draft-stock
+  maximiser worth **−8.04 expected character per career**. Every report from 018 on has called it *"the
+  player who plays well."* **The name has been carrying an unearned claim through a dozen reports.**
+- **The playtester's 0-Earned/5-Cost tally occurs in 0.26% of max-virtue careers and 10.60% of `good`
+  careers — 40× more consistent with optimising overall than with playing team-first.**
+- **B72, and it outranks the brief that found it:** on **34 of 60** character-differentiating events the
+  most-virtuous option is **strictly worse on the only number the game shows**, by a mean 0.91 OVR. A
+  player steering by the visible signal takes the corrosive branch on the majority of character cards
+  *without intending to*, then gets a moral verdict printed on each one.
+- **R2 recommended, R1 rejected on measurement** (it would hand +6.0 character/career to everyone
+  unconditionally, against a virtuous career's entire realized budget of +4.85). Full route table in the
+  report; the escalation is below.
+- Recommends adding a `virtue` event strategy permanently (Appendix A) — **not applied**, diff is in the
+  report.
+
+### New backlog from wave 25
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B64 | **A played season can store `snaps: 0` beside a live stat line** | **reopened — cause relocated, DECISION 073.** With the user | Not the clamp. One of 123 authored `stat` effects landing on a line with no playing time. Downstream: ledger row, the −4 upperclass decline, the *"season on the sideline"* verdict, and lost draft stock |
+| B72 | **A card can cost standing without signalling standing was on the table** — 34 of 60 character cards make the virtuous option strictly worse on the only visible number | **MEASURED — DECISION 074. Ranks with B62** | Legibility, not balance. **Run the cold label audit before authoring R2's prose** — if it fails, R2 is still correct and still will not close the complaint |
+| B73 | **`good` is misnamed** and a dozen reports lean on it | todo — cheap | Rename/retire, or add the `virtue` strategy beside it (047 Appendix A). Any baseline quoting `good` as "plays well" is describing a stock-maximiser |
+| B74 | **OL is the worst position on the virtue axis** — fewest virtuous options offered (2.87/career vs DL 3.84), only position with a negative median character delta under max-virtue play | todo | Every route helps it least |
+
+**Not dispatched this wave, on purpose:** 046 Part 2 (routes R1–R3 unpriced) and the redshirt pack.
+Both are live and both are below B62 and B64 per session 10's re-ranking. 046 Part 2 is a third
+measurement lane and the rate-limit rule says two.
+
 ## Next actions — for PM session 11, in order
 
 **Read this section, `DECISIONS.md` 069–071, and the wave 23 section above. Nothing else.**
@@ -1833,7 +1927,7 @@ real defect visible for the first time** — while the standing was invisible, n
 also unearnable. Making a mechanism visible is what makes it falsifiable; that is the lesson of the
 session.
 
-1. **B62 is the top of the board, and it needs one measurement before it goes to the user.** Run the
+1. **[DISPATCHED — wave 25, `briefs/047`] B62 is the top of the board, and it needs one measurement before it goes to the user.** Run the
    realized-frequency sweep DECISION 070 names as its own falsifier: over a few thousand `good`-policy
    careers, **how many *"Earned you credit"* vs *"Cost you"* character events does a career actually
    see, and what is the distribution of final-minus-starting character?** The corpus says virtue pays
@@ -1846,7 +1940,7 @@ session.
 2. ~~**B63 to the user as a bug.**~~ **DONE** — the user chose *skip*, wave 24 shipped it, DECISION
    072. Note its side effect when reading any future bust measurement: the *"Buried on the depth
    chart"* ending is now nearly extinct and every washout baseline recorded before `f46b64e` is stale.
-3. **B64–B67 are a single debugging lane, and it should be one agent with `systematic-debugging`.**
+3. **[DISPATCHED — wave 25, `briefs/048`] B64–B67 are a single debugging lane, and it should be one agent with `systematic-debugging`.**
    They are all the same subsystem — the season ledger — and the *"0 snaps"* senior season is the
    thread to pull. **These are the first hard correctness bugs found in seven playtests**; everything
    before was feel. They may be view-model rather than engine, which would make them cheap.
@@ -1867,7 +1961,7 @@ session.
 8. **Watch the session rate limit.** 046 died mid-task at the limit and lost Part 2. Prefer two lanes
    over three, and keep the "write Part 1 to disk before starting Part 2" rule in every brief — it is
    the only reason 046 produced anything at all.
-9. Increment the **PM session** counter at the top of this file.
+9. ~~Increment the **PM session** counter at the top of this file.~~ **DONE** — session 11.
 
 ### What session 10 would tell session 11 if it could only say one thing
 

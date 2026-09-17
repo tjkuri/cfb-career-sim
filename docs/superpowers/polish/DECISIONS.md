@@ -2310,3 +2310,113 @@ case that moves.
 **What would change our mind.** A playtester reporting that a career which should clearly have ended
 on the bench instead ran to the draft — which would mean the buried path needed to survive in some
 form rather than being a near-pure artifact.
+
+## 073 — The `0 snaps` bug is real, the mechanism the report gave for it is not, and the approved fix was applied and then reverted
+
+**Date:** 2026-09-16 · **Made by:** PM session 11, with the user · **Closes:** the `effects.ts:61` route · **Reopens:** B64's cause · **Evidence:** the PM's own probe over 56,481 season rows, `reports/048-*.md` §5
+
+Report 048 reproduced B64's symptom exactly — a played season storing `snaps: 0` beside a live stat
+line — and named `src/engine/effects.ts:61` as the cause: `Math.max(0, s.snaps + amount)` flooring an
+authored −20 against a low-snap season. It proposed a one-line floor-of-1 when the line carries
+production, priced at +1 snap on 0.035% of rows. **The user approved it and it was implemented, TDD,
+with a failing test first. It is not in the tree, because the non-vacuous check refuted it.**
+
+The fix is *supposed* to move output, so byte-identity would have been a vacuous pass. A probe counted
+season rows with `snaps === 0` and at least one positive stat, before and after:
+
+```
+BEFORE (HEAD)        rows 56,481   zeroSnapWithProduction 29
+AFTER  (fix applied) rows 56,481   zeroSnapWithProduction 29
+```
+
+**The fix changed nothing.** Instrumenting every `snaps` effect application and attaching the history
+to the line it touched:
+
+```
+bad rows 29 · with any snap effect at all 0 · with no snap effect ever applied 29
+```
+
+**The clamp never touched a single one of the 29 rows.** It fires 34 times across the corpus, always
+on lines with no production, where flooring at 0 is correct. `effects.ts:61` is exonerated completely.
+
+**The real mechanism is an authored `stat` effect landing on a line with no playing time.** There are
+**123 authored `stat` effects** in `src/content/events/**`, and they write production onto the current
+season line without adding snaps. `simulate.ts:26-32` cannot produce the defect — stats are derived
+from the same phase's snaps, so zero snaps yields zero stats — and `season.snaps` only ever increases
+outside of effects. The observed rows match authored amounts verbatim: `OSKILL scrimmageYards: 20` is
+`oskill.ts:108`. **So a card hands the player 130 passing yards in a season the engine says they never
+played**, and every downstream consumer inherits it: the ledger prints `0 snaps` beside the stats,
+`seasonOverallDelta` reads the zero and charges the upperclass decline — the −4 and the *"A season on
+the sideline cost you ground"* verdict on a season the player lived through — and `productionScore`
+loses the snaps from draft stock.
+
+**The call: revert, and re-diagnose before re-escalating.** An engine edit that provably changes
+nothing is exactly what the freeze exists to prevent, and committing it under a message claiming it
+fixed B64 would have put a false record in the log. The tree is back at 708 tests. **B64's cause is
+reopened**, now correctly located, and the fix is in different territory — the `stat` case of
+`applyEffect`, or gating those outcomes on having played — which is a **content-semantics** question
+and therefore the user's, not a one-line clamp.
+
+**The lesson, and it is the reason this was caught.** 048 was an unusually strong report: it refuted
+its own obvious hypothesis (closed-line mutation) with a measurement, reproduced the symptom at a
+named seed, found the playtester's own save, and verified everything it claimed. **Its symptom repro
+was right and its mechanism was inferred from reading the source rather than measured.** That is the
+same shape as DECISION 070 — where a playtester's observation was real and their explanation wrong —
+one level up. **An agent's diagnosis is an artifact to check, exactly like a player's.** The check that
+caught it cost one probe, and the rule that produced it is already on the board: when a change is
+supposed to move the numbers, identity is the vacuous pass — hunt the difference, and if you cannot
+find it, the change is not doing what it says.
+
+**What would change our mind.** A repro of a bad row whose snap-effect history is non-empty. 56,481
+rows under `baselineRandom` produced none; a human-shaped policy might, and 048's own `z-206` repro
+should be re-checked under the instrumented build before the clamp is ruled out forever.
+
+## 074 — Virtue does pay, the `good` profile is not a good teammate, and the complaint is probably a legibility bug wearing a balance bug's clothes
+
+**Date:** 2026-09-16 · **Made by:** PM session 11 · **Answers:** DECISION 070's falsifier · **Opens:** B72 · **Evidence:** `reports/047-does-virtue-actually-pay.md`
+
+DECISION 070 named its own falsifier and session 11 ran it. **It fired, in a way nobody predicted.**
+
+| the player | Earned/career | Cost/career | net |
+|---|---:|---:|---:|
+| `good` (`events: "best"`) | 1.42 | 4.34 | **−2.92** |
+| max-virtue, the playtester's shape | 2.71 | 2.13 | **+0.58** |
+| ordinary play | 2.13 | 9.11 | −6.98 |
+
+**A genuinely virtuous career does see more *Earned* than *Cost*. The `good` profile does not, and it
+never was a good teammate** — it is a draft-stock maximiser that takes options worth **−8.04 expected
+character per career** and declines half the virtuous options it is offered. Every report on this board
+from 018 onward has cited `good` as *"the player who plays well"*; on the locker-room axis it is a mild
+`humanLazy`. The name has been carrying an unearned claim through a dozen reports.
+
+**The finding that outranks the brief.** The playtester's exact tally — 0 Earned, 5 Cost, four seasons
+— occurs in **0.26%** of max-virtue careers and **10.60%** of `good`-profile careers. *Their reported
+experience is 40× more consistent with a player optimising overall than with one taking the team-first
+branch.* And the corpus says how that happens to a player who was sincerely trying:
+
+> Of the **60** multi-option events where character differentiates the options, on **34 (56.7%)** the
+> most-virtuous option is **strictly worse on the only number the game shows the player**, by a mean of
+> **0.91 expected OVR**.
+
+`overall` is an integer on screen; character is a band phrase (DECISION 002, and that asymmetry is
+correct — ±7.5 against ±82). The consequence is that a player steering by the visible signal takes the
+corrosive branch on the **majority** of character cards **without intending to**, and then gets a moral
+verdict printed on each one. **A card can cost standing without ever signalling that standing was on
+the table.** That is B72, it is a legibility defect, and no route in DECISION 070 touches it.
+
+**The call on the routes, for the user.** **R2** — give the five Season Opener cards a real second
+option — is recommended: virtuous below-start 43.9% → 8.0%, Cost lines 2.15 → 1.14, badly-behaved rows
+**bit-identical**, ordinary bust 5.37% → 4.83%, the mildest dilution of any route. Cost is ~15 prose
+strings, ~180 words, one authoring session. **R1 is rejected on measurement**: symmetrising the openers
+hands **+6.0 expected character per career to every player unconditionally**, against a max-virtue
+player's entire realized virtue budget of **+4.85** — more than half of a virtuous career's gain would
+come from cards nobody was asked about, making the unchoosable spine the largest character source in
+the game. It inverts the thing the playtester was complaining about. **R1all is indefensible** — it
+would pay +4 character for talking your way out of a 96mph speeding ticket. **R3op** (strip the
+openers' character effect, keep `speeding-georgia`'s, which is the one one-button hit that is clearly
+earned) is the fallback if authoring capacity is unavailable, and is explicitly half a fix.
+
+**What would change our mind.** On B72: a cold read of the 34 conflict cards' labels finding that a
+player *can* tell which option the locker room is watching. That audit is cheap and should run before
+anyone authors R2's prose, because if it fails, **R2 is worth doing anyway and still will not close the
+complaint** — and the next brief is about the 34 cards, not the 5.
