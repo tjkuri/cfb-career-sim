@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **PM session:** 11 (handing off)
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** in flight · **PM session:** 12
 
 ---
 
@@ -2023,6 +2023,42 @@ brief, and offered to have it land separately. **It did, ordered first, because 
 **Not dispatched, and it is the next thing:** B64's measurement lane (the user chose *measure, then
 bring me the routes*). It is read-only and independent of both lanes above; it was held only to keep
 the wave at two after the 046 rate-limit death. **It is the top of session 12's list.**
+
+## Wave 27 — in flight (PM session 12)
+
+**HEAD at dispatch `4076822`, tree clean, 727 tests green.** Two lanes, chosen straight off session
+11's list: item 1 (R1 + B76) and item 3 (B64's measurement lane, which the user already routed as
+*measure, then bring me the routes*).
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/051-one-currency-one-meaning.md` | dev + measurement | `src/ui/session/view-model.ts` + tests, `src/sim/virtue-probe.ts`, the B76 content deletions, `reports/051-*.md` | 2026-09-16 |
+| `briefs/052-which-card-hands-you-yards-in-a-season-you-never-played.md` | measurement, read-only | `reports/052-*.md` only; all instrumentation in a detached worktree pinned at `4076822` | 2026-09-16 |
+
+**051 is R1 and B76 in one lane, deliberately.** Session 11's handoff said they are not file-disjoint
+*in effect* even though they are on disk, and DECISION 076 requires measuring the realized Earned/Cost
+counts after each. One agent, six steps, a measurement between every pair. The brief carries DECISION
+076's stop condition verbatim: **if R1 and B76 pull in different directions on the realized counts,
+B76 is reverted and the two ship in separate waves.**
+
+**The PM's own correction, written into the brief, and it is the thing most likely to have gone wrong
+unattended.** DECISION 075 suggests ≈±1.5 for R1's threshold "from the bucket split in §3". **That is
+the wrong measure.** §3 buckets `charSpread` — the spread *across an event's options*. R1 thresholds
+the summed character delta **on the option the player actually took**. They are different numbers and
+the second does not follow from the first. 051 Step 1 requires a census of per-option summed deltas and
+requires the threshold to be picked from that, with the overlap shown if no clean cut exists.
+
+**051 also carries item 4 as Step 6** — re-run 047's "34 of 60 / 0.91 OVR" source measurement with a
+≥3 character floor, on the post-B76 corpus. It is the same census sweep, so it costs nothing extra.
+
+**052 is pinned to `4076822` in a detached worktree** because 051 is editing `src/content/events/**`
+in the main tree at the same time. The two lanes share no file. 052's brief forbids landing any change
+to engine or content — including the fix it becomes confident about — because that is exactly what
+DECISION 073 was written about.
+
+**The lane not dispatched, on purpose:** the playtest. It is the highest-value item on the board and it
+must come *after* wave 27 lands, because no player has yet seen wave 25's ledger fixes, wave 26's
+Season Opener options, or wave 27. It is wave 28's first and probably only lane.
 
 ## Next actions — for PM session 12, in order
 
