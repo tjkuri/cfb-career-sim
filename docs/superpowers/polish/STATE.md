@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** in flight · **PM session:** 12
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **PM session:** 12 (handing off)
 
 ---
 
@@ -2241,70 +2241,137 @@ lives in prose. It also has to check its own classifier by hand-scoring 20 cards
 **The two lanes share no file.** 055 is told explicitly that `bands.ts` belongs to 054 this wave, and
 that the `standingPhrase` thrash it will notice is 054's file, to be proposed and not edited.
 
+### Wave 29 result — both lanes shipped, and both found the brief's framing wrong before fixing the thing underneath it
+
+**054 — the ladder, `f2c3188`. DECISION 081.** `TRUST_BANDS` top two floors **85 → 80** and **70 → 66**;
+lower three untouched. Top-rung reach over 14,400 careers: `virtueAmbitious` **2.3% → 23.1%**,
+`virtueLoyal` 0.5% → 15.7%, `good` 0.1% → 1.8%, random/lazy/saboteur **0.00% → 0.00%**. Of virtuous
+careers whose ladder moves at all, the share that **falls before ever climbing** goes **94.5% → 31.9%**,
+and a fall inside the first two decisions goes **3.75% → 0.00%**. **Both identity checks pass pointing
+opposite ways:** `npm run balance` and the virtue probe byte-identical, rung table moved hard.
+
+- **The agent corrected the PM's reasoning while keeping the PM's number.** "Four points of buffer" is
+  equally satisfied by 69; the real argument is that **49 of the 72 authored negative character outcomes
+  land in −1..−4**, so 4 points absorbs two thirds of single bad cards. Quote that one.
+- **The old early-fall rate was identical for virtuous play and for `good`.** The decision-2 fall had
+  **nothing to do with how the player played** — it was the boundary firing on whoever drew a −1 first.
+- **One metric moved the wrong way and the agent surfaced it:** the ladder is quieter (`good`
+  never-moves 35.7% → **69.1%**), almost all of it lost *downward* movement. **`80/67` is measured and
+  ready as a one-character change; a playtester calling the ladder inert is the named falsifier.**
+- **New instrument, committed and tested: `src/sim/rung-probe.ts`** — scores the full per-decision
+  character trajectory against **a band table passed in as a parameter**, so any future recalibration is
+  compared on identical seeds instead of by diffing two samples.
+
+**055 — the one-option card, `65b057a`. DECISION 082.** **The brief's premise was wrong and that is what
+made the fix possible: there is no button.** `openCard` auto-resolves a one-option card on arrival
+(DECISION 018), and its label was rendered as a **bare declarative line above the outcome** — the UI
+narrating an option label as a completed event. Multi-option cards carry *"You chose:"*; one-option
+cards had that frame stripped with nothing in its place. **The beat now reads *"The plan: <label>"*,
+unconditional on both branches** (captioning only failures would reveal the roll). Nine instances
+resolved, **no prose touched**.
+
+- **053's "three in three careers" CONFIRMED and it is common:** **72–74% of careers** meet a
+  contradicted one-option card, ~1.1 per career, **flat across all four profiles** — the player cannot
+  decline these cards, so skill cannot avoid them.
+- **The second bug, found unasked, is bigger than the lane's own subject. 74.7% of every *"An injury
+  healed and gave the points back"* line the game has printed was false** — 7,693 of 10,298 across
+  78,605 advances, **78% of careers**. `someInjuryLeft` required a *strictly* smaller `remainingPhases`,
+  but only a phase tick decrements one, so any advance inside a phase failed to match an unchanged
+  injury list against itself. `<` → `<=`, **0 false positives, 0 missed true heals**, verified in source
+  by the PM. **This is exactly what 053 reported as "duplicate narration of one healed injury."**
+
+### New backlog from wave 29
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B85 | **95% of the one-option contradiction is a single label** — `milestone-fall-camp`'s *"Win the job"*, a fixed card gated `minClass: SO`, firing ~3×/career and failing **35%** of the time = **1.048 of the 1.10 per career** | todo — **user**, 1 label. **Highest value per word on the board** | Also 053's stale-flavour card (*"your name is written in pencil"* to an All-America senior). The caption softens it; rewriting the label removes it. Content is frozen, so it is an RB proposal |
+| B86 | **A lint rule for "the label asserts a result" cannot be written** — not lexically decidable, and the flagship instance shares no word with its failure branch | **refused in its obvious form — DECISION 082** | 055 proposes a required-acknowledgement field across the 12-card one-option population instead. Schema is content, so it is the user's |
+| B87 | **The ladder is quieter after 054** — `good` never-moves 35.7% → 69.1%, almost all of it lost downward movement | watch, do not act | `80/67` is measured and is a one-character change. **Act only if a playtester reports the ladder as inert** — that is DECISION 081's named falsifier |
+
 ## Next actions — for PM session 13, in order
 
-**Read this section, `DECISIONS.md` 077–079, and the wave 27–28 sections above. Nothing else.**
+**Read this section and `DECISIONS.md` 077–082. Nothing else.**
 
-**Session 12 in one line: two lanes were dispatched, both refuted the premise they were built on before
-doing the work, and in both cases stopping to say so was worth more than the work would have been.**
+**Session 12 in one line: five waves' worth of diagnosis got corrected by measurement — three of the
+corrections were the PM's own — and the two biggest fixes on the board came from agents who found their
+brief's premise wrong and said so before fixing what was actually there.**
 
-1. **Wave 28 landed. B81 is the first lane and DECISION 080 is the thing to read.** The top rung of
-   the trust ladder cannot be reached by any policy at any position — measured, 7,200 careers. The
-   calibration is **the user's call**: how rare should *"they would run through a wall for you"* be?
-   Bring them the sweep table in 080, not a proposal. **The fix is four numbers in `bands.ts`, which is
-   UI and unfrozen**, so it needs no engine, content or balance change.
-   - **Do not reach for DECISION 077's threshold.** Its named falsifier did not fire; the player called
-     the system loud in one direction, not silent. T=2 is not implicated.
-   - **Do not reopen DECISION 078 either.** Wave 27's currency fix was real and inaudible against a
-     15-point rung. Re-measure it *after* B81, not before.
-   - **B82 is lane 2 and can run beside it** — a reproducible one-option card whose button asserts
-     success and whose outcome is failure, seen three times across three careers. This defect class has
-     been the highest-yield finding on this board for eight playtests running.
-2. **B80 is the cheapest real item on the board and it is a five-minute content deletion** —
-   `milestone-opener-*/stay-within`, +1 to the conservative branch, five variants, once a season. It is
-   the same inversion B76 just deleted and it escaped only because wave 26 authored it after every audit
-   was taken. **It is now the largest character effect by frequency in the bundle.** DECISION 078's
-   integrity ruling already covers the judgement; confirm the scope with the user, since content is
-   theirs, then delete.
-3. **B79 is the biggest thing on the board and it is not urgent.** A fifth of all authored production
-   goes to injured or suspended players. RE fixes it in one line and costs −2.09 mean draft stock plus
-   every balance baseline on the board. **Do not dispatch it as a lane. Build the replacement-card
-   variant first** — 052 §5 says most of RE's cost is the ~2 cards a career that stop firing rather than
-   the lost production, and if that holds the variant lands RE's correctness at RA's price. One probe
-   run. Then take the routes to the user.
-4. **B73 — `good` is misnamed, and wave 27 made it worse.** It was already a draft-stock maximiser
-   rather than "the player who plays well." After B76 it now ends careers with **+0.25 character**, so
-   the name is about to start misleading in the opposite direction. The `virtue` strategy added in wave
-   26 is its proper counterpart. Renaming is cheap.
-5. **047's headline is stale and should be quoted as `39 of 65`, not `34 of 60`** — wave 26's Season
-   Opener added five character-differentiating events after that measurement was taken. Floored at ≥3 it
-   is **12 of 19 at 1.62 OVR**, and those twelve are exactly 050's twelve moral forks.
-6. **046 Part 2 is still unfinished** (redshirt routes R1–R3 unpriced; DECISION 071 already picked R0 as
-   the likely answer) and **the redshirt pack is still unauthored.** Both remain below everything above.
-   They have been below everything above for six sessions, which is itself a decision — either schedule
-   them or retire them.
-7. **Do not reopen type, colour or contrast.** Seven playtests, zero visual defects.
-8. **Three process rules this board has now paid for. Keep all three.** *(a)* When a change is supposed
-   to move the numbers, byte-identity is the **vacuous** pass. *(b)* A blind audit needs an **unmarked
-   control group**. *(c)* **New this session: a set defined by a measurement is not the same as a set
-   verified card by card.** B76's "22" came from extrapolating a ten-row table; half of it was wrong,
-   and the half that was wrong contained the best content in the corpus. **Any brief that acts on an
-   enumerated set must verify the set, and must carry a stop condition with a number in it.** Both
-   lanes this wave stopped on exactly such a condition.
-9. Increment the **PM session** counter at the top of this file.
+1. **Playtest. It is the only thing that should happen next, and it is not close.** Since a player last
+   saw this game, **six** things changed: the locker-room floor (077), the eleven character deletions
+   (078), the trust ladder recalibration (081), the one-option caption and the heal-report fix (082).
+   **The last playtest's central complaint — *"standing is only something you can lose"* — has been
+   answered with numbers and has never been answered by a person.**
+   - **Use `briefs/053`'s shape**, which is `045`'s: two careers assigned, the third **not**. It has now
+     produced a self-assigned third career, which is the closest this board has come to its north star.
+   - **Carry `briefs/053`'s two anti-death rules** — write the report stub to disk *first*, and **never
+     ask which browser to use** (`8b77ec6f-1f42-4ea4-bca7-4869156e4634`). A playtester died without them
+     this session and it cost a re-dispatch.
+   - **Three named falsifiers must be in the brief**, and each one flips a decision: *(a)* **is the
+     ladder inert?** — DECISION 081, and `80/67` is measured and ready as a one-character change;
+     *(b)* **does *"The plan:"* read as a hedge or as telegraphing failure?** — DECISION 082; *(c)* **do
+     the spared teammate cards read as recognition or as being paid to do less?** — DECISION 078, still
+     unanswered because 053 found them **inert** instead, which answers neither.
+   - **Ask the one question straight: can you earn it now?** Do not ask it as nine sub-questions.
+
+2. **B85 is the highest value per word on the board and it needs the user.** One label —
+   `milestone-fall-camp`'s *"Win the job"* — is **95%** of a defect class that eight playtesters have
+   refuted in a row. It fires ~3× a career and fails 35% of the time. Content is frozen, so bring the
+   proposal in `reports/055-*.md` to the user. **It is also 053's stale-flavour card**, so one rewrite
+   closes two findings.
+
+3. **B79 is still the biggest thing on the board and still not urgent.** A fifth of all authored
+   production goes to injured or suspended players. **Do not dispatch RE as a lane.** Build the
+   replacement-card variant first (one probe run, `reports/052-*.md` §5) — if most of RE's −2.09 stock
+   is the ~2 cards a career that stop firing rather than the lost production, the variant lands RE's
+   correctness at RA's price. Then take the routes to the user.
+
+4. **B83 — the teammate cards are inert.** The cards DECISION 078 spared return prose with **no number
+   at all** (*"You get grief in the meeting room for missing it"*, twice). Distinct from the ladder:
+   a correctly-sized ladder still shows nothing if the card carries no effect. **Measure before
+   proposing** — how many of the ten spared cards actually carry a character effect on the branch a
+   good teammate takes?
+
+5. **B73 — `good` is misnamed and wave 27 made it worse.** It was a draft-stock maximiser called *"the
+   player who plays well"*; after B76 it ends careers at **+0.25 character**, so the name is about to
+   mislead in the opposite direction. Renaming is cheap. **Any report before wave 27 quoting `good` is
+   describing a stock-maximiser.**
+
+6. **B84 leftovers, all cheap:** the injury that lasted exactly one card, the ON THE FIELD label thrash
+   on a 1-point 85↔84 change (`standingPhrase`, and 055 left a proposed fix shape for it), and the
+   coach who left for a bigger job in two consecutive seasons.
+
+7. **046 Part 2 and the redshirt pack have been below everything else for seven sessions.** That is
+   itself a decision. **Either schedule them or retire them** — do not carry them an eighth time.
+
+8. **Do not reopen type, colour or contrast.** Eight playtests, zero visual defects. 053 checked at
+   500px and found none.
+
+9. **Four process rules this board has paid for. All four are cheap and all four fired this session.**
+   *(a)* When a change is supposed to move the numbers, **byte-identity is the vacuous pass** — and its
+   mirror: when a change is supposed **not** to move balance, identity **is** the pass. 054 ran both at
+   once. *(b)* A blind audit needs an **unmarked control group**. *(c)* **A set defined by a measurement
+   is not a set verified card by card** — B76's "22" was 11. *(d)* **New: when a claim is about what a
+   player can experience, the denominator is careers, not cells.** An aggregate over 400 runs cannot
+   answer a question about the 95th percentile of one of them, and this board has now been caught by
+   that twice, both times on the PM's own numbers.
+
+10. Increment the **PM session** counter at the top of this file.
 
 ### What session 12 would tell session 13 if it could only say one thing
 
-**Put a number in the stop condition and the agent will stop.** Session 11's lesson was *check the
-diagnosis, not just the observation.* This session's is the operational form of it. Brief 051 said *"if
-more than three of the 22 turn out correctly oriented, report needs-decision"* — a trigger with an
-integer in it, decided before anyone looked. It fired at eleven, and it saved the four best cards in the
-corpus from being deleted on a user decision that had been made in good faith on a measurement that was
-**50% true**. Brief 052 carried *"land no change, not even the fix you become confident about"* and that
-one held too, against an agent that found a genuine one-line fix and wanted to ship it. **Neither agent
-needed judgement to stop; they needed a threshold written down before the work started.** A brief that
-says "use your judgement" gets the work done. A brief that says "stop if it is more than three" gets the
-work checked.
+**The best agents this session all did the same thing: they discovered the brief was wrong about the
+mechanism, said so plainly, and then fixed what was actually there.** 051 was told to delete 22 cards
+and found the set was 11. 052 was sent after a stat bug and found the gate that causes it. 054 was
+handed two numbers and kept them while replacing the PM's reasoning for one. 055 was briefed to fix
+*"a button that asserts success"* and found **there is no button** — and that framing error is exactly
+what led it to the missing intention frame, and then to a separate bug making **three quarters of the
+game's heal reports false across 78% of careers.**
+
+**A brief that states its mechanism confidently and invites contradiction outperforms one that hedges.**
+Every one of those agents was given a specific, falsifiable, wrong-in-part story and a stop condition
+with a number in it. None of them needed judgement to push back; they needed something precise enough
+to be provably wrong. **Write briefs that can be refuted, and say in them that refuting the brief is a
+success condition.**
 
 ## Next actions — for PM session 12, in order
 
