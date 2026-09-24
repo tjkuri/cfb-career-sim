@@ -355,3 +355,179 @@ the Season Opener added five character-differentiating events after the measurem
 - **Only three profiles.** `good`, `virtueAmbitious`, `virtueLoyal` — the ones the brief named. R1's
   effect on `humanLazy*` and the `antisocial`/`saboteur` profiles is unmeasured; those profiles take the
   large-magnitude branches, so the floor should barely touch them, but that is an inference.
+
+---
+---
+
+# Part II — the re-cut B76, run and measured
+
+**Status: `done`.** The coordinator took §4.3's authorial question to the project owner and it came back:
+**character tracks integrity, not effort.** That resolves row 9 (`targeting-review`) as *correct* rather
+than ambiguous — it charges a player for a dangerous hit and credits pulling up, which on the integrity
+reading is the currency working — and it adopts §8.4: delete the **eleven** verified inversions, keep the
+ten. Commit `2521027`.
+
+## 9. What was deleted
+
+**14 character effect entries, 11 cards, 10 files.** The brief's file list named eight; `universal.ts`
+and `school-life.ts` were the two it missed (§4's correction), and both are in the set.
+
+| card | file | entries removed |
+|---|---|---|
+| Bubble Screen Diet | `oskill.ts` | `stay-professional` +1; `push-for-more` failure −1 |
+| Senior Bowl Invite | `ol.ts` | `decline-and-rest` +1 |
+| Iced | `k.ts` | `use-the-time` +2 |
+| Bowl Practice Reps | `dl.ts` | `manage-the-reps` +1 |
+| Scouts on the Sideline | `universal.ts` | `stack-a-clean-week` failure −1 |
+| Next Man Up | `school-life.ts` | `ask-for-a-series` +1 and failure −3; `play-every-snap` failure −2 |
+| **Kickoff Duties Too** | `k.ts` | `stick-to-field-goals` +1 *(mandatory)* |
+| Bowl Season | `milestones.ts` | `prepare` failure −2 |
+| Travel With the No. 1 | `dskill.ts` | `play-with-safety-help` +1 |
+| Coverage Install | `dskill.ts` | `lean-on-the-vets` +1 |
+| New Holder | `k.ts` | `keep-it-simple` +1 |
+
+**Convention, stated because it is a judgement call:** where a card's whole character model was the
+inverted one, **every** entry on it goes, including failure-branch penalties that happen to point the
+right way (`push-for-more` −1, `play-every-snap` −2). Keeping half would leave the card with a character
+balance nobody authored — that is a retune, and retuning is out of scope. Four options are now
+`effects: []`, which is a shape the bundle already uses (`bowl-opt-out/sit`).
+
+**Verified mechanically, not by eye:** re-running the orientation dump over all 22 confirms **0 character
+entries remain on the eleven** and **all 21 entries on the other eleven are intact**.
+
+**No prose, label, option, or non-character effect was touched. No test changed** — nothing in the suite
+asserted on any of the 14, which is itself informative: these effects were unobserved by the test
+corpus. **728 green, unchanged.**
+
+## 10. The prediction, stated first — and refuted
+
+**Stated before the numbers were read:** the printed Earned/Cost tally should move very little, because
+R1 at T = 2 already silences 9 of the 11; only `iced` (+2), `milestone-bowl-season` (−2) and
+`wideopen-next-man-up`'s −2/−3 failure branches were still audible. §5 put the incremental effect at
+**≈0.02 printed lines per career**.
+
+**That is right for the virtue profiles and badly wrong for `good`.**
+
+| profile | Earned | Cost | lines/career |
+|---|---|---|---|
+| `good` | 1.254 → 1.189 (−0.064, 8 SE) | 2.794 → **1.543** (−1.251, **108 SE**) | 4.05 → **2.73 (−32%)** |
+| `virtueAmbitious` | 2.458 → 2.372 (−0.086) | 0.948 → 0.911 (−0.038) | 3.41 → 3.28 (−3.6%) |
+| `virtueLoyal` | 1.838 → 1.786 (−0.052) | 0.787 → 0.727 (−0.060) | 2.62 → 2.51 (−4.3%) |
+
+The virtue profiles move −0.11 and −0.12 lines/career, which is the predicted near-nothing. **`good`
+moves −1.32**, sixty times my estimate, and **92% of it is one entry**:
+
+```
+good, printed lines/career:   milestone-bowl-season/prepare   −1.2083
+                              iced/use-the-time               −0.0692
+                              wideopen-next-man-up/play-every-snap −0.0367
+```
+
+**The error was in the frequency, not the identification.** I named the three cards that survive R1
+correctly; I never checked how often they fire. `milestone-bowl-season` is a **`kind: "fixed"`** card with
+`requiresPlaying` — it fires **once every played season, for every position** — and `good` takes
+"Treat it like a playoff game" every time, which fails 30% of the time. 4 seasons × 0.3 ≈ 1.2.
+
+That number is the best argument for B76 in this whole report, and neither 050 nor the brief nor I saw
+it coming: **the single largest remaining source of "Cost you in the locker room." for an ordinary
+optimising player was a card telling the one guy who practised hardest for the bowl that his teammates'
+vacation was his moral failure.** It fired more than once per career and it is now gone.
+
+Process rule 1 in the other direction: I predicted identity, got movement, and the movement was the
+finding.
+
+## 11. The non-vacuous check — passes hard
+
+**Mean character per career under `good`: 67.885 → 70.254, +2.369, 54.8 SE.** Stated as the delta from
+the starting value it is starker: `good` used to finish a career at **−2.12 character** and now finishes
+at **+0.25**. An ordinary optimising player now ends **above** where he started instead of below it,
+which is the first time that has been true on this board.
+
+Identity would have meant the wrong entries were deleted. This is 55 standard errors from identity.
+
+## 12. The number nobody asked for: what the inversion was costing
+
+| profile | draft stock before | after | delta |
+|---|---|---|---|
+| `good` | 83.109 | 83.427 | +0.318 (3.3 SE) |
+| `virtueAmbitious` | 73.593 | **82.109** | **+8.516 (87 SE)** |
+| `virtueLoyal` | 70.771 | **79.481** | **+8.711 (95 SE)** |
+
+This is not a display effect and it is the largest movement in the report. The `virtue` event strategy
+picks the highest-character option; on these eleven cards that meant taking "Strip the operation down to
+basics" over "Drill the operation until it's automatic", "Lean on the veterans" over "Memorize the whole
+manual", "Take the help over the top" over "Lock him down man-to-man" — eleven times, each worth ~2 OVR.
+**With the character effects gone, a player who plays for the locker room recovers 8.6 draft stock.**
+
+That is the effort inversion priced for the first time. It was not a ±1 cosmetic defect; it was a
+**10.5% draft-stock tax on virtuous play**, and it is why `virtueAmbitious` had been measuring *below*
+`good` on stock in every report since 047. The two profiles are now 1.3 apart instead of 9.5.
+
+The virtue profiles' mean character falls slightly (−0.70, −0.63) — they lose the `+1`s they were
+farming. That is the correct direction: those points were the payment for doing less.
+
+## 13. DECISION 076's stop condition — checked, does not fire
+
+> *If R1 and B76 pull in different directions on the realized Earned/Cost counts, they ship in separate
+> waves.*
+
+| | R1 | B76 |
+|---|---|---|
+| `good` Earned | ↓ 5.395 → 1.254 | ↓ 1.254 → 1.189 |
+| `good` Cost | ↓ 3.535 → 2.794 | ↓ 2.794 → 1.543 |
+| `virtueAmbitious` Earned / Cost | ↓ / ↓ | ↓ / ↓ |
+| `virtueLoyal` Earned / Cost | ↓ / ↓ | ↓ / ↓ |
+
+**Six of six measurements move down under both changes.** The two agree on direction everywhere, the
+stop condition does not fire, and the bundle is playtestable as one wave as DECISION 076 intended. The
+combined effect is Earned + Cost per career **8.93 → 2.73 for `good`** and **7.98 → 2.51 for
+`virtueLoyal`**: the locker-room verdict now arrives roughly **2–3 times a career** instead of **8–9**,
+and when it arrives it is about something.
+
+## 14. Verification
+
+- `npm test` — **728 passed**, unchanged. No test added or modified in Part II.
+- `npm run typecheck` — both passes, **exit 0**.
+- `npm run build` — clean.
+- **Click-through** (dev server): *Skip the Install* → "Do the podcast" (−4, kept) still prints **"Cost
+  you in the locker room."**; *The First One* (+1, floored by R1) prints prose and nothing else; *Bowl
+  Season* → "Treat it like a playoff game" renders clean through a season boundary. **The deleted −2 on
+  that card's failure branch was not hit by hand** — it is 30% — so it is verified by the probe (1.2083
+  → **0.0000** printed Cost lines per career across 18,000 careers) rather than visually. Saying so
+  rather than implying otherwise.
+- Measurement re-run at 3,000 careers/cell × 6 positions × 3 profiles = 54,000 careers per arm, both
+  arms produced in this session (`git stash` on `src/content/events` for the pre-B76 arm), so the two
+  are comparable line for line.
+
+## 15. What I would tell the PM, Part II
+
+1. **B76 is in, re-cut to eleven, and it is a bigger balance item than a display item** — the headline is
+   **+8.6 draft stock** for virtuous play and `good` finishing **above** its starting character for the
+   first time.
+2. **My own §5 prediction was refuted** and the refutation is the best finding here: `milestone-bowl-season`
+   is a `fixed` card firing every played season, and its −2 was the largest surviving source of
+   locker-room costs in the game.
+3. **DECISION 076's stop condition was evaluated and does not fire.** R1 and B76 agree on direction on
+   all six measurements. One playtest, one bundle, as intended.
+4. **The ten correctly-oriented cards are untouched and are now the whole sub-3 character model.** If the
+   next playtest says standing is unreadable, those ten are where the currency is being taught.
+5. **Worth a decision entry:** the eleven are gone, but **`milestone-opener-*/stay-within` (+1, five
+   variants, once a season) is still the largest single character effect by frequency in the game** and
+   is exactly the same shape — "stay within yourself" paid for restraint. R1 silences it, so it is now an
+   invisible +1 farming a draft-stock nudge no player can see. It was authored after 050 and was never in
+   any of these sets. I did not touch it; it is out of scope for B76 and should be looked at.
+
+## Appendix — Part II limitations
+
+- **The orientation call was a judgement and the owner's ruling settled it, not a measurement.** If
+  "character tracks integrity" is ever revisited, rows 13–22 come back into scope and row 9 returns to
+  ambiguous. The table in §4.1 is the record.
+- **The delete-all-entries-on-an-inverted-card convention** (§9) removed three failure-branch penalties
+  that individually point the right way. Defensible as the only non-retuning option, and reversible from
+  the diff if the board disagrees.
+- **The +8.6 draft-stock movement is on the `virtue` policy specifically**, which maximises character by
+  construction. A human who merely leans virtuous recovers less. The honest claim is "the tax on
+  maximally virtuous play was 8.6 stock", not "every player gains 8.6".
+- **Balance envelopes beyond draft stock were not re-swept.** `bustedRate` and the failure probes are
+  untouched by these deletions in principle (all eleven are ≤3 character), and the suite's balance
+  assertions pass, but a full `failure-probe` sweep was not run.
