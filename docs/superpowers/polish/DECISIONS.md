@@ -2946,3 +2946,29 @@ board has twice paid for shipping a change that could not do what its name said.
 **What would change our mind.** On the caption: a playtester reading *"The plan:"* as a hedge, or as
 telegraphing that failure is coming. It is unconditional precisely so it cannot do the latter, but
 that is an argument, not a measurement, and the next playtest is where it gets one.
+
+## 083 — 046 Part 2 is retired; the redshirt pack is retired as a PM lane and stays on the user's authoring list
+
+**Date:** 2026-09-24 · **Made by:** PM session 13 · **Closes:** next-action item 7, carried unexecuted
+since session 6 · **Supersedes nothing; it resolves two items by declining them**
+
+Both have sat below everything else on this board for **seven consecutive sessions.** Carrying an item
+an eighth time without scheduling it is a decision being made by default, and a decision made by
+default is one nobody can find the reasoning for later. So it is made here, explicitly.
+
+**046 Part 2 — retired.** It exists to price redshirt routes R1–R3. DECISION 071 named **R0** as the
+likely answer before the pricing was ever run, and DECISION 072 then closed the real defect underneath
+it — the trapdoor — by a different mechanism entirely, on the user's call, and shipped it. **Pricing
+three routes against a defect that is already fixed buys nothing but the pricing.** The parked work is
+in `reports/046-*.md` if a future session needs it.
+
+**The redshirt pack — retired as a PM lane, not as an idea.** It is authoring new content for sit
+seasons, and `src/content/**` is frozen: it was never a lane this board could run, only a proposal it
+could carry. It belongs with B10 (imagery) and B11 item 3 on the **user's** authoring docket, and it is
+recorded there rather than on the wave board. DECISION 068 deferred it once already for the same
+reason.
+
+**What would change our mind.** For 046 Part 2: a measurement showing the redshirt offer still
+distorts careers after 072's fix — which would mean a new defect, not this pricing. For the pack: the
+user opening content authoring, at which point it is a strong first candidate, because the sit season
+is the one stretch of a career with no authored material at all.

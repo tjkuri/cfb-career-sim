@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **PM session:** 12 (handing off)
+**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Wave 30:** in flight · **PM session:** 13
 
 ---
 
@@ -2288,6 +2288,43 @@ resolved, **no prose touched**.
 | B86 | **A lint rule for "the label asserts a result" cannot be written** — not lexically decidable, and the flagship instance shares no word with its failure branch | **refused in its obvious form — DECISION 082** | 055 proposes a required-acknowledgement field across the 12-card one-option population instead. Schema is content, so it is the user's |
 | B87 | **The ladder is quieter after 054** — `good` never-moves 35.7% → 69.1%, almost all of it lost downward movement | watch, do not act | `80/67` is measured and is a one-character change. **Act only if a playtester reports the ladder as inert** — that is DECISION 081's named falsifier |
 
+## Wave 30 — in flight (PM session 13)
+
+Two lanes, file-disjoint. Item 1 of session 12's list, plus the measurement item 4 asked for.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/056-can-you-earn-it-now.md` | playtester | `reports/056-*.md`, `PLAYTEST-LOG.md` | 2026-09-24 |
+| `briefs/057-does-the-good-branch-ever-say-anything.md` | measurement + proposal | `reports/057-*.md`, a **new** probe under `src/sim/` only | 2026-09-24 |
+
+**056 is the playtest, and it was the only thing that should have happened next.** Six changes have
+landed since a player last saw the game (077, 078, 081, 082) and the last playtest's central complaint
+— *"standing is only something you can lose"* — had been answered with numbers and never by a person.
+It uses 053's shape: two careers assigned, the third **not**, both anti-death rules, and the one
+question asked straight. **Three named falsifiers are in it, each flipping a live decision:** the
+ladder reading as **inert** (DECISION 081 — `80/67` is measured and one character away), *"The plan:"*
+reading as a **hedge or as telegraphing failure** (DECISION 082), and the spared teammate cards reading
+as **payment for passivity or as nothing at all** (DECISION 078, still unanswered — 053 found them
+inert, which answers neither).
+
+**057 is B83, and it is deliberately the other half of the last two waves.** Waves 28–29 both worked on
+the *size* of the rungs. 057 asks whether the card the player actually took carries anything for the
+ladder to size. Its brief states a three-step mechanism — the `LOCKER_ROOM_MIN_CHARACTER = 2` floor
+(077) silences the `+1` branches and the `+2` branches clear it by nothing, and the cards are not
+`fixed` so a whole career may meet one once or never — and says in terms that refuting it is a success
+condition. It carries both of this board's denominator lessons: **resolve every card to source by
+hand** (a "22" that was 11), and **count careers, not cells.**
+
+**No product code ships from 057 this wave, and the reason is 056.** `src/ui/**` is out of bounds for
+it — including `view-model.ts`, whose one constant is the suspected cause — because a playtester is
+playing HEAD in a browser concurrently and changing the build under them invalidates the most
+expensive measurement on the board. 057 measures and prices routes; the PM ships after 056 lands.
+
+**Done directly by the PM, no lane:** DECISION 083 retires 046 Part 2 and takes the redshirt pack off
+the wave board (item 7, carried unexecuted for seven sessions).
+
+**Escalated to the user, not dispatched:** B85. See the escalations section.
+
 ## Next actions — for PM session 13, in order
 
 **Read this section and `DECISIONS.md` 077–082. Nothing else.**
@@ -2296,7 +2333,7 @@ resolved, **no prose touched**.
 corrections were the PM's own — and the two biggest fixes on the board came from agents who found their
 brief's premise wrong and said so before fixing what was actually there.**
 
-1. **Playtest. It is the only thing that should happen next, and it is not close.** Since a player last
+1. ~~**Playtest.**~~ **DONE — dispatched as `briefs/056` (wave 30).** Since a player last
    saw this game, **six** things changed: the locker-room floor (077), the eleven character deletions
    (078), the trust ladder recalibration (081), the one-option caption and the heal-report fix (082).
    **The last playtest's central complaint — *"standing is only something you can lose"* — has been
@@ -2313,7 +2350,7 @@ brief's premise wrong and said so before fixing what was actually there.**
      unanswered because 053 found them **inert** instead, which answers neither.
    - **Ask the one question straight: can you earn it now?** Do not ask it as nine sub-questions.
 
-2. **B85 is the highest value per word on the board and it needs the user.** One label —
+2. **B85 — ESCALATED to the user 2026-09-24, awaiting an answer.** One label —
    `milestone-fall-camp`'s *"Win the job"* — is **95%** of a defect class that eight playtesters have
    refuted in a row. It fires ~3× a career and fails 35% of the time. Content is frozen, so bring the
    proposal in `reports/055-*.md` to the user. **It is also 053's stale-flavour card**, so one rewrite
@@ -2325,7 +2362,7 @@ brief's premise wrong and said so before fixing what was actually there.**
    is the ~2 cards a career that stop firing rather than the lost production, the variant lands RE's
    correctness at RA's price. Then take the routes to the user.
 
-4. **B83 — the teammate cards are inert.** The cards DECISION 078 spared return prose with **no number
+4. ~~**B83 — the teammate cards are inert.**~~ **DONE — dispatched as `briefs/057` (wave 30), measurement first exactly as this item asked.** The cards DECISION 078 spared return prose with **no number
    at all** (*"You get grief in the meeting room for missing it"*, twice). Distinct from the ladder:
    a correctly-sized ladder still shows nothing if the card carries no effect. **Measure before
    proposing** — how many of the ten spared cards actually carry a character effect on the branch a
@@ -2340,7 +2377,7 @@ brief's premise wrong and said so before fixing what was actually there.**
    on a 1-point 85↔84 change (`standingPhrase`, and 055 left a proposed fix shape for it), and the
    coach who left for a bigger job in two consecutive seasons.
 
-7. **046 Part 2 and the redshirt pack have been below everything else for seven sessions.** That is
+7. ~~**046 Part 2 and the redshirt pack.**~~ **CLOSED — both retired, DECISION 083.** That is
    itself a decision. **Either schedule them or retire them** — do not carry them an eighth time.
 
 8. **Do not reopen type, colour or contrast.** Eight playtests, zero visual defects. 053 checked at
