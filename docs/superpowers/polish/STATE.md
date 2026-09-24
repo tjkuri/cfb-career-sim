@@ -2325,6 +2325,89 @@ the wave board (item 7, carried unexecuted for seven sessions).
 
 **Escalated to the user, not dispatched:** B85. See the escalations section.
 
+### Lane 057 — done, not committed as product code (it ships no product code). It refuted the brief's mechanism and named a better one
+
+**Verified independently by the PM:** 756 tests green, `npm run typecheck` **exit 0**, `git status`
+clean under `src/engine/**`, `src/content/**`, `src/ui/**`; two new files only
+(`src/sim/spared-card-probe.ts` + test). Balance byte-identical against a pristine `git archive HEAD`
+export on two commands — **identity is the pass here and it passed.** Note for future briefs: HEAD was
+**740** tests, not the 728 this board had been quoting since wave 27; brief 057 carried the stale number.
+
+**The headline, and it is worse than B83 stated.** A good branch of the ten spared cards says
+*something* in 59.4% / 66.0% of `virtueLoyal` / `virtueAmbitious` careers — but counting only a
+**credit** (the game recognising the choice rather than charging its failure) it is **43.3% / 51.8%**,
+and **for `virtueLoyal` — the playtester's literal shape — the per-career median number of credits from
+these ten cards across a whole career is zero.**
+
+**The brief's mechanism is refuted and the replacement is sharper.** The `LOCKER_ROOM_MIN_CHARACTER = 2`
+floor is real and the +2/+1 figures check out verbatim, but the floor is the **smallest** of three
+causes — it eats 16.0% of good-branch takes while **27.5% carry no character effect at all.** Three
+shapes:
+
+- **Shape A — the good branch can only ever be charged, never credited (3 cards).** *The Two-Deep*,
+  *The Holding Call*, *The Captain Vote*: success +1/+1/**0**, all silent; failure −3/−2/−3, all of
+  which print *"Cost you in the locker room."* **0 credits and 719 costs in 3,600 `virtueLoyal`
+  careers.** This is the playtester's *"only something you can lose"* and **it was never the ladder
+  calibration** — it is what these three cards are.
+- **Shape B — the card cannot speak on any branch (2 cards + the eleventh).** *Playing Through the
+  Hand* printed a locker-room line **zero times in 10,800 careers.** The prose the playtester quoted —
+  *"You get grief in the meeting room for missing it"* — is its −1 sit branch, and its good branch is
+  empty too.
+- **Shape C — the floor eats a real ±1 (4 branches).** The brief's mechanism, and the smallest.
+
+**Two structural findings the aggregate hid:** 66% of all credit comes from **one card** (*Up Forty at
+Halftime*) — remove it and `virtueLoyal` goes 43.3% → 15.6%; and *The Five-Star Behind You* fired **0
+times in 3,600** non-transferring careers. **Every one of the eleven cards was resolved to source at
+HEAD and no id or effect in DECISION 078 / report 051 §4 is wrong** — the denominator lesson was
+applied and this time the set held.
+
+### The PM's own measurement on top of 057, and it turns that 0-of-3,600 from rare into impossible
+
+057 reported *The Five-Star Behind You* never firing for non-transferring careers and inferred Signing
+Day does not offer tier 3/4. **It does not, and the reason is arithmetic, not sampling.**
+
+`eligibleTiers` (`draft.ts:21`) needs **stock ≥ 45** for tier 3. At career creation every career has
+`overall 60`, `character 70`, no seasons, trophies or awards, so
+`deriveDraftStock` = `(60−40)×1.4 + (70−50)×0.15` = **31, exactly, for every career**. Measured across
+all 35 (position × home-state) pairs: **one distinct value, 31**, and eligible tiers `1,2` in every
+case. **No player can ever sign with a tier 3/4 school.** Tier 3/4 is transfer-only, by construction.
+
+Measured reach, 1,400 careers per profile, all six positions:
+
+| profile | ever at tier 3/4 | share of decisions there | first arrival |
+|---|---|---|---|
+| `virtueLoyal` (transfer: stay) | **0.0%** | 0.00% | never |
+| `baselineRandom` | 31.5% | 11.53% | mostly SR |
+| `good` (transfer: up) | 98.7% | 55.03% | JR, then SR |
+| `virtueAmbitious` (transfer: up) | 98.4% | 54.70% | JR, then SR |
+
+**Three authored `random` events are gated `tier: [3,4]`, all in `universal.ts`** — *The Five-Star
+Behind You*, *Playoff or Bust*, *Scouts on the Sideline*. **A loyal player sees none of them, ever.**
+And `blueblood-five-star`'s `minClass: "SO"` gate is **dead** — nobody reaches tier 3/4 before JR.
+
+**Why this matters beyond one card.** *The Five-Star Behind You* is one of the four cards DECISION 078
+called *"the clearest statement in the whole corpus"* of what the character currency means. It is
+unreachable to the exact player the currency rewards. The authored comment above it in `universal.ts`
+reasons about *"signing with a blueblood"* — a thing that cannot happen.
+
+**Whether this is a defect or the design is a user call**, and it is not obviously a bug: everyone
+starting as a middling recruit who earns his way up is coherent. What is not defensible is the
+combination — the loyal player is locked out of content, and one of the eleven cards the board reasons
+about as load-bearing is invisible to half the profiles.
+
+### New backlog from wave 30 (lane 057 + the PM's measurement)
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B88 | **Shape A: three spared cards can only be charged, never credited** — *The Two-Deep*, *The Holding Call*, *The Captain Vote*. 0 credits / 719 costs in 3,600 careers | **todo — user.** The single best explanation of *"only something you can lose"* this board has found | 057's R2 fixes it with six content magnitude edits at **+0.17 draft stock, 2% of DECISION 078's landed change, exactly 0.00 on `good`**. **The authorial question is whether the asymmetry is a bug or a statement about locker rooms** — R2 assumes bug |
+| B89 | **Shape B: two cards cannot speak on any branch** — *Playing Through the Hand* printed nothing in 10,800 careers | todo — folded into R2 | Its −1 sit branch is the exact line the playtester quoted |
+| B90 | **Tier 3/4 is unreachable at Signing Day for every career, by arithmetic** — stock is the constant **31**, the gate is 45. Three authored events and one of DECISION 078's load-bearing cards are transfer-only; `virtueLoyal` reach is **0.0%** | todo — **user**, and it touches frozen engine constants *or* frozen content conditions | Cheapest route is content: `tier: [3,4]` → `[2,3,4]` on the three cards. Engine route (starting stock / the 45 gate) is balance and moves everything. `minClass: "SO"` on `blueblood-five-star` is dead either way |
+| B91 | **The credit supply is one card** — 66% of all credit is *Up Forty at Halftime*; without it `virtueLoyal` is 15.6% | watch | Fixing B88 removes the single point of failure as a side effect |
+
+**R1 (lower the floor) is disqualified by measurement, not by taste:** floor 1 takes locker-room lines
+from 2.5 to 7.1 per career and only **5.5%** of the extra lines come from these ten cards. **DECISION
+077's floor survives its first real challenge.**
+
 ## Next actions — for PM session 13, in order
 
 **Read this section and `DECISIONS.md` 077–082. Nothing else.**
