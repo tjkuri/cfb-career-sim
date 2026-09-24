@@ -2535,3 +2535,53 @@ prose-probe and the realized-frequency sweep, both of which are already built.
 
 **What would change our mind.** If wave 27's measurement shows R1 and B76 pulling in different
 directions on the realized Earned/Cost counts, they ship in separate waves and the playtest waits.
+
+## 077 — The locker-room line gets a floor of 2, and the character currency turns out to be coarser than this board's own numbers
+
+**Date:** 2026-09-16 · **Made by:** PM session 12 · **Implements:** DECISION 075's R1 · **Corrects:** the magnitudes quoted in 074, 075 and report 050 · **Evidence:** `reports/051-one-currency-one-meaning.md` §2, §3, §6
+
+**R1 shipped as `323971b`.** `LOCKER_ROOM_MIN_CHARACTER = 2` in `src/ui/session/view-model.ts`, applied
+to `lockerRoom` only and not to `later`. 728 tests, both typecheck passes, build clean, click-through
+verified. Measured over 54,000 careers, locker-room verdicts per career fall **55–67%** — Earned
+5.40 → 1.25 under `good`, 6.83 → 1.84 under `virtueLoyal` — with character and draft stock bit-identical,
+which is what a display-only change should look like. Identity on the printed counts would have been the
+vacuous pass; it was nowhere near it.
+
+**Two corrections that outlive the change itself.**
+
+1. **Every character amount a player can be shown is an integer.** 348 outcome branches in
+   `src/content/events/**`, 129 carrying non-zero character, magnitudes
+   `{1,2,3,4,5,6,8,9,10,12,13,20,23,32}` and **no fractional value anywhere** — independently verified
+   by the PM across 131 effect entries. **The `−0.15` and `−13.4` this board has quoted since DECISION
+   074 cannot be printed by any card.** They are probability-weighted expectations, and `charSpread` is
+   a property of an option set rather than of anything a player reads. The real dynamic range is
+   **32:1**, not 89:1, and **every threshold in 1.01–2.00 is the identical function.** DECISION 075's
+   suggested `≈±1.5` was not wrong; it was unresolvable, and stated as an implementable number it is 2.
+2. **`charSpread` and realized branch magnitude disagree in both directions, and the second direction is
+   new.** The brief warned that a small spread can hide a large branch; **The Captain Vote** is the
+   proof — spread 0.90, branch **−4**, because both options carry similar-sized penalties. Five of
+   050's thirteen "flavour nudges" keep their line at T=2 for this reason. No threshold separates the
+   buckets cleanly, and the report shows the overlap rather than picking the tidy number.
+
+**Why 2 and not 3.** T=2 is the largest value that keeps all twelve moral forks — *The Team Banquet*'s
+credit branch is `+2` and T=3 would silence it — and the smallest value that does anything at all. What
+it silences corpus-wide is the **37 single-point branches across 34 events**.
+
+**The largest single source of R1's effect is the Season Opener authored last wave**, at 73% of the
+drop, and no report had measured it. Anyone reading wave 26's numbers should know that its five new
+cards also added five character-differentiating events to 047's denominator: **047's headline "34 of 60"
+is "39 of 65" at HEAD.**
+
+**Step 6, owed from DECISION 075 item 1, and it upholds it.** Re-floored, *"34 of 60 at 0.91 OVR"* is
+really **"12 of 19 at 1.62 OVR"**, with 22 of 41 sub-threshold cards at 0.53 making up the rest. The
+rate barely moves (56.7% → 63.2%); the **population is a third of the size and the gap on it is 78%
+larger**. The twelve that clear a ≥3 floor are precisely 050's twelve moral forks — 050 cut the corpus
+in the right place even though it cut it on the wrong quantity for R1's purposes.
+
+**R1 remains explicitly a one-wave measure.** DECISION 075 says adopting it and never resolving the
+underlying contradiction would be silencing a contradiction rather than fixing it. That resolution is
+B76, and B76 did not run — see DECISION 078.
+
+**What would change our mind.** A playtester reporting that the character system reads as having gone
+silent. Report 051 predicts the opposite — that it now reads as proportionate — and that is the first
+thing wave 28's playtest can check.
