@@ -2467,6 +2467,34 @@ defect as much as a content one, and the vocabulary is in `view-model.ts`, which
 | B94 | **"Cost you in the locker room" narrates every character change**, including NIL money managed by a cousin | todo — UI, `view-model.ts` | Character covers integrity broadly; the display channel names one specific room. Fixable without touching content |
 | B95 | **MOMENT and credit line are inverted on the two teammate cards** — *Up Forty* credits without a moment, *The Two-Deep* moments without a credit | todo | Found independently by 056 and 057 |
 
+## Wave 31 — in flight (PM session 13)
+
+Two lanes. The playtest is over, so `src/ui/**` is unblocked for the first time in two waves.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/058-where-do-i-stand-while-i-am-standing-there.md` | dev (UI) | `src/ui/screens/CareerScreen.tsx`, `src/ui/styles/career.css` + tests | 2026-09-24 |
+| `briefs/059-price-the-thing-the-user-has-to-approve.md` | measurement + proposal | `reports/059-*.md`, a **new** probe under `src/sim/` only | 2026-09-24 |
+
+**058 is B93 + B94, and they are one lane because they are one file.** Both live in
+`CareerScreen.tsx`: the ladder is drawn only by `SummaryScreen` (so the player meets the five-rung
+scale for the first time **in the credits**), and lines 95–96 hard-code *"…in the locker room."* for
+every character change in the game including a cousin managing NIL money. `TRUST_LADDER`,
+`trustRungOf` and `view.trust` are already exported, so the lane should need **no** view-model change —
+it is told to stop and report rather than reach if it thinks it does. **The vocabulary half is told to
+try to refute us first**: count how many character cards are genuinely locker-room-shaped, and if most
+are, a blanket rewrite makes the common case worse — **report that and change nothing.**
+
+**059 exists because every remaining big item is the user's and none of them is answerable as stated.**
+"Give the restraint branches a credit" is a direction, not a change. 059 turns it into an exact diff —
+every file, card, option, current effects array and proposed one — priced over ≥3,000 careers per
+profile, with an acceptance criterion (`virtueLoyal` credit p50 ≥ 1, `good` draft stock unmoved) and a
+fairly-stated counter-case for doing nothing. It is told that **a list crediting all 27 cards is a list
+that has not been read**, and to reproduce the PM's corpus numbers independently before building on
+them.
+
+**The two lanes share no file.** 058 is confined to `src/ui/**`, 059 to `src/sim/` and its report.
+
 ## Next actions — for PM session 13, in order
 
 **Read this section and `DECISIONS.md` 077–082. Nothing else.**
