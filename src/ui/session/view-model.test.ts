@@ -1073,6 +1073,25 @@ describe("remainderFacts", () => {
     expect(remainderFacts(before, after).healed).toBe(true);
   });
 
+  // TASK 055, and the one the 053 playtester saw twice in two careers.
+  // `tickPhaseStart` is the only thing that decrements `remainingPhases`, so an
+  // advance that resolves a card WITHIN a phase -- the common case -- leaves
+  // the injury list byte-identical. A match that demanded a strictly smaller
+  // count could not match that list against itself, called it a heal, and
+  // printed "An injury healed and gave the points back" over whatever other
+  // remainder happened to be on the card. Measured over 2,000 careers, 74.7%
+  // of all `healed: true` reports were this.
+  it("does not read an untouched injury list as a heal", () => {
+    const [before, after] = pair({ injuries: [hamstring(3)] }, { injuries: [hamstring(3)] });
+    expect(remainderFacts(before, after).healed).toBe(false);
+
+    const [b2, a2] = pair(
+      { injuries: [hamstring(3), hamstring(2)] },
+      { injuries: [hamstring(3), hamstring(2)] },
+    );
+    expect(remainderFacts(b2, a2).healed).toBe(false);
+  });
+
   it("does not invent a heal when two of the same injury are both still healing", () => {
     const [before, after] = pair(
       { injuries: [hamstring(3), hamstring(2)] },

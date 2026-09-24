@@ -605,11 +605,40 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
 
             {/* A one-option card was never a choice, so it is read as a single
                 narrated beat: the setup, the thing that happened, and what it
-                cost (DECISION 018). The label is a quiet line, never "You chose:". */}
+                cost (DECISION 018). The label is a quiet line, never "You chose:".
+
+                TASK 055. It is also never a bare line any more, and this caption
+                is the whole of the fix for the defect 053 filed three times
+                across three careers as *"the button asserts a success and the
+                outcome is a failure"*.
+
+                There is no button. `openCard` resolves a one-option card the
+                moment the player arrives on it, so the label they were blamed
+                for pressing is never rendered as an option at all -- it is
+                rendered HERE, as a standalone declarative line, one paragraph
+                above prose that says it did not happen. *"Answer it on the
+                practice field"* sitting over *"the whiffs don't stop"* is not
+                the prose contradicting itself: it is this screen narrating an
+                option label as a completed event. A multi-option card never
+                does that -- "You chose:" frames its label as an intention --
+                so the acute case was acute because the UI stripped the frame
+                off it, which is a presentation defect and fixable here.
+
+                An intention, not a choice: "The plan" is true of a card the
+                player never decided, and it is the one reading under which the
+                failure branch is coherent rather than contradictory.
+
+                Unconditional, and that is load-bearing. Captioning only the
+                failures -- or dropping the line on them -- would tell the
+                player which branch fired before they read it, and a card must
+                never reveal the roll it made. Every one-option card gets the
+                same four characters, on both branches. */}
             {resolved.narrated ? (
               <>
                 {resolved.description && <p className="card-body">{resolved.description}</p>}
-                <p className="resolved-beat">{resolved.choiceLabel}</p>
+                <p className="resolved-beat">
+                  <span className="beat-frame">The plan:</span> {resolved.choiceLabel}
+                </p>
               </>
             ) : (
               <p className="resolved-choice">You chose: {resolved.choiceLabel}</p>

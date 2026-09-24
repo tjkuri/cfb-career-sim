@@ -549,10 +549,30 @@ function seasonCost(after: GameState, before: GameState): boolean {
  * The discriminator is `remainingPhases`, which is deliberately out of
  * `injuryKey` (see the note there) because a SURVIVING injury decrements it
  * every tick. That is precisely what makes it usable here: a survivor appears
- * in `after` with a strictly smaller `remainingPhases`, and a freshly caused
- * injury of the same type appears with a fresh, larger one. So match each prior
- * injury to a decremented survivor, greedily, smallest first; anything left
- * unmatched is gone, and gone means healed.
+ * in `after` with a `remainingPhases` no larger than the one it had, and a
+ * freshly caused injury of the same type appears with a fresh, larger one. So
+ * match each prior injury to a survivor that has not gained phases, greedily,
+ * smallest first; anything left unmatched is gone, and gone means healed.
+ *
+ * TASK 055. The match used to require a STRICTLY smaller `remainingPhases`,
+ * and `tickPhaseStart` is the only thing that decrements one -- so on every
+ * advance that did not cross a phase (the common case: most decisions are
+ * resolved inside a phase) a perfectly healthy, unchanged injury list failed to
+ * match itself and was reported as a heal. Measured over 2,000 careers
+ * (good / virtueLoyal / baselineRandom / lazyFull, 500 each, 78,605 advances):
+ * 7,693 of the 10,298 `healed: true` reports -- 74.7% -- came from an advance
+ * whose injury list was byte-identical before and after, and 78% of careers
+ * carried at least one. That is the 053 playtest's *"An injury healed and gave
+ * the points back"* printed at the end of season 2 beside a +1, and again on
+ * the first card of season 3 beside the +5 that was the actual restoration:
+ * one heal, narrated twice, because the first printing was this false positive
+ * landing on an unrelated remainder.
+ *
+ * `<=` rather than `<` is the whole fix, and it does not cost the case the
+ * strict comparison was written for: a fresh injury of the same type carries a
+ * FULL `recoveryPhases` (>= 2, enforced by `validateContent`), which is larger
+ * than the remaining phases of anything about to heal, so it still fails to
+ * match and the heal underneath it is still reported.
  *
  * Still presence only, never size -- one healed injury and three are the same
  * fact to the sentence this feeds.
@@ -566,7 +586,7 @@ function someInjuryLeft(before: GameState, after: GameState): boolean {
     .sort((a, b) => a.remainingPhases - b.remainingPhases);
   for (const inj of prior) {
     const key = injuryKey(inj);
-    const match = survivors.find((s) => !s.taken && s.key === key && s.remaining < inj.remainingPhases);
+    const match = survivors.find((s) => !s.taken && s.key === key && s.remaining <= inj.remainingPhases);
     if (!match) return true;
     match.taken = true;
   }

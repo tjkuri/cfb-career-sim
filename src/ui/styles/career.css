@@ -796,7 +796,10 @@
 /* A one-option card is one card, but it is two beats: the setup, then what it
    cost. The hairline is the seam DECISION 018 asked for so the merge does not
    read as two events run together. The label is stated, never captioned "You
-   chose:" -- it was not a choice. */
+   chose:" -- it was not a choice. Since TASK 055 it carries `.beat-frame`
+   instead: not a choice, but an intention, so the failure branch underneath it
+   reads as a plan that did not come off rather than as the screen contradicting
+   itself one line later. */
 .resolved-beat {
   margin: 1.35rem 0 1.25rem;
   padding-bottom: 0.85rem;
@@ -806,11 +809,22 @@
   font-size: var(--t-label);
   line-height: var(--lh-tight);
   color: var(--chalk);
-  /* The same engine-built label, uncaptioned: 4 lines at 360px. */
+  /* "The plan: " + the longest one-option label in the bundle ("Stop thinking
+     and trust your leg", 32 chars) is 42 chars: two lines at 360px, well
+     inside the clamp the uncaptioned line already carried. */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 5;
   overflow: hidden;
+}
+
+/* The caption, and only the caption. It is chrome in a line of prose, so it
+   drops to the register `.resolved-choice` uses for the whole of "You chose:"
+   -- present, readable, and clearly not part of the sentence the card wrote.
+   No second colour and no weight change: DECISION 012's accent belongs to what
+   the card DID, and this is the part that had not happened yet. */
+.beat-frame {
+  color: var(--chalk-faint);
 }
 
 /* DECISION 012's attachment point. The rule width and the delta's size, weight
