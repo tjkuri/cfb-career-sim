@@ -2823,3 +2823,72 @@ policy. A second playtester reaching the top rung would refute this entirely.
 were, for once, *both* right — but only because they stopped at *"the display is not the problem, the
 asymmetry is"* and did not guess at a cause. **The numbers came from the PM's sweep, not from the
 report.** That is the division of labour session 11 asked for, working as intended.
+
+## 081 — The ladder is recalibrated to 80/66, the playtester's experience is eliminated as a number, and DECISION 080 overstated its own evidence by one word
+
+**Date:** 2026-09-16 · **Made by:** PM session 12 · **Implements:** DECISION 080 / B81 · **Corrects:** DECISION 080 · **Evidence:** `reports/054-a-rung-you-can-actually-reach.md`, 14,400 careers
+
+**Shipped as `f2c3188`.** `TRUST_BANDS` top two floors **85 → 80** and **70 → 66**; the lower three
+untouched. 740 tests, both typecheck passes, build clean, clicked through.
+
+**The PM proposed the pair and the agent endorsed it on measurement rather than implementing it blind,
+which is the outcome the brief was shaped to get.** It also **corrected the PM's reasoning for 66**:
+the "four points of buffer" argument is equally satisfied by 69, so it was too weak to pick the number.
+**The real argument is the bundle's own effect distribution — 49 of the 72 authored negative character
+outcomes land in −1..−4, so a 4-point buffer absorbs two thirds of single bad cards.** Same number,
+sound reason; the board should quote the second one.
+
+**Top-rung reach, 14,400 careers (6 profiles × 6 positions × 400), old → new:**
+
+| profile | reaches the top rung |
+|---|---|
+| `virtueAmbitious` | **2.3% → 23.1%** |
+| `virtueLoyal` | **0.5% → 15.7%** |
+| `good` | 0.1% → **1.8%** |
+| `baselineRandom`, `lazyFull`, `saboteurFull` | 0.00% → **0.00%** |
+
+**Exactly the target shape: a clear minority of virtuous careers, near-zero for the stock-maximiser,
+zero for everyone else.** The bottom of the ladder is confirmed untouched — `lazyFull` occupancy
+`0.220/0.435/0.345` → `0.219/0.435/0.345`.
+
+**The playtester's sentence, eliminated as a number.** Of virtuous careers whose ladder moved at all,
+the share that **fell before ever climbing** goes **94.5% → 31.9%**. That statistic *is* *"only
+something you can lose."* And a fall inside the first two decisions goes **3.75% → 0.00%** across 7,200
+non-mercenary careers.
+
+**The detail in that which is worth more than the fix.** The old 3.75% early-fall rate was **identical**
+for `virtueAmbitious`, `virtueLoyal` and `good`. **The early fall had nothing to do with how well the
+player played** — it was the boundary, firing on whoever drew a −1 first. The playtester's decision-2
+fall was not a judgement of their career. It was arithmetic.
+
+**Both identity checks pass, pointing opposite ways, as the brief required.** `npm run balance` and the
+virtue probe come back **byte-identical** — no balance moved — while the rung-occupancy table moved
+hard. The only keys that change anywhere are the three trust-band phrases.
+
+**The one metric that moved the wrong way, reported by the agent rather than found by the PM.** The
+ladder is **quieter**: `virtueAmbitious` never-moves 60.2% → 66.1%, `good` 35.7% → **69.1%**. Almost all
+of the loss is *downward* movement (ups 0.36 → 0.34, downs 0.44 → 0.16). That is the intended effect of
+removing a trapdoor, but a ladder nobody moves on is the failure mode on the other side of this fix.
+**`80/67` is the measured alternative** — it holds activity at the old level (61.6% never-moves) at 4×
+the early-fall rate, and it is a one-character change. **This is the named falsifier: a playtester
+reporting the ladder as inert flips it.**
+
+### The correction, and it is the PM's
+
+**DECISION 080 says the top rung *"cannot be reached by any policy at any position."* That is one word
+stronger than its evidence.** The sweep behind it measured **cell aggregates** — medians, p95s and
+per-cell averages — and no cell average reached 85. Per **career**, **2.25% of `virtueAmbitious` careers
+did touch 85.** The conclusion is unaffected: at ~2% it was unreachable in every sense a player
+experiences, and the playtester who chased it for a full career was not unlucky. But *"cannot"* should
+read ***"is reached by roughly 2% of maximally virtuous careers and by nobody else."***
+
+**This is the second time on this board that a cell aggregate hid a per-career tail**, and both times
+the aggregate was the PM's own. The rule it earns: **when a claim is about what a player can
+experience, the denominator is careers, not cells.** An average over 400 runs cannot answer a question
+about the 95th percentile of one of them.
+
+**The instrument that makes the next recalibration cheap.** `src/sim/rung-probe.ts`, committed and
+tested: it scores the full per-decision character trajectory against **a band table passed in as a
+parameter**, so any future calibration is compared on **identical seeds** rather than by running two
+samples and diffing summary statistics. That design is what let this lane answer "old versus new"
+honestly, and it is why the 80/67 alternative already has numbers attached.
