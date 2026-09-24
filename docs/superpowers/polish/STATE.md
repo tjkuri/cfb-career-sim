@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Wave 30:** in flight · **PM session:** 13
+**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **PM session:** 13 (handing off)
 
 ---
 
@@ -2544,6 +2544,132 @@ calibration being argued about.
 Its `playing-through-the-hand` edit is **dropped** — that card is not one of the 27, so the edit would
 have created a one-way-**up** card. Four of its six are kept, `targeting-review` moves to unsure, and
 seven rows it missed are added.
+
+### Wave 31 result — both lanes shipped, commit `78b2ef6`. 810 tests green
+
+**Verified by the PM independently, not taken from the reports:** 810 tests, `npm run typecheck`
+**exit 0** both passes, `npm run balance` **byte-identical** to a pristine `git archive HEAD` export on
+two seeds (`2000 random QB`, `2000 first OL`), `src/engine/**` and `src/content/**` untouched, and a
+hand click-through in the browser.
+
+**058 item 1 — the ladder is permanent and on every screen.** It replaces the single `.trust` line
+rather than joining it: the summary's ladder seen smaller, same phrase order and gutter mark. **The
+argument for permanence is the one to keep:** the complaint was *"nothing ever felt at risk"* over 34
+decisions where it never moved, **risk is a property of a state, not of an event**, and an on-move
+ladder would be absent from ~9 cards in 10 (a printable character effect fires on 20.2% of 140,935
+measured decisions). No bar, no count, and **deliberately no mark on the rung the player left** —
+two marks on one list is a span, and a span is a distance.
+
+**The PM's click-through, which is the part worth recording:** at Signing Day the marker sits on *"the
+staff trusts you"* with ***"they would run through a wall for you"* visible one line above it.** That
+is the exact phrase the last playtester quoted as the thing they wanted to chase, and it is now on
+screen from decision one instead of in the credits. A fall renders as the marker dropping with
+*Down from "the staff trusts you"* beneath the ladder — **the fall now has a place**, which is what
+DECISION 080's callout could never give it.
+
+**058 item 2 — the lane was told to refute the PM first, and the count told it to proceed.** All 88
+outcomes whose character clears the display floor, hand-scored into three classes, then weighted by
+28,450 real firings over 140,935 decisions:
+
+| | authored | of the lines a player actually reads |
+|---|---|---|
+| the room itself — teammates, the team | 30% | **51.3%** |
+| the program but not a room — coaches, staff, compliance | 38% | 17.8% |
+| outside it entirely — money, family, media, fans, police, academics | 33% | **30.9%** |
+
+Five policies agree within nine points, so it is not an artefact of how the measured player behaves.
+**The decisive argument was not the headcount but that the rewrite loses no truth anywhere** —
+*"with the program"* is true of all three classes, so it is not the trade the brief warned about. Now
+`"Cost you with the program."` / `"Earned you credit with the program."`, with the header label moved to
+`With the program` (*"the staff"* and *"the building"* both collide with rungs now drawn beneath it,
+and `career-screen.test.ts` owns that collision so a later band edit fails a test).
+
+**Done by the PM directly, in the same commit:** `SummaryScreen.tsx`'s heading over the same five rungs
+still said *"In the locker room"*. 058 flagged it and could not touch it. **Two screens naming one
+currency two ways is the defect the task exists to fix**, so the PM moved it rather than carrying it.
+
+### Three things wave 31 leaves open
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B96 | **The standing block costs ~85px net** and the page is a scrolling document, not the reference's height-locked shell | **watch** | PM measured: at a 614×773 viewport a 3-option card puts the last option's bottom at **598px** — fine. A 4-option card lands ~652px, so **a sub-700px viewport scrolls to reach the last option.** Act only if a playtester reports reaching for an option; do not pre-optimise |
+| B97 | **The honest vocabulary fix is per-card** — a `standingAudience` field on `Outcome` | todo — **user** (frozen schema) | 058's classification of all 88 outcomes would seed it. The shipped rewrite is the best available *without* a schema change, and it does cost the 51% majority some vividness to buy the 31% accuracy |
+| B98 | **Does the credit line read as recognition now it has a ladder under it?** | **the next playtest's question** | The wave fixed where standing is *displayed*. Whether the corpus gives it enough to display is B92/DECISION 085, and that is the user's |
+
+## Next actions — for PM session 14, in order
+
+**Read this section and `DECISIONS.md` 083–085. Nothing else.**
+
+**Session 13 in one line: the phase's central complaint was diagnosed to the wrong subsystem for three
+waves, and the thing that found it was two lanes that could not see each other naming the same card.**
+
+1. **Four content decisions are with the user and nothing else on the board outranks them.** They are
+   **B85** (the *"Win the job"* label — one string, 95% of a defect class, independent of the rest),
+   **B92/Tier 1** (six magnitude edits, `reports/059-*.md` §4, measured at **+0.016 draft stock on
+   `good`**), **Tier 2** (the five `fixed` openers — a real authorial question, asked separately because
+   it takes `good`'s credit rate to **100%**), and **B90** (tier 3/4 unreachable at Signing Day).
+   **Do not re-derive any of these; they are priced and the tables are in the reports.**
+   - **If the user approves Tier 1, it is one commit**, and `src/sim/credit-proposal-probe.ts` re-runs
+     the acceptance check on identical seeds.
+   - **A route nobody has priced and it may beat both tiers:** remove the **−2 from the openers'
+     `handle-it` failure branch** instead of crediting `stay-within`. Silent-both-ways rather than
+     one-way-down, costs the virtue profiles nothing, **pays nobody for being calm.** 059 named it and
+     was not asked to price it. **Price it before the user rules on Tier 2.**
+
+2. **Playtest again, and it is closer than it looks.** Wave 31 changed where standing is displayed, and
+   the last playtester's central complaint was about exactly that. The question is **B98: does the
+   credit line read as recognition now there is a ladder under it, and does the top rung read as
+   reachable now it is visible from decision one?** Use `briefs/056`'s shape and its two anti-death
+   rules. **Named falsifiers:** the ladder reading as clutter or as a distance; *"with the program"*
+   reading as vaguer than *"the locker room"* on the 51% of lines that really are about the room (B97);
+   and B96 — a 4-option card needing a scroll.
+
+3. **B90 is the cheapest of the four and the least understood.** Signing Day draft stock is the
+   constant **31** for every career and tier 3 needs 45, so three authored events are transfer-only and
+   `virtueLoyal` reaches them **0.0%** of the time. **It may be the design.** Either get the user's
+   ruling or write it down as intended, so a tenth session does not rediscover it.
+
+4. **B79 is still the biggest unaddressed thing and still not urgent.** A fifth of authored production
+   goes to injured or suspended players. Build the replacement-card variant first
+   (`reports/052-*.md` §5). **Do not dispatch RE as a lane.**
+
+5. **B73 — `good` is misnamed**, and 059 gave the sharpest evidence yet: it takes four of the six Tier-1
+   branches **exactly zero times** because they are stock-negative. It is a stock-maximiser. Renaming is
+   cheap. **Any report before wave 27 quoting `good` is describing a stock-maximiser.**
+
+6. **B84 leftovers, all cheap:** the injury that lasted exactly one card, the ON THE FIELD label thrash
+   on a 1-point 85↔84 change (055 left a proposed fix shape), and the coach who left for a bigger job in
+   two consecutive seasons.
+
+7. **Do not reopen type, colour or contrast.** Nine playtests, zero visual defects.
+
+8. **Five process rules this board has paid for.** *(a)* When a change is supposed to move the numbers,
+   byte-identity is the vacuous pass — and its mirror: when it is supposed **not** to move balance,
+   identity **is** the pass. *(b)* A blind audit needs an unmarked control group. *(c)* A set defined by
+   a measurement is not a set verified card by card. *(d)* **When a claim is about what a player can
+   experience, the denominator is careers, not cells** — and its sharper form, which caught the PM this
+   session: **a statistic measured on a sub-population is not a corpus statistic.** 057's *"credit p50 =
+   0"* was true of ten cards and the PM wrote it into a brief as corpus-wide, where it is **2**.
+   *(e)* **New: a prepared remedy is not owed execution by the trigger it was filed under.** DECISION
+   081's falsifier fired and its one-character fix was still wrong, because it moved the ladder
+   downward in answer to a report that it never rises.
+
+9. Increment the **PM session** counter at the top of this file.
+
+### What session 13 would tell session 14 if it could only say one thing
+
+**Two lanes that could not see each other named the same card, and that is what broke the phase open.**
+A probe over 3,600 careers found *Up Forty at Halftime* was 66% of all the credit in the game and *The
+Two-Deep* could not credit at all; a playtester with no source access wrote that *Up Forty* is
+recognition and *The Two-Deep* — **the same fiction** — is inert. Neither alone would have moved
+anybody. Together they retired three waves of work aimed at `bands.ts`.
+
+**So: run the measurement lane and the playtest in the same wave, on the same subject, and never tell
+either one about the other.** Convergence between a number and a person is the only evidence this board
+has found that survives contact with the next session. And when they converge on something the PM
+believed — as 059 did on two of the PM's own candidates, refusing both with a better principle than the
+PM had — **the PM is the one who is wrong.** That happened twice this session and both corrections are
+in DECISION 085.
 
 ## Next actions — for PM session 13, in order
 
