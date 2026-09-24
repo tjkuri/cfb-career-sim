@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **PM session:** 12 (handing off)
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** in flight · **PM session:** 12
 
 ---
 
@@ -2210,6 +2210,36 @@ player test.
 | B82 | **Claim 7 refuted again, five instances, and one is a reproducible pattern** — a single-option card whose button asserts success and whose outcome is failure with a negative number, **seen three times across three careers** | todo — **highest-yield defect class on this board**, wave 29 lane 2 | Named in 053 §"bugs worth a developer's time": D30 *Missed Tackle Reel* (only button "Answer it on the practice field", outcome *"the whiffs don't stop"*), D33 *Targeting Review* (card says the booth reviewed, outcome says *"no flag, no review"*), D28 (prose says it showed, verdict says cost, −1 OVR) |
 | B83 | **The teammate cards are inert** — the spared B76 cards return prose with no number at all | todo | *"Written to be good, wired to be inert."* Distinct from B81: even a correctly-sized ladder shows nothing if the card carries no effect |
 | B84 | **Smaller 053 defects** — duplicate narration of one healed injury (+1 then +5), an injury that lasted exactly one card, four years of *"your name is written in pencil"* to an All-America senior, ON THE FIELD label thrash on a 1-point 85↔84 change | todo — cheap, cosmetic, several are one-liners | All in 053 §"bugs worth a developer's time" |
+
+## Wave 29 — in flight (PM session 12)
+
+Two lanes, file-disjoint, both straight off wave 28's backlog.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/054-a-rung-you-can-actually-reach.md` | dev + measurement | `src/ui/session/bands.ts` + tests, `reports/054-*.md` | 2026-09-16 |
+| `briefs/055-the-button-promises-and-the-outcome-refuses.md` | diagnosis + conditional fix | the event-outcome display path, `reports/055-*.md` | 2026-09-16 |
+
+**054 is B81 and it carries two numbers the PM derived from the sweep**, plus the sweep itself so the
+agent can argue with them: **top rung 85 → 80** (a +10 climb against virtue's +6 median and +12–14 p95,
+so a minority of virtuous careers reach it and nothing else does) and **rung 2's floor 70 → 66** (four
+points of buffer, so a single −1 can no longer move the marker off the start). The brief says in terms
+that these are a starting point and not a specification. **The bottom of the ladder is explicitly not
+to be touched** — the playtester singled out the downward callout as *"large, clear, well-designed"*,
+and the measured distribution shows the lower rungs are already well-used.
+
+**054 carries both halves of the identity rule, pointing opposite ways, which is why it is worth
+reading as a brief:** the rung-occupancy table is *supposed* to move, so **byte-identity there is a
+failure**; draft stock, undrafted rate and bust rate are *supposed* not to move, so **identity there is
+the pass.** A display calibration that shifts balance is a bug.
+
+**055 is B82 plus the separable small defects of B84.** It is a diagnosis lane with a conditional fix:
+`src/content/**` and `schema.ts` are frozen, so the label-rewrite and lint routes are **proposals
+only**, and the brief tells the agent to implement nothing if the honest answer is that the defect
+lives in prose. It also has to check its own classifier by hand-scoring 20 cards against it.
+
+**The two lanes share no file.** 055 is told explicitly that `bands.ts` belongs to 054 this wave, and
+that the `standingPhrase` thrash it will notice is 054's file, to be proposed and not edited.
 
 ## Next actions — for PM session 13, in order
 
