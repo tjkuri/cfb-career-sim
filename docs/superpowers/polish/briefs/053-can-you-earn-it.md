@@ -14,9 +14,17 @@ the only participant who does not know how it works.
   install`, `npm test`, `npm run build`, or any other build.** `npm run dev` never exits and is the
   single most likely thing to hang you.
 - **Never run a foreground command that does not terminate on its own.**
+- **Your first action is to create the report file with a one-line stub.** Before the skill, before the
+  browser, before anything. An agent on this brief died with 600 seconds of no progress at its very
+  first tool call and left nothing behind. Get a file on disk first.
 - Browser automation: invoke the `claude-in-chrome` skill first, then load the Chrome MCP tools in a
   **single** ToolSearch call listing every tool at once: `tabs_context_mcp`, `tabs_create_mcp`,
   `navigate`, `computer`, `read_page`, `get_page_text`, `javascript_tool`, `tabs_close_mcp`.
+- **Do not ask which browser to use, and do not call `list_connected_browsers`.** There is exactly one
+  and the PM has already confirmed it: **`8b77ec6f-1f42-4ea4-bca7-4869156e4634` ("Browser 1", local,
+  macOS)**. Call `select_browser` with that deviceId if you are asked for one at all, then carry on.
+  **A background agent that stops to ask a question has no one to ask, and hangs until it is killed** —
+  that is the most likely thing that killed the last one.
 - Clear `localStorage` before your first career and between careers — keys
   `cfb-career-sim:v1:current` and `cfb-career-sim:v1:log` — with `javascript_tool`, then reload.
 - **If any single tool call fails 3 times, stop that line of attack.** Write up what you have and
