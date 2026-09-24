@@ -208,7 +208,7 @@
    readings of the same career rather than one reading and an aside.
 
    The grid is two columns: the numeral owns column 1 of row 1 only, so the
-   locker-room claim sits in the text column with no numeral beside it and
+   with-the-program claim sits in the text column with no numeral beside it and
    cannot be read as a gloss on 85. The rule spans the text column alone for
    the same reason. */
 .standing {
@@ -239,10 +239,15 @@
 
 /* The label register the rail already speaks: condensed, 11px, 700, tracked
    wide, upper case (DECISION 008). It names the axis and then gets out of the
-   way -- "On the field" / "In the locker room" are two places, so they are
-   grammatically parallel, and neither collides with any phrase `bands.ts` can
-   produce. ("The staff" would have: two of the five trust bands already say
-   "the staff".) */
+   way. "On the field" / "With the program" both answer "where does he stand",
+   and neither collides with any phrase `bands.ts` can produce -- which is the
+   binding constraint here, and the reason the obvious alternatives are out:
+   "The staff" collides with two of the five bands and "In the building" with a
+   third ("just a guy in the building"), and a label that repeats a rung would
+   make that rung read as the heading of its own list. Task 058 replaced "In
+   the locker room" for the reason the line under the card was replaced: the
+   currency is integrity broadly and only about half the cards that move it
+   have a teammate in them. */
 .claim-where {
   font-variation-settings: "wdth" 76;
   font-size: var(--t-micro);
@@ -287,11 +292,104 @@
   overflow: hidden;
 }
 
-/* Character moves UP: it was 12px in the faintest grey of the ramp, and B17 is
-   that it is already too easy to ignore, so buying the separation by making it
-   quieter was never available. It now matches the band's size and sits one
-   colour step off it, and carries prose weight rather than label weight --
-   which is what it is, a sentence about people rather than a gloss on a number.
+/* ---------- the ladder, during play (task 058) ----------
+
+   The summary's `.ladder` seen earlier and smaller. It is the same object on
+   purpose -- a playtester called that block "large, clear, well-designed", and
+   a second widget in a second idiom for the same five phrases would read as
+   bolted on -- so it keeps the three things that identify it: the phrases in
+   the order `bands.ts` writes them, a 2px chalk mark in a fixed gutter column,
+   and the player's rung told apart by INK rather than by size.
+
+   What it drops is everything that made that block a subject rather than a
+   context: the 0.68rem row padding, the hairline between every row, the
+   closing rule, the `--t-label` setting and the "YOU ENDED HERE" caption. The
+   decision and its options are the focal point of this screen and the standing
+   is the room they are read in; five rules and a caption here would be five
+   more pieces of chrome arguing with the card. The mark and the ink already
+   say which rung is yours, and a third signal saying it again is decoration.
+
+   THE RULE THIS BLOCK EXISTS UNDER: nothing in it may encode HOW FAR. All five
+   rungs are one size, one weight class, one leading, one row height, and the
+   four that are not the player's are identical to each other -- the rung
+   directly above yours is set exactly like the rung three below it. Position in
+   an order is the entire read, which is all DECISION 002 allows `character` to
+   have, and DECISION 046 already refused the same magnitude wearing typography.
+
+   NO ACCENT COLOUR, same as the summary's. Four of the five rungs this can land
+   on are not a career fact worth a headline, and a gold mark on "the staff has
+   stopped defending you" would perform a trophy over the worst state in the
+   game (DECISIONS 021, 032). Chalk only. */
+.standing-ladder {
+  /* Pulled left by exactly the gutter it adds, so the PHRASES keep the left
+     edge that `.claim-where`, `.ovr-band` and the old single `.trust` line all
+     share. The mark hangs outside that edge, in the empty column under the
+     numeral -- which is what makes it read as a mark on the list rather than as
+     a bullet the list is indented by. Without this every rung sits 13px right
+     of everything else in the block and the text column has two left edges. */
+  margin: 0.2rem 0 0 calc(-0.7rem - 2px);
+  padding: 0;
+  list-style: none;
+}
+
+.standing-rung {
+  display: grid;
+  /* Column 1 is the mark and is the same width on every row, inked or not: the
+     list stays a column of phrases with one flagged, rather than a column that
+     indents when it reaches the player. */
+  grid-template-columns: 2px minmax(0, 1fr);
+  column-gap: 0.7rem;
+  align-items: center;
+  padding: 0.17rem 0;
+}
+
+/* Present on all five rows and inked on one. Two pixels of chalk down the
+   height of the row -- it says "this one" and cannot be read as a quantity,
+   because it is the same mark at every rung it can ever appear on. */
+.standing-rung-mark {
+  align-self: stretch;
+  background: transparent;
+}
+
+.standing-rung[data-here="yes"] .standing-rung-mark { background: var(--chalk-dim); }
+
+/* One size for all five, one step under the band's 15px and one over the
+   rail's 12px. These are context for the decision rather than the subject of
+   the screen, so they do not match the band -- but they are sentences about
+   people, and DECISION 024 raised this claim to the band's size on purpose
+   after B17 found it too easy to ignore, so dropping it to interface chrome
+   would spend that decision to buy the four neighbours. --t-body is the prose
+   step and is what these five phrases are.
+
+   One line each, truncated rather than wrapped: measured at 358px the longest
+   authored band ("they would run through a wall for you") sets in 227 of the
+   273px this column has, so nothing clips today -- and a block whose HEIGHT
+   changed with which rung the player was standing on would be a distance told
+   by layout, which is the one thing this block may never draw. */
+.standing-rung-phrase {
+  min-width: 0;
+  font-size: var(--t-body);
+  font-weight: var(--w-prose);
+  line-height: var(--lh-tight);
+  color: var(--chalk-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ink, not scale. Same size as the other four; two steps up the chalk ramp and
+   one weight class, which is the summary's own pairing. */
+.standing-rung[data-here="yes"] .standing-rung-phrase {
+  font-weight: var(--w-ui);
+  color: var(--chalk);
+}
+
+/* The fallback, for a phrase this ladder does not contain -- a save written
+   against different words. Same treatment the single line always had.
+
+   Character is set UP rather than down: it was 12px in the faintest grey of the
+   ramp, and B17 is that it is already too easy to ignore, so buying the
+   separation by making it quieter was never available.
 
    No meter, no bar, no dot count, no number: `character` swings draft stock by
    about +/-7.5 against overall's ~82, so any mark implying a scale with
@@ -312,10 +410,17 @@
 
    The phrase could change under the player with nothing marking it, and the
    one playtester who noticed only did because it happened on the last click of
-   the career. So the moment gets three things and no more: the phrase steps up
-   to full chalk, the rung it left is named underneath it, and the line arrives
-   rather than being there. All three are gone on the next Continue, which is
-   correct -- this marks an event, it does not describe a state.
+   the career. So the moment gets three things and no more: the mark on the
+   player's rung steps up to full chalk, the rung it left is named underneath
+   the ladder, and the line arrives rather than being there. All three are gone
+   on the next Continue, which is correct -- this marks an event, it does not
+   describe a state.
+
+   The mark brightening is the whole of the ladder's part in it, and it is
+   direction-free by construction: `[data-moved]` is set for "up" and "down"
+   alike and the selector cannot see which. The rung the player LEFT is not
+   marked, here or anywhere -- two marks on one list is a span, and a span is
+   the distance this block is forbidden to draw.
 
    No hue moves. `Up from` and `Down from` are set in the same colour, the same
    size and the same weight, and the entrance is the same entrance: an emphasis
@@ -325,6 +430,9 @@
    because `trustMove` cannot return a size and DECISION 002 says there is no
    size to return. */
 .standing-room[data-moved] .trust { color: var(--chalk); }
+.standing-room[data-moved] .standing-rung[data-here="yes"] .standing-rung-mark {
+  background: var(--chalk);
+}
 
 .trust-move {
   margin-top: 0.3rem;
@@ -956,7 +1064,7 @@
    resolves to `character −6, overall +1` under "compliance flags the resale
    listing with your name still in the metadata" -- and with only the `+1`
    rendered, getting caught printed as a reward. */
-.locker-room {
+.program-line {
   margin: 0.85rem 0 0;
   font-size: var(--t-label);
   font-weight: var(--w-ui);
@@ -1075,7 +1183,7 @@
    loud as this card's figure would have been and never louder; sizing it by
    the character effect itself would be the resolution 002 says character does
    not have, dressed as typography. */
-.consequence[data-lead="character"] .locker-room {
+.consequence[data-lead="character"] .program-line {
   margin-top: 1rem;
   /* Wider than the figure's 68: a condensed setting is what makes a numeral
      read as a numeral, and the same treatment on a sentence reads as a
@@ -1164,6 +1272,6 @@
   .fade-in,
   .delta,
   .trust-move,
-  .consequence[data-lead="character"] .locker-room { animation: none; }
+  .consequence[data-lead="character"] .program-line { animation: none; }
   * { transition-duration: 0ms !important; }
 }

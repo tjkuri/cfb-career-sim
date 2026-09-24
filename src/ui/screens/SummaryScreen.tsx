@@ -278,7 +278,7 @@ export function SummaryScreen({ view, hasLog, onRestart, onViewLog }: Props) {
           five dim lines with no mark on any of them. */}
       {trustRungOf(view.trust) >= 0 && (
         <>
-          <h2 className="section-head">In the locker room</h2>
+          <h2 className="section-head">With the program</h2>
           <ol className="ladder">
             {TRUST_LADDER.map((phrase) => {
               const here = phrase === view.trust;

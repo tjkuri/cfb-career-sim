@@ -2495,6 +2495,56 @@ them.
 
 **The two lanes share no file.** 058 is confined to `src/ui/**`, 059 to `src/sim/` and its report.
 
+### Lane 059 — done, awaiting commit with 058. It reproduced the PM's numbers and then corrected the PM twice
+
+**Not committed yet:** lane 058 is still in flight and holds `CareerScreen.tsx`, `career.css` and a new
+test uncommitted in the same tree. **A mixed tree cannot be verified**, so the PM is holding the commit
+until 058 lands rather than claiming a verification it cannot run. 059's own files are
+`reports/059-*.md`, `src/sim/credit-proposal-probe.ts` and its test.
+
+**DECISION 084 reproduces exactly** — every figure re-derived from `CONTENT` rather than transcribed.
+No discrepancy. **See DECISION 085 for the one clause of 084 that is wrong and the two places the lane
+corrected the PM.** Short version: credits *do* fire corpus-wide (`virtueLoyal` p50 **2**), the brief's
+acceptance criterion was already satisfied at HEAD because the PM carried 057's ten-card figure into a
+brief as a corpus-wide one, and **the PM's two clearest candidates were both refused with better
+reasoning than the PM had.**
+
+**The verdict on the 27: credit 11, leave alone 13, unsure 3** — and *"the fix for 14 of the 27 is not a
+credit; a wave that fixed all 27 would ship a worse game than HEAD"* is the line to carry forward.
+
+**Tier 1 — six cards, recommended.** *The Two-Deep*, *The Captain Vote*, *The Holding Call*,
+*Trash Talk*, *The Roughing Call* (**057 missed it**), *Asked to Block*. All `+1`→`+2` or `0`→`+2`.
+
+| Arm | `virtueLoyal` | `virtueAmbitious` | `good` | `baselineRandom` |
+|---|---|---|---|---|
+| Tier 1 draft stock | +0.131 ± 0.006 | +0.132 | **+0.016 ± 0.002** | +0.068 |
+| Tier 1+2 draft stock | +0.638 | +0.613 | **+0.484** | +0.328 |
+
+Undrafted and bust rates unmoved in every arm. **Tier 1 is as close to free as a content change gets**
+— 0.02% of `good`'s base — and it retires the two cards the playtest and 057 independently converged on.
+
+**Tier 2 — the five `fixed` season openers — is a real authorial question and is asked separately.** It
+is the only thing on the table that moves the median career (credits from the 27: p50 **0 → 4**,
+careers reading nothing new **50.8% → 0.0%**) — **and it reaches the `good` profile just as hard**
+(credit rate 72.5% → **100%**), because `stay-within` is already the stock-optimal pick and Tier 2 pays
+it more. A player who never thinks about the locker room once would be told he has standing every
+September. **That is the signal `briefs/059` itself named as meaning the list is wrong**, so it does
+not ride along with Tier 1.
+
+**A third shape the lane named but was not asked to price, and it may be the best of the three:**
+**remove the −2 from the openers' `handle-it` failure outcome** instead of crediting `stay-within`.
+That makes the openers **silent both ways** rather than one-way-down, costs the virtue profiles
+nothing, and **pays nobody for being calm.** It deserves its own brief. Note the openers' `stay-within`
+branch was authored deliberately in wave 26 with the rationale written into `milestones.ts` — *"you are
+the guy who did the job, and the room notices"* — so this is not an oversight being corrected but a
+calibration being argued about.
+
+**Report 057 §6 R2 is superseded, with two corrections to it:** its +0.17 draft stock measures at
+**+0.131** (~23% high), and its *"`good` moves exactly 0.00 by construction"* is **false** at +0.008.
+Its `playing-through-the-hand` edit is **dropped** — that card is not one of the 27, so the edit would
+have created a one-way-**up** card. Four of its six are kept, `targeting-review` moves to unsure, and
+seven rows it missed are added.
+
 ## Next actions — for PM session 13, in order
 
 **Read this section and `DECISIONS.md` 077–082. Nothing else.**

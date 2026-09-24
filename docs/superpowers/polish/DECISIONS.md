@@ -3027,3 +3027,61 @@ met in play, which the `fixed` opener and rivalry cards make unlikely.
 
 **The routes are the user's**, because every one of them edits `src/content/**`. They are B85, B88 and
 B90 on the board, and they are carried to the user together rather than one wave at a time.
+
+## 085 — DECISION 084 is corrected in one clause and upheld in the rest. The PM's two clearest candidates were both wrong, and the better principle is the lane's
+
+**Date:** 2026-09-24 · **Made by:** PM session 13, accepting lane 059's corrections · **Corrects:** DECISION 084 (one clause) and the acceptance criterion in `briefs/059` · **Supersedes:** report 057 §6 R2 · **Evidence:** `reports/059-price-the-thing-the-user-has-to-approve.md`
+
+**DECISION 084's numbers reproduce exactly.** 059 re-derived every figure from `CONTENT` rather than
+transcribing it: 22/48/136 options, 27 one-way-down cards, 9 mirrors, 21 at floor 1, plus DECISION
+077's 72-negatives and 49-in-−1..−4. No discrepancy. The corpus asymmetry stands as measured.
+
+**The clause that is wrong.** 084 says the ladder *"was being asked to display movement that the corpus
+never generates."* **The corpus does generate credits** — measured corpus-wide, the median `virtueLoyal`
+career reads **2** locker-room credits. What it rarely generates is enough *accumulated* character to
+cross a rung boundary from a start already sitting on rung 2. **Credits firing and rungs moving are two
+different claims and 084 ran them together.**
+
+**The PM made a denominator error and it was in the brief.** `briefs/059`'s acceptance criterion —
+*credit p50 ≥ 1 on `virtueLoyal`* — is **already satisfied at HEAD** and therefore discriminates
+nothing. Report 057's *"credit p50 = 0"* was true of **the ten spared cards only**, and the PM carried
+it into a brief as a corpus-wide figure. This is next-action item 9(d) — *a set defined by a
+measurement is not the corpus* — firing for the third time on this board, and for the second time on
+the PM's own arithmetic. **The criterion that discriminates is credits sourced from the 27, which is 0
+by construction at HEAD**, and 059 substituted it unprompted.
+
+**The PM's two clearest candidates were both wrong, and the lane's principle is better than the PM's.**
+084 named `offfield-bowl-curfew` / *"Stay in and get the rest"* and `offfield-ghost-media` / *"Show up
+and answer the questions"* as the obvious cases. 059 refuses both: curfew is **a rule**, press
+availability is **required**, and the cards' own prose closes the door — *"You watch a movie in the
+hotel room"*, *"Nobody remembers it by dinner."* **Crediting them pays a player for doing his job.**
+
+**The test adopted in place of the PM's, stated so a future session can disagree with it precisely: a
+restraint branch should pay only if (a) somebody in the room can see it, and (b) it costs the player
+something he wanted.** Paying for private prudence redefines `character` as a compliance score —
+*"avoided doing a bad thing"* — which is **worse than the current silence, because it is wrong rather
+than merely absent.** This is DECISION 078's integrity-not-effort axis applied one level down, and it
+is the reason **14 of the 27 stay one-way-down on purpose.**
+
+**084's "the game scores misbehaving and declines to score behaving" is true of the corpus and is
+*also the design* on the eight-card `offfield-*` transgression family**, whose convention is stated in
+`offfield.ts` itself: the corrosive option charges on the branch you take, and the null branch is the
+author saying *nothing happened*. A wave that "fixed all 27" would ship a worse game than HEAD.
+
+**Two corrections to report 057 §6 R2, which this supersedes.** Its +0.17 draft stock measures at
+**+0.131** (~23% high), and its *"`good` moves exactly 0.00 by construction"* is **false** — measured
+**+0.008**, because `good` takes `targeting-review/pull-up` in 6.4% of careers. R2's
+`playing-through-the-hand` edit is **dropped**: that card is not one of the 27 (its only charge is −1,
+already sub-floor), so crediting it would have created a one-way-**up** card.
+
+**What is not decided here.** Tier 1, Tier 2 and the unsure three are content and go to the user
+unchanged, with 059's §5.3 table attached. **The PM does not recommend Tier 2 to the user as a bundle
+with Tier 1**: it takes the `good` profile's credit rate from 72.5% to 100%, so a player who never
+thinks about the locker room once would be told he has standing every September — which is precisely
+the signal `briefs/059` named as meaning the list is wrong. It is a real authorial question, not a
+defect, and it is asked separately.
+
+**What would change our mind.** On the clause: a measurement showing rung crossings are rare *given*
+the credits that do fire, which would move the fault back toward `bands.ts`. On the principle: a
+playtester reporting that declining the transgression feels unacknowledged — which is the losing side
+of the compliance argument and is worth one question in the next playtest.

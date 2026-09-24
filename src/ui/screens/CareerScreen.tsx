@@ -1,5 +1,5 @@
 import { railView } from "../session/view-model";
-import { trustMove } from "../session/bands";
+import { TRUST_LADDER, trustMove, trustRungOf } from "../session/bands";
 import { classYearLabel, followHeader, type LedgerRow } from "../session/ledger";
 import { countedStatLabel } from "../session/labels";
 import type { CardAccount, CareerView, Remainder, Resolved, StatView } from "../session/types";
@@ -65,13 +65,27 @@ function ownSentence(own: number, alone: boolean, now: number): string {
 }
 
 /**
+ * The noun the whole character currency is named by, on this screen.
+ *
+ * Held as a constant and exported because it is a CONSTRAINT, not a string: the
+ * `.claim-where` label and both sentences under the card have to say the same
+ * thing, and the label must not collide with any phrase `bands.ts` can put on
+ * the ladder directly beneath it. "The staff" collides with two of the five
+ * rungs and "the building" with a third, and a label that repeats a rung would
+ * make that rung read as the heading of its own list. `career-screen.test.ts`
+ * owns both halves of that so a later band edit fails a test instead of quietly
+ * printing a label twice.
+ */
+export const PROGRAM_LABEL = "the program";
+
+/**
  * The character half of an outcome, as words (DECISION 046 cause 2).
  *
  * DECISION 002 is not reversed and no integer appears: character moves draft
  * stock by ~±7.5 against overall's ~82, and a number here would overstate it
  * tenfold. What it gets instead is what B17 said it was missing -- position and
  * weight. The line sits ABOVE the OVR figure, inside the same rule, in the same
- * vocabulary the standing block uses two inches higher ("In the locker room"),
+ * vocabulary the standing block uses two inches higher ("With the program"),
  * so *The Ticket Hookup*'s "compliance flags the resale listing" can no longer
  * be read as a `+1` and nothing else.
  *
@@ -85,15 +99,56 @@ function ownSentence(own: number, alone: boolean, now: number): string {
  * -32. That is this docblock's stated intent finally implemented, not a new
  * one: a verdict that arrives on a card worth 0.15 draft stock is not a fact,
  * it is narration, and it taught players to skim the ones that were.
+ *
+ * ---------------------------------------------------------------------------
+ * TASK 058 item 2. It used to say "in the locker room", and it said it over
+ * every character effect in the game. The PM's exhibit was
+ * `offfield-money-manager` / *"Let him handle it"*: a cousin negotiating an NIL
+ * deal, `character -4`, reported as a cost in a room nobody in that card has
+ * been inside.
+ *
+ * The reading was measured rather than accepted. Every outcome in
+ * `src/content/events/**` whose summed character delta clears the floor -- 88
+ * of them -- was hand-scored into three classes, and the same classes were
+ * weighted by how often each card actually fires, over 140,935 decisions across
+ * six positions and five policies (report 058):
+ *
+ *                                          authored    of lines a player reads
+ *   the room itself: teammates, the team      30%              51%
+ *   the program: coaches, staff, compliance   38%              18%
+ *   outside it entirely: money, family,
+ *     media, fans, police, academics,
+ *     the player's own head                   33%              31%
+ *
+ * So the old sentence was literally true of about half the lines a player is
+ * shown and plainly false of about a third -- *catfished* is 22.6% of a
+ * virtuous career's character lines on its own, and it is a joke about fans.
+ * The three profiles disagree by less than nine points on any row, so this is
+ * not an artefact of how the measured player behaves.
+ *
+ * The rewrite is not a trade, which is why it is worth making. "With the
+ * program" is true of all three classes: it is true of *"the room quietly picks
+ * a side"*, and it is true of a compliance meeting and of a summer spent at
+ * home. It costs the first class some of its vividness and buys the third one
+ * accuracy. The whole currency is integrity, not one room, and the display now
+ * names the currency.
+ *
+ * Not card-aware, deliberately: the honest per-card version needs a field on
+ * `Outcome`, `src/content/**` is frozen, and a schema change is the user's
+ * call. Flagged in the report as a proposal instead.
+ *
+ * `SummaryScreen.tsx`'s heading over the same five rungs was moved with this by
+ * the PM, to "With the program" -- two screens naming one currency two ways was
+ * the defect this task exists to fix, and leaving half of it was not an option.
  */
-function lockerRoomLine(account: CardAccount): string | null {
+export function programLine(account: CardAccount): string | null {
   // Terse on purpose. Before the floor a character effect fired on 37.5% of
   // resolved cards (measured over 360 careers), so this line is read often --
   // and a sentence read that often has to behave like `+1 OVR` does, as a
   // stated fact that never varies, rather than like narration, which would
   // turn into the wallpaper this whole wave exists to stop people skimming.
-  if (account.lockerRoom === "cost") return "Cost you in the locker room.";
-  if (account.lockerRoom === "credit") return "Earned you credit in the locker room.";
+  if (account.lockerRoom === "cost") return `Cost you with ${PROGRAM_LABEL}.`;
+  if (account.lockerRoom === "credit") return `Earned you credit with ${PROGRAM_LABEL}.`;
   return null;
 }
 
@@ -365,6 +420,73 @@ function Ledger({ rows }: { rows: LedgerRow[] }) {
   );
 }
 
+/**
+ * The ladder, during play (TASK 058 item 1).
+ *
+ * WHY IT IS PERMANENT, rather than appearing when it moves and resting as a
+ * phrase. Both readings of the playtest point the same way:
+ *
+ *   * The complaint is that across 34 decisions of deliberate good-teammate
+ *     play *"nothing ever felt at risk because the readout never moved"*. Risk
+ *     is a property of a STATE, not of an event. A ladder that renders only on
+ *     the click it moves is blind on exactly the decisions the complaint is
+ *     about -- it is `.trust-move`, which already exists, drawn larger.
+ *   * Measured over 140,935 decisions (six positions x five policies), a
+ *     character effect big enough to print anything at all fires on 20.2% of
+ *     cards, and only a fraction of those cross a rung. An on-move ladder is
+ *     off screen on roughly nine cards in ten.
+ *   * The second finding is that the five rungs are *"shown for the first time
+ *     in the credits"*. A scale you are shown at the moment you fall down it is
+ *     still a scale you can only learn by losing.
+ *
+ * So: the four rungs that are not yours are on screen at all times, because
+ * they are the answer to "where do I stand" and they are the thing that makes
+ * the rung you are on feel like somewhere you could stop being.
+ *
+ * WHAT IT MAY NOT BE. Order only -- never a distance, a count, a percentage or
+ * a bar (DECISION 002, DECISION 046). Every rung is set at one size, one
+ * leading, one row rhythm; the four that are not yours are identical to each
+ * other, so the rung directly above yours looks exactly like the rung three
+ * below it and nothing on screen can be read as how far. Yours is told apart by
+ * INK -- full chalk, UI weight, and a 2px mark in the gutter -- never by being
+ * bigger, which is the summary's own rule and the one the brief warns hardest
+ * against diverging from.
+ *
+ * WHY IT DOES NOT COMPETE WITH THE DECISION. It replaces `.trust` rather than
+ * joining it: the inked rung IS the phrase that was already there, so the block
+ * gains four quiet lines, not five. They are set at `--t-meta` -- the rail's
+ * size, the register this interface already uses for context -- against the
+ * card title's `--t-title` and the options' `--t-label`. There is no accent
+ * colour, no rule between rows, and no "you are here" caption: the mark and the
+ * ink say it, and a fourth signal on the same fact would be decoration. The
+ * whole block costs ~79px and the decision stays the loudest thing on screen.
+ *
+ * Guarded on the phrase being a rung this ladder contains, exactly as the
+ * summary is: a save written against different words falls back to the bare
+ * phrase rather than drawing five rows with no mark on any of them.
+ */
+function StandingLadder({ now }: { now: string }) {
+  if (trustRungOf(now) < 0) return <span className="trust">{now}</span>;
+  return (
+    <ol className="standing-ladder">
+      {TRUST_LADDER.map((phrase) => {
+        const here = phrase === now;
+        return (
+          <li
+            key={phrase}
+            className="standing-rung"
+            data-here={here ? "yes" : "no"}
+            {...(here ? { "aria-current": "true" as const } : {})}
+          >
+            <span className="standing-rung-mark" aria-hidden="true" />
+            <span className="standing-rung-phrase">{phrase}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   // DECISION 019. While an outcome is on screen the rail describes the card
   // being read, not the state the engine has already moved into: `advance()`
@@ -437,7 +559,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   const showElsewhere = elsewhere !== 0;
   const showOwn = own !== 0 || showElsewhere;
   const notes = account ? accountNotes(account, own) : [];
-  const locker = account ? lockerRoomLine(account) : null;
+  const standing = account ? programLine(account) : null;
 
   // The sentence under whichever figure this card did not earn: the hub's
   // whole movement, or the remainder beside an authored card's own number.
@@ -471,12 +593,12 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
   // DECISION 002 is untouched and no integer appears. The threshold is the
   // magnitude scale's own bottom tier (|own| <= 2, 89% of cards), so a card
   // that moved OVR by a visible amount keeps the slot on the number.
-  const characterLeads = locker !== null && magnitude(own) <= 1;
+  const characterLeads = standing !== null && magnitude(own) <= 1;
 
   // TASK 043. The rung the standing sits on can move under the player with
   // nothing marking it -- one playtester only noticed theirs move because it
   // happened on the very last click of the career, after being told "Cost you
-  // in the locker room." six times. The phrase changing IS the event, and an
+  // with the program." six times. The phrase changing IS the event, and an
   // event that is not marked is not an event.
   //
   // Read off the frozen pre-`advance` phrase, so it is true of THIS click and
@@ -577,26 +699,29 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
             <span className="claim-where">On the field</span>
             <span className="ovr-band">{view.standing}</span>
           </p>
-          <p className="standing-claim standing-room" data-moved={moved ?? undefined}>
-            <span className="claim-where">In the locker room</span>
-            <span className="trust">{view.trust}</span>
-            {/* The rung that was true one click ago, named. Naming it is what
-                makes this a ladder rather than a phrase that swapped itself:
-                the player reads where they were and where they are, and the
-                four rungs they have not reached are the reason to keep
-                playing (the summary draws all five). No arrow, no count, no
-                second colour -- two words and the previous rung. */}
+          {/* A `div`, not a `p`: it holds a list now, and an `ol` inside a `p`
+              is parsed as a sibling by every browser, which would put the
+              ladder outside the block whose rule and grid column define it. */}
+          <div className="standing-claim standing-room" data-moved={moved ?? undefined}>
+            <span className="claim-where">With {PROGRAM_LABEL}</span>
+            <StandingLadder now={view.trust} />
+            {/* The rung that was true one click ago, named. It is the EVENT --
+                the ladder above is the state -- and it stays direction-only:
+                `trustMove` cannot return a size, so a fall of three renders
+                exactly as a fall of one. No arrow, no count, no second colour.
+                The vacated rung is deliberately NOT marked on the ladder: two
+                marks on one list is a span, and a span is a distance. */}
             {moved && trustBefore && (
               <span className="trust-move">
                 <span aria-hidden="true">
                   {moved === "up" ? "Up from" : "Down from"} “{trustBefore}”
                 </span>
                 <span className="sr-only">
-                  Your standing in the locker room moved {moved}. It was: {trustBefore}.
+                  Your standing with {PROGRAM_LABEL} moved {moved}. It was: {trustBefore}.
                 </span>
               </span>
             )}
-          </p>
+          </div>
         </div>
 
         {resolved ? (
@@ -653,7 +778,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                 instead (B23): the move, the delta, or both. The block is not
                 rendered at all when it would hold none of the three, so the
                 rule never draws beside an empty card. */}
-            {(resolved.outcome || resolved.hub?.to || showOwn || locker) && (
+            {(resolved.outcome || resolved.hub?.to || showOwn || standing) && (
             <div
               className="consequence"
               data-magnitude={loudness}
@@ -689,7 +814,7 @@ export function CareerScreen({ view, resolved, onChoose, onContinue }: Props) {
                   deliberately: B17 is that the character read is too easy to
                   skip, and on a card whose real cost was character the number
                   underneath must not be the first thing the eye lands on. */}
-              {locker && <p className="locker-room">{locker}</p>}
+              {standing && <p className="program-line">{standing}</p>}
 
               {showOwn && (
                 <p className="delta">
