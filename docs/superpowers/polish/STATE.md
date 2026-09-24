@@ -2148,6 +2148,18 @@ board has already written down**:
 
 **Dev server:** the PM killed a stale Vite on 5175 and started a clean one on **5173** at HEAD.
 
+**The first playtester died, and the cause is now written into the brief.** It stalled with **600
+seconds of no progress at its very first tool call** and left nothing on disk — the same shape as
+wave 17's 036. The PM checked the dependency rather than assuming: `list_connected_browsers` shows one
+local Chrome, so the tooling was fine. **The likely hang point is the browser-selection prompt: the
+Chrome tool requires asking the user which browser to use, and a background agent that stops to ask a
+question has no one to ask and hangs until it is killed.** Two mitigations are now in `briefs/053`
+and belong in every future playtest brief:
+
+1. **Write the report stub to disk as the first action**, before the skill and before the browser.
+2. **Never ask which browser to use.** The confirmed one is `8b77ec6f-1f42-4ea4-bca7-4869156e4634`
+   ("Browser 1", local, macOS). Name it in the brief so the agent never reaches the question.
+
 ## Next actions — for PM session 13, in order
 
 **Read this section, `DECISIONS.md` 077–079, and the wave 27–28 sections above. Nothing else.**
