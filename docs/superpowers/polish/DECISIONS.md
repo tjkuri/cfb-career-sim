@@ -2892,3 +2892,57 @@ tested: it scores the full per-decision character trajectory against **a band ta
 parameter**, so any future calibration is compared on **identical seeds** rather than by running two
 samples and diffing summary statistics. That design is what let this lane answer "old versus new"
 honestly, and it is why the 80/67 alternative already has numbers attached.
+
+## 082 — The one-option card was never a button, three quarters of the game's heal reports were false, and 95% of the remaining defect is one label
+
+**Date:** 2026-09-16 · **Made by:** PM session 12 · **Closes:** B82 in the UI · **Opens:** B85, B86 · **Evidence:** `reports/055-the-button-promises-and-the-outcome-refuses.md`
+
+**Shipped as `65b057a`.** 740 tests, both typecheck passes, build clean, clicked through at 1456×900
+and at a 360px content box.
+
+**The brief's premise was wrong, and being wrong is what made the fix possible.** The brief — and the
+053 playtest, and the PM — all described *"a button that asserts success."* **There is no button.**
+`openCard` auto-resolves a one-option card on arrival (DECISION 018). The label was being rendered as a
+**bare declarative line above the outcome**, so the UI was narrating an *option label* as a *completed
+event*. Multi-option cards carry *"You chose:"* — an intention frame. One-option cards had that frame
+stripped and **nothing put in its place.**
+
+**The fix is one caption: the narrated beat now reads *"The plan: <label>"*.** Unconditional on both
+branches, because captioning only the failures would reveal the roll. **It resolves all 6 clear and 3
+borderline one-option instances with no prose touched** — which is why a lane told *"implement the UI
+route only if it genuinely fixes something"* was able to implement one.
+
+**053's "three times in three careers" is CONFIRMED and it is not rare.** Measured over 3,000 careers ×
+4 profiles: **72–74% of careers meet a contradicted one-option card**, at **~1.1 per career**. Class
+size: **6 of 12** one-option cards, 25 of 132 multi-option branches. **The rate is flat across `good`,
+`virtueLoyal`, `baselineRandom` and `lazyFull`, and that flatness is the finding** — the player cannot
+decline these cards, so no amount of skill avoids them.
+
+**B85 — 95% of the acute class is a single card, and it is the highest-value word-for-word action left
+on this defect class.** `milestone-fall-camp`'s *"Win the job"*: a fixed event gated `minClass: SO`,
+firing ~3× per career and failing **35%** of the time — **1.048 of the 1.10 per career.** It is also
+053's stale-flavour card (*"your name is written in pencil"* served four years running, including to an
+All-America senior). **The label asserts the outcome and the card then refuses it.** Content is frozen,
+so this is an **RB proposal and goes to the user.** The caption now softens it; rewriting the label
+removes it.
+
+**The second bug, found unasked, and it is larger than the one the lane was dispatched for.**
+**74.7% of every *"An injury healed and gave the points back"* line this game has ever printed was
+false** — 7,693 of 10,298 reports across 78,605 advances, touching **78% of careers.**
+`someInjuryLeft` demanded a **strictly** smaller `remainingPhases`, but only a *phase tick* decrements
+one, so any advance **inside** a phase failed to match an unchanged injury list against itself and
+reported a heal that had not happened. `<` → `<=` gives **0 false positives and 0 missed true heals**,
+and brief 049's case still reports. Verified in source by the PM. This is what 053 met as *"duplicate
+narration of one healed injury"* — **+1 at the end of season 2, then +5 on the first card of season 3.**
+The player saw the tail of a 78%-of-careers defect and described it exactly.
+
+**B86 — RC is refused in its obvious form, and the reasoning is worth keeping.** A lint rule that fails
+the build when a one-option label *"asserts a result"* **cannot work: "asserts a result" is not
+lexically decidable, and the flagship instance shares no word with its failure branch.** The report
+proposes a required-acknowledgement field across the 12-card one-option population instead — schema,
+therefore content, therefore the user's. **A refused route with a stated reason is a result**; this
+board has twice paid for shipping a change that could not do what its name said.
+
+**What would change our mind.** On the caption: a playtester reading *"The plan:"* as a hedge, or as
+telegraphing that failure is coming. It is unconditional precisely so it cannot do the latter, but
+that is an argument, not a measurement, and the next playtest is where it gets one.
