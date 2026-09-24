@@ -70,9 +70,51 @@ const PLAYING_FALLBACK = "in the rotation";
 // Coarser on purpose. Character moves draft stock by about ±7.5 against
 // overall's ~82 points of range; a dial of equal resolution would misrepresent
 // its influence by roughly an order of magnitude.
+//
+// ---------------------------------------------------------------------------
+// The top two floors are calibrated, not authored (DECISION 080, task 054)
+//
+// They used to be 85 and 70 against a `STARTING_CHARACTER` of 70, which made
+// every career begin standing EXACTLY on a boundary: down was a 1-point fall,
+// up was a 15-point climb. A playtester spent a whole career chasing the top
+// phrase by name, never moved up once, and moved DOWN on decision 2. Their
+// sentence was *"the display is not the problem, the asymmetry is"*, and it
+// was `>=`, not a metaphor.
+//
+// Measured over 14,400 careers -- six profiles x six positions x 400 runs,
+// scoring the full per-decision `character` trajectory rather than the final
+// value, because the complaint is about MOVEMENT and an endpoint cannot see it
+// (`src/sim/rung-probe.ts`, report 054):
+//
+//                                 85/70            80/66
+//   virtuous careers touching the top rung      2.3%   ->   23.1%
+//   of the careers whose rung moved at all,
+//     share whose FIRST move was downward      94.5%   ->   31.9%
+//   careers falling a rung within 5 decisions  11.4%   ->    0.2%
+//   `good` careers touching the top rung        0.1%   ->    1.8%
+//   random / lazy / saboteur touching it        0.0%   ->    0.0%
+//
+// **80** is a +10 climb from the start, above virtue's measured median (+6) and
+// inside its upper tail: reached by a minority of maximally virtuous careers,
+// essentially nobody else, and by no mercenary career at any position.
+//
+// **66** is 4 points of buffer below the start. That number is the bundle's own
+// -- 49 of the 72 authored negative `character` outcomes land in -1..-4, so two
+// thirds of single bad cards can no longer move the marker, while a mercenary
+// career (median final 35-41) still falls through every rung beneath.
+//
+// The three floors below are untouched on purpose: the downward half of the
+// ladder was the one part of this display a playtest called well-designed, and
+// the measurement confirms it is unmoved -- `lazyFull` final-rung occupancy is
+// 0.220 / 0.435 / 0.345 before and 0.219 / 0.435 / 0.345 after.
+//
+// This is DISPLAY calibration and changes no balance: `character` swings draft
+// stock identically whatever the ladder says, and report 054 re-ran the draft,
+// bust and undrafted baselines to confirm they come back byte-identical.
+// ---------------------------------------------------------------------------
 const TRUST_BANDS: Band[] = [
-  { min: 85, phrase: "they would run through a wall for you" },
-  { min: 70, phrase: "the staff trusts you" },
+  { min: 80, phrase: "they would run through a wall for you" },
+  { min: 66, phrase: "the staff trusts you" },
   { min: 50, phrase: "just a guy in the building" },
   { min: 30, phrase: "a problem they are managing" },
   { min: 0, phrase: "the staff has stopped defending you" },

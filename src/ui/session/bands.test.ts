@@ -110,9 +110,30 @@ describe("trust bands", () => {
   });
 
   it("changes at each documented boundary", () => {
-    for (const edge of [30, 50, 70, 85]) {
+    for (const edge of [30, 50, 66, 80]) {
       expect(trustPhrase(edge)).not.toBe(trustPhrase(edge - 1));
     }
+  });
+
+  // DECISION 080 / brief 054. The two properties the recalibration exists to
+  // create, stated as the player experiences them rather than as thresholds:
+  // a fresh career is not standing on a trapdoor, and the rung above it is
+  // closer than the fifteen points that made it unreachable.
+  it("does not drop a starting career a rung on one bad card", () => {
+    // Every authored single negative `character` outcome from -1 to -4, which
+    // is 49 of the bundle's 72. The marker must not move for any of them.
+    for (const hit of [1, 2, 3, 4]) {
+      expect(trustPhrase(FRESH.character - hit)).toBe(trustPhrase(FRESH.character));
+    }
+  });
+
+  it("puts the top rung inside the reach of a virtuous career", () => {
+    // Measured ceiling of maximally virtuous play is about +14 from the start
+    // (report 054); the rung above must sit below that, or it is scenery.
+    const climb = 14;
+    expect(trustRungOf(trustPhrase(FRESH.character + climb))).toBeLessThan(
+      trustRungOf(trustPhrase(FRESH.character)),
+    );
   });
 
   it("is coarser than the standing scale", () => {
@@ -171,7 +192,7 @@ describe("the trust ladder", () => {
     expect(trustMove(undefined, now)).toBeNull();
     // Same rung: character moved, the building's read of it did not.
     expect(trustMove(now, now)).toBeNull();
-    expect(trustMove(trustPhrase(70), trustPhrase(84))).toBeNull();
+    expect(trustMove(trustPhrase(66), trustPhrase(79))).toBeNull();
     // A phrase this ladder does not contain -- a save written against other
     // words. It is not placed, so no move is claimed.
     expect(trustMove("a phrase from another build", now)).toBeNull();

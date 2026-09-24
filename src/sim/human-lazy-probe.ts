@@ -30,8 +30,8 @@ import { percentile } from "./balance";
 // already pins these values on the UI side; this table is asserted equal to it
 // in human-lazy-probe.test.ts.
 export const TRUST_BAND_FLOORS: { min: number; phrase: string }[] = [
-  { min: 85, phrase: "they would run through a wall for you" },
-  { min: 70, phrase: "the staff trusts you" },
+  { min: 80, phrase: "they would run through a wall for you" },
+  { min: 66, phrase: "the staff trusts you" },
   { min: 50, phrase: "just a guy in the building" },
   { min: 30, phrase: "a problem they are managing" },
   { min: 0, phrase: "the staff has stopped defending you" },
