@@ -2408,6 +2408,65 @@ about as load-bearing is invisible to half the profiles.
 from 2.5 to 7.1 per career and only **5.5%** of the extra lines come from these ten cards. **DECISION
 077's floor survives its first real challenge.**
 
+### Wave 30 result — lane 056, the playtest. It played a third career unasked, and it converged with 057 on a card neither could have coordinated on
+
+**The curve: yes → a narrow checking yes → played a third, then stopped at three.** A self-assigned
+third career is the second in this project's history. Their verbatim reason, written before they acted:
+*"I want to check one thing, and the thing is on the ending screen in both careers: **they would run
+through a wall for you**."* Career 3 was a controlled maximum-virtue run — OL, one school, four years.
+
+**A.4, the question the wave existed for: *neither*, and that is worse than either.** 34 decisions of
+deliberate good-teammate play ended on **the exact rung the character-creation screen handed them**,
+and nothing ever felt at risk because the readout never moved.
+
+**Bet 1 — the ladder: PARTIAL, leaning refuted.** Wave 29's upward line *"Earned you credit in the
+locker room."* is real and is styled identically to the cost line, so the flat *"only something you can
+lose"* is **refuted of the text**. But across three careers and ~114 decisions: **rungs gained 0, rungs
+lost 2.** Career 3 collected **four** credit lines and moved **zero** rungs. **DECISION 081's falsifier
+fired — and its prepared `80/67` remedy is deliberately not applied. See DECISION 084.**
+
+**Bet 3 — recognition, passivity, or nothing: never passivity, and the split is the finding.** *Up
+Forty at Halftime* **is** recognition. *The Two-Deep* — **the same fiction** — is inert. **057 named
+the identical pair from 3,600-career statistics with no access to the playtest, and the playtester
+named it from feel with no access to the source.** The two channels are exactly **inverted**: one card
+writes a MOMENT and no credit line, the other a credit line and no MOMENT.
+
+**The ladder is shown for the first time in the credits.** A player never sees the five-rung scale
+during play. This is UI, in bounds, and unblocked now the playtest is over.
+
+### The PM's corpus sweep, run after both lanes landed — this is the headline of the phase
+
+The playtester found three cards where **the bad branch is scored and the good branch is not**. Rather
+than carry three hand-picked examples, the PM swept all 106 cards. Verified verbatim in source:
+`offfield-bowl-curfew` / *"Stay in and get the rest"* and `offfield-ghost-media` / *"Show up and answer
+the questions"* are **`effects: []`** against siblings carrying −4/−5 and −4/−9.
+
+| | can earn a credit | can be charged | silent both ways |
+|---|---|---|---|
+| 204 options, floor applied | **22 (10.8%)** | **48 (23.5%)** | 136 (66.7%) |
+| 204 options, floor removed | 38 (18.6%) | 59 (28.9%) | 114 (55.9%) |
+
+**27 of 106 cards (25.5%) can charge and can never credit; the mirror set is 9.** Floor removed it is
+still **21 (19.8%)** — the asymmetry is **authored**, and the floor widens rather than causes it. The
+one-way-down set includes all five `milestone-opener-*` variants and `milestone-rivalry`, which are
+`fixed` and fire **every season** — which is why ~114 decisions produced zero upward rungs.
+
+**Also confirmed verbatim, and it is the claim-2 violation eight playtests have been asked for:**
+`offfield-money-manager` / `let-him-handle-it` **positive** outcome reads *"He actually gets you a
+decent deal. You stop thinking about it, which is the point."* and carries **`character −4`,
+`overall +2`**. The game prints a success, hands you +2 OVR, and fires *"Cost you in the locker room."*
+Nothing on the card connects family finances to a locker room — which is a **display-vocabulary**
+defect as much as a content one, and the vocabulary is in `view-model.ts`, which is ours.
+
+### New backlog from wave 30, lane 056 + the sweep
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B92 | **The corpus scores misbehaving and declines to score behaving** — 27 of 106 cards one-way down, 3 chargeable options for every 2 creditable | **todo — user. This is the phase's headline** | DECISION 084. Cheapest honest fix is content: give the restraint branches a credit. B88's six edits are a subset |
+| B93 | **The player never sees the ladder until the credits** | **todo — UI, in bounds, unblocked** | Strongest candidate for *"the readout never moved"* reading as inert: there was no visible scale to move on |
+| B94 | **"Cost you in the locker room" narrates every character change**, including NIL money managed by a cousin | todo — UI, `view-model.ts` | Character covers integrity broadly; the display channel names one specific room. Fixable without touching content |
+| B95 | **MOMENT and credit line are inverted on the two teammate cards** — *Up Forty* credits without a moment, *The Two-Deep* moments without a credit | todo | Found independently by 056 and 057 |
+
 ## Next actions — for PM session 13, in order
 
 **Read this section and `DECISIONS.md` 077–082. Nothing else.**

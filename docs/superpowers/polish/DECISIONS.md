@@ -2972,3 +2972,58 @@ reason.
 distorts careers after 072's fix — which would mean a new defect, not this pricing. For the pack: the
 user opening content authoring, at which point it is a strong first candidate, because the sit season
 is the one stretch of a career with no authored material at all.
+
+## 084 — "Only something you can lose" is an authored property of the corpus, not a calibration error. DECISION 081's falsifier fired and its prepared remedy is deliberately NOT applied
+
+**Date:** 2026-09-24 · **Made by:** PM session 13 · **Evidence:** `reports/056-can-you-earn-it-now.md` (3 careers, ~114 decisions), `reports/057-does-the-good-branch-ever-say-anything.md` (3,600 careers/profile), plus the PM's own corpus sweep over all 106 cards · **Answers:** the question waves 28–30 were all built on · **Supersedes the mechanism in:** DECISION 080
+
+**Two lanes that could not see each other landed on the same card.** 057 measured *Up Forty at
+Halftime* as the source of 66% of all locker-room credit and *The Two-Deep* as structurally
+credit-incapable. The playtester, with no access to any of that, wrote that *Up Forty* **is**
+recognition and *The Two-Deep* — **the same fiction, teaching the man behind you** — is inert. When a
+statistical probe and a person who has never read the source name the same two cards and the same
+contrast, the finding is not an artifact of either method.
+
+**The measurement that settles it, run by the PM over the whole corpus at HEAD:**
+
+| | can earn a credit | can be charged | silent both ways |
+|---|---|---|---|
+| 204 authored options, floor applied | **22 (10.8%)** | **48 (23.5%)** | 136 (66.7%) |
+| 204 authored options, floor removed | 38 (18.6%) | 59 (28.9%) | 114 (55.9%) |
+
+**27 of 106 cards (25.5%) can charge the player and can never credit him. The mirror set is 9.** With
+the display floor removed it is still **21 of 106 (19.8%)** — so **the asymmetry is in the writing, and
+the floor widens it rather than causing it.** Roughly three options can take standing away for every
+two that can give it.
+
+**The one-way-down cards are over-represented in what a player actually meets**, which is why ~114
+decisions produced zero upward rungs: the set includes all five `milestone-opener-*` variants and
+`milestone-rivalry`, which are `fixed` and fire every season.
+
+**The authored shape, stated plainly, because it is the whole finding:** restraint is written as the
+null option. `offfield-bowl-curfew` / *"Stay in and get the rest"* and `offfield-ghost-media` /
+*"Show up and answer the questions"* are both `effects: []` — literally nothing — while their
+transgressive siblings carry −4/−5 and −4/−9. **The game scores misbehaving and declines to score
+behaving.** Three more such cards were found by the playtester by hand; the sweep found 27.
+
+**What this retires.** DECISION 080 diagnosed *"standing can only be lost"* as four numbers in
+`bands.ts`, and 081 recalibrated them. That work is measured, green, and an improvement — **and it
+could not have fixed this**, because the ladder was being asked to display movement that the corpus
+never generates. **Waves 28 and 29 sized the rungs; nothing was pushing on them.**
+
+**DECISION 081's named falsifier fired, and the prepared remedy is not applied. This is the call.**
+081 said: *a playtester calling the ladder inert is the falsifier, and `80/67` is measured and ready as
+a one-character change.* The playtester called it inert — *"in career 1 it read as inert and I stopped
+tracking it around decision 12."* **The falsifier fired and `80/67` is still wrong**, because it
+restores **downward** movement and the complaint is the absence of **upward** movement. Shipping it
+would make the ladder fall more readily in answer to a report that it never rises. **A prepared remedy
+is not owed execution by the trigger it was filed under; it is owed a check that it points at the
+thing that fired it.** `80/67` stays on the shelf and B87 stays `watch`.
+
+**What would change our mind.** A corpus edit that makes the credit and charge populations comparable,
+after which a playtester still reports zero upward movement — that would put the fault back in
+`bands.ts` and `80/67` becomes live again. Or a demonstration that the 27 one-way-down cards are rarely
+met in play, which the `fixed` opener and rivalry cards make unlikely.
+
+**The routes are the user's**, because every one of them edits `src/content/**`. They are B85, B88 and
+B90 on the board, and they are carried to the user together rather than one wave at a time.
