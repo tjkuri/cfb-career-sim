@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** in flight · **PM session:** 12
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** in flight · **PM session:** 12 (handing off)
 
 ---
 
@@ -2059,6 +2059,154 @@ DECISION 073 was written about.
 **The lane not dispatched, on purpose:** the playtest. It is the highest-value item on the board and it
 must come *after* wave 27 lands, because no player has yet seen wave 25's ledger fixes, wave 26's
 Season Opener options, or wave 27. It is wave 28's first and probably only lane.
+
+### Wave 27 result — both lanes landed, and both refuted the premise they were dispatched on
+
+**R1 shipped as `323971b`. `LOCKER_ROOM_MIN_CHARACTER = 2`, `lockerRoom` only, `later` untouched.**
+Over 54,000 careers it removes **55–67% of all locker-room verdicts** (Earned/career 5.40 → 1.25 under
+`good`), with character and draft stock bit-identical — the correct signature for a display change, and
+nowhere near the vacuous pass. 728 tests. **DECISION 077.**
+
+**The correction that outlives it, and it reaches back three decisions.** Every character amount a card
+can print is an **integer**, magnitudes `{1,2,3,4,5,6,8,9,10,12,13,20,23,32}`, with no fractional value
+anywhere in 131 effect entries — verified independently by the PM. **The `−0.15` and `−13.4` this board
+has quoted since DECISION 074 cannot be printed by any card**; they are probability-weighted
+expectations, and `charSpread` is a property of an option set rather than of anything a player reads.
+The real dynamic range is **32:1**, not 89:1, and **every threshold in 1.01–2.00 is the identical
+function**. The PM's own pre-dispatch correction — that R1 thresholds the *branch* and 075 had measured
+the *spread* — was right, and 051 found the error runs both ways: **The Captain Vote has an 0.9 spread
+and a −4 branch.**
+
+**B76 stopped on its own stop condition, and that was the wave's best outcome.** The set is **not 22**:
+resolved card by card it is **11 inverted, 10 correct, 1 ambiguous**. 050 tabled ten cards and all ten
+check out verbatim; **the extrapolation from those ten to all 22 is what broke.** The twelve 050 never
+tabled contain the four *"help the man trying to take your job"* cards plus *Playing Through the Hand* —
+the clearest statements in the corpus of the convention `offfield.ts` states in its own header, and the
+one card that **charges the player for sitting**. B76 as written deleted all five.
+
+**The user's ruling — DECISION 078: character tracks integrity, not effort.** B76 re-cut to the eleven,
+shipped as `2521027`: 14 entries, eight files, ten spared cards verified intact. `targeting-review`
+resolved *correct* by the same sentence rather than left ambiguous.
+
+- Non-vacuous check passes at **55 SE**: mean character under `good` 67.88 → 70.25, and an ordinary
+  optimising player now ends a career **above** his starting character (−2.12 → **+0.25**) for the first
+  time on this board.
+- **DECISION 076's stop condition was evaluated and does not fire** — R1 and B76 move Earned and Cost
+  down together on all six measurements. The wave stays one bundle for one playtest.
+- **051's own Step 5 prediction was refuted and it said so.** It held for virtue (−0.11) and failed for
+  `good` at −1.32, 92% of it `milestone-bowl-season` — a `fixed` card firing every played season. **The
+  agent named the surviving cards correctly and never checked their frequency.** Combined with R1,
+  verdicts/career under `good` go **8.9 → 2.7**.
+- **The number that contradicts DECISION 076's own premise.** 076 adopted the route because *"at ≤0.22
+  draft stock apiece it costs the balance nothing."* **Measured, the eleven deletions return +8.6 draft
+  stock to both virtue profiles** (87–95 SE) — **a 10.5% tax on playing for the locker room**, and the
+  reason virtue had measured *below* `good` on stock ever since 047. Per-card was right; the aggregate
+  never accounted for realized frequency. **Left in the tree, surfaced to the user, direction is the one
+  074 argued for.** The commit is atomic if it is ever to be undone.
+
+**052 — B64, measured, and the bug it was sent after is the smaller half of what it found. DECISION
+079.** All 138 bad rows in 72,000 careers name an authored `stat` effect by instrumentation, so 073's
+relocation is confirmed. **But on all 138 the player was sidelined in every on-field phase** — so
+`snaps: 0` is true, the `−4` is correct, the *"season on the sideline"* verdict is accurate, and **only
+the stat line is false.** Zero careers change draft stock, round, status **or award set** when it is
+removed; the award-crossing falsifier was run and does not fire. Frequency **0.192% of careers**, median
+fake stat **4**. `humanLazy` is the *least* affected profile, answering 073's open question: no.
+**Three claims in DECISION 073 are corrected, one of them the headline.**
+
+**Call: R0 this wave** — a scheduling call, not a balance call, which is why it did not go to the user.
+
+### New backlog from wave 27
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B79 | **`requiresPlaying` checks the redshirt and not the injury** — `select-event.ts:38`. **20.8% of all authored production (44,028 of 212,085 `stat` writes) is awarded to injured or suspended players.** The 138 bad rows are only the visible tail | **MEASURED — DECISION 079. With the user, behind a re-baselining wave** | RE is one line and fixes the cause, at **−2.09 mean stock, +1.33pp undrafted, −1.96 cards/career, −5.07 on `good`**. Every balance baseline retaken. **Highest-value follow-up, and it is cheap: an RE variant that lets the selector draw a replacement card** — most of RE's cost is the ~2 cards a career that stop firing, not the lost production |
+| B80 | **`milestone-opener-*/stay-within` is the same inversion B76 just deleted** — +1 character for the conservative branch, five variants, once a season | todo — cheap, and it is **now the largest character effect by frequency in the bundle** | Authored in wave 26, so it post-dates every audit on this board. Out of B76's scope by date, not by kind |
+| B64 | **A played season can store `snaps: 0` beside a live stat line** | **CLOSED at R0 — DECISION 079** | Cosmetic, 1 career in 520, median 4 yards, zero measured mechanical cost. Reopens if a player reports a *large* fake line, or an award crossing is found at higher N. **RA is one line and nearly free if the user weighs "the ledger must never contradict itself" above "a card must always deliver what it narrates"** |
+
+## Wave 28 — in flight (PM session 12)
+
+**One lane: the playtest, `briefs/053-can-you-earn-it.md`.** It is the highest-value item on the board
+and it had to wait for wave 27 — no player has seen wave 25's ledger fixes, wave 26's Season Opener
+options, or wave 27's two changes.
+
+**The question: is standing with the program something you can *earn*, or only something you can lose?**
+
+Built on `briefs/045`'s instrument, which session 11 asked every future playtest to reuse: **careers 1
+and 2 assigned, the third deliberately not.** Career 1 is *the good teammate* — the career the whole
+wave is about — and career 2 is *the mercenary*. Nine claims, and **two of them name falsifiers this
+board has already written down**:
+
+- **Claim 1 carries DECISION 077's falsifier explicitly**, and says in the brief that *"the game has
+  gone quiet about your standing"* is exactly as valuable as a confirmation. 051 predicts proportionate;
+  a playtester saying *silent* kills the threshold.
+- **Claim 4 carries DECISION 078's falsifier** — do the ten spared cards read as recognition, or as the
+  game paying you to do less? The brief states there is no answer we are hoping for, because on the
+  effort axis 050's reading is the better one and 078 is precisely the choice of axis.
+- Claim 7 (*the card's number agrees with its words*) is kept because it has historically been the
+  highest-yield question on this board.
+- One line, and no more, on 079's falsifier: a **large** fake stat line beside a zero-snap season.
+
+**Dev server:** the PM killed a stale Vite on 5175 and started a clean one on **5173** at HEAD.
+
+## Next actions — for PM session 13, in order
+
+**Read this section, `DECISIONS.md` 077–079, and the wave 27–28 sections above. Nothing else.**
+
+**Session 12 in one line: two lanes were dispatched, both refuted the premise they were built on before
+doing the work, and in both cases stopping to say so was worth more than the work would have been.**
+
+1. **Wave 28's playtest is in flight and nothing should be built until it lands.** Four changes across
+   three waves are in front of that player and none had met one. Read its five bullets first; go to the
+   report only for claims 1, 4 and 7.
+   - **If claim 1 comes back *"gone quiet"*, DECISION 077's threshold is the first suspect** — T=2 is one
+     constant in `view-model.ts` and T is trivially movable. Do not reach for content.
+   - **If claim 4 comes back *"paying me to do less"*, DECISION 078 chose the wrong axis** and the ten
+     spared cards are in play. That is the user's call again, not the PM's.
+2. **B80 is the cheapest real item on the board and it is a five-minute content deletion** —
+   `milestone-opener-*/stay-within`, +1 to the conservative branch, five variants, once a season. It is
+   the same inversion B76 just deleted and it escaped only because wave 26 authored it after every audit
+   was taken. **It is now the largest character effect by frequency in the bundle.** DECISION 078's
+   integrity ruling already covers the judgement; confirm the scope with the user, since content is
+   theirs, then delete.
+3. **B79 is the biggest thing on the board and it is not urgent.** A fifth of all authored production
+   goes to injured or suspended players. RE fixes it in one line and costs −2.09 mean draft stock plus
+   every balance baseline on the board. **Do not dispatch it as a lane. Build the replacement-card
+   variant first** — 052 §5 says most of RE's cost is the ~2 cards a career that stop firing rather than
+   the lost production, and if that holds the variant lands RE's correctness at RA's price. One probe
+   run. Then take the routes to the user.
+4. **B73 — `good` is misnamed, and wave 27 made it worse.** It was already a draft-stock maximiser
+   rather than "the player who plays well." After B76 it now ends careers with **+0.25 character**, so
+   the name is about to start misleading in the opposite direction. The `virtue` strategy added in wave
+   26 is its proper counterpart. Renaming is cheap.
+5. **047's headline is stale and should be quoted as `39 of 65`, not `34 of 60`** — wave 26's Season
+   Opener added five character-differentiating events after that measurement was taken. Floored at ≥3 it
+   is **12 of 19 at 1.62 OVR**, and those twelve are exactly 050's twelve moral forks.
+6. **046 Part 2 is still unfinished** (redshirt routes R1–R3 unpriced; DECISION 071 already picked R0 as
+   the likely answer) and **the redshirt pack is still unauthored.** Both remain below everything above.
+   They have been below everything above for six sessions, which is itself a decision — either schedule
+   them or retire them.
+7. **Do not reopen type, colour or contrast.** Seven playtests, zero visual defects.
+8. **Three process rules this board has now paid for. Keep all three.** *(a)* When a change is supposed
+   to move the numbers, byte-identity is the **vacuous** pass. *(b)* A blind audit needs an **unmarked
+   control group**. *(c)* **New this session: a set defined by a measurement is not the same as a set
+   verified card by card.** B76's "22" came from extrapolating a ten-row table; half of it was wrong,
+   and the half that was wrong contained the best content in the corpus. **Any brief that acts on an
+   enumerated set must verify the set, and must carry a stop condition with a number in it.** Both
+   lanes this wave stopped on exactly such a condition.
+9. Increment the **PM session** counter at the top of this file.
+
+### What session 12 would tell session 13 if it could only say one thing
+
+**Put a number in the stop condition and the agent will stop.** Session 11's lesson was *check the
+diagnosis, not just the observation.* This session's is the operational form of it. Brief 051 said *"if
+more than three of the 22 turn out correctly oriented, report needs-decision"* — a trigger with an
+integer in it, decided before anyone looked. It fired at eleven, and it saved the four best cards in the
+corpus from being deleted on a user decision that had been made in good faith on a measurement that was
+**50% true**. Brief 052 carried *"land no change, not even the fix you become confident about"* and that
+one held too, against an agent that found a genuine one-line fix and wanted to ship it. **Neither agent
+needed judgement to stop; they needed a threshold written down before the work started.** A brief that
+says "use your judgement" gets the work done. A brief that says "stop if it is more than three" gets the
+work checked.
 
 ## Next actions — for PM session 12, in order
 
