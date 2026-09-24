@@ -34,7 +34,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You skip the flourishes and trust muscle memory over polish. Nothing about it is impressive, and the holder appreciates not being asked to be.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [],
         },
       },
     ],
@@ -116,7 +116,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You push back, politely, and they find a linebacker with a strong leg and no aversion to running downfield. It's not a fight you needed to win loudly, and the staff notices you didn't.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [],
         },
       },
     ],
@@ -237,7 +237,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You walk through your steps one more time on the sideline and let your heart rate come down. Whatever the timeout was supposed to do to you, it mostly just makes you look calmer for it.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [],
         },
       },
     ],

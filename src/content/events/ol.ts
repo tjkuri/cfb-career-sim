@@ -340,7 +340,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "No new tape, no new risk. The scouts work off the season you already put on film.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [],
         },
       },
     ],

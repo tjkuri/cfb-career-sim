@@ -34,7 +34,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You corner the older linebackers for help translating it. You're not ahead of the install, but you're not behind it either, and the room notices the good questions.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [],
         },
       },
     ],
@@ -230,7 +230,6 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You play it conservative with safety help — a quieter day, but a clean one.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 4 },
-            { kind: "character", amount: 1 },
           ],
         },
       },

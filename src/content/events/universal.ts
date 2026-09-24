@@ -196,7 +196,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "An anonymous week. Nobody writes anything down at all.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [],
         },
       },
     ],

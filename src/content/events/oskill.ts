@@ -153,7 +153,6 @@ export const OSKILL_EVENTS: GameEvent[] = [
           description: "You cash in the easy yardage without complaint, and the staff notices the professionalism.",
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 35 },
-            { kind: "character", amount: 1 },
           ],
         },
       },
@@ -174,7 +173,6 @@ export const OSKILL_EVENTS: GameEvent[] = [
             // Below the guaranteed +35 that staying professional banks: pushing
             // for more has to be able to leave you behind the safe option.
             { kind: "stat", stat: "scrimmageYards", amount: -25 },
-            { kind: "character", amount: -1 },
           ],
         },
       },

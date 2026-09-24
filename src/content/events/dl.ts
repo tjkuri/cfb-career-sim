@@ -342,7 +342,6 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You take it easy in practice and show up to the bowl feeling like it's September.",
           effects: [
             { kind: "stat", stat: "tfls", amount: 1 },
-            { kind: "character", amount: 1 },
           ],
         },
       },

@@ -49,7 +49,6 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
           description: "By the fourth quarter you are running on nothing, and the tape shows it as clearly as everyone in the stadium saw it.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -2 },
           ],
         },
       },
@@ -59,11 +58,11 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
         probability: 0.75,
         positiveOutcome: {
           description: "You come off for one series, get your wind, and finish the game upright.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [],
         },
         negativeOutcome: {
           description: "There is nobody to put in. The series happens without you and it does not go well, and everyone knows why.",
-          effects: [{ kind: "character", amount: -3 }],
+          effects: [],
         },
       },
     ],

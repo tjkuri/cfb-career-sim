@@ -374,7 +374,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Everyone else treated it like a vacation, and you could not drag them.",
-          effects: [{ kind: "character", amount: -2 }],
+          effects: [],
         },
       },
       {
