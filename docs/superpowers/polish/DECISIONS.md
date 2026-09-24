@@ -2741,3 +2741,85 @@ diagnosis, not just the observation*. B64's observation was real in every tellin
 has now been wrong three times: closed-line mutation (refuted by 048), the `effects.ts:61` clamp
 (approved, implemented, reverted by 073), and *"the player lived through that season"* (refuted here).
 **Each refutation came from instrumentation and none from re-reading source.**
+
+## 080 — Standing can only be lost, and the cause is four numbers in `bands.ts`: the player starts on a rung's floor, one point above a fall and fifteen above a climb
+
+**Date:** 2026-09-16 · **Made by:** PM session 12, measuring the 053 playtest's observation · **Answers:** wave 28's one question · **Refutes:** DECISION 077's and 078's optimistic readings · **Opens:** B81 · **Evidence:** `reports/053-can-you-earn-it.md`, plus the PM's own 7,200-career sweep
+
+**The playtester's verdict, after three careers and ~100 decisions:** *"Only something you can lose."*
+Upward rung movements **zero**, across two careers played deliberately to earn it and six *"Earned you
+credit in the locker room"* messages. Downward rung movements **two**, in the one career where they
+misbehaved, **the first on decision 2**, each with a large well-designed callout naming the rung left
+behind. Their sentence: *"the same widget that fires within ninety seconds of a bad choice will not
+fire after four years of good ones."*
+
+**The observation is right and this time the mechanism is measurable, so the PM measured it before
+anyone proposed a fix.** It is four numbers:
+
+```
+STARTING_CHARACTER (create-career.ts:8) = 70
+
+TRUST_BANDS (ui/session/bands.ts:73)      distance from a starting player
+  85  "they would run through a wall for you"      +15
+  70  "the staff trusts you"          <-- START IS EXACTLY THE FLOOR
+  50  "just a guy in the building"                  -20
+  30  "a problem they are managing"
+   0  "the staff has stopped defending you"
+```
+
+**Every player begins standing exactly on a band boundary.** Down is therefore a **1-point** fall and
+up is a **15-point** climb. That is the asymmetry, and it is not a metaphor: it is `>=`.
+
+**The climb is not merely hard, it is unreachable. Measured over 7,200 careers — three profiles × six
+positions × 400 runs.**
+
+| profile | median Δcharacter | p95 Δ | best average final | reaches 85? |
+|---|---|---|---|---|
+| `virtueLoyal` | **+5 to +6** | +10 to +12 | 75.91 | **no — not one cell** |
+| `virtueAmbitious` | **+5 to +6** | +12 to +14 | 75.92 | **no — not one cell** |
+| `good` | 0 to +2 | +7 to +10 | 70.94 | **no — not one cell** |
+
+**Maximally virtuous play returns a median +6 against a +15 requirement, and the best 95th percentile
+in the entire sweep is +14.** The top rung of the ladder the summary screen draws **cannot be reached
+by any policy at any position.** The playtester chose, unprompted, to spend their entire third career
+chasing the phrase *"get to 'they would run through a wall for you'"* — a rung the game renders one
+step above their marker and no player can occupy.
+
+**This is why every other wave-28 answer came back the way it did**, and it retires three separate
+hypotheses in one line:
+
+- *"I could not tell the game was counting"* — it was counting, at a third of the resolution needed to
+  show a result.
+- **Claim 2 (standing can be earned) refuted** — not because credit is not awarded, but because the
+  credit awarded is a quarter of a rung.
+- **Claim 1 (proportionate) partial** — loud downward and silent upward is exactly what a 1-point fall
+  and a 15-point climb produce.
+- **A.4, *"neither built anything nor defended anything"*** — you cannot build (+15 unavailable) and
+  you are not defending, because standing on a floor means it is not at risk, it is already spent.
+- **DECISION 077's own named falsifier does not fire.** The player did not report the character system
+  as gone silent; they reported it as **loud in one direction**. R1's threshold is not implicated and
+  should not be the first thing a session reaches for.
+- **DECISION 078 is not implicated either, but it is not vindicated.** Wave 27 moved `good` from −2.12
+  to +0.25 and virtue to roughly +6. Against a 15-point rung that is still invisible. **The wave
+  improved the currency and could not possibly have shown it** — which is worth recording, because the
+  obvious reading of a failed playtest is that the last wave was wrong, and here it was merely
+  inaudible.
+
+**Where the fix lives, and the good news.** `src/ui/session/bands.ts` is **UI, not frozen**, and the
+band thresholds are display calibration: `character` still swings draft stock identically whatever the
+ladder says. **No engine change, no content change, and no balance change is required to fix this.**
+`STARTING_CHARACTER` lives in frozen engine code, but it does not need to move — the bands can move
+around it.
+
+**The one question that is genuinely the user's: how reachable should the top rung be?** The phrase
+*"they would run through a wall for you"* should presumably be rare. Rare and impossible are different,
+and the numbers above say which one is currently shipped. This is B81 and it is wave 29's first lane.
+
+**What would change our mind.** A measurement showing some policy or position does reach 85 — the sweep
+covers three profiles and six positions at 400 runs each and found no cell, but a human player is not a
+policy. A second playtester reaching the top rung would refute this entirely.
+
+**The instrument note worth keeping.** The playtester's observation and the playtester's explanation
+were, for once, *both* right — but only because they stopped at *"the display is not the problem, the
+asymmetry is"* and did not guess at a cause. **The numbers came from the PM's sweep, not from the
+report.** That is the division of labour session 11 asked for, working as intended.
