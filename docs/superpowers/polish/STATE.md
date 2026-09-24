@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** in flight · **PM session:** 12 (handing off)
+**Last updated:** 2026-09-16 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **PM session:** 12 (handing off)
 
 ---
 
@@ -2160,6 +2160,57 @@ and belong in every future playtest brief:
 2. **Never ask which browser to use.** The confirmed one is `8b77ec6f-1f42-4ea4-bca7-4869156e4634`
    ("Browser 1", local, macOS). Name it in the brief so the agent never reaches the question.
 
+### Wave 28 result — the playtest answered its one question *no*, and the PM's sweep found the cause. Read DECISION 080 before planning anything
+
+**Three careers played, written to disk after each. Curve: *yes → yes (checking) → no*.** The third
+career was **self-assigned and actually played** — the first time on this board that a playtester chose
+to keep going with a stated goal of their own. That is movement toward the north star and it should not
+be lost in the rest of this section.
+
+**The one question — is standing something you can earn, or only something you can lose? — answered
+*only something you can lose*.** Upward rung movements **zero** across two careers played deliberately
+to earn it and six *"Earned you credit"* messages. Downward **two**, the first on **decision 2**. The
+playtester's own framing, and it is the correct one: *"The display is not the problem. The asymmetry
+is."*
+
+**The cause is four numbers and the PM measured it rather than taking the report's word for it —
+DECISION 080.** `STARTING_CHARACTER = 70` and `TRUST_BANDS` puts rung 2's floor at exactly **70**.
+**A fall costs 1 point; a climb costs 15.** Over **7,200 careers** (3 profiles × 6 positions × 400),
+maximally virtuous play returns a **median +6**, and the **best p95 in the entire sweep is +14**.
+**Not one cell reaches 85. The top rung cannot be occupied by any policy at any position** — and the
+playtester spent their whole third career chasing it by name.
+
+**This retires three hypotheses at once.** DECISION 077's named falsifier **does not fire** — the player
+called the system loud in one direction, not silent, so **R1's threshold is not implicated and must not
+be the first thing session 13 reaches for.** DECISION 078 is not implicated either and **is also not
+vindicated**: wave 27 moved `good` from −2.12 to +0.25 and virtue to ~+6, which against a 15-point rung
+is real and completely inaudible. **The wave improved the currency and could not possibly have shown
+it.**
+
+**The fix is in bounds and cheap.** `src/ui/session/bands.ts` is **UI and not frozen**; the thresholds
+are display calibration and `character` swings draft stock identically whatever the ladder says. **No
+engine, content or balance change is required.** `STARTING_CHARACTER` is frozen and does not need to
+move — the bands move around it.
+
+**Claim 4 refuted, in a direction nobody had proposed.** The spared teammate cards do not read as
+paying the player to do less — they read as **inert**. *"Sit and let the backup play"* returned
+*"You get grief in the meeting room for missing it"* with **no number**, twice. The playtester's line:
+***"written to be good, wired to be inert."*** DECISION 078's integrity ruling is not overturned by
+this, but the cards it spared are not landing as recognition either.
+
+**Claims 6, 8 and 9 CONFIRMED** — the ledger, the where-am-I readouts and the visuals were clean at
+500px, and the stats-beside-zero-snaps check came back **none seen**, which is 079's R0 surviving its
+player test.
+
+### New backlog from wave 28
+
+| ID | Item | Status | Notes |
+|---|---|---|---|
+| B81 | **The top rung of the trust ladder is unreachable** — start 70 sits on rung 2's floor, so a fall is 1 point and a climb is 15, against a measured median career budget of +6 | **MEASURED — DECISION 080. Wave 29 lane 1.** The calibration question is **the user's** | `bands.ts` is UI and unfrozen. The user's question is *how rare should "they would run through a wall for you" be?* — rare and impossible are different and the sweep says which one ships today |
+| B82 | **Claim 7 refuted again, five instances, and one is a reproducible pattern** — a single-option card whose button asserts success and whose outcome is failure with a negative number, **seen three times across three careers** | todo — **highest-yield defect class on this board**, wave 29 lane 2 | Named in 053 §"bugs worth a developer's time": D30 *Missed Tackle Reel* (only button "Answer it on the practice field", outcome *"the whiffs don't stop"*), D33 *Targeting Review* (card says the booth reviewed, outcome says *"no flag, no review"*), D28 (prose says it showed, verdict says cost, −1 OVR) |
+| B83 | **The teammate cards are inert** — the spared B76 cards return prose with no number at all | todo | *"Written to be good, wired to be inert."* Distinct from B81: even a correctly-sized ladder shows nothing if the card carries no effect |
+| B84 | **Smaller 053 defects** — duplicate narration of one healed injury (+1 then +5), an injury that lasted exactly one card, four years of *"your name is written in pencil"* to an All-America senior, ON THE FIELD label thrash on a 1-point 85↔84 change | todo — cheap, cosmetic, several are one-liners | All in 053 §"bugs worth a developer's time" |
+
 ## Next actions — for PM session 13, in order
 
 **Read this section, `DECISIONS.md` 077–079, and the wave 27–28 sections above. Nothing else.**
@@ -2167,13 +2218,18 @@ and belong in every future playtest brief:
 **Session 12 in one line: two lanes were dispatched, both refuted the premise they were built on before
 doing the work, and in both cases stopping to say so was worth more than the work would have been.**
 
-1. **Wave 28's playtest is in flight and nothing should be built until it lands.** Four changes across
-   three waves are in front of that player and none had met one. Read its five bullets first; go to the
-   report only for claims 1, 4 and 7.
-   - **If claim 1 comes back *"gone quiet"*, DECISION 077's threshold is the first suspect** — T=2 is one
-     constant in `view-model.ts` and T is trivially movable. Do not reach for content.
-   - **If claim 4 comes back *"paying me to do less"*, DECISION 078 chose the wrong axis** and the ten
-     spared cards are in play. That is the user's call again, not the PM's.
+1. **Wave 28 landed. B81 is the first lane and DECISION 080 is the thing to read.** The top rung of
+   the trust ladder cannot be reached by any policy at any position — measured, 7,200 careers. The
+   calibration is **the user's call**: how rare should *"they would run through a wall for you"* be?
+   Bring them the sweep table in 080, not a proposal. **The fix is four numbers in `bands.ts`, which is
+   UI and unfrozen**, so it needs no engine, content or balance change.
+   - **Do not reach for DECISION 077's threshold.** Its named falsifier did not fire; the player called
+     the system loud in one direction, not silent. T=2 is not implicated.
+   - **Do not reopen DECISION 078 either.** Wave 27's currency fix was real and inaudible against a
+     15-point rung. Re-measure it *after* B81, not before.
+   - **B82 is lane 2 and can run beside it** — a reproducible one-option card whose button asserts
+     success and whose outcome is failure, seen three times across three careers. This defect class has
+     been the highest-yield finding on this board for eight playtests running.
 2. **B80 is the cheapest real item on the board and it is a five-minute content deletion** —
    `milestone-opener-*/stay-within`, +1 to the conservative branch, five variants, once a season. It is
    the same inversion B76 just deleted and it escaped only because wave 26 authored it after every audit
