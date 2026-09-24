@@ -2585,3 +2585,159 @@ B76, and B76 did not run — see DECISION 078.
 **What would change our mind.** A playtester reporting that the character system reads as having gone
 silent. Report 051 predicts the opposite — that it now reads as proportionate — and that is the first
 thing wave 28's playtest can check.
+
+## 078 — Character tracks integrity, not effort. B76 is re-cut from 22 cards to eleven, and the ten it spares are the ones that teach what the currency means
+
+**Date:** 2026-09-16 · **Made by:** the user, brought by PM session 12 · **Re-scopes:** DECISION 076 · **Evidence:** `reports/051-one-currency-one-meaning.md` §4
+
+**DECISION 076 authorised deleting "the 22 sub-3 inverted character effects." The set is not 22.** Lane
+051 resolved all 22 to source and checked orientation card by card: **11 inverted, 10 correct, 1
+ambiguous.** Report 050 §4 tabled ten cards; all ten check out verbatim, and an eleventh
+(`blueblood-scouts-at-practice`) is the same defect in a different shape. **The extrapolation from those
+ten to all 22 is what broke** — and the twelve cards 050 never tabled contain a coherent,
+correctly-oriented family it did not notice.
+
+**The four "help the man who is trying to take your job" cards** — *The Five-Star Behind You* (+2 to
+"Teach him the install"), *The Transfer QB* (+2 to "Take him under your wing"), *The Two-Deep* (+1 to
+teaching the walk-on and **−6** to hoarding reps), *Up Forty at Halftime* (+2 to coaching up the
+freshman over lobbying for yourself) — are the clearest statement in the whole corpus of the convention
+`offfield.ts` states in its own header. Beside them, *Playing Through the Hand* is **the one card that
+charges the player for sitting**, which is the exact opposite of the pattern B76 exists to delete.
+**B76 as written deleted all five.** Deleting them does not make the currency mean one thing; it removes
+the cards that teach what the one thing is and leaves the corpus proportionally *more* inverted.
+
+**The question was authorial and it went to the user:** *when character rewards a player for teaching
+the five-star who is about to take his job, is that the currency working or inverted?*
+
+**The user's answer: the currency working. Character tracks integrity, not effort.** The eleven real
+inversions are all the narrower thing — **character paying the player to protect himself** (rest the
+injuries, ask for a series off, lean on the veterans, enjoy the trip). That is what gets deleted.
+
+- **Delete:** §4.1 rows 1–8 and 10–12. `kickoff-duties-too` is row 7 and remains mandatory.
+- **Keep:** all ten correctly-oriented cards.
+- **`targeting-review` (row 9) keeps its effects.** 051 scored it ambiguous because it is effort-negative
+  and integrity-positive; on the integrity reading it resolves as **correct**, not ambiguous. The same
+  sentence that decided the ten decides it.
+- **The file list is ten, not eight.** 051 §4 found `universal.ts` and `school-life.ts` missing from the
+  brief's list.
+
+**This does not revisit 076's substance.** The user's call there was made on 050's claim that all 22
+were inverted; that claim is **50% true**, and this is the first measurement of the other half. The
+stated intent — *character stops paying for doing less, and the currency carries one authored meaning* —
+is unchanged and is better served by eleven deletions than by 22.
+
+**The uncertainty, stated honestly, because 051 stated it first.** The orientation call is a judgement,
+not a measurement. On the **effort** axis alone 050's claim holds up much better: most of the spared
+cards are effort-neutral and win on **integrity**. This decision is precisely the choice of axis, and
+it is recorded as such so that a later session reversing it knows exactly what it is reversing.
+
+**What would change our mind.** A second reader scoring the same 22 cold and landing a materially
+different split. Or a playtester reading the spared cards as rewarding passivity, which is the losing
+side of the integrity reading and is worth one question in a future playtest.
+
+### What it measured after it landed, and one number contradicts the premise this decision was made on
+
+**Shipped as `2521027`:** 14 character entries deleted across the eleven cards and eight files. Ten
+spared cards verified intact (all 21 entries), eleven verified empty. No test changed; 728 green, both
+typecheck passes exit 0, build clean, verified independently by the PM.
+
+- **The non-vacuous check passes at 55 SE.** Mean character under `good` **67.88 → 70.25**. An ordinary
+  optimising player now ends a career **above** his starting character (−2.12 → **+0.25**) for the first
+  time on this board.
+- **DECISION 076's stop condition was evaluated and does not fire.** R1 and B76 move Earned and Cost
+  **down together on all six measurements**. The wave stays one bundle for one playtest, as 076 intended.
+- **051's own Step 5 prediction was refuted, and the agent reported it as such.** It held for the virtue
+  profiles (−0.11, −0.12 lines/career) and failed for `good` at **−1.32**, of which 92% is
+  `milestone-bowl-season`'s −2 — a `fixed` card firing **every played season**. The agent named the
+  surviving cards correctly and never checked their **frequency**. Combined with R1, verdicts per career
+  under `good` go **8.9 → 2.7**.
+
+**The number that contradicts 076's premise.** DECISION 076 adopted this route on the grounds that *"at
+≤0.22 draft stock apiece it costs the balance nothing."* **Measured, deleting the eleven returns +8.6
+draft stock to both virtue profiles** (87–95 SE) — **a 10.5% tax on playing for the locker room**, and
+the reason the virtue profiles had measured *below* `good` on draft stock ever since 047. The
+per-card figure was right and the aggregate was not, because it never accounted for realized frequency.
+
+**This is a balance change, not a cosmetic one, and it was authorised on a premise that has now been
+measured false.** It is left in the tree because its direction is the one DECISION 074 argued for —
+virtue paying rather than taxing — and because reverting a landed, green, measured improvement to
+preserve the accuracy of a superseded rationale would be the wrong trade. **It is surfaced here, and to
+the user, rather than absorbed into the wave's summary.** If the user wants the tax restored in whole or
+in part, the commit is atomic and isolated.
+
+**B80, flagged by 051 and out of B76's scope.** `milestone-opener-*/stay-within` (+1, five variants,
+once a season) is **the same inverted shape** — character credit for the conservative branch — and is
+now **the largest character effect by frequency in the bundle.** It post-dates every set 050 measured,
+having been authored in wave 26, so no audit on this board has ever seen it.
+
+
+## 079 — The `0 snaps` bug is cosmetic, costs nothing measurable, and sits on a much larger hole: a fifth of all authored production is awarded to injured players
+
+**Date:** 2026-09-16 · **Made by:** PM session 12 · **Closes:** B64 for this wave, at R0 · **Corrects:** DECISION 073 in three places · **Opens:** B79 · **Evidence:** `reports/052-which-card-hands-you-yards-in-a-season-you-never-played.md`
+
+**Attribution is complete and DECISION 073's relocation is confirmed by instrumentation, not inference.**
+All **138** bad rows in 72,000 careers name an authored `stat` effect; none has an empty history. 048's
+`z-206` repro is resolved — no snap effect ever touched that line.
+
+**But the harm 073 priced does not exist, and the report says so against its own brief's framing.**
+On all 138 rows the player was **sidelined in every on-field phase**. So `snaps: 0` is *true*, the `−4`
+upperclass decline is *correct*, and *"A season on the sideline cost you ground"* is *accurate*. **Only
+the stat line is false.** Measured: **zero** of the 138 careers change draft stock, round, status **or
+award set** when the defect is removed. The sharpest available test — a false line crossing
+`postseason.ts:56`'s production-award gate and handing a sidelined player an All-Conference — was run
+and does not happen at 72,000 careers.
+
+**Frequency, at the denominator that matters.** 0.192% of careers, 0.442% under `virtueLoyal` (the
+playtester's shape), peak 0.75% at virtueLoyal×OSKILL. **Median fake stat is 4**; only 17 of 138 are
+≥100 yards. 073's open question about human-shaped policies is answered: **no** — `humanLazy` is the
+*least* affected profile.
+
+**The call: R0 this wave.** Paying anything to fix a cosmetic defect in 1 career in 520 is the wrong
+trade while a playtest is the highest-value item on the board. **This is a scheduling call, not a
+balance call**, which is why it did not go to the user.
+
+**The finding that outranks the bug it was sent after, and it is B79.** `select-event.ts:38` reads
+`c.requiresPlaying && state.redshirtSeasonActive` — **the gate DECISION 048 requires on every on-field
+production card knows about the redshirt and not about the boot.** Verified in source by the PM.
+Consequence, measured: **20.8% of all authored production in this game — 44,028 of 212,085 `stat`
+writes — is awarded to players who are injured or suspended.** The 138 bad rows are only the tail where
+it is *visible*, because the player never played later in the season to paper over it.
+
+**RE is the real fix and it is deliberately scheduled, not rejected.** One line —
+`|| isSidelined(state)` — needing no content change, because `validateContent` already guarantees the
+flag. It takes 138 → 0 and 44,028 → 0. **It costs −2.09 mean draft stock, +1.33pp undrafted (a 52%
+relative rise), −1.96 decisions per career, and it hits the `good` profile hardest (−5.07 stock,
+undrafted 0.57% → 2.90%)** — which fails the board's own standing test that a change a good player
+should not notice barely moves that row. **Every balance baseline on the board would have to be
+retaken.** It needs the engine freeze lifted and a re-baselining wave behind it, and it is the user's
+call when that wave comes.
+
+**RA — `stat` is a no-op on a zero-snap line — is one line, nearly free (−0.0003 stock), and fixes
+100% of the visible defect. It is not adopted, and the reason is the user's to overrule.** It converts
+138 loud contradictions into **672 quiet ones** of the same family: cards whose prose promises
+production that never arrives. That is a choice between *"the ledger must never contradict itself"* and
+*"a card must always deliver what it narrates"*, and if the user weighs it the first way, RA is correct
+and costs one line.
+
+**Three corrections DECISION 073 owes, all measured.**
+
+1. *"The clamp never touched one of the 29"* — **false as a general statement.** 21% of bad rows carry
+   snap-effect history and on 24 the clamp ate an authored `+10`. **073's conclusion stands** — the
+   reverted fix would still have saved **0 of 29**, on ordering — but the supporting claim was wrong.
+2. *"`productionScore` loses those snaps from draft stock"* — **false.** There are no snaps to lose;
+   draft-stock impact is 0 careers in 72,000.
+3. *"The −4 and the verdict on a season the player lived through"* — **the player lived through it on
+   the sideline.** Both are correct.
+
+**What would change our mind on R0.** A measured mechanical cost at higher N (an award crossing kills
+R0 immediately); or a player report where the fake line is large, which would make the visibility
+argument stronger than the rate suggests and buy RA its collateral. **The highest-value follow-up**, and
+it is cheap: an RE variant that lets the selector draw a **replacement** card when a production card is
+gated out. Most of RE's cost is the ~2 cards a career that stop firing, not the lost production — if
+that holds, the variant lands RE's correctness at RA's price.
+
+**A third diagnosis corrected by measurement, in a row.** Session 11's parting line was *check the
+diagnosis, not just the observation*. B64's observation was real in every telling, and the explanation
+has now been wrong three times: closed-line mutation (refuted by 048), the `effects.ts:61` clamp
+(approved, implemented, reverted by 073), and *"the player lived through that season"* (refuted here).
+**Each refutation came from instrumentation and none from re-reading source.**
