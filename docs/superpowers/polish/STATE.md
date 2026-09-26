@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **PM session:** 13 (handing off)
+**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete (both lanes), nothing committed yet · **PM session:** 14
 
 ---
 
@@ -2284,7 +2284,7 @@ resolved, **no prose touched**.
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| B85 | **95% of the one-option contradiction is a single label** — `milestone-fall-camp`'s *"Win the job"*, a fixed card gated `minClass: SO`, firing ~3×/career and failing **35%** of the time = **1.048 of the 1.10 per career** | todo — **user**, 1 label. **Highest value per word on the board** | Also 053's stale-flavour card (*"your name is written in pencil"* to an All-America senior). The caption softens it; rewriting the label removes it. Content is frozen, so it is an RB proposal |
+| B85 | **APPROVED 2026-09-25 (DECISION 086) — queued, not shipped.** **95% of the one-option contradiction is a single label** — `milestone-fall-camp`'s *"Win the job"*, a fixed card gated `minClass: SO`, firing ~3×/career and failing **35%** of the time = **1.048 of the 1.10 per career** | todo — **user**, 1 label. **Highest value per word on the board** | Also 053's stale-flavour card (*"your name is written in pencil"* to an All-America senior). The caption softens it; rewriting the label removes it. Content is frozen, so it is an RB proposal |
 | B86 | **A lint rule for "the label asserts a result" cannot be written** — not lexically decidable, and the flagship instance shares no word with its failure branch | **refused in its obvious form — DECISION 082** | 055 proposes a required-acknowledgement field across the 12-card one-option population instead. Schema is content, so it is the user's |
 | B87 | **The ladder is quieter after 054** — `good` never-moves 35.7% → 69.1%, almost all of it lost downward movement | watch, do not act | `80/67` is measured and is a one-character change. **Act only if a playtester reports the ladder as inert** — that is DECISION 081's named falsifier |
 
@@ -2401,7 +2401,7 @@ about as load-bearing is invisible to half the profiles.
 |---|---|---|---|
 | B88 | **Shape A: three spared cards can only be charged, never credited** — *The Two-Deep*, *The Holding Call*, *The Captain Vote*. 0 credits / 719 costs in 3,600 careers | **todo — user.** The single best explanation of *"only something you can lose"* this board has found | 057's R2 fixes it with six content magnitude edits at **+0.17 draft stock, 2% of DECISION 078's landed change, exactly 0.00 on `good`**. **The authorial question is whether the asymmetry is a bug or a statement about locker rooms** — R2 assumes bug |
 | B89 | **Shape B: two cards cannot speak on any branch** — *Playing Through the Hand* printed nothing in 10,800 careers | todo — folded into R2 | Its −1 sit branch is the exact line the playtester quoted |
-| B90 | **Tier 3/4 is unreachable at Signing Day for every career, by arithmetic** — stock is the constant **31**, the gate is 45. Three authored events and one of DECISION 078's load-bearing cards are transfer-only; `virtueLoyal` reach is **0.0%** | todo — **user**, and it touches frozen engine constants *or* frozen content conditions | Cheapest route is content: `tier: [3,4]` → `[2,3,4]` on the three cards. Engine route (starting stock / the 45 gate) is balance and moves everything. `minClass: "SO"` on `blueblood-five-star` is dead either way |
+| B90 | **RULED 2026-09-25 (DECISION 086): design, but unlock the content — queued.** **Tier 3/4 is unreachable at Signing Day for every career, by arithmetic** — stock is the constant **31**, the gate is 45. Three authored events and one of DECISION 078's load-bearing cards are transfer-only; `virtueLoyal` reach is **0.0%** | todo — **user**, and it touches frozen engine constants *or* frozen content conditions | Cheapest route is content: `tier: [3,4]` → `[2,3,4]` on the three cards. Engine route (starting stock / the 45 gate) is balance and moves everything. `minClass: "SO"` on `blueblood-five-star` is dead either way |
 | B91 | **The credit supply is one card** — 66% of all credit is *Up Forty at Halftime*; without it `virtueLoyal` is 15.6% | watch | Fixing B88 removes the single point of failure as a side effect |
 
 **R1 (lower the floor) is disqualified by measurement, not by taste:** floor 1 takes locker-room lines
@@ -2462,7 +2462,7 @@ defect as much as a content one, and the vocabulary is in `view-model.ts`, which
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| B92 | **The corpus scores misbehaving and declines to score behaving** — 27 of 106 cards one-way down, 3 chargeable options for every 2 creditable | **todo — user. This is the phase's headline** | DECISION 084. Cheapest honest fix is content: give the restraint branches a credit. B88's six edits are a subset |
+| B92 | **Tier 1 APPROVED 2026-09-25 (DECISION 086) — queued. Tier 2 still open.** **The corpus scores misbehaving and declines to score behaving** — 27 of 106 cards one-way down, 3 chargeable options for every 2 creditable | **todo — user. This is the phase's headline** | DECISION 084. Cheapest honest fix is content: give the restraint branches a credit. B88's six edits are a subset |
 | B93 | **The player never sees the ladder until the credits** | **todo — UI, in bounds, unblocked** | Strongest candidate for *"the readout never moved"* reading as inert: there was no visible scale to move on |
 | B94 | **"Cost you in the locker room" narrates every character change**, including NIL money managed by a cousin | todo — UI, `view-model.ts` | Character covers integrity broadly; the display channel names one specific room. Fixable without touching content |
 | B95 | **MOMENT and credit line are inverted on the two teammate cards** — *Up Forty* credits without a moment, *The Two-Deep* moments without a credit | todo | Found independently by 056 and 057 |
@@ -2592,9 +2592,250 @@ currency two ways is the defect the task exists to fix**, so the PM moved it rat
 
 | ID | Item | Status | Notes |
 |---|---|---|---|
-| B96 | **The standing block costs ~85px net** and the page is a scrolling document, not the reference's height-locked shell | **watch** | PM measured: at a 614×773 viewport a 3-option card puts the last option's bottom at **598px** — fine. A 4-option card lands ~652px, so **a sub-700px viewport scrolls to reach the last option.** Act only if a playtester reports reaching for an option; do not pre-optimise |
+| B96 | **CLOSED 2026-09-25** — 060 saw no scroll and no visual defect at 1456×824. **The standing block costs ~85px net** and the page is a scrolling document, not the reference's height-locked shell | **watch** | PM measured: at a 614×773 viewport a 3-option card puts the last option's bottom at **598px** — fine. A 4-option card lands ~652px, so **a sub-700px viewport scrolls to reach the last option.** Act only if a playtester reports reaching for an option; do not pre-optimise |
 | B97 | **The honest vocabulary fix is per-card** — a `standingAudience` field on `Outcome` | todo — **user** (frozen schema) | 058's classification of all 88 outcomes would seed it. The shipped rewrite is the best available *without* a schema change, and it does cost the 51% majority some vividness to buy the 31% accuracy |
 | B98 | **Does the credit line read as recognition now it has a ladder under it?** | **the next playtest's question** | The wave fixed where standing is *displayed*. Whether the corpus gives it enough to display is B92/DECISION 085, and that is the user's |
+
+## Wave 32 — in flight (PM session 14)
+
+Two lanes, file-disjoint, dispatched 2026-09-24. **Deliberately the session-13 pattern: a measurement
+lane and a playtest in the same wave, on the same subject, neither told about the other.** That pattern
+is what broke the phase open last session and it is being repeated on purpose.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/060-does-the-ladder-read-as-something-you-can-climb.md` | playtester | `reports/060-*.md`, `PLAYTEST-LOG.md` | 2026-09-24 |
+| `briefs/061-the-route-nobody-priced-and-the-metric-nobody-measured.md` | measurement + proposal | `reports/061-*.md`, new files under `src/sim/` only | 2026-09-24 |
+
+**HEAD verified by the PM before dispatch:** 810 tests green, `npm run typecheck` exit 0 both passes,
+`git status` clean, dev server 200, and a browser click-through confirming wave 31's ladder renders
+(marker on a rung with *Down from "the staff trusts you"* beneath it).
+
+**060 is B98, and it is deliberately run on HEAD rather than after Tier 1 lands.** The reasoning, so a
+later session does not call it a wasted wave: wave 31 changed *where standing is displayed* and none of
+that has been seen by a player. Its three named falsifiers — the permanent ladder reading as clutter or
+as a **distance**, *"with the program"* reading as vaguer than *"the locker room"* (B97), and B96's
+4-option scroll — are all answerable at HEAD. Shipping Tier 1 first would confound the display question
+with the supply question, which is the exact conflation DECISION 085 had to correct.
+
+**The one thing 060 does that no previous playtest brief did:** it forces the player to separate
+**(i) could you see where you stood** from **(ii) did where you stood ever change**, and says in the
+brief that answering both "no" as one sentence is not acceptable. Those two lead to opposite fixes and
+nine playtests have blurred them. Career 2 is also a new shape — **the reformer**, selfish for one
+season then deliberately reformed — which attacks upward movement from below instead of from the start
+rung, and asks how many decisions the game took to notice.
+
+**061 is two jobs.** Part 1 prices the route 059 named and was not asked to cost: **remove the −2 from
+the openers' `handle-it` failure** instead of crediting `stay-within` (Tier 2). Part 2 is the larger
+one — **nobody on this board has ever measured rung crossings.** Every figure we hold is a count of
+credit *lines printed*, and DECISION 085's correction was precisely that credits firing and rungs
+moving are different claims. 061 measures upward and downward crossings per career, at HEAD and across
+four arms, with the acceptance question stated in rungs rather than credits **because the credit
+criterion was already satisfied at HEAD and discriminated nothing.**
+
+**A finding the PM handed 061 rather than letting it trip over:** wave 26's author already considered
+deleting this effect, called it **R3**, and rejected it in a comment block in `milestones.ts` (~lines
+55–90) — *"costs the openers the only thing they say."* **The PM's reading is that the rejection may
+not transfer**, because R3 was rejected when the opener was **one button** carrying `+0/−2`; DECISION
+074 then split it in two and `stay-within` now carries a `+1`, so the card still says something under
+Route 3. 061 is told to resolve whether the objection survives DECISION 074 and to answer it with a
+number, not an opinion.
+
+**If no arm moves the median `virtueLoyal` career off zero upward rung crossings, that is a first-class
+result**, not a failed wave: it would mean no edit to these five cards can fix the complaint and the
+fault is in the rung boundaries after all — which makes DECISION 081's shelved `80/67` live again.
+
+**`src/ui/**` is out of bounds for 061 — including `view-model.ts` — because 060 is playing HEAD in a
+browser concurrently.** 061 ships no product code at all; identity against HEAD is its pass.
+
+**Browser fact worth carrying forward, verified this session:** `list_connected_browsers` now returns an
+**empty list**, which looks fatal and is not. There is one implicitly-selected local browser and
+`tabs_context_mcp{createIfEmpty:true}` works. Brief 056's hard-coded deviceId is **stale** — do not copy
+it into a future brief.
+
+**Escalated to the user in parallel, not dispatched:** B85, B92/Tier 1, and B90. Tier 2 is deliberately
+**held** until 061 prices Route 3, per session 13's item 1.
+
+### Wave 32 stall postmortem — both lanes died at the 600s watchdog, and the two outcomes differ by one brief paragraph
+
+**Both agents stalled simultaneously at the 600s no-progress watchdog**, roughly ten minutes after
+dispatch. Both were resumed via `SendMessage` (which preserves their transcript) rather than
+re-dispatched cold.
+
+**The finding worth keeping is the asymmetry in what survived.** Brief 060 carried the *"your first
+action is to create the report file with a one-line stub"* rule; brief 061 did not, because that rule
+had only ever been written into **playtest** briefs. Result:
+
+- **060 had its stub on disk** and lost only unwritten impressions.
+- **061 had nothing at all** — no report, no `src/sim/` file — and everything it had done was in its
+  context when the watchdog fired.
+
+**So: the stub-first rule belongs in EVERY brief, not just playtest briefs.** It is two sentences and
+it is the difference between losing a run and losing nothing. This is now the second distinct way this
+board has lost an agent's work to a session death, and both times the fix was the same one.
+
+**The probable cause, and the mitigation now sent to both:** one long-running foreground command. A
+4-arm × 4-profile × 3,000-career sweep in a single Bash call, or a hung browser `computer` call, will
+exceed 600s of no progress and trip the watchdog. **Every future brief that runs simulations or drives
+a browser should say: no single command may run longer than ~7 minutes; chunk the sweep (one arm or one
+profile per call) and write each chunk to the report as it lands; use `run_in_background` and poll for
+anything genuinely longer.** The existing rule *"never run a foreground command that does not
+terminate"* was necessary and is not sufficient — a command that **does** terminate, in twenty minutes,
+kills the agent just as dead.
+
+**One substantive thing 061 surfaced before dying, and it improves the lane:** *"the engine takes
+`content` as a parameter, which may let me run observed arms rather than modelled ones."* If it holds,
+061 can construct a modified content object inside its own probe and run the engine against it —
+**observed arms rather than modelled deltas**, which is strictly better evidence and still touches no
+file under `src/content/**`. The resume message tells it to pursue that and to label every figure
+observed or modelled.
+
+## APPROVED AND QUEUED — ship these the moment wave 32 reports (DECISION 086)
+
+**The user approved three content changes on 2026-09-25.** None has shipped, deliberately: wave 32 was
+in flight, lane 061 measures against the corpus at HEAD, and lane 060 is a player mid-career. **This is
+the first thing PM session 14 (or 15) does after wave 32 lands.**
+
+| ID | The edit | File | Notes |
+|---|---|---|---|
+| **B85** | `milestone-fall-camp` one-option label *"Win the job"* → *"Take every rep like it's the last one"* | `src/content/events/milestones.ts` | The replacement is the positive outcome's own wording. **95% of a defect class for one string**, zero balance effect. Also closes 053's stale-flavour finding |
+| **B92 / Tier 1** | Six magnitude edits, all `+1`→`+2` or `0`→`+2` | `school-life.ts`, `season-life.ts`, `ol.ts`, `dl.ts` ×2, `oskill.ts` | The exact table is `reports/059-*.md` §4. Priced **+0.016 ± 0.002** draft stock on the stock-maximiser, undrafted/bust unmoved |
+| **B90** | Three `random` events `tier: [3,4]` → `[2,3,4]`; also kill the dead `minClass: "SO"` on `blueblood-five-star` | `src/content/events/universal.ts` | *The Five-Star Behind You*, *Playoff or Bust*, *Scouts on the Sideline*. The **engine** route was offered and **declined** — middling-recruit starts are the intended design |
+
+**The one trap in shipping this, and it is a tripwire working as designed.**
+`src/sim/credit-proposal-probe.test.ts` asserts every Tier 1 row's `from` value against
+`src/content/**`, precisely so the proposal fails a test rather than silently addressing a card that
+changed underneath it. **The content edit and that probe's assertions must move in the same commit** or
+the build fails. Afterwards, re-run the probe's acceptance check on identical seeds — it is written to
+do exactly that.
+
+**Tier 2 is still NOT approved and was deliberately not asked.** 061 is pricing Route 3 against it
+first. Put both to the user together with 059 §5.3's table.
+
+### Wave 32 result — lane 061 landed. Route 3 refuted, and the phase has a new central finding
+
+**Verified independently by the PM:** 841 tests green (810 + 31), `npm run typecheck` exit 0 both
+passes, **no git entry under `src/engine/**`, `src/content/**` or `src/ui/**`** — no product code, and
+the concurrent playtester's build untouched. **All figures are OBSERVED, not modelled.**
+
+**The methodological unlock, and it should be the default from here.** The engine takes `content` as a
+**call-time parameter**, so a lane can build a patched content object inside `src/sim/` and play real
+careers against it without touching `src/content/**`. Report 059's limitations 1–3 are **closed rather
+than restated**. Future pricing lanes should stop modelling deltas.
+
+**Route 3 is refuted and the PM's hypothesis for dispatching it was wrong.** `briefs/061` argued the
+wave-26 R3 objection might not transfer past DECISION 074. It transfers intact: the openers author only
+`+1` and `−2` against a display floor of **2**, so deleting the `−2` leaves **0.0% of careers reading
+any opener character line on any profile.** Worse, it re-prices `handle-it` above `stay-within` for the
+stock scorer and hands `good` **+0.852 ± 0.153** draft stock — the largest on the table. **059 §5.5
+called it "a cleaner option"; it is the worst of the four.** `Tier 2 + Route 3` creates five
+one-way-**UP** cards and is rejected too.
+
+**The acceptance question: NO, and the clause that fails is `good`.** Tier 2 *does* move the median —
+`virtueLoyal` careers with ≥1 upward crossing go **19.6% → 52.1% ± 1.8pp** — which finally answers
+DECISION 085's open clause with a number. It fails on `good`: stock **+0.472**, credit rate
+**73.1% → 100.0%**, because all three deliberate profiles take `stay-within` ~3.99×/career and
+`handle-it` **0.000×**. And the win is fragile: median `virtueLoyal` lands on **79** against an **80**
+boundary, so 52.1% is a distribution straddling the line.
+
+**THE FINDING — it reframes four waves and it is now the headline of the phase:**
+
+> **Median `virtueLoyal` finishes on 75. Median `good` finishes on 71. Four points of separation, on a
+> ladder whose two relevant rungs are 14 points apart.**
+
+A boundary is a step function and cannot be placed between two distributions 4 points apart with ~10
+spread each — in all seven of §5.2's candidate tables the profiles move **together**. **Not a
+corpus-asymmetry problem (084), not a calibration problem (081): `character` barely discriminates
+between the two ways of playing.** Consistent with 084's own census — **136 of 204 options are silent
+both ways.**
+
+**The geometry, stated because it is half the complaint:** every career starts on rung 1 at
+`character 70` (start occupancy 100%, so the modal start is the *only* start). The climb is **+10**; the
+fall is **−5**. *"Only something you can lose"* is **half corpus and half boundary placement.**
+
+**Three corrections accepted — see DECISION 087.** (1) **DECISION 074 already fixed the opener tax
+completely** — the `−2` reaches **0.0%** of deliberate careers, so report 047's *"40% of every character
+point a virtuous career loses"* is a **dead number**; stop citing it. (2) **DECISION 081's `80/67` names
+the wrong floor** — it moves the second floor for a 80.4%→78.8% effect; the *top* floor would need ~76
+and would put the stock-maximiser on the top rung 22.9% of the time. **Stop reaching for `80/67`.**
+(3) The PM's *"nobody has measured rung crossings"* was overstated — `rung-probe.ts` had means at HEAD;
+the distributions and zero-shares are what is new.
+
+### What wave 32 leaves for the user, and why nothing shipped
+
+| ID | Item | Status |
+|---|---|---|
+| B99 | **Does Tier 1 still ship?** Approved in DECISION 086, still the only arm whose cost to `good` is n.s. (**+0.071 ± 0.082**) — but 061 §6.1 argues the counter-case for shipping nothing is now **stronger**: it buys 0.67 credit lines a career and a crossing in **1 career in 10**, below what any playtest can detect | **user — re-opened once, with 060 attached.** New information reopens it; it is not shipped or dropped quietly |
+| B100 | **Should the ladder promise a climb at all?** §5.3's honest reading is that `character` is a currency you **protect**, not one you **climb**. Stopping the promise is **UI, in bounds**, and reverses part of wave 31 | **user — hold for 060.** A playtester is answering whether the ladder reads as clutter or as a distance *right now* |
+| B101 | **Do the two profiles separate on some other axis the UI could report instead?** The constructive form of §5.3, and **nobody has looked** | todo — the most promising new lane on the board |
+
+**Tier 2 remains the user's single yes/no**, now with a rung figure attached (52.1%) and its fragility
+stated. **Route 3 is closed.**
+
+### Wave 32 result — lane 060, the playtest. Three careers, third self-assigned, and it converged with 061 again
+
+**Curve: yes → yes → yes, self-assigned, then a clean stop at three.** Second consecutive self-assigned
+third career. **But read the reason before recording it as a win:** *"I want to play again to answer one
+question I could not answer in two careers: can that ladder be climbed at all... What I want is not
+another story; it is a test."* **The game earned the third play by being unresolved, not by being
+compelling.**
+
+**(i) and (ii), kept separate exactly as the brief demanded — and the split is the whole finding.**
+
+- **(i) Discoverability: SOLVED.** *"Permanent, upper-left on every screen from the first card, all five
+  rungs named, zero hunting."* Three playtests of *"only shown in the credits"* is closed. **Wave 31's
+  win is real and any fix must keep it.**
+- **(ii) It moved once, downward, in one career of three. Never upward in any.** ~110 decisions: **rungs
+  gained 0, rungs lost 1.** Verbatim: *"I could see it perfectly and it never moved."*
+
+**Career 2, the reformer, answers the recovery question outright: NO.** Two selfish freshman cards cost a
+rung; **thirty reformed decisions over three seasons never recovered it.** The turn was first
+acknowledged on the **10th decision after it**, and two of those ten went the wrong way.
+
+**THE CONVERGENCE, and it is the second wave running.** 061 measured that the climb is impossible
+(4 points of separation, 14-point rungs). 060, with no access to that, wrote that the ladder *"is a list
+with a visible top I never reached"* and that `YOU ENDED HERE` under rung 2 *"read as a scorecard saying
+I'd failed a career I was proud of."* **One found the climb impossible; the other found the display
+promising it anyway.** `briefs/060`'s named falsifier — the ladder reading as **a distance** — fired.
+
+**The sharpest single line in either report, and it names a mechanism nobody had:**
+
+> *"The readout is less informative than the prose above it — twice it printed 'Earned you credit with
+> the program' and the rung didn't move. A coarse 5-step display over a hidden meter teaches players the
+> currency is fake."*
+
+The prose fires on one card's effect; the rung fires on a 10-point accumulation. **The ladder does not
+merely fail to reward the player, it contradicts the sentence directly above it** — and the widget wins,
+because it persists. **This is display, not content. It is ours.**
+
+**Bet 3 REFUTED, and half the cause is a UI defect the PM verified in source.** Five refusals, five
+nothings. `CareerScreen.tsx:822` renders `own === 0 ? "No change" : ovrText(own)` inside `.delta`, and
+`career.css:1031` gives `.delta` `color: var(--emphasis)` — **the gold accent** — at full delta size and
+weight. **So when a player refuses a bad idea, the largest, heaviest, gold element on the card reads
+"No change."** DECISION 085 chose not to *pay* for restraint; it never chose to *emphasise* that
+restraint was worthless.
+
+**Two content defects found by the player and verified verbatim by the PM — both predicted by 055 §RB:**
+
+- **Claim 2 REFUTED** (the highest-value class): `offseason-going-home/stay-and-train` failure branch
+  reads *"You do exactly what you did last summer, and in August it shows that you did"* carrying
+  **`overall −1` AND `character −2`**. Praise-shaped words, both numbers down. 055 §RB item 5.
+- **Claim 3 REFUTED** on the exact named card: `targeting-review` asserts *"the booth stops the game to
+  review it"*, then resolves *"no flag, no review."* 055 §RB item 4.
+
+**Claims 4 and 5 confirmed. Bet 4 confirmed — B96 CLOSED**, no scroll and no visual defects at 1456×824.
+**Claim 6 refuted twice** — Senior Day resolved under a click aimed at Continue: an interaction bug.
+
+### Wave 33 — ready to write, all in bounds, no user input needed
+
+| ID | Item | Notes |
+|---|---|---|
+| B102 | **A refusal must not render its nothing in the loudest voice on the card** | The `"No change"` string in the gold `.delta` register. **Does not re-open DECISION 085** — it does not pay for restraint, it stops shouting that restraint was worthless. `CareerScreen.tsx:822` + `career.css:1031` |
+| B103 | **Senior Day resolves under a click aimed at Continue** | Interaction defect, seen twice. Claim 6 |
+| B104 | **The display contradicts the prose above it** | The coarse-rung/fine-prose mismatch. Bound up with B100 — do not brief it until the user rules on the summit |
+
+**Content items for the user's authoring docket**, both now confirmed by a player and verified in source:
+055 §RB item 5 (`offseason-going-home` failure branch) and item 4 (`targeting-review`'s asserted review).
 
 ## Next actions — for PM session 14, in order
 

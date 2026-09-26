@@ -3085,3 +3085,277 @@ defect, and it is asked separately.
 the credits that do fire, which would move the fault back toward `bands.ts`. On the principle: a
 playtester reporting that declining the transgression feels unacknowledged — which is the losing side
 of the compliance argument and is worth one question in the next playtest.
+
+## 086 — The user approves B85, Tier 1 and B90's content unlock. All three are queued behind wave 32, not shipped on approval
+
+**Date:** 2026-09-25 · **Made by:** the user, put to them by PM session 14 · **Evidence:** `reports/055-*.md` §RB (B85), `reports/059-*.md` §4 and §5 (Tier 1), the PM's own `eligibleTiers` arithmetic in STATE.md wave 30 (B90) · **Closes:** three of the four escalations session 13 handed session 14
+
+Three content decisions, all of which edit `src/content/**` and therefore could only ever be the
+user's. All three were put with a recommendation and a fairly-stated counter-case; all three were
+approved as recommended.
+
+**B85 — approved: the label is rewritten.** `milestone-fall-camp`'s one-option label *"Win the job"*
+becomes an action rather than a result — *"Take every rep like it's the last one"*, which is already
+the positive outcome's own wording, so the card ends up telling you what the action was. Measured load:
+**1.048 of the 1.10 per-career instances** of the whole "button asserts a result its failure branch
+then denies" class. **95% of a defect class for one string**, and no balance effect whatsoever. It is
+also 053's stale-flavour card, so one rewrite closes two findings.
+
+**B92 / Tier 1 — approved: all six magnitude edits.** The six rows in `reports/059-*.md` §4, every one
+`+1`→`+2` or `0`→`+2`. Priced over ≥3,000 careers per profile: **+0.016 ± 0.002 draft stock** on the
+stock-maximiser profile — 0.02% of its base — with undrafted and bust rates unmoved in every arm.
+**The counter-case was put and rejected on purpose:** the asymmetry could have been read as a deliberate
+statement that locker rooms notice bad behaviour more than good. The user's call is that it is a defect,
+not a statement. This retires the two cards that report 057 and the 056 playtester converged on
+independently, from statistics and from feel respectively.
+
+**B90 — approved as "design, but unlock the content."** The arithmetic stands and is not in dispute:
+every career starts at `overall 60` / `character 70`, `deriveDraftStock` returns **exactly 31** for all
+35 position × home-state pairs, and `eligibleTiers` needs **45** for tier 3 — so **no player can ever
+sign with a tier 3/4 school** and `virtueLoyal` reaches one **0.0%** of the time. **The user's ruling is
+that everyone starting as a middling recruit and earning his way up is the intended design and stays.**
+What is not acceptable is the side effect, so the three `random` events gated `tier: [3,4]` in
+`universal.ts` — *The Five-Star Behind You*, *Playoff or Bust*, *Scouts on the Sideline* — move to
+`[2,3,4]` so a player who never transfers can meet them. The engine route (starting stock, or the 45
+gate) was offered and **declined**: it moves balance everywhere to fix three events.
+`blueblood-five-star`'s `minClass: "SO"` gate is **dead either way** — nobody reaches tier 3/4 before JR
+— and should be removed or corrected in the same pass.
+
+**Why none of this ships on approval, which is the part a later session will want the reasoning for.**
+Wave 32 was in flight when the approvals came back. **Lane 061 is measuring arms against the corpus at
+HEAD**, and `credit-proposal-probe.test.ts` deliberately asserts every proposed row's `from` value
+against `src/content/**` so that the proposal fails a test rather than silently addressing a card that
+moved underneath it. **That tripwire is working as designed and it points at this commit.** Lane 060 is
+a playtester partway through careers in a browser; changing what cards say and what they pay, mid-career,
+invalidates the most expensive measurement on the board. So all three edits are **queued** and land
+after wave 32 reports.
+
+**Sequencing, for whoever ships it:** the Tier 1 edit and `credit-proposal-probe.ts`'s `from`
+assertions must move in the **same commit**, or the tripwire fails the build. Re-run the probe's
+acceptance check on identical seeds afterwards — it is written to do exactly that.
+
+**What would change our mind.** On B85: a playtester reporting the new label reads as a *command* the
+game then contradicts, which would mean the defect moved rather than closed. On Tier 1: `good`'s stock
+delta measuring materially above the +0.016 it was priced at when run observed rather than modelled —
+061 may produce exactly that figure, and if it does, it supersedes 059's. On B90: evidence that meeting
+those three events at tier 2 reads as incoherent, since their prose was authored for a blueblood.
+
+## 087 — Route 3 is refuted and wave 26 was right. But the finding that matters is that `character` does not separate the two ways of playing, and no lever on this board can make it
+
+**Date:** 2026-09-25 · **Made by:** PM session 14, accepting lane 061's measurement and its three corrections · **Evidence:** `reports/061-the-route-nobody-priced-and-the-metric-nobody-measured.md` — all figures **OBSERVED**, not modelled · **Supersedes:** report 059 §5.5's characterisation of Route 3 · **Corrects:** `briefs/061` (the PM's), DECISION 081's prepared fallback, and report 047's opener-tax figure · **Does not disturb:** DECISION 086's approvals, which stand pending one question to the user
+
+**Verified independently by the PM, not taken from the report:** 841 tests green (810 + 31 added),
+`npm run typecheck` exit 0 both passes, and `git status` shows **no entry under `src/engine/**`,
+`src/content/**` or `src/ui/**`.** The lane shipped no product code and the concurrent playtester's
+build was never disturbed.
+
+**The methodological unlock, which is reusable and should be the default from here.** The engine takes
+`content` as a **call-time parameter** — `createCareer(setup, seed, CONTENT)`, `getDecision(s, CONTENT)`,
+`advance(s, choice, CONTENT)`, `makePolicy(profile, content)`. So a lane can build a patched content
+object **inside `src/sim/`** and play real careers against it, touching no file under `src/content/**`.
+Every arm in 061 is therefore **observed rather than modelled**, which closes report 059's limitations
+1–3 outright instead of restating them. **Future pricing lanes should do this and stop modelling
+deltas.**
+
+### Route 3 — refuted, and the PM's hypothesis for dispatching it was wrong
+
+`briefs/061` argued that wave 26's rejection of R3 might not transfer, because R3 was rejected when the
+opener was one button and DECISION 074 has since split it in two, leaving `stay-within`'s `+1` to carry
+the card. **That reasoning is wrong and the objection survives intact.** The openers author only `+1`
+and `−2` against a display floor of **2**, so deleting the `−2` leaves **0.0% of careers reading any
+opener character line, on every profile.** The card says nothing to anybody.
+
+Two further effects neither 059 nor the PM could see without putting the edit in the bundle:
+
+- It **re-prices `handle-it` above `stay-within` for the stock scorer** (E[stock] 0.019 → 0.094 against
+  0.040), so it silently changes what an optimising player does.
+- It hands `good` **+0.852 ± 0.153** draft stock — **the largest gain on the whole table** — and costs
+  `good` **13.3%** of careers an upward crossing.
+
+**Report 059 §5.5 called Route 3 "a cleaner option" and the PM carried that into a brief as the route
+that might beat both tiers. It is the worst of the four.** `Tier 2 + Route 3` is numerically identical
+to Tier 2 for all three deliberate profiles and creates **five one-way-UP cards** — the exact defect
+DECISION 085 refused. Both are rejected on measurement, not taste.
+
+### The acceptance question: NO — and the clause that fails is `good`, not the rungs
+
+**Tier 2 does move the median career**, which is the first direct answer to DECISION 085's open clause:
+`virtueLoyal` careers with ≥1 upward crossing go **19.6% → 52.1% ± 1.8pp** (CI excludes 50%). So
+*"credits fire but rungs do not move"* is now measured rather than argued. **It fails the side-condition
+on both halves** — `good` draft stock **+0.472 ± 0.079** and credit rate **73.1% → 100.0%** — and the
+cause is not subtle: all three deliberate profiles take `stay-within` **~3.99×/career** and `handle-it`
+**0.000×**, so any credit placed there is paid to the virtuous player and the stock-maximiser alike.
+
+**And Tier 2's win is fragile.** The median `virtueLoyal` career finishes on **79** against a boundary
+of **80** — one point short. 52.1% is a distribution straddling the line, not clearing it, so the result
+moves under one point of recalibration in either direction. Nobody should treat 52.1% as *"the median
+career now climbs."*
+
+### The finding underneath all of it, and it reframes four waves
+
+> **Median `virtueLoyal` finishes on 75. Median `good` finishes on 71. Four points of separation between
+> "played virtuously for four years" and "maximised draft stock and never thought about the room" — on a
+> ladder whose two relevant rungs are 14 points apart.**
+
+A band boundary is a step function, and placing one between two distributions **4 points apart with a
+spread of ~10 each** is not possible: in every one of §5.2's seven candidate tables the two profiles
+move **together**. This is why no content edit clears the `good` clause and no boundary change clears it
+either.
+
+**It is not a corpus-asymmetry problem (DECISION 084) and not a calibration problem (DECISION 081). It
+is that `character` barely discriminates between the two ways of playing** — consistent with 084's own
+census that **136 of 204 options are silent both ways**, so two thirds of the game's decisions
+contribute nothing to the axis the ladder reports.
+
+**A structural fact worth stating on its own, because it is the geometry of the complaint.** Every
+career starts on rung 1 at `character 70` — start occupancy is 100% rung 1, so the modal start is the
+*only* start. From there the climb to `they would run through a wall for you` is **+10** and the fall to
+`just a guy in the building` is **−5**. ***"Only something you can lose" is half a property of the
+corpus and half a property of the boundaries being twice as far up as down from a universal start.***
+
+### Three corrections to this board, all accepted
+
+1. **DECISION 074 already fixed the opener tax, completely.** The `−2` now reaches **0.0%** of
+   deliberate careers. Report 047's *"40% of every character point a virtuous career loses"* **expired
+   when the second option landed**, and DECISION 084's *"charge −2 and can never credit"* describes a
+   charge that can no longer land on a deliberate player. Any future reasoning that cites 047's figure
+   is citing a dead number.
+2. **DECISION 081's prepared `80/67` fallback names the wrong change.** It moves the *second* floor and
+   shifts `virtueLoyal`'s zero-up share only **80.4% → 78.8%**. The *top* floor is the one that matters
+   and would need ~**76** to move the median — which puts the **stock-maximiser on the top rung in
+   22.9%** of careers against 2.7% today. **`80/67` should not be reached for again**; it was filed
+   against a mechanism that measurement has now replaced twice.
+3. **`briefs/061`'s claim that "nobody has measured rung crossings" was wrong** — `rung-probe.ts`
+   already reported ups/downs means at HEAD. The PM wrote a stronger novelty claim than the repo
+   supported. The per-career distributions, zero-shares and time-to-first-crossing *are* new.
+
+### What is decided here, and what is deliberately not
+
+**Decided:** Route 3 and Tier 2 + Route 3 are **rejected**. The three corrections above are **accepted**.
+The observed-arms technique is the **default** for future pricing lanes.
+
+**Deliberately not decided, and held for the user with the playtest in hand:** whether **Tier 1 still
+ships**. It is approved (DECISION 086) and it remains the only arm whose cost to the stock-maximiser is
+indistinguishable from zero (**+0.071 ± 0.082, n.s.**). But 061 §6.1 argues — fairly, and the PM thinks
+strongly — that **the counter-case for shipping nothing is now stronger than the case for Tier 1**: it
+buys 0.67 extra credit lines a career and an upward crossing in **one career in ten**, which is below
+what any realistic playtest can detect, and §5.3 says it cannot make the ladder *mean* more because the
+quantity displayed does not separate the players. **Re-opening an approval the user has already given
+requires new information; §5.3 and the n.s. `good` figure are new information, so it goes back once,
+with the playtest attached, rather than being shipped quietly or dropped quietly.**
+
+**The larger question 061 raises and the PM is not answering alone:** *should the ladder promise a climb
+at all?* The honest reading of §5.3 is that `character` is a currency you **protect**, not one you
+**climb**, and that the fix may be to stop presenting it as a climb — which is **UI, in bounds, and
+reverses part of wave 31.** That is put to the user only after lane 060 lands, because a playtester is
+at this moment answering whether the permanent ladder reads as clutter or as a distance, and this board
+has learned that the number and the person are worth far more together than either alone.
+
+**What would change our mind.** On Route 3: nothing short of the display floor changing, which would
+alter what `+1` and `−2` print. On §5.3: a measurement showing the two profiles separate on some *other*
+axis the UI could report instead — which is the constructive form of this finding and nobody has looked.
+On Tier 1: the user simply preferring the six cards be coherent regardless of measurable effect, which
+is a legitimate authorial reason and not one measurement can refute.
+
+## 088 — The two lanes converged a second time. Wave 31 solved discoverability and created a worse problem: a summit the player can see and cannot reach
+
+**Date:** 2026-09-25 · **Made by:** PM session 14 · **Evidence:** `reports/060-*.md` (3 careers, ~110 decisions, third self-assigned) and `reports/061-*.md` (observed arms), which had no access to each other · **Builds on:** DECISION 087 · **Partially reverses:** wave 31 / DECISION 058's ladder framing
+
+**This is the second consecutive wave where a probe and a person named the same thing from opposite
+directions, and the board should keep doing this.** 061 measured that `character` cannot be made to
+climb because the virtuous and the stock-maximiser finish 4 points apart on 14-point rungs. 060, with no
+access to any of that, played 110 decisions and wrote that the ladder *"is a list with a visible top I
+never reached"* and that `YOU ENDED HERE` under the second rung *"read as a scorecard saying I'd failed
+a career I was proud of."* **One found that the climb is impossible; the other found that the display
+promises it anyway.**
+
+### What wave 31 got right, and it should not be thrown away
+
+**(i) Discoverability is solved, completely.** The playtester: *"permanent, upper-left on every screen
+from the first card, all five rungs named, zero hunting."* Three playtests' worth of *"the ladder is
+only shown in the credits"* is closed. **Any fix here keeps the permanent readout.**
+
+### What it got wrong, measured against its own named falsifier
+
+**Bet 1 was PARTIAL and the second failure mode — the one `briefs/060` named as "a distance" — fired.**
+It helped for a season, became wallpaper by decisions 22–25 (immediately after a captain vote failed to
+move it), and then actively misreported a career the player was proud of. **A scale with a visible
+summit, on a currency that cannot reach the summit, is worse than no scale.**
+
+**(ii) never happened: rungs gained 0, rungs lost 1, across ~110 decisions.** And career 2 answers the
+recovery question outright: **two selfish freshman cards cost a rung and thirty reformed decisions over
+three seasons never recovered it.** The turn was first acknowledged on the **10th decision after it**,
+and two of those ten went the wrong way.
+
+### The mechanism nobody had named: the display is coarser than the prose above it
+
+> *"Twice it printed 'Earned you credit with the program' and the rung didn't move. A coarse 5-step
+> display over a hidden meter teaches players the currency is fake."*
+
+**This is the sharpest thing in either report.** The prose fires on a single card's effect; the rung
+fires on a 10-point accumulation. So the game routinely says *you earned credit* while the widget
+directly beneath it says *nothing happened* — and the widget wins, because it is the thing that persists.
+**The ladder does not merely fail to reward the player; it contradicts the sentence above it.** This is
+ours: it is display, not content.
+
+### Bet 3 — REFUTED, and roughly half the cause is a UI defect we own
+
+**Five refusals, five nothings.** The player declined a tempting bad option five times and the game
+acknowledged it zero times. Some of that is DECISION 085's deliberate silence, which is defensible —
+**but the display makes it far louder than silence.** Verified in source by the PM:
+
+`CareerScreen.tsx:822` renders `own === 0 ? "No change" : ovrText(own)` inside `.delta`, and
+`career.css:1031` gives `.delta` `color: var(--emphasis)` — the **gold accent** — at `--delta-size` /
+`--delta-weight`. **So on a card where the player refused a bad idea, the largest, heaviest, gold-accented
+element on screen reads "No change."** The house style the playtester collected around it — *"Less money,
+zero risk"*, *"No harm done"*, *"Nobody notices, which is fine"*, and worst, holding the room together
+through a coaching change resolving to *"You spend bowl week playing captain to nobody"* / `No change` —
+**announces the nothing in the loudest available voice.** DECISION 085 chose not to *pay* for restraint.
+It did not choose to *emphasise* that restraint was worthless, and that is what currently ships.
+
+### Two content defects a player found and the PM verified verbatim
+
+Both were predicted by report 055 §RB and are now confirmed by a human, which is the bar this board set.
+
+- **Claim 2 REFUTED — the highest-value class on the board.** `offseason-going-home/stay-and-train`
+  negative branch: *"You do exactly what you did last summer, and in August it shows that you did"* with
+  **`overall −1` and `character −2`**. The sentence is ambiguous enough to read as praise while both
+  numbers go down. 055 §RB item 5 asked for exactly this rewrite.
+- **Claim 3 REFUTED on the exact card the brief named.** `targeting-review`'s description asserts *"the
+  booth stops the game to review it"*; the outcome resolves *"no flag, no review."* 055 §RB item 4.
+
+**Claims 4 and 5 confirmed. Bet 4 confirmed — no scroll, no visual defects at 1456×824, so B96 is closed
+for now. Claim 6 refuted twice:** Senior Day resolved under a click aimed at Continue, which is an
+interaction defect, not a content one.
+
+### The result that matters most to the project's actual goal
+
+**The third career was self-assigned again — the second consecutive wave, and only the third time in
+this project's history.** Curve: yes → yes → **yes, self-assigned**, then a clean stop at three. But the
+stated reason is a warning, not a win: *"I want to play again to answer one question I could not answer
+in two careers: can that ladder be climbed at all... What I want is not another story; it is a test."*
+**The game earned a third play by being unresolved, not by being compelling.** That is a real result and
+it should not be recorded as the north-star metric being met.
+
+### What is decided, and what goes to the user
+
+**Decided, and in bounds — these are the PM's and they are wave 33:**
+
+1. **A refusal must not render its nothing in the loudest voice on the card.** The `"No change"` string
+   in the gold `.delta` register is the specific defect. This does not re-open DECISION 085 — it does not
+   pay for restraint, it stops shouting that restraint was worthless.
+2. **The Senior Day click-through bug** (claim 6, twice).
+3. **B96 is closed** — no scroll observed at 1456×824.
+
+**To the user, because it reverses part of wave 31 and because 061 §5.3 makes it a question about what
+the currency IS:** *should the readout keep the shape of a climbable ladder at all?* The convergent
+finding is that **the top rung is unreachable by construction and showing it costs more than it buys.**
+The PM's recommendation is to **keep the permanent readout and drop the summit** — keep what wave 31 won
+on discoverability, stop drawing a scale whose top is an accusation. The alternative worth putting beside
+it is making the display finer-grained so it moves when the prose says it moves, which repairs the
+contradiction directly but risks DECISION 002's *never a number* rule.
+
+**What would change our mind.** On the `"No change"` fix: a playtester reporting that the quieter
+treatment made outcomes hard to read at all. On the summit: a decision to ship Tier 2 *and* recalibrate,
+after which the top rung becomes reachable and the scale earns its shape back — though 061 §5.1 warns the
+median lands on 79 against an 80 boundary, so that reachability would be one point deep.
