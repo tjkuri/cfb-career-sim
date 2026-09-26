@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete and committed (`a2744ea`) · **Wave 33:** in flight · **PM session:** 14
+**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete and committed (`a2744ea`) · **Wave 33:** 063 done by the PM (`e2130c8`); 062 must be rewritten — see the product-owner playtest · **PM session:** 14
 
 ---
 
@@ -2903,6 +2903,82 @@ and permission to **leave a test failing with an explanation** rather than make 
 also asked to re-run DECISION 086's acceptance check on identical seeds and say whether shipped Tier 1
 matches 061's prediction of **+0.071 ± 0.082** stock on `good`, credit rate **85.9% → 93.2%**, **+10.4pp**
 of careers gaining an up-crossing. **A mismatch there would be the most important sentence of the wave.**
+
+## THE PRODUCT OWNER PLAYED IT — 2026-09-25. Read this before planning anything
+
+**The user played one career and the feedback reframes the phase.** It is first-hand, it is from the
+person who knows what this is supposed to be, and **several items outrank everything else on this
+board.** Three screenshots accompany it. Recorded verbatim where possible.
+
+**Their career:** QB, Incarnate Word → Stephen F. Austin → North Texas, 5 seasons, All-Conference +
+**Heisman** + All-American + Bowl Win, **Round 1 Pick 12**, final **OVR 96**.
+
+### The headline: the ending screen contradicts itself, and the screenshot is the proof
+
+That career — Heisman, All-American, first round, OVR 96 — ends with the standing readout marker on
+**"a problem they are managing"** with **`YOU ENDED HERE`** printed under it.
+
+**This is the last playtester's complaint, but far worse**, because their career was merely *good* and
+this one is triumphant. *"A scorecard saying I'd failed a career I was proud of"* is now demonstrated on
+a career that won the Heisman. **B100 is no longer a design question, it is a defect.**
+
+**And the user's own prescription is simpler than the PM's planned fix (DECISION 089), so it supersedes
+it:** *"it might hit better if the player doesn't see the options, just the status, and they see when it
+goes up and down."* **Show the current standing and its movement. Do not show the scale.** That is
+cheaper than the sub-rung marker work, it removes the unreachable summit by construction, and it keeps
+discoverability. **`briefs/062` item 1 must be rewritten to this before it is re-dispatched.**
+
+### The design principle the user states, and it is the most important line in this document
+
+> **"the decisions should generally be in the form of A. play it safe or B. risk/reward"**
+
+Their complaint is that **you cannot tell what you are choosing between.** Examples they gave:
+
+- *The First One*: **"Take care of business"** vs **"Let the game come to you"** — *"like wtf are even
+  these options???"*
+- *The Ticket Hookup*: sell the comps vs give them to family — *"what would even be the upside here?
+  they cant just be 'kill a kid or say a prayer' there has to be a choice to be made"*
+- *Family Business* (the NIL cousin): their proposed rewrite shows the shape wanted —
+  *"your cousin wants to manage your NIL, he has little experience but that means hes going to hunt
+  whales"* — **risk and reward both legible in the prose, with no number.**
+
+**This reframes six waves of work.** DECISIONS 084/085/089 argued at length about whether to *pay* for
+restraint. **The user's point is upstream of that: on these cards there is no real choice to make.** An
+option whose upside is invisible is not a gamble, it is a formality — and no amount of crediting the
+restraint branch fixes a card the player could not read. **DECISION 085's "don't pay for private
+prudence" survives; what it was protecting turns out not to be the problem.**
+
+This is prose, not mechanics, so it needs **no engine change and no probability display** (which stays
+banned). It is `src/content/**`, which is frozen — **so it is the user's call to unfreeze.**
+
+### Everything else the user reported
+
+| # | Finding | Where it lives |
+|---|---|---|
+| B105 | **Options do not communicate the gamble** — the principle above. **The biggest item on the board** | content (frozen) |
+| B106 | **The ending screen calls a Heisman career "a problem they are managing"** with `YOU ENDED HERE` | **UI, ours, urgent** |
+| B107 | **Show status and movement, not the scale** — the user's prescription, supersedes DECISION 089's sub-rung plan | **UI, ours** |
+| B108 | ***"Cost you with the program."* is confusing** — the user's word. **This refutes wave 31 / DECISION 058's vocabulary rewrite**, and B97 predicted exactly this risk | **UI, ours** |
+| B109 | **Two seasons both labelled SR.** Confirmed in source by the PM: `CLASS_ORDER = ["FR","SO","JR","SR"]` and `advance.ts:270` clamps at the last entry, so **any 5-season career prints SR twice.** The redshirt year has no label of its own | **UI/engine boundary — confirm which** |
+| B110 | **Repetition is now felt, not just measured.** *Family Business* twice in one career; *Bowl Season* three times; **"Carried the team through bowl season" appears in FOUR of five seasons** in the moments list, while season 2 reads *"A year with nothing to put on this list."* B7/B11 confirmed by the owner | content (frozen) |
+| B111 | **"Everything else" is confusing** — the user asks whether it means the season ended. Suggests **"net this season"** | **UI, ours, cheap** |
+| B112 | **Balance is too generous** — *"i feel like i had a pretty middling career and still went in the first round and got  ehisman?"* OVR 60 → **96** | engine/balance — user's call |
+| B113 | **Awards should fire as they happen, not only at the end** — *"in the soccer game you see the awards as they happen not at the end"* | **UI, ours** |
+| B114 | **A Heisman at Incarnate Word / North Texas.** PM's observation on the screenshots: the career never left small programs yet took the sport's biggest individual award. **Awards appear not to account for program tier** | engine/content — user's call |
+| B115 | **How many decisions per run does the reference game have?** The user asks whether the fix for repetition is **fewer decisions between seasons.** Ours is ~38/career. **Report 002 never counted the reference's** — it mapped the 12-row, two-year-band ledger of a ~22-year career but not the click count | **measurable — worth one lane** |
+
+### What this does to the wave board
+
+**Wave 33 as briefed is now partly wrong.** `briefs/062` item 1 (drop the summit, add sub-rung movement)
+must become **B107's simpler shape**, and B106, B108, B109, B111 and B113 all belong in the same lane
+because they are the same two screens. `briefs/063` is **done** — the PM executed it directly (commit
+`e2130c8`) after both wave-33 agents died to a rate limit.
+
+**The strategic point a future session must not lose:** this board spent six waves on the character
+currency's *magnitude and display* while the owner's first-ever playthrough found that **players cannot
+read the choices, the seasons repeat, and the ending insults a Heisman winner.** Measurement lanes kept
+converging on real findings inside a frame nobody had checked against a person who knows the game.
+**Get the owner in front of it earlier.**
 
 ## Next actions — for PM session 14, in order
 
