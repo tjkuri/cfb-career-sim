@@ -3450,3 +3450,66 @@ The next playtest is the test of all of it, and its question is no longer *"can 
 now measured and answered — but **"does the readout tell you the truth about what you just did?"**
 A player who reports that the marker moves but means nothing, or that it moves so smoothly it reads as a
 progress bar, would put both halves of this decision back on the table.
+
+## 090 — The content freeze is LIFTED, under a propose-then-approve protocol. Balance is investigated but not touched
+
+**Date:** 2026-09-25 · **Made by:** the user, after playing one career themselves · **Supersedes:** the blanket freeze on `src/content/**` that has governed every wave of this phase · **Evidence:** the product-owner playtest recorded in `STATE.md`, and DECISION 089's now-visible failure mode
+
+### Why the freeze existed, and why it is coming off
+
+`src/content/**` was frozen so that display problems could not be "solved" by rewriting the game, and
+it did real work: it forced DECISIONS 084, 085 and 087 to measure rather than guess, and it caught the
+PM proposing to pay players for private prudence.
+
+**It also caused the phase's central error.** With content unavailable, six waves argued about the
+*magnitude and display* of the character currency. The owner's first playthrough found that players
+**cannot read what they are choosing between**, that the seasons repeat audibly, and that the ending
+screen calls a Heisman winner *"a problem they are managing."* **The freeze did not cause those, but it
+guaranteed the board could only work on the one of the three that was in bounds.**
+
+### The protocol, and it is the whole decision
+
+**The freeze is replaced by propose-then-approve, per batch:**
+
+1. A lane drafts content changes as **exact before/after prose**, in a report — never applied.
+2. The **PM brings each batch to the user** with the diff legible: card id, option id, current text,
+   proposed text, and what the change is trying to buy.
+3. **Only what the user approves is applied**, and the PM applies it, not the lane.
+4. Effects (`character`, `overall`, `stat`, `snaps` amounts) remain **higher-scrutiny than prose**:
+   they move balance, so they are priced before they are proposed, exactly as Tier 1 was.
+
+**The reason for the protocol rather than a clean unfreeze:** the user's answer was *"unfreeze, I
+approve per batch"*, and the stated reason to keep a gate is voice. **This game's writing is the
+product.** An agent rewriting 106 cards to a principle produces consistency and loses the thing that
+makes the cards worth reading. The owner's own example — *"he has little experience but that means hes
+going to hunt whales"* — is the standard, and it is not a standard a brief can specify.
+
+### The principle content work is now aimed at
+
+> **"the decisions should generally be in the form of A. play it safe or B. risk/reward"** — the user
+
+**And the corollary, which is the actionable half: the risk and the reward must both be legible in the
+prose, without a number.** *The Ticket Hookup* fails because the upside is invisible; *The First One*
+fails because neither option describes what it is doing. The hidden-mechanics rules are **unchanged** —
+no probability, no EV, no weight, no draft stock — and the fix does not need them. **A card can say
+what is at stake without saying how likely it is.**
+
+**This supersedes the framing of DECISIONS 084/085/089 without reversing their conclusions.** 085's
+*"a restraint branch should pay only if somebody can see it and it cost the player something he
+wanted"* is still right. It was simply answering a question about **payment** on cards whose real
+defect is **legibility**, and no payment rule fixes a card the player could not read.
+
+### Balance — investigated, not changed
+
+The user's verdict on a middling career yielding a **Heisman, OVR 60 → 96, and Round 1 Pick 12** at
+Incarnate Word and North Texas is *"investigate, don't change yet."*
+
+**So a measurement lane produces numbers and options, and ships no balance change.** What it must
+answer: award rates per profile and position, OVR growth curves, draft-position distributions, and
+specifically **whether any award accounts for program tier** — because a Heisman at Incarnate Word is
+either a missing condition or a deliberate underdog fantasy, and nobody on this board knows which.
+`src/engine/**` stays frozen; that freeze is **not** lifted by this decision.
+
+**What would change our mind on the protocol:** if per-batch approval becomes the bottleneck — if the
+user finds themselves rubber-stamping — it should collapse to a clean unfreeze with spot checks. If
+instead the first batch comes back heavily edited, the protocol is earning its cost and should tighten.

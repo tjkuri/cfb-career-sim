@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete and committed (`a2744ea`) · **Wave 33:** 063 done by the PM (`e2130c8`); 062 must be rewritten — see the product-owner playtest · **PM session:** 14
+**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete and committed (`a2744ea`) · **Wave 33:** 063 done (`e2130c8`), 062 superseded by 064 · **Wave 34:** in flight · **PM session:** 14
 
 ---
 
@@ -2979,6 +2979,46 @@ currency's *magnitude and display* while the owner's first-ever playthrough foun
 read the choices, the seasons repeat, and the ending insults a Heisman winner.** Measurement lanes kept
 converging on real findings inside a frame nobody had checked against a person who knows the game.
 **Get the owner in front of it earlier.**
+
+## Wave 34 — in flight (PM session 14). The first wave aimed at what the owner found
+
+**DECISION 090 lifted the content freeze** under propose-then-approve, and ruled balance
+*investigate-don't-change*. Three lanes, file-disjoint: `src/ui/**`, new files under `src/sim/`, and a
+report only.
+
+| Brief | Agent | Owns | Dispatched |
+|---|---|---|---|
+| `briefs/064-the-ending-stops-insulting-the-player.md` | dev (UI) | `src/ui/**` + tests | 2026-09-25 |
+| `briefs/065-how-generous-is-this-game.md` | measurement | new files under `src/sim/` + report | 2026-09-25 |
+| `briefs/066-make-the-gamble-legible.md` | content writer | **report only — edits nothing** | 2026-09-25 |
+
+**064** is B106/B107/B108/B109/B111/B113 — one lane because they are two screens. It is told to take
+the owner's prescription **literally**: stop drawing the five-rung scale, draw the status and its
+movement. That **supersedes DECISION 089's** keep-the-rungs-add-sub-rung-motion plan, which was more
+work and more risk for a worse answer. It carries the PM's already-found cause for the double-SR
+(`CLASS_ORDER` clamps at `advance.ts:270`) so it does not re-derive it, and it is told that if the fix
+needs an engine change it writes a proposal and stops. On *"Cost you with the program."* it is told
+**not to simply revert** — wave 31's reason still holds — and to change it only if a third option beats
+the current line on both counts, or leave it.
+
+**065** is B112/B114, measurement only. Its sharpest question is whether **any award condition
+references programme tier**, because a Heisman at Incarnate Word is either a missing condition or a
+deliberate underdog fantasy and nobody knows which. It is also told to check whether the owner's
+small-school path is the *norm* — prior work established tier 3/4 is unreachable at Signing Day, so it
+may be. **It is told the too-generous premise may be wrong and that refuting it is a success.**
+
+**066 is the first content proposal in the project's history and it edits nothing.** Batch capped at
+**8–12 cards** because the user reviews per batch. Targets the five `milestone-opener-*` (100% of
+careers, once a season, and the exact options the owner quoted), `offfield-ticket-hookup`,
+`offfield-money-manager`, plus two to four the lane finds itself. The quality bar written into the
+brief is the owner's own sentence — *"he has little experience but that means hes going to hunt
+whales"* — as the example of naming risk and reward with **no number**. It is warned that the openers'
+two branches were authored deliberately with the rationale in a source comment, so the job is to make
+an existing trade legible, not invent a new one.
+
+**Not in this wave, deliberately:** B105's long tail (the other ~90 cards), B110's full variant pass,
+and B115 (counting the reference game's decisions per run). All wait for the first batch to come back
+approved or heavily edited, which tells us whether the protocol is working.
 
 ## Next actions — for PM session 14, in order
 
