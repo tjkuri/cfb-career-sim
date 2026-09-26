@@ -16,7 +16,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
     options: [
       {
         id: "compete",
-        label: "Win the job",
+        label: "Take every rep like it's the last one",
         probability: 0.65,
         positiveOutcome: {
           description: "You take every rep like it is the last one and the pencil becomes ink.",

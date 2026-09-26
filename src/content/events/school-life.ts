@@ -104,7 +104,7 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "By October he can spell you for a series without the staff flinching, and the room notices who built him.",
           effects: [
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 2 },
             { kind: "moment", item: "Built a backup out of a walk-on", icon: "star" },
           ],
         },

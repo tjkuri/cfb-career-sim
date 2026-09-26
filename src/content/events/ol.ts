@@ -236,7 +236,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You clean up your hands and finish the game with your best stretch of blocking.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 2 },
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 2 },
           ],
         },
         negativeOutcome: {

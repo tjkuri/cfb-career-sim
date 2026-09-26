@@ -70,20 +70,43 @@ describe("the eleven spared cards, resolved to source at HEAD", () => {
   // The numbers report 057's table is built on. Written out per card so a
   // content edit that changes one of them fails here rather than silently
   // re-pointing the report's conclusion.
+  //
+  // DECISION 086/089 shipped TIER_1 on 2026-09-25 and it moved four of these
+  // eleven. AS_MEASURED is what report 057 observed and is kept verbatim,
+  // because 057's conclusions are cited by DECISIONS 084, 085 and 089 and must
+  // stay checkable against the corpus they were drawn from. TIER_1_SHIPPED is
+  // the delta, and `expected` is derived from the two rather than hand-edited,
+  // so this table cannot drift from the decision that moved it.
+  const AS_MEASURED: Record<string, { pos: number; neg: number | null }> = {
+    "the-toe-tap": { pos: 2, neg: 0 },
+    "bowl-opt-out": { pos: 2, neg: 0 },
+    "nonconf-blowout-sideline": { pos: 2, neg: -4 },
+    "transfer-qb": { pos: 2, neg: null },
+    "playing-through-the-hand": { pos: 0, neg: 0 },
+    "wideopen-two-deep": { pos: 1, neg: -3 },
+    "the-holding-call": { pos: 1, neg: -2 },
+    "trash-talk": { pos: 1, neg: null },
+    "offseason-captain-vote": { pos: 0, neg: -3 },
+    "blueblood-five-star": { pos: 2, neg: 0 },
+    "targeting-review": { pos: 1, neg: null },
+  };
+
+  /** The four of the eleven that TIER_1 raised to +2. `targeting-review` was
+   *  in the UNSURE set and was NOT taken, so it stays at +1. */
+  const TIER_1_SHIPPED: Record<string, number> = {
+    "wideopen-two-deep": 2,
+    "the-holding-call": 2,
+    "trash-talk": 2,
+    "offseason-captain-vote": 2,
+  };
+
   it("carries the character deltas the report tables", () => {
-    const expected: Record<string, { pos: number; neg: number | null }> = {
-      "the-toe-tap": { pos: 2, neg: 0 },
-      "bowl-opt-out": { pos: 2, neg: 0 },
-      "nonconf-blowout-sideline": { pos: 2, neg: -4 },
-      "transfer-qb": { pos: 2, neg: null },
-      "playing-through-the-hand": { pos: 0, neg: 0 },
-      "wideopen-two-deep": { pos: 1, neg: -3 },
-      "the-holding-call": { pos: 1, neg: -2 },
-      "trash-talk": { pos: 1, neg: null },
-      "offseason-captain-vote": { pos: 0, neg: -3 },
-      "blueblood-five-star": { pos: 2, neg: 0 },
-      "targeting-review": { pos: 1, neg: null },
-    };
+    const expected: Record<string, { pos: number; neg: number | null }> = Object.fromEntries(
+      Object.entries(AS_MEASURED).map(([id, v]) => [
+        id,
+        { ...v, pos: TIER_1_SHIPPED[id] ?? v.pos },
+      ]),
+    );
     for (const c of SPARED_CARDS) {
       const opt = EVENTS.get(c.id)!.options.find((o) => o.id === c.goodOptionId)!;
       const e = expected[c.id]!;
@@ -98,9 +121,10 @@ describe("the eleven spared cards, resolved to source at HEAD", () => {
       const opt = EVENTS.get(c.id)!.options.find((o) => o.id === c.goodOptionId)!;
       return lockerRoomVerdict(charOf(opt.positiveOutcome)) === "credit";
     }).map((c) => c.id);
-    expect(speaks.sort()).toEqual(
-      ["blueblood-five-star", "bowl-opt-out", "nonconf-blowout-sideline", "the-toe-tap", "transfer-qb"].sort(),
-    );
+    // Five before DECISION 086/089; the four TIER_1 cards now clear the floor
+    // too, which is precisely what shipping TIER_1 was for.
+    const SPOKE_BEFORE = ["blueblood-five-star", "bowl-opt-out", "nonconf-blowout-sideline", "the-toe-tap", "transfer-qb"];
+    expect(speaks.sort()).toEqual([...SPOKE_BEFORE, ...Object.keys(TIER_1_SHIPPED)].sort());
   });
 });
 
@@ -113,18 +137,35 @@ describe("resolveSpoken", () => {
     expect(r.verdict).toBe("credit");
   });
 
+  // These two exercise the floor's two silent cases. Both previously used cards
+  // that DECISION 086/089 raised to +2, so they now use cards that still sit
+  // where the case requires: `targeting-review` was in the UNSURE set and was
+  // NOT taken (+1, sub-floor), and `playing-through-the-hand` is not one of the
+  // 27 and carries no character on its good branch at all.
   it("is silent on a sub-floor branch that still moves character", () => {
-    const opt = EVENTS.get("the-holding-call")!.options.find((o) => o.id === "own-it")!;
-    const r = resolveSpoken("the-holding-call", "own-it", opt.positiveOutcome.description);
+    const opt = EVENTS.get("targeting-review")!.options.find((o) => o.id === "pull-up-at-the-last-second")!;
+    expect(charOf(opt.positiveOutcome), "targeting-review must stay sub-floor for this case").toBe(1);
+    const r = resolveSpoken("targeting-review", "pull-up-at-the-last-second", opt.positiveOutcome.description);
     expect(r.character).toBe(1);
     expect(r.verdict).toBeNull();
   });
 
   it("is silent, and reports zero, on a good branch carrying no character", () => {
-    const opt = EVENTS.get("offseason-captain-vote")!.options.find((o) => o.id === "let-the-work-speak")!;
-    const r = resolveSpoken("offseason-captain-vote", "let-the-work-speak", opt.positiveOutcome.description);
+    const opt = EVENTS.get("playing-through-the-hand")!.options.find((o) => o.id === "play-through-it")!;
+    expect(charOf(opt.positiveOutcome), "this case needs a branch carrying no character").toBe(0);
+    const r = resolveSpoken("playing-through-the-hand", "play-through-it", opt.positiveOutcome.description);
     expect(r.character).toBe(0);
     expect(r.verdict).toBeNull();
+  });
+
+  // The moment assertion the captain-vote case used to carry, kept on its own
+  // card: TIER_1 added character to that branch but must not have disturbed the
+  // MOMENT it was already pushing.
+  it("still reports the captain vote's moment, now alongside a credit", () => {
+    const opt = EVENTS.get("offseason-captain-vote")!.options.find((o) => o.id === "let-the-work-speak")!;
+    const r = resolveSpoken("offseason-captain-vote", "let-the-work-speak", opt.positiveOutcome.description);
+    expect(r.character).toBe(2);
+    expect(r.verdict).toBe("credit");
     expect(r.moment).toBe(true);
   });
 

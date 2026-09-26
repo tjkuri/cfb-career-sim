@@ -180,7 +180,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You stay out of the officials' notebook and get a quiet word of approval from the staff.",
           effects: [
             { kind: "stat", stat: "tfls", amount: 1 },
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 2 },
           ],
         },
       },
@@ -302,7 +302,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You let your tape do the talking. The staff appreciates the poise.",
           effects: [
             { kind: "stat", stat: "tfls", amount: 1 },
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 2 },
           ],
         },
       },

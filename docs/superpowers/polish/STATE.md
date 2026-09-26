@@ -3,7 +3,7 @@
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM
 session can take over from it alone. Update it after every wave.
 
-**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete (both lanes), nothing committed yet · **PM session:** 14
+**Last updated:** 2026-09-24 · **Waves 12–16:** complete and committed · **Wave 17:** complete · **Wave 18:** complete and committed · **Waves 19 and 20:** complete and committed · **Waves 21 and 22:** complete and committed · **Waves 23 and 24:** complete and committed · **Wave 25:** complete and committed · **Wave 26:** complete and committed · **Wave 27:** complete and committed · **Wave 28:** complete · **Wave 29:** complete and committed · **Waves 30 and 31:** complete and committed · **Wave 32:** complete and committed (`a2744ea`) · **Wave 33:** in flight · **PM session:** 14
 
 ---
 
@@ -2836,6 +2836,73 @@ restraint was worthless.
 
 **Content items for the user's authoring docket**, both now confirmed by a player and verified in source:
 055 §RB item 5 (`offseason-going-home` failure branch) and item 4 (`targeting-review`'s asserted review).
+
+## Wave 33 — in flight (PM session 14)
+
+**The user delegated all three open calls to the PM** — *"you are the game dev and pm, we want a game
+that is fun and replayable, i trust you."* The calls are **DECISION 089**: Tier 1 **ships** (applied by
+the PM), Tier 2 is **rejected**, the summit **goes** and the readout **learns to move**, and B90 was
+**narrowed** to one card after a test objected.
+
+| Brief | Agent | Owns files | Dispatched |
+|---|---|---|---|
+| `briefs/062-stop-promising-a-climb.md` | dev (UI) | `CareerScreen.tsx`, `SummaryScreen.tsx`, `career.css`, maybe `view-model.ts`, + tests | 2026-09-25 |
+| `briefs/063-re-baseline-the-probes.md` | dev (measurement infra) | `src/sim/**` tests | 2026-09-25 |
+
+**The lanes are file-disjoint and each is told the other's territory is out of bounds.**
+
+### Applied by the PM directly, before dispatch — the approved content diff (DECISION 086/089)
+
+**Tier 1, six edits**, exactly as `reports/059-*.md` §4 tables them: `wideopen-two-deep/bring-the-walkon-along`
+1→2, `offseason-captain-vote/let-the-work-speak` 0→2 (effect added), `the-holding-call/own-it` 1→2,
+`trash-talk/stay-quiet` 1→2, `the-roughing-call/dial-it-back` 1→2, `asked-to-block/buy-in` 1→2.
+**B85:** `milestone-fall-camp`'s label `"Win the job"` → `"Take every rep like it's the last one"`.
+**B90, narrowed:** only `blueblood-five-star` widens to `[2,3,4]` and loses its dead `minClass: "SO"`.
+
+**The PM did this rather than dispatching it** because an approved content change is a precise
+mechanical diff and handing it to an agent invites interpretation.
+
+**B90 was narrowed because a test objected and the test was right.** Widening all three turned
+`index.test.ts`'s *"gates content to top-tier programs"* red: no random event would have been exclusive
+to tier 3–4, leaving **a blueblood career with no beats of its own** — which is the exact deficit those
+three events were authored to fix. The two that stay `[3,4]` have prose about *the program's standard*
+and read false at tier 2. **The user was told the approved change was narrowed and why.**
+
+**State of the tree at dispatch:** 608 `src/engine` + `src/content` + `src/ui` tests green, typecheck
+exit 0 both passes, build clean — and **18 `src/sim/**` probe tests deliberately RED**, which is lane
+063's entire job. **DECISION 086 predicted this failure in advance.** Nothing is committed: a mixed tree
+cannot be verified, so the PM holds the commit until both lanes land, exactly as session 13 did.
+
+### Why 062 takes the wider of the two fixes
+
+The narrow fix (drop the summit only) answers *"it read as a scorecard saying I'd failed"* but leaves the
+mechanism the playtester named: the display contradicts the sentence above it. **A readout that
+contradicts the prose is worse than one that sits still**, because it teaches the player the game is not
+counting. So 062 also makes the marker respond **by position**, which is a lever DECISION 002 explicitly
+leaves open, with a hard line: **no number, no countable ticks, nothing reverse-engineerable**, and an
+instruction to **stop and report** if visible movement cannot be had without becoming countable — in
+which case 002 wins and the narrow fix ships.
+
+**Tier 1 and the display fix are complements, and this is the reasoning to keep.** 061 measured Tier 1 as
+below playtest detectability **given a coarse five-step display**. Once the marker moves within a band, a
+`+2` credit becomes visible. Shipping either alone gets much less than shipping both.
+
+062 also carries two defects 060 found in the same screens: the `"No change"` string rendering in the
+gold `.delta` register as the loudest element on a refusal card, and **Senior Day resolving under a click
+aimed at Continue** — a career decision taken by accident, which is the most serious item in the brief
+despite being the shortest.
+
+### Why 063 is a lane and not a chore
+
+18 red tests could be made green in ten minutes by deleting assertions, and that would destroy the
+board's evidence base. Several of them **reproduce DECISION 084's census**, which is live evidence for
+other decisions. The brief's governing rule is **preserve the historical figures as history, assert the
+new figures as current state**, with an explicit forbidden list (no deletion, no loosening to ranges or
+snapshots, no `skip`/`only`, no changed constant without a comment saying what it was and why it moved)
+and permission to **leave a test failing with an explanation** rather than make it meaningless. It is
+also asked to re-run DECISION 086's acceptance check on identical seeds and say whether shipped Tier 1
+matches 061's prediction of **+0.071 ± 0.082** stock on `good`, credit rate **85.9% → 93.2%**, **+10.4pp**
+of careers gaining an up-crossing. **A mismatch there would be the most important sentence of the wave.**
 
 ## Next actions — for PM session 14, in order
 

@@ -77,7 +77,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "offseason",
     weight: 2,
-    conditions: { tier: [3, 4], minClass: "SO" },
+    conditions: { tier: [2, 3, 4] },
     title: "The Five-Star Behind You",
     description: "The staff signed the top recruit in the country at your spot. He is in your position room on Monday, and he did not come here to wait his turn.",
     options: [

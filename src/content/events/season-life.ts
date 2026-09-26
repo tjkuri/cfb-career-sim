@@ -29,6 +29,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You never bring it up once, and the room votes for you anyway.",
           effects: [
             { kind: "moment", item: "Voted captain without campaigning for it", icon: "star" },
+            { kind: "character", amount: 2 },
           ],
         },
         negativeOutcome: {

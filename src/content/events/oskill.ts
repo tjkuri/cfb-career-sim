@@ -281,7 +281,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You spring two long runs with key blocks. The coaches notice even if the box score doesn't.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 2 }],
         },
       },
       {

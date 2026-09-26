@@ -93,6 +93,23 @@ export interface CreditRow {
  * Five of the six carry +1 today and are silenced by the display floor of 2.
  * The sixth carries literally nothing.
  */
+/**
+ * DECISION 086 / 089 — TIER_1 SHIPPED on 2026-09-25 and is applied in
+ * `src/content/**` today. The rows are kept here rather than deleted because
+ * they are this probe's record of what moved, and because several tests below
+ * exist to reproduce figures that were measured BEFORE the edit landed.
+ *
+ * `REVERT_LANDED` patches those six branches back to their pre-086 values, so
+ * `censusCorpus(floor, REVERT_LANDED)` reconstructs the corpus DECISION 084
+ * measured. That is how the historical reproductions stay honest: they keep
+ * asserting the numbers that were actually observed, against the corpus that
+ * was actually observed, instead of being quietly rewritten to whatever the
+ * corpus says now.
+ *
+ * TIER_2 and UNSURE are NOT landed. Tier 2 was rejected (DECISION 089) and the
+ * unsure three were never taken, so their `from` values remain live tripwires
+ * against the current corpus.
+ */
 export const TIER_1: CreditRow[] = [
   {
     eventId: "wideopen-two-deep",
@@ -165,6 +182,15 @@ export const TIER_1: CreditRow[] = [
  * criterion than about the openers can approve Tier 1 alone; the two arms are
  * measured separately so that is a real choice and not a guess.
  */
+export const LANDED: readonly CreditRow[] = TIER_1;
+
+/** TIER_1's rows with `to` and `from` swapped — see the note above TIER_1. */
+export const REVERT_LANDED: readonly CreditRow[] = TIER_1.map((r) => ({
+  ...r,
+  from: r.to,
+  to: r.from,
+}));
+
 export const TIER_2: CreditRow[] = (
   [
     ["milestone-opener-first", "\"the huddle needed\" it — and it is the first card a player ever meets"],

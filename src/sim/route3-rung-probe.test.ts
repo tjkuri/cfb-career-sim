@@ -4,6 +4,7 @@ import { CONTENT } from "../content/index";
 import { STARTING_CHARACTER as ENGINE_STARTING_CHARACTER } from "../engine/create-career";
 import { trustPhrase, trustRungOf, TRUST_LADDER } from "../ui/session/bands";
 import type { Outcome } from "../engine/types";
+import type { ContentBundle } from "../content/schema";
 import {
   ARMS,
   LOCKER_ROOM_MIN_CHARACTER,
@@ -95,10 +96,20 @@ describe("the probe's band table is the UI's band table", () => {
 // by card.
 // ---------------------------------------------------------------------------
 
-describe("every arm's rows match the corpus at HEAD", () => {
+// DECISION 086/089 shipped TIER_1 on 2026-09-25, so its six branches now carry
+// their `to` value in src/content/**. `tier1` is therefore verified against a
+// reconstructed pre-086 bundle rather than the live one, which keeps the row
+// table meaning what it meant when the arms were measured. The unlanded arms
+// (tier2, route3 — both rejected, DECISION 087/089) still verify against the
+// live corpus and remain tripwires for any future content drift.
+const PRE_086: ContentBundle = patchContent(
+  TIER_1.map((r) => ({ ...r, from: r.to, to: r.from })),
+);
+
+describe("every arm's rows match the corpus they describe", () => {
   for (const arm of Object.keys(ARMS) as ArmName[]) {
     it(`${arm}: every row's \`from\` is the authored value`, () => {
-      expect(verifyRows(ARMS[arm])).toEqual([]);
+      expect(verifyRows(ARMS[arm], arm === "tier1" ? PRE_086 : CONTENT)).toEqual([]);
     });
   }
 

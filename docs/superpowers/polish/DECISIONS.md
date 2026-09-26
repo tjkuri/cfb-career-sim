@@ -3359,3 +3359,94 @@ contradiction directly but risks DECISION 002's *never a number* rule.
 treatment made outcomes hard to read at all. On the summit: a decision to ship Tier 2 *and* recalibrate,
 after which the top rung becomes reachable and the scale earns its shape back — though 061 §5.1 warns the
 median lands on 79 against an 80 boundary, so that reachability would be one point deep.
+
+## 089 — Tier 1 ships, Tier 2 is rejected, the summit goes, and the display learns to move. The user delegated all three calls to the PM
+
+**Date:** 2026-09-25 · **Made by:** PM session 14, on the user's explicit delegation — *"you are the game dev and pm, we want a game that is fun and replayable, i trust you"* · **Evidence:** `reports/060-*.md`, `reports/061-*.md`, DECISIONS 086–088 · **Rejects:** Tier 2 · **Narrows:** DECISION 086's B90 unlock
+
+The user was asked three questions — the summit, whether Tier 1 still ships given 061's new numbers,
+and Tier 2 — and delegated all three. **The calls and the reasoning are recorded here so they can be
+argued with later.**
+
+### Tier 1 — SHIPS. Applied by the PM, six edits, exactly as `reports/059-*.md` §4 tables them
+
+Already approved in DECISION 086; 061 gave a reason to re-open it (its benefit is below what a playtest
+can detect) and the PM put it back to the user rather than shipping or dropping it quietly. **It ships**,
+and the case is stronger than it was, for a reason that only exists because of the summit decision
+below: **061 measured Tier 1 as undetectable *given a coarse five-step display.* Once the marker moves
+within a band, a +2 credit becomes visible.** The two decisions are complements — shipping the display
+fix without Tier 1 leaves the marker with less to report, and shipping Tier 1 without the display fix
+buys the thing 061 correctly called undetectable.
+
+### Tier 2 — REJECTED
+
+Three reasons, in order of weight:
+
+1. **It pays the mercenary exactly as much as the virtuous player.** Credit rate on the stock-maximiser
+   goes **73.1% → 100.0%**. A player who never once thinks about the locker room would be told he has
+   standing every September. That does not make the currency more generous, it makes it **noise** — and
+   a signal that fires for everybody is not a signal.
+2. **Its win is one point deep.** The median `virtueLoyal` career lands on **79** against an **80**
+   boundary, so the 52.1% up-crossing figure is a distribution straddling the line and moves under one
+   point of recalibration either way.
+3. **The display fix removes most of its purpose.** Tier 2 exists to force a *coarse* widget to move by
+   inflating the corpus. If the widget moves honestly at sub-rung resolution, inflating the corpus to
+   make it twitch is the wrong lever. **Fixing the display beats inflating the content**, and the freeze
+   on `src/content/**` exists precisely to make us prefer that order.
+
+**What would change our mind:** a playtester who, after the display fix ships, still reports that the
+openers charge for nerves and pay nothing for poise. That is a fair complaint about those five cards on
+their own terms and it survives this rejection.
+
+### The summit — GOES. And the readout learns to move
+
+**The convergent finding (DECISION 088) is that the top rung is unreachable by construction and the
+display promises it anyway.** The call is the *second* of the four options put to the user — **drop the
+summit AND make the marker respond to the prose** — rather than the narrower first one.
+
+**Why the narrow fix is not enough.** Dropping the summit alone answers *"it read as a scorecard saying
+I'd failed"* but leaves the mechanism the playtester actually named: *"twice it printed 'Earned you
+credit with the program' and the rung didn't move... a coarse 5-step display over a hidden meter teaches
+players the currency is fake."* **A readout that contradicts the sentence above it is worse than one
+that merely sits still**, because it actively teaches the player the game is not counting.
+
+**Why this does not reverse DECISION 002.** 002 forbids `character` **as a number** and explicitly names
+**words, position and weight** as the levers it leaves open. Sub-rung movement uses **position**, which
+002 permits. The brief draws the line where 002 would: no integer, no countable ticks, no tooltip value,
+nothing from which the meter can be reverse-engineered. **`briefs/062` instructs the lane to stop and
+report if it cannot move visibly without becoming countable**, in which case 002 wins by default and the
+narrow fix is what ships.
+
+**What is explicitly kept:** wave 31's permanent, always-visible, five-phrase readout. The playtester's
+*"zero hunting"* closed three playtests of complaints and **any fix that reintroduces hunting is a
+regression.** The lane is told the two goals pull against each other and that resolving the tension *is*
+the work.
+
+### B90 — NARROWED by the PM after a test objected, and the test was right
+
+DECISION 086 approved widening **three** `tier: [3,4]` events to `[2,3,4]`. Applying it turned
+`index.test.ts`'s *"gates content to top-tier programs, not only to small ones"* red, with the message
+that **no random event would be exclusive to tier 3–4, so a blueblood career has no beats of its own.**
+Those three events exist *because* signing with a blueblood previously only ever **subtracted** content.
+
+**Only `blueblood-five-star` is unlocked** (`[2,3,4]`, and its dead `minClass: "SO"` removed). It is the
+card DECISION 078 called the clearest statement in the corpus of what `character` means, the one 057
+measured firing **0 times in 3,600** non-transferring careers, and the one whose fiction — a staff
+signing a blue-chip at your position — is plausible at tier 2. **`blueblood-playoff-or-bust` and
+`blueblood-scouts-at-practice` stay `[3,4]`**: their prose is about *the program's standard* (*"the
+standard here is the playoff"*, *"at a place like this they come every week"*) and reads false anywhere
+else.
+
+**This is a PM narrowing of a user-approved change and the user has been told.** It honours the ruling's
+intent — the loyal player is no longer locked out of the card that matters — without gutting the thing
+the ruling explicitly chose to keep.
+
+**What would change our mind:** a playtester meeting *The Five-Star Behind You* at a tier-2 program and
+finding it reads false. Its prose is on the user's authoring docket if so.
+
+### What would change our mind about the whole package
+
+The next playtest is the test of all of it, and its question is no longer *"can you earn it"* — that is
+now measured and answered — but **"does the readout tell you the truth about what you just did?"**
+A player who reports that the marker moves but means nothing, or that it moves so smoothly it reads as a
+progress bar, would put both halves of this decision back on the table.
