@@ -299,7 +299,7 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
   const recent = s.seasons.filter((line) => !line.redshirt).slice(-prog.washoutConsecutiveSeasons);
   const buried =
     recent.length >= prog.washoutConsecutiveSeasons &&
-    recent.every((line) => line.snaps < prog.washoutSnapFloor);
+    recent.every((line) => line.snaps < (prog.washoutSnapFloorByPosition?.[s.setup.position] ?? prog.washoutSnapFloor));
   if (s.overall < prog.washoutOverallFloor || buried) {
     s.status = "busted";
     s.endingReason =

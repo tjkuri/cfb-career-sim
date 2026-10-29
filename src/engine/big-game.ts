@@ -108,7 +108,8 @@ function clue(truth: number, accuracy: number, rng: Rng): number {
 
 /**
  * The last snap of the season, with a score that the result has to agree
- * with: on offense you trail by less than a touchdown and need to score now; on defense you lead by less than one and
+ * with, and with nothing after it: fourth down, or the clock running out. On
+ * offense you trail by less than a touchdown and need to score now; on defense you lead by less than one and
  * need a stop; a kicker trails by a field goal or less.
  */
 export function makeSpot(position: Position, rng: Rng): Spot {
@@ -122,27 +123,38 @@ export function makeSpot(position: Position, rng: Rng): Spot {
     const shortYardage = position === "OL";
     const yardsToGoal = shortYardage ? rngInt(rng, 1, 4) : rngInt(rng, 3, 24);
     const toGo = shortYardage || yardsToGoal <= 10 ? yardsToGoal : Math.min(yardsToGoal, rngInt(rng, 3, 10));
+    const clock = overtime ? 0 : rngInt(rng, 2, 58);
     return {
       side, yardsToGoal, toGo,
-      down: shortYardage ? 4 : rngChance(rng, 0.5) ? 3 : 4,
-      clock: overtime ? 0 : rngInt(rng, 3, 58),
+      down: lastSnapDown(clock, rng, shortYardage),
+      clock,
       us: base - deficit, them: base, overtime,
     };
   }
   if (side === "defense") {
     const lead = rngInt(rng, 1, 6);
     const yardsToGoal = position === "DSKILL" ? rngInt(rng, 14, 45) : rngInt(rng, 6, 35);
+    const clock = rngInt(rng, 2, 65);
     return {
       side, yardsToGoal,
       toGo: Math.min(yardsToGoal, rngInt(rng, 2, 10)),
-      down: rngInt(rng, 1, 4) as Spot["down"],
-      clock: rngInt(rng, 4, 65),
+      down: lastSnapDown(clock, rng, false),
+      clock,
       us: base, them: base - lead, overtime: false,
     };
   }
   const deficit = rngInt(rng, 0, 2);
   const yardsToGoal = rngInt(rng, 13, 38); // a 30- to 55-yard kick
   return { side, yardsToGoal, toGo: yardsToGoal, down: 4, clock: rngInt(rng, 0, 4), us: base - deficit, them: base, overtime: false };
+}
+
+/**
+ * The snap has to be the last one. With time on the clock that means fourth
+ * down; an earlier down only works when the clock runs out on the play.
+ */
+function lastSnapDown(clock: number, rng: Rng, forceFourth: boolean): Spot["down"] {
+  if (forceFourth || clock > 5) return 4;
+  return rngChance(rng, 0.5) ? 3 : 4;
 }
 
 /** Field-goal distance: the line of scrimmage, ten yards of end zone, a seven-yard hold. */

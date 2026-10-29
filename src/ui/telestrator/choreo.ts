@@ -181,19 +181,20 @@ function qb(snap: Snap): Play {
   if (snap.mine === 0) {
     const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.2, MID, -6]);
     st.add("RB", "O", true, f.RB!, f.RB!, [0.3, 28, -3]);
-    const X = st.add("X", "O", true, f.X!, f.X!, [0.28, 8, Math.min(3, short)], [0.5, 15, short], ...(snap.won ? [[0.88, 20, end(G)] as Key] : [[0.6, 15.6, short + 0.6] as Key]));
+    const X = st.add("X", "O", true, f.X!, f.X!, [0.28, 8, Math.min(3, short)], [0.5, 15, short], ...(snap.won ? [[0.88, 20, end(G)] as Key] : [[0.6, 15.4, short + 0.3] as Key]));
     st.add("SL", "O", true, f.SL!, f.SL!, [0.4, 40, 6], [0.8, 37, G + 2]);
     st.add("Z", "O", true, f.Z!, f.Z!, [0.4, 47.5, 8], [0.8, 47, G + 3]);
     carrier = "X";
-    ball = thrown({ passer: Q, throwT: 0.3, catchT: 0.5, to: [15, short], peak: 2, then: X });
-    if (!snap.won) stop = { t: 0.6, at: [15.6, short + 0.6] };
-    label = snap.won ? "TOUCHDOWN" : "STOPPED";
+    ball = thrown({ passer: Q, throwT: 0.3, catchT: 0.5, to: [15, short], peak: 2, then: X, loose: snap.won ? undefined : { t: 0.64, at: [13, short - 2] } });
+    if (!snap.won) stop = { t: 0.52, at: [15, short] };
+    label = snap.won ? "TOUCHDOWN" : "BROKEN UP";
   } else if (snap.mine === 1) {
-    const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.18, MID, -6.5], [0.42, 27, 0], ...(snap.won ? [[0.88, 25.5, end(G)] as Key] : [[0.56, 27.2, 2.4] as Key]));
+    const short = Math.min(2.4, snap.spot.toGo - 1);
+    const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.18, MID, -6.5], [0.42, 27, Math.min(0, short - 0.5)], ...(snap.won ? [[0.88, 25.5, end(G)] as Key] : [[0.56, 27.2, short] as Key]));
     st.add("RB", "O", true, f.RB!, f.RB!, [0.3, 30, -2]);
     for (const id of ["X", "SL", "Z"]) st.add(id, "O", true, f[id]!, f[id]!, [0.6, f[id]![0], 11]);
     ball = carried(Q);
-    if (!snap.won) stop = { t: 0.56, at: [27.2, 2.4] };
+    if (!snap.won) stop = { t: 0.56, at: [27.2, Math.min(2.4, snap.spot.toGo - 1)] };
     label = snap.won ? "TOUCHDOWN" : "STUFFED";
   } else {
     const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.3, MID, -7]);
@@ -268,20 +269,22 @@ function skill(snap: Snap): Play {
   let stop: { t: number; at: Pt } | null = null;
   if (snap.mine === 0) {
     // Bounce it outside
-    R = st.add("RB", "O", true, f.RB!, f.RB!, [0.25, 31, -3], [0.45, 38, 0], ...(snap.won ? [[0.9, 44, end(G)] as Key] : [[0.56, 39.5, 1.2] as Key]));
+    const sticks = Math.min(1.2, snap.spot.toGo - 1);
+    R = st.add("RB", "O", true, f.RB!, f.RB!, [0.25, 31, -3], [0.45, 38, Math.min(0, sticks)], ...(snap.won ? [[0.9, 44, end(G)] as Key] : [[0.56, 39.5, sticks] as Key]));
     ball = (t) => (t < 0.2 ? [...at(Q.path, t), 1.4] : carried(R)(t)) as [number, number, number];
-    if (!snap.won) stop = { t: 0.56, at: [39.5, 1.2] };
+    if (!snap.won) stop = { t: 0.56, at: [39.5, sticks] };
   } else if (snap.mine === 1) {
     // Hit it downhill
-    R = st.add("RB", "O", true, f.RB!, f.RB!, [0.25, 28, -2], [0.4, 27.5, 0.8], ...(snap.won ? [[0.85, 27, end(G)] as Key] : [[0.48, 27.5, 1.2] as Key]));
+    const sticks = Math.min(1.2, snap.spot.toGo - 1);
+    R = st.add("RB", "O", true, f.RB!, f.RB!, [0.25, 28, -2], [0.4, 27.5, Math.min(0.8, sticks)], ...(snap.won ? [[0.85, 27, end(G)] as Key] : [[0.48, 27.5, sticks] as Key]));
     ball = (t) => (t < 0.2 ? [...at(Q.path, t), 1.4] : carried(R)(t)) as [number, number, number];
-    if (!snap.won) stop = { t: 0.48, at: [27.5, 1.2] };
+    if (!snap.won) stop = { t: 0.48, at: [27.5, sticks] };
   } else {
     // Wheel route out of the backfield
     const catchY = Math.min(6, G - 1);
-    R = st.add("RB", "O", true, f.RB!, f.RB!, [0.25, 34, -3], [0.45, 39, 1], [0.66, 40, catchY], ...(snap.won ? [[0.9, 41, end(G)] as Key] : [[0.74, 40.3, catchY + 0.8] as Key]));
-    ball = thrown({ passer: Q, throwT: 0.42, catchT: 0.66, to: [40, catchY], peak: 4, then: R });
-    if (!snap.won) stop = { t: 0.74, at: [40.3, catchY + 0.8] };
+    R = st.add("RB", "O", true, f.RB!, f.RB!, [0.25, 34, -3], [0.45, 39, 1], [0.66, 40, catchY], ...(snap.won ? [[0.9, 41, end(G)] as Key] : [[0.74, 40.4, catchY + 0.3] as Key]));
+    ball = thrown({ passer: Q, throwT: 0.42, catchT: 0.66, to: [40, catchY], peak: 4, then: R, loose: snap.won ? undefined : { t: 0.8, at: [42, catchY - 2] } });
+    if (!snap.won) stop = { t: 0.68, at: [40, catchY] };
   }
 
   const look = RUN_D[snap.look]!;

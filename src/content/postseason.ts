@@ -32,5 +32,6 @@ export const PROGRESSION: ProgressionConfig = {
   devJitter: 1,
   washoutOverallFloor: 45,
   washoutSnapFloor: 40,
+  washoutSnapFloorByPosition: { K: 14 },
   washoutConsecutiveSeasons: 2,
 };

@@ -24,6 +24,9 @@ export interface ProgressionConfig {
   devJitter: number;
   washoutOverallFloor: number;
   washoutSnapFloor: number;
+  // A kicker's full season is about a third of a field player's snaps, so the
+  // same floor would wash out every kicker who backs up at a big program.
+  washoutSnapFloorByPosition?: Partial<Record<Position, number>>;
   washoutConsecutiveSeasons: number;
 }
 export interface RegionsConfig { [region: string]: string[] }

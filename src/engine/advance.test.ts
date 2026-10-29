@@ -325,6 +325,23 @@ describe("soft-washout bust", () => {
   });
 });
 
+describe("washout and the kicker's workload", () => {
+  it("does not wash out a kicker backing up at a big program", () => {
+    const s = createCareer({ ...setup, position: "K" }, "k-backup");
+    s.overall = 62;
+    s.phase = "offseason";
+    s.school = { schoolId: "bama", tier: 4 };
+    s.eligibility = { classYear: "SO", yearsUsed: 1, redshirtUsed: false, draftEligible: false };
+    // A backup kicker's season: about a fifth of ~165 snaps.
+    s.seasons.push(
+      { seasonIndex: 0, schoolId: "bama", snaps: 33, stats: {}, teamWins: 10, teamLosses: 2, overall: 60, classYear: "FR", role: "backup" },
+      { seasonIndex: 1, schoolId: "bama", snaps: 31, stats: {}, teamWins: 10, teamLosses: 2, overall: 62, classYear: "SO", role: "backup" },
+    );
+    enterOffseason(s, CONTENT, createRng("k-backup"));
+    expect(s.status).toBe("active");
+  });
+});
+
 describe("transfer portal", () => {
   it("offers a transfer decision in the offseason after the first season", () => {
     // Play recruiting + season 0; a first-option policy will hit either a
