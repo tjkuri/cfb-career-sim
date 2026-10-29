@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { Role } from "../../engine/index";
+import type { Role, Tier } from "../../engine/index";
 import { roundShort } from "../session/game-view";
 import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonRecap } from "../session/types";
 import { Trophy } from "./Trophy";
@@ -15,6 +15,15 @@ interface Props {
 }
 
 const ROLE_LABEL: Record<Role, string> = { starter: "Starter", rotation: "Rotation", backup: "Backup" };
+
+// What a program gives you back for the fight to start there: a team that
+// wins, and the spotlight national awards and draft scouts follow.
+const TIER_PERK: Record<Tier, string> = {
+  4: "Title contender. National spotlight for awards and scouts.",
+  3: "Bowl regular. Plenty of scouts in the stands.",
+  2: "Bowl hopeful. Scouts check in now and then.",
+  1: "Small stage. Scouts rarely make the trip.",
+};
 const MINUS = "−";
 
 export function ovrBand(ovr: number): string {
@@ -213,6 +222,7 @@ function OptionBody({ o }: { o: OptionView }) {
           {s.tierName}
           {s.conference && s.conference !== "Independent" ? ` · ${s.conference}` : ""}
         </span>
+        <span className="school-perk">{TIER_PERK[s.tier]}</span>
         <span className={`school-role role-${s.role}`}>You'd be: {ROLE_LABEL[s.role]}</span>
         {s.trait && <span className="school-trait">{s.trait}</span>}
       </>

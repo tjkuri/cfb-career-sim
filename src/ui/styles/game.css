@@ -244,6 +244,7 @@
 /* school offers */
 .school-meta { color: var(--chalk-dim); font-size: var(--t-meta); font-weight: 700; }
 .school-role { font-weight: 800; font-size: 0.95rem; }
+.school-perk { color: var(--chalk-soft); font-size: var(--t-meta); line-height: 1.35; }
 .school-trait { color: var(--chalk-soft); font-size: var(--t-meta); font-style: italic; }
 
 /* ---------- result ---------- */
@@ -623,3 +624,18 @@
 .broadcast-intro .clues, .broadcast-intro .opts { animation: enter 320ms ease-out both 900ms; }
 @keyframes bug-drop { from { opacity: 0; transform: translateY(-14px); } }
 @keyframes field-rise { from { opacity: 0; transform: translateY(18px) scale(0.98); } }
+
+/* ---------- draft night ---------- */
+
+.draft-ticking { border-color: var(--line); }
+.draft-clock-label { color: var(--gold); font-weight: 800; margin: 0.6rem 0 0; }
+.draft-clock { font-size: clamp(2.4rem, 8vw, 4rem); font-weight: 900; line-height: 1; margin: 0.4rem 0 0.5rem; font-variant-numeric: tabular-nums; }
+.draft-revealed .draft-head { animation: stamp 520ms cubic-bezier(.2,1.6,.4,1) both; }
+
+.scouting { margin-top: 1rem; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 1rem; }
+.scout-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 0.4rem 1.5rem; }
+.scout-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.scout-list li { padding-left: 1.4rem; position: relative; font-weight: 700; }
+.scout-good li::before { content: "+"; position: absolute; left: 0.2rem; color: var(--good); font-weight: 900; }
+.scout-bad li::before { content: "\2212"; position: absolute; left: 0.2rem; color: var(--bad); font-weight: 900; }
+.scout-next { margin: 0.75rem 0 0; color: var(--gold); font-weight: 900; font-size: 1.15rem; }

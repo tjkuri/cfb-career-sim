@@ -99,6 +99,7 @@ function optionView(o: DecisionOption, position: Position): OptionView {
       branches: [],
       school: {
         name: o.school.name,
+        tier: o.school.tier,
         tierName: TIER_NAMES[o.school.tier],
         conference: o.school.conference,
         role: o.school.role,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { GameState } from "../../engine/index";
 import { buildSummary, shareText } from "../session/summary";
 import type { GameView } from "../session/types";
@@ -13,9 +13,45 @@ interface Props {
   onViewLog: () => void;
 }
 
+const TICK_MS = 3200;
+const LAST_PICK = 224; // seven rounds of 32
+
+/**
+ * Draft night: the board ticks through the picks, slowing as it reaches
+ * yours, and stops on your name, or runs out without it.
+ */
+function useDraftClock(target: number): [number, boolean, () => void] {
+  const [pick, setPick] = useState(() => (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? target : 1));
+  const done = pick >= target;
+  useEffect(() => {
+    if (done) return;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / TICK_MS);
+      // Fast through the early picks, crawling into yours.
+      const eased = 1 - Math.pow(1 - p, 4);
+      setPick(Math.max(1, Math.round(target * eased)));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // Runs once; skipping jumps straight to the end.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return [pick, done, () => setPick(target)];
+}
+
+function roundAndPick(n: number): string {
+  return `Round ${Math.ceil(n / 32)}, Pick ${((n - 1) % 32) + 1}`;
+}
+
 export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Props) {
   const s = buildSummary(state);
   const [copied, setCopied] = useState(false);
+  const busted = state.status === "busted";
+  const target = busted ? 1 : s.overallPick || LAST_PICK;
+  const [pick, revealed, skip] = useDraftClock(target);
 
   async function copy() {
     try {
@@ -28,15 +64,31 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
 
   return (
     <div className="summary">
-      <section className={`draft draft-${s.tier}`}>
+      <section className={`draft ${revealed ? `draft-${s.tier} draft-revealed` : "draft-ticking"}`} aria-live="polite">
         <p className="draft-kicker">{view.name} #{view.number} · {view.positionLabel}</p>
-        <h1 className="draft-head cond">{s.headline}</h1>
-        <p className="draft-sub">{s.subhead}</p>
-        <div className={`ovr ovr-${ovrBand(view.overall)} draft-ovr`}>
-          <span className="ovr-num cond">{view.overall}</span>
-          <span className="ovr-tag">OVR</span>
-        </div>
+        {revealed ? (
+          <>
+            <h1 className="draft-head cond">{s.headline}</h1>
+            <p className="draft-sub">{s.subhead}</p>
+            <div className={`ovr ovr-${ovrBand(view.overall)} draft-ovr`}>
+              <span className="ovr-num cond">{view.overall}</span>
+              <span className="ovr-tag">OVR</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="draft-clock-label">Draft night · on the clock</p>
+            <p className="draft-clock cond">{roundAndPick(pick)}</p>
+            <p className="draft-sub dim">Pick #{pick}. Your phone is face up on the table.</p>
+            <button type="button" className="ghost" onClick={skip}>
+              Skip to my pick
+            </button>
+          </>
+        )}
       </section>
+
+      {revealed && (
+        <>
 
       {s.honors.length > 0 ? (
         <ul className="cabinet" aria-label="Trophy cabinet">
@@ -53,6 +105,27 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
       ) : (
         <p className="cabinet-empty dim">An empty trophy case. Next career, take the shot.</p>
       )}
+
+      <section className="scouting">
+        <h2 className="sum-title cond">Scouting report</h2>
+        <div className="scout-cols">
+          {s.scouting.liked.length > 0 && (
+            <ul className="scout-list scout-good">
+              {s.scouting.liked.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
+          )}
+          {s.scouting.concerns.length > 0 && (
+            <ul className="scout-list scout-bad">
+              {s.scouting.concerns.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+        {s.scouting.nextRound && <p className="scout-next cond">{s.scouting.nextRound}</p>}
+      </section>
 
       <section className="sum-grid">
         <div className="sum-block">
@@ -114,19 +187,21 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
         )}
       </section>
 
-      <div className="sum-actions">
-        <button type="button" className="go" onClick={onRestart} autoFocus>
-          Play another career
-        </button>
-        <button type="button" className="ghost" onClick={copy}>
-          {copied ? "Copied" : "Copy share text"}
-        </button>
-        {hasLog && (
-          <button type="button" className="ghost" onClick={onViewLog}>
-            Past careers
-          </button>
-        )}
-      </div>
+          <div className="sum-actions">
+            <button type="button" className="go" onClick={onRestart} autoFocus>
+              Play another career
+            </button>
+            <button type="button" className="ghost" onClick={copy}>
+              {copied ? "Copied" : "Copy share text"}
+            </button>
+            {hasLog && (
+              <button type="button" className="ghost" onClick={onViewLog}>
+                Past careers
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

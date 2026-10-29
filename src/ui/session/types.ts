@@ -1,4 +1,4 @@
-import type { BigGameResult, DraftResult, PendingDecision, GameState, Position, Role, Setup, Status } from "../../engine/index";
+import type { BigGameResult, DraftResult, PendingDecision, Tier, GameState, Position, Role, Setup, Status } from "../../engine/index";
 
 export type Screen = "creation" | "career" | "summary" | "log";
 export type SeasonPhase = "offseason" | "nonconf" | "conference" | "postseason";
@@ -22,7 +22,7 @@ export interface OptionView {
   label: string;
   /** One branch for a sure thing, two for a gamble. Empty for a play call. */
   branches: Branch[];
-  school?: { name: string; tierName: string; conference: string; role: Role; trait?: string; current: boolean };
+  school?: { name: string; tier: Tier; tierName: string; conference: string; role: Role; trait?: string; current: boolean };
   detail?: string;
 }
 

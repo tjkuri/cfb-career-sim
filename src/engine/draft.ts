@@ -25,14 +25,37 @@ function competitionScore(state: GameState): number {
   return (best - 1) * 3;
 }
 
-export function deriveDraftStock(state: GameState): number {
-  const overallPart = (state.overall - 40) * 1.3; // 60 -> 26, 80 -> 52, 95 -> 71.5
-  const production = productionScore(state);
-  const characterPart = (state.character - 50) * 0.12;
+/** What a scout's grade is made of, in stock points. */
+export interface StockParts {
+  overall: number;
+  production: number;
+  rep: number;
+  honors: number;
+  competition: number;
+}
+
+export function stockParts(state: GameState): StockParts {
   const honors = state.seasons.flatMap((s) => s.honors ?? []);
-  const honorPart = honors.reduce((a, id) => a + (HONOR_VALUE[id] ?? 0), 0);
-  const raw = overallPart + production + characterPart + honorPart + competitionScore(state);
+  return {
+    overall: (state.overall - 40) * 1.3, // 60 -> 26, 80 -> 52, 95 -> 71.5
+    production: productionScore(state),
+    rep: (state.character - 50) * 0.12,
+    honors: honors.reduce((a, id) => a + (HONOR_VALUE[id] ?? 0), 0),
+    competition: competitionScore(state),
+  };
+}
+
+export function deriveDraftStock(state: GameState): number {
+  const p = stockParts(state);
+  const raw = p.overall + p.production + p.rep + p.honors + p.competition;
   return Math.max(0, Math.min(100, Math.round(raw)));
+}
+
+/** The stock that reaches the next round up, or null in round 1. */
+export function nextRoundAt(round: number): number | null {
+  if (round === 1) return null;
+  if (round === 0) return UNDRAFTED_FLOOR;
+  return Math.ceil(UNDRAFTED_FLOOR + (8 - round) * ROUND_BAND);
 }
 
 export function eligibleTiers(state: GameState): Tier[] {
