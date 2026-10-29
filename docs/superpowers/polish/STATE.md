@@ -1,3 +1,7 @@
+> **SUPERSEDED 2026-10-28.** The owner found the polished build repetitive and not fun, and asked for
+> it to be rebuilt around what makes the reference game fun. See `docs/REWORK-2026-10.md`. Everything
+> below is history; its decisions (hidden odds, the standing ladder, the content freeze) are reversed.
+
 # CFB Polish Phase — Board
 
 **This file is the single source of truth.** It must always be complete enough that a brand-new PM

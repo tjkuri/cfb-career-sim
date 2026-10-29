@@ -1,70 +1,38 @@
 import { describe, it, expect } from "vitest";
-import { simulateTeamRecord, resolveTrophies, resolveAwards, bandProb, runPostseasonResolver } from "./postseason";
+import { simulateTeamRecord, resolveAwards, bandProb, runAwards } from "./postseason";
 import { createRng } from "./rng";
 import { POSTSEASON } from "../content/postseason";
 import { CONTENT } from "../content/index";
 import { createCareer } from "./create-career";
-import type { PostseasonConfig } from "../content/schema";
-import type { Position, Setup } from "./types";
+import type { Setup } from "./types";
 
 describe("simulateTeamRecord", () => {
   it("always produces wins + losses === gamesPerSeason", () => {
-    for (const seed of ["a", "b", "c", "d", "e"]) {
-      const r = simulateTeamRecord(75, 3, POSTSEASON, createRng(seed));
+    for (let i = 0; i < 20; i++) {
+      const r = simulateTeamRecord(75, 3, "starter", POSTSEASON, createRng(`r-${i}`));
       expect(r.wins + r.losses).toBe(POSTSEASON.gamesPerSeason);
-      expect(r.wins).toBeGreaterThanOrEqual(0);
-      expect(r.losses).toBeGreaterThanOrEqual(0);
     }
   });
 
-  it("elite players at blue-bloods win more than weak players at low tiers (on average)", () => {
-    let eliteWins = 0, weakWins = 0;
-    for (let i = 0; i < 60; i++) {
-      eliteWins += simulateTeamRecord(95, 4, POSTSEASON, createRng(`elite-${i}`)).wins;
-      weakWins += simulateTeamRecord(55, 1, POSTSEASON, createRng(`weak-${i}`)).wins;
+  it("elite starters at blue-bloods win more than weak starters at small schools (on average)", () => {
+    let elite = 0, weak = 0;
+    for (let i = 0; i < 200; i++) {
+      elite += simulateTeamRecord(92, 4, "starter", POSTSEASON, createRng(`e-${i}`)).wins;
+      weak += simulateTeamRecord(55, 1, "starter", POSTSEASON, createRng(`w-${i}`)).wins;
     }
-    expect(eliteWins).toBeGreaterThan(weakWins);
+    expect(elite).toBeGreaterThan(weak);
+  });
+
+  it("a backup's overall does not move the team", () => {
+    const a = simulateTeamRecord(95, 2, "backup", POSTSEASON, createRng("b"));
+    const b = simulateTeamRecord(50, 2, "backup", POSTSEASON, createRng("b"));
+    expect(a).toEqual(b);
   });
 
   it("is deterministic for a seed", () => {
-    const a = simulateTeamRecord(80, 2, POSTSEASON, createRng("same"));
-    const b = simulateTeamRecord(80, 2, POSTSEASON, createRng("same"));
-    expect(a).toEqual(b);
-  });
-});
-
-describe("resolveTrophies", () => {
-  it("awards no trophies below the bowl win threshold", () => {
-    const effs = resolveTrophies(3, 4, POSTSEASON, createRng("x"));
-    expect(effs).toEqual([]);
-  });
-
-  it("can award the bowl with a forced-certain config", () => {
-    const cfg: PostseasonConfig = {
-      ...POSTSEASON,
-      bowl: { id: "bowlWin", minWins: 0, prob: 1 },
-      conf: { ...POSTSEASON.conf, minWins: 99 },
-      cfp: { ...POSTSEASON.cfp, minWins: 99 },
-    };
-    const effs = resolveTrophies(8, 3, cfg, createRng("x"));
-    expect(effs).toEqual([{ kind: "trophy", id: "bowlWin" }]);
-  });
-
-  it("can award all three in a dominant season with certain probabilities", () => {
-    const certain: PostseasonConfig = {
-      ...POSTSEASON,
-      bowl: { id: "bowlWin", minWins: 0, prob: 1 },
-      conf: { id: "confTitle", minWins: 0, probByTier: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-      cfp: { id: "cfpTitle", minWins: 0, probByTier: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-    };
-    const ids = resolveTrophies(12, 4, certain, createRng("x")).map((e) => (e.kind === "trophy" ? e.id : ""));
-    expect(ids).toEqual(["bowlWin", "confTitle", "cfpTitle"]);
-  });
-
-  it("is deterministic for a seed", () => {
-    const a = resolveTrophies(11, 4, POSTSEASON, createRng("same"));
-    const b = resolveTrophies(11, 4, POSTSEASON, createRng("same"));
-    expect(a).toEqual(b);
+    expect(simulateTeamRecord(80, 2, "starter", POSTSEASON, createRng("same"))).toEqual(
+      simulateTeamRecord(80, 2, "starter", POSTSEASON, createRng("same")),
+    );
   });
 });
 
@@ -72,23 +40,31 @@ describe("bandProb", () => {
   it("returns the first matching band's prob, else 0", () => {
     const bands = [{ min: 90, prob: 0.5 }, { min: 80, prob: 0.2 }];
     expect(bandProb(95, bands)).toBe(0.5);
-    expect(bandProb(82, bands)).toBe(0.2);
+    expect(bandProb(85, bands)).toBe(0.2);
     expect(bandProb(70, bands)).toBe(0);
   });
 });
 
+function prestigeRate(tier: 1 | 2 | 3 | 4, role: "starter" | "rotation" | "backup", n = 400): number {
+  let hits = 0;
+  for (let i = 0; i < n; i++) {
+    const effs = resolveAwards("QB", 95, tier, role, { passYards: 2000 }, true, POSTSEASON, createRng(`p-${tier}-${role}-${i}`));
+    if (effs.some((e) => e.kind === "award" && (e.id === "heisman" || e.id === "allAmerican"))) hits++;
+  }
+  return hits / n;
+}
+
 describe("resolveAwards", () => {
   it("grants no awards to a mediocre low-stat player", () => {
-    const effs = resolveAwards("QB", 60, { passYards: 200 }, false, POSTSEASON, createRng("x"));
-    expect(effs).toEqual([]);
+    expect(resolveAwards("QB", 60, 4, "starter", { passYards: 200 }, false, POSTSEASON, createRng("x"))).toEqual([]);
   });
 
-  it("an elite QB with huge stats and a title can win prestige + production awards", () => {
-    // Search seeds to prove reachability (rng-gated), not a single fixed seed.
+  it("an elite starter at a blue-blood can win prestige and production awards", () => {
     let sawPrestige = false, sawProduction = false;
     for (let i = 0; i < 80; i++) {
-      const effs = resolveAwards("QB", 95, { passYards: 2000 }, true, POSTSEASON, createRng(`s-${i}`));
-      const ids = effs.map((e) => (e.kind === "award" ? e.id : ""));
+      const ids = resolveAwards("QB", 95, 4, "starter", { passYards: 2000 }, true, POSTSEASON, createRng(`s-${i}`)).map((e) =>
+        e.kind === "award" ? e.id : "",
+      );
       if (ids.includes("heisman") || ids.includes("allAmerican")) sawPrestige = true;
       if (ids.includes("allConference")) sawProduction = true;
     }
@@ -96,92 +72,70 @@ describe("resolveAwards", () => {
     expect(sawProduction).toBe(true);
   });
 
-  it("a kicker almost never wins prestige awards (multiplier 0.05)", () => {
-    let kickerPrestige = 0;
+  it("national voters watch the big programs: the same season is worth far less at FCS", () => {
+    expect(prestigeRate(4, "starter")).toBeGreaterThan(prestigeRate(1, "starter") * 4);
+  });
+
+  it("national awards go to starters only", () => {
+    expect(prestigeRate(4, "rotation")).toBe(0);
+    expect(prestigeRate(4, "backup")).toBe(0);
+  });
+
+  it("a kicker almost never wins prestige awards", () => {
+    let kicker = 0;
     for (let i = 0; i < 200; i++) {
-      const effs = resolveAwards("K", 95, {}, true, POSTSEASON, createRng(`k-${i}`));
-      if (effs.some((e) => e.kind === "award" && (e.id === "heisman" || e.id === "allAmerican"))) kickerPrestige++;
+      const effs = resolveAwards("K", 95, 4, "starter", {}, true, POSTSEASON, createRng(`k-${i}`));
+      if (effs.some((e) => e.kind === "award" && (e.id === "heisman" || e.id === "allAmerican"))) kicker++;
     }
-    expect(kickerPrestige).toBeLessThan(30); // rare by design
+    expect(kicker).toBeLessThan(30);
   });
 
   it("is deterministic for a seed", () => {
-    const a = resolveAwards("QB", 90, { passYards: 1500 }, true, POSTSEASON, createRng("same"));
-    const b = resolveAwards("QB", 90, { passYards: 1500 }, true, POSTSEASON, createRng("same"));
+    const a = resolveAwards("QB", 90, 3, "starter", { passYards: 1500 }, true, POSTSEASON, createRng("same"));
+    const b = resolveAwards("QB", 90, 3, "starter", { passYards: 1500 }, true, POSTSEASON, createRng("same"));
     expect(a).toEqual(b);
   });
 });
 
-const injuryOf = (t: string) => CONTENT.injuries[t] ?? { overallDelta: 3, recoveryPhases: 1 };
-const resolverSetup: Setup = { lastName: "R", jerseyNumber: 1, homeState: "TX", position: "QB" };
+const injuryOf = (t: string) => CONTENT.injuries[t] ?? { overallDelta: 3, recoveryPhases: 2 };
+const setup: Setup = { lastName: "R", jerseyNumber: 1, homeState: "TX", position: "QB" };
 
-describe("runPostseasonResolver", () => {
-  it("writes a full team record to the current season line", () => {
-    const s = createCareer(resolverSetup, "resolve");
-    s.school = { schoolId: "smu", tier: 3 };
-    s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 480, stats: { passYards: 1500 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
-    runPostseasonResolver(s, CONTENT, createRng("resolve"), injuryOf);
-    const line = s.seasons[0]!;
-    expect(line.teamWins + line.teamLosses).toBe(CONTENT.postseason.gamesPerSeason);
+describe("runAwards", () => {
+  function elite(seed: string) {
+    const s = createCareer(setup, seed);
+    s.overall = 96;
+    s.school = { schoolId: "bama", tier: 4 };
+    s.phase = "postseason";
+    s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2500 }, teamWins: 11, teamLosses: 1, overall: 96, classYear: "FR", role: "starter" });
+    return s;
+  }
+
+  it("records each award on the season it was won", () => {
+    let saw = false;
+    for (let i = 0; i < 40 && !saw; i++) {
+      const s = elite(`aw-${i}`);
+      runAwards(s, CONTENT, createRng(`aw-${i}`), injuryOf);
+      if ((s.seasons[0]!.honors ?? []).length > 0) {
+        saw = true;
+        for (const h of s.seasons[0]!.honors!) expect(s.awards).toContain(h);
+      }
+    }
+    expect(saw).toBe(true);
+  });
+
+  it("grants nothing during a redshirt season", () => {
+    for (let i = 0; i < 40; i++) {
+      const s = elite(`rs-${i}`);
+      s.redshirtSeasonActive = true;
+      runAwards(s, CONTENT, createRng(`rs-${i}`), injuryOf);
+      expect(s.seasons[0]!.honors ?? []).toEqual([]);
+    }
   });
 
   it("does nothing when there is no season line for the current index", () => {
-    const s = createCareer(resolverSetup, "noline");
-    const before = JSON.stringify(s);
-    runPostseasonResolver(s, CONTENT, createRng("noline"), injuryOf);
-    expect(JSON.stringify(s)).toBe(before);
-  });
-
-  it("a strong kicker can earn All-Conference across seeds (production award reachable)", () => {
-    let honored = 0;
-    for (let i = 0; i < 60; i++) {
-      const s = createCareer({ lastName: "K", jerseyNumber: 9, homeState: "TX", position: "K" }, `k-${i}`);
-      s.overall = 90;
-      s.school = { schoolId: "smu", tier: 3 };
-      s.seasons.push({ seasonIndex: 0, schoolId: "smu", snaps: 180, stats: { fieldGoals: 20, points: 90 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
-      runPostseasonResolver(s, CONTENT, createRng(`k-${i}`), injuryOf);
-      if (s.awards.includes("allConference")) honored++;
-    }
-    expect(honored).toBeGreaterThan(0);
-  });
-
-  it("an elite career accumulates at least one trophy or award across seeds", () => {
-    let honored = 0;
-    for (let i = 0; i < 40; i++) {
-      const s = createCareer(resolverSetup, `elite-${i}`);
-      s.overall = 96;
-      s.school = { schoolId: "bama", tier: 4 };
-      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
-      runPostseasonResolver(s, CONTENT, createRng(`elite-${i}`), injuryOf);
-      if (Object.keys(s.trophies).length > 0 || s.awards.length > 0) honored++;
-    }
-    expect(honored).toBeGreaterThan(0);
-  });
-
-  describe("runPostseasonResolver — redshirt season", () => {
-    it("grants no individual awards during a redshirt season but still resolves the team record", () => {
-      const s = createCareer(resolverSetup, "redshirt-resolve");
-      s.overall = 96; // would very likely earn awards if not redshirting
-      s.redshirtSeasonActive = true;
-      s.school = { schoolId: "bama", tier: 4 };
-      s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
-      runPostseasonResolver(s, CONTENT, createRng("redshirt-resolve"), injuryOf);
-      expect(s.awards).toEqual([]); // suppressed
-      const line = s.seasons[0]!;
-      expect(line.teamWins + line.teamLosses).toBe(CONTENT.postseason.gamesPerSeason); // record still resolved
-    });
-
-    it("still grants awards across seeds when NOT a redshirt season (control)", () => {
-      let honored = 0;
-      for (let i = 0; i < 40; i++) {
-        const s = createCareer(resolverSetup, `ctrl-${i}`);
-        s.overall = 96;
-        s.school = { schoolId: "bama", tier: 4 };
-        s.seasons.push({ seasonIndex: 0, schoolId: "bama", snaps: 500, stats: { passYards: 2000 }, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
-        runPostseasonResolver(s, CONTENT, createRng(`ctrl-${i}`), injuryOf);
-        if (s.awards.length > 0) honored++;
-      }
-      expect(honored).toBeGreaterThan(0);
-    });
+    const s = createCareer(setup, "none");
+    s.seasonIndex = 2;
+    runAwards(s, CONTENT, createRng("none"), injuryOf);
+    expect(s.awards).toEqual([]);
   });
 });

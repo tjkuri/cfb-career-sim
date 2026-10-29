@@ -22,20 +22,30 @@ describe("generateTransferOffers", () => {
     expect(offers[0]!.snapModifier).toBe(1);
   });
 
-  it("offers a move-up when the player has outgrown the tier", () => {
-    // High overall -> eligibleTiers includes a tier above current (tier 2).
-    const offers = generateTransferOffers(stateAt(2, 92, 500), CONTENT, createRng("up"));
-    expect(offers.some((o) => o.snapModifier === CONTENT.transfer.moveUpSnapModifier)).toBe(true);
+  it("always offers a step up, until the top tier", () => {
+    for (const tier of [1, 2, 3] as const) {
+      const offers = generateTransferOffers(stateAt(tier, 62, 400), CONTENT, createRng(`up-${tier}`));
+      expect(offers.some((o) => o.tier === tier + 1)).toBe(true);
+    }
+    const top = generateTransferOffers(stateAt(4, 90, 400), CONTENT, createRng("top"));
+    expect(top.every((o) => o.tier === 4)).toBe(true);
   });
 
-  it("offers a move-down when buried (low snaps) above tier 1", () => {
-    const offers = generateTransferOffers(stateAt(3, 70, 100), CONTENT, createRng("down"));
-    expect(offers.some((o) => o.snapModifier === CONTENT.transfer.moveDownSnapModifier)).toBe(true);
+  it("offers a jump of two tiers only once draft stock has the big programs calling", () => {
+    const low = generateTransferOffers(stateAt(1, 62, 400), CONTENT, createRng("jump-low"));
+    expect(low.some((o) => o.tier === 3)).toBe(false);
+    const high = generateTransferOffers(stateAt(1, 90, 400), CONTENT, createRng("jump-high"));
+    expect(high.some((o) => o.tier === 3)).toBe(true);
   });
 
-  it("does not offer move-down when the player is playing plenty", () => {
-    const offers = generateTransferOffers(stateAt(3, 70, 500), CONTENT, createRng("nodown"));
-    expect(offers.some((o) => o.snapModifier === CONTENT.transfer.moveDownSnapModifier)).toBe(false);
+  it("offers a step down to a backup above tier 1", () => {
+    const offers = generateTransferOffers(stateAt(3, 60, 100), CONTENT, createRng("down"));
+    expect(offers.some((o) => o.tier === 2)).toBe(true);
+  });
+
+  it("does not offer a step down to a starter", () => {
+    const offers = generateTransferOffers(stateAt(3, 80, 500), CONTENT, createRng("nodown"));
+    expect(offers.some((o) => o.tier < 3)).toBe(false);
   });
 
   it("is deterministic for a seed", () => {

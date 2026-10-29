@@ -1,13 +1,11 @@
-/* A night game: turf green-black ground, chalk rules, one scoreboard-amber
-   accent. Type is a single variable family (Archivo) worked across its WIDTH
-   axis -- condensed for headlines, numerals and the rail, the way programs set
-   type on jerseys and scoreboards; normal width for prose. */
+/* Saturday night under the lights: scoreboard navy, chalk white, trophy gold,
+   and a real green and red for a gamble that paid and one that did not.
+   Archivo is worked across its width axis -- condensed for numbers and
+   headlines, the way jerseys and scoreboards set type; normal for prose. */
 
 @import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap");
 
 @import "./tokens.css";
 @import "./base.css";
-@import "./career.css";
-@import "./creation.css";
-@import "./summary.css";
+@import "./game.css";
 @import "./log.css";

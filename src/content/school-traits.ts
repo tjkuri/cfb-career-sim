@@ -129,5 +129,5 @@ export const SCHOOL_TRAITS: SchoolTraitConfig = {
     injuryTypes: ["hamstring", "ankle", "turfToe"],
   },
   factory: { firstSeasonSnapModifier: 0.8, draftStockBonusPerSeason: 1.5, draftStockBonusCap: 5 },
-  developmental: { snapsPerDevPointMultiplier: 0.85, earlySnapModifier: 0.9, earlySeasons: 2 },
+  developmental: { developmentalBonus: 1, earlySnapModifier: 0.9, earlySeasons: 2 },
 };

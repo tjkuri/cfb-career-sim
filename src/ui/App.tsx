@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import type { Setup } from "../engine/index";
-import { INITIAL_STATE, isUnplayable, makeSeed, normalize, openCard, reducer } from "./session/reducer";
-import { buildView } from "./session/view-model";
+import { INITIAL_STATE, isUnplayable, makeSeed, reducer } from "./session/reducer";
+import { buildView } from "./session/game-view";
 import { clearCurrent, hydrate, saveCurrent, saveLog } from "./session/storage";
 import type { UiState } from "./session/types";
 import { CreationScreen } from "./screens/CreationScreen";
@@ -11,20 +11,12 @@ import { LogScreen } from "./screens/LogScreen";
 
 function init(): UiState {
   const restored = hydrate(INITIAL_STATE);
-  // A save can outlive the content that produced it. Say so and offer a fresh
-  // start rather than painting a card with no options on it.
-  if (restored.state && isUnplayable(restored.state)) {
-    return { ...restored, screen: "creation", state: null, resolved: null, unplayableSave: true };
+  // A save can outlive the content that produced it. Say so and start fresh
+  // rather than painting a card with no options on it.
+  if (restored.state && !restored.resolved && !restored.recap && isUnplayable(restored.state)) {
+    return { ...restored, screen: "creation", state: null, resolved: null, recap: null, unplayableSave: true };
   }
-  // The same funnel every other UiState passes through: fill in fields a save
-  // predates, and open a beat the save is parked on (DECISION 018).
-  //
-  // Safe under StrictMode, which double-invokes this initializer: both calls
-  // run from `hydrate`'s own output, so each is `advance(sameState, sameId)` on
-  // a deterministic engine rather than a second advance from an advanced state.
-  // That is exactly the difference from doing this in a `useEffect`, where the
-  // second run would consume a real decision.
-  return openCard(normalize(restored));
+  return restored;
 }
 
 export function App() {
@@ -32,8 +24,8 @@ export function App() {
   const [seed, setSeed] = useState(makeSeed);
 
   useEffect(() => {
-    if (ui.state) saveCurrent(ui.state, ui.resolved);
-  }, [ui.state, ui.resolved]);
+    if (ui.state) saveCurrent(ui.state, ui.resolved, ui.recap);
+  }, [ui.state, ui.resolved, ui.recap]);
 
   useEffect(() => {
     saveLog(ui.log);
@@ -79,13 +71,15 @@ export function App() {
         <CareerScreen
           view={view}
           resolved={ui.resolved}
+          recap={ui.recap}
           onChoose={(optionId) => dispatch({ type: "choose", optionId })}
           onContinue={() => dispatch({ type: "continue" })}
         />
       )}
 
-      {ui.screen === "summary" && view && (
+      {ui.screen === "summary" && view && ui.state && (
         <SummaryScreen
+          state={ui.state}
           view={view}
           hasLog={ui.log.length > 0}
           onRestart={restart}

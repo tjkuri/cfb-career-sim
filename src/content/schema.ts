@@ -1,50 +1,27 @@
-import type { Effect, GameEvent, Outcome, Phase, Position, SchoolTrait, Tier } from "../engine/types";
+import type { ClassYear, Effect, GameEvent, Outcome, Phase, Position, Role, SchoolTrait, Tier } from "../engine/types";
 import { ALL_SCHOOL_TRAITS, CLASS_ORDER } from "../engine/types";
 
 export interface AwardBand { min: number; prob: number }
 export interface PrestigeAward { id: string; bands: AwardBand[]; teamSuccessBoost: number }
 export interface ProductionAward { id: string; position: Position; stat: string; threshold: number; prob: number }
-export interface TrophyRule { id: string; minWins: number; prob: number }
-export interface TieredTrophyRule { id: string; minWins: number; probByTier: Record<Tier, number> }
 export interface PostseasonConfig {
   gamesPerSeason: number;
   tierBaseWinPct: Record<Tier, number>;
   overallWinShiftPerPoint: number;
   winPctClamp: [number, number];
-  bowl: TrophyRule;
-  conf: TieredTrophyRule;
-  cfp: TieredTrophyRule;
+  // How much a program's spotlight multiplies a starter's national-award odds.
+  tierExposure: Record<Tier, number>;
   positionMultiplier: Record<Position, number>;
   prestige: PrestigeAward[];
   production: ProductionAward[];
 }
 export interface ProgressionConfig {
-  snapsPerDevPoint: number;
-  // Per-position override of snapsPerDevPoint. Development measures playing
-  // time relative to a full workload for the position, and positions do not
-  // share a snap regime: a kicker's full season is roughly a third of a field
-  // player's. Absent an entry, snapsPerDevPoint applies.
-  snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
-  devCap: number;
-  // Upperclass decline (DECISION 058). A JR or SR who finishes a season below
-  // `declineSnapFloor` snaps LOSES overall instead of developing, one point per
-  // `snapsPerDeclinePoint` snaps short. Freshmen and sophomores are exempt and
-  // that gate is load-bearing, not a nicety: an ungated version was measured
-  // over ~150,000 careers (report 034 §2, candidate A) and disqualified --
-  // snaps are largely sim-driven early, so a flat threshold charges every
-  // career for its first two years and stops discriminating between good play
-  // and bad luck (good 7.6% / random 8.4% / lazy 7.7% undrafted). Gated to
-  // upperclassmen it discriminates 1:45 and the fiction is right too: a
-  // freshman who does not play is normal, a junior who does not play is
-  // falling behind.
-  declineSnapFloor: number;
-  snapsPerDeclinePoint: number;
-  // Both scale by position for exactly the reason snapsPerDevPointByPosition
-  // does: a kicker's season is ~34% of a field player's workload, so a flat
-  // floor puts K below it EVERY season and declines a well-played kicker for
-  // its whole career. Absent an entry, the flat value applies.
-  declineSnapFloorByPosition?: Partial<Record<Position, number>>;
-  snapsPerDeclinePointByPosition?: Partial<Record<Position, number>>;
+  // Overall gained per offseason: a base by the class year just played, plus
+  // more for playing time, plus or minus `devJitter`. A developmental program
+  // adds `developmentalBonus` on top.
+  devByClass: Record<ClassYear, number>;
+  devByRole: Record<Role, number>;
+  devJitter: number;
   washoutOverallFloor: number;
   washoutSnapFloor: number;
   washoutConsecutiveSeasons: number;
@@ -55,12 +32,6 @@ export interface SchoolSamplerConfig {
   homeStateBonus: Record<Tier, number>;
   regionBonus: Record<Tier, number>;
   offerCount: number;
-}
-export interface TransferConfig {
-  lateralSnapModifier: number;
-  moveUpSnapModifier: number;
-  moveDownSnapModifier: number;
-  buriedSnapThreshold: number;
 }
 export interface RedshirtConfig {
   successProb: number;
@@ -83,7 +54,7 @@ export interface SchoolTraitConfig {
   // Cost front-loaded, benefit accrued per season at the school and capped.
   factory: { firstSeasonSnapModifier: number; draftStockBonusPerSeason: number; draftStockBonusCap: number };
   // Cost front-loaded, benefit ongoing while enrolled.
-  developmental: { snapsPerDevPointMultiplier: number; earlySnapModifier: number; earlySeasons: number };
+  developmental: { developmentalBonus: number; earlySnapModifier: number; earlySeasons: number };
 }
 
 export interface ContentBundle {
@@ -97,7 +68,6 @@ export interface ContentBundle {
   progression: ProgressionConfig;
   regions: RegionsConfig;
   schoolSampler: SchoolSamplerConfig;
-  transfer: TransferConfig;
   redshirt: RedshirtConfig;
   schoolTraits: SchoolTraitConfig;
   traitHints: Record<SchoolTrait, string>;
@@ -148,15 +118,8 @@ export function validateContent(bundle: ContentBundle): string[] {
 
   const ps = bundle.postseason;
   const inRange = (p: number) => p >= 0 && p <= 1;
-  for (const t of [ps.bowl] as { id: string; prob: number }[]) {
-    if (!knownTrophies.has(t.id)) errors.push(`Postseason: unknown trophy "${t.id}"`);
-    if (!inRange(t.prob)) errors.push(`Postseason trophy ${t.id}: prob must be in [0,1]`);
-  }
-  for (const t of [ps.conf, ps.cfp]) {
-    if (!knownTrophies.has(t.id)) errors.push(`Postseason: unknown trophy "${t.id}"`);
-    for (const p of Object.values(t.probByTier))
-      if (!inRange(p)) errors.push(`Postseason trophy ${t.id}: probByTier must be in [0,1]`);
-  }
+  for (const p of Object.values(ps.tierExposure))
+    if (p < 0) errors.push("Postseason tierExposure must be >= 0");
   for (const a of ps.prestige) {
     if (!knownAwards.has(a.id)) errors.push(`Postseason: unknown award "${a.id}"`);
     for (const band of a.bands) if (!inRange(band.prob)) errors.push(`Postseason award ${a.id}: band prob must be in [0,1]`);
@@ -183,23 +146,9 @@ export function validateContent(bundle: ContentBundle): string[] {
       else if (v < 0) errors.push(`schoolSampler.${field}: tier ${t} must be >= 0`);
     }
   }
-  const tr = bundle.transfer;
-  // Snap modifiers scale a transferee's whole season; a value of 0 would zero it out,
-  // so these three must be strictly positive. buriedSnapThreshold is just a cutoff and
-  // may legitimately be 0.
-  for (const k of ["lateralSnapModifier", "moveUpSnapModifier", "moveDownSnapModifier"] as const)
-    if (tr[k] <= 0) errors.push(`transfer.${k} must be > 0`);
-  if (tr.buriedSnapThreshold < 0) errors.push("transfer.buriedSnapThreshold must be >= 0");
 
   const prog = bundle.progression;
-  if (prog.snapsPerDevPoint < 1) errors.push("progression.snapsPerDevPoint must be >= 1");
-  for (const [pos, v] of Object.entries(prog.snapsPerDevPointByPosition ?? {})) {
-    if (!knownPositions.has(pos))
-      errors.push(`progression.snapsPerDevPointByPosition: unknown position "${pos}"`);
-    if (v !== undefined && v < 1)
-      errors.push(`progression.snapsPerDevPointByPosition.${pos} must be >= 1`);
-  }
-  if (prog.devCap < 0) errors.push("progression.devCap must be >= 0");
+  if (prog.devJitter < 0) errors.push("progression.devJitter must be >= 0");
   if (prog.washoutConsecutiveSeasons < 1) errors.push("progression.washoutConsecutiveSeasons must be >= 1");
   if (prog.washoutOverallFloor < 0) errors.push("progression.washoutOverallFloor must be >= 0");
   if (prog.washoutSnapFloor < 0) errors.push("progression.washoutSnapFloor must be >= 0");
@@ -224,8 +173,8 @@ export function validateContent(bundle: ContentBundle): string[] {
   if (st.wideOpen.snapModifier <= 0) errors.push("schoolTraits.wideOpen.snapModifier must be > 0");
   if (st.factory.firstSeasonSnapModifier <= 0) errors.push("schoolTraits.factory.firstSeasonSnapModifier must be > 0");
   if (st.developmental.earlySnapModifier <= 0) errors.push("schoolTraits.developmental.earlySnapModifier must be > 0");
-  if (st.developmental.snapsPerDevPointMultiplier <= 0)
-    errors.push("schoolTraits.developmental.snapsPerDevPointMultiplier must be > 0");
+  if (st.developmental.developmentalBonus < 0)
+    errors.push("schoolTraits.developmental.developmentalBonus must be >= 0");
   if (!inRange(st.wideOpen.injuryProbPerPhase))
     errors.push("schoolTraits.wideOpen.injuryProbPerPhase must be in [0,1]");
   if (st.wideOpen.injuryTypes.length === 0)

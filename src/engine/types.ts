@@ -9,6 +9,15 @@ export type ClassYear = "FR" | "SO" | "JR" | "SR";
 export type Phase = "offseason" | "nonconf" | "conference" | "postseason";
 export type Status = "active" | "declared" | "drafted" | "busted";
 
+// Where the player sits on the depth chart. Derived from overall against the
+// school's bar (see engine/role.ts), so moving up a tier is a real trade:
+// better team, bigger stage, and a fight for the job.
+export type Role = "starter" | "rotation" | "backup";
+
+// The one game a season is decided by. Each season ends on the biggest game the
+// team reached, and the player calls the play that decides it.
+export type BigGameStakes = "rivalry" | "bowl" | "conf" | "cfp";
+
 export const PHASE_ORDER: Phase[] = ["offseason", "nonconf", "conference", "postseason"];
 export const CLASS_ORDER: ClassYear[] = ["FR", "SO", "JR", "SR"];
 export const ALL_POSITIONS: Position[] = ["QB", "OSKILL", "OL", "DL", "DSKILL", "K"];
@@ -46,6 +55,13 @@ export interface SeasonLine {
   // the same as `false`, and a consumer must render the absence rather than
   // assert the season was played.
   redshirt?: boolean;
+  // Depth-chart role as of the season's last on-field phase.
+  role?: Role;
+  // The tier of the program the season was played at.
+  tierPlayed?: Tier;
+  // Trophy and award ids won this season, in the order they were won.
+  honors?: string[];
+  bigGame?: BigGameResult;
 }
 
 export type EffectTiming = "immediate" | "deferred";
@@ -143,6 +159,33 @@ export interface SchoolOffer {
   snapModifier: number;
 }
 
+export interface BigGameResult {
+  stakes: BigGameStakes;
+  name: string;
+  opponent: string;
+  won: boolean;
+  // False when the player was hurt, redshirting, or never got off the bench.
+  played: boolean;
+  score: [number, number]; // [us, them]
+  situation?: number;
+  call?: string;
+  counter?: string;
+  text: string;
+}
+
+// A big game waiting on the player's play call.
+export interface PendingBigGame {
+  stakes: BigGameStakes;
+  name: string;
+  opponent: string;
+  // Index into the position's opponent calls that the film room says is most
+  // likely. Usually right, never certain.
+  scoutedCall: number;
+  situation: number;
+  // True when the player is a backup thrown in because the starter went down.
+  thrownIn: boolean;
+}
+
 export interface DraftResult {
   undrafted: boolean;
   round: number; // 1-7, or 0 if undrafted
@@ -178,6 +221,9 @@ export interface GameState {
 
   currentEventId: string | null; // event awaiting a decision; null between decisions
   pendingOptions?: SchoolOffer[];
+  pendingBigGame?: PendingBigGame;
+  // Every random event this career has already shown. A card never repeats.
+  firedEventIds?: string[];
 
   seasons: SeasonLine[];
   trophies: Record<string, number>;
@@ -193,7 +239,7 @@ export interface GameState {
   // no positive/negative flag -- a UI that colours an outcome by branch is
   // leaking the option's probability. Undefined after hub choices (recruiting,
   // transfer, declare), whose result is the next screen rather than prose.
-  lastOutcome?: { description: string };
+  lastOutcome?: { description: string; positive?: boolean };
 
   status: Status;
   endingReason?: string;

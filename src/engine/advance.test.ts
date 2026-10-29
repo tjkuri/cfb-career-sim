@@ -1,11 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createCareer } from "./create-career";
-import { advance, getDecision, developmentDelta, seasonOverallDelta, enterOffseason } from "./advance";
-import { STAT_MODEL } from "./simulate";
-import { ALL_POSITIONS } from "./types";
-
-// nonconf, conference, postseason — the three phases that produce snaps.
-const ON_FIELD_PHASES_PER_SEASON = 3;
+import { advance, getDecision, enterOffseason, offseasonDevelopment } from "./advance";
 import { createRng } from "./rng";
 import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
@@ -121,7 +116,9 @@ describe("advance / getDecision", () => {
           expect(s.status, `seed ${i}: a completed career left a 0-0 line`).toBe("busted");
           continue;
         }
-        expect(line.teamWins + line.teamLosses).toBe(12);
+        // Twelve regular-season games and the big game that ends the season.
+        expect(line.teamWins + line.teamLosses).toBe(13);
+        expect(line.bigGame).toBeDefined();
         checkedSeasons++;
       }
       if (Object.keys(s.trophies).length > 0 || s.awards.length > 0) honored++;
@@ -170,123 +167,62 @@ describe("advance / getDecision", () => {
 });
 
 describe("development curve", () => {
-  it("developmentDelta scales with snaps and caps out", () => {
-    const cfg = { snapsPerDevPoint: 180, devCap: 3 };
-    expect(developmentDelta(0, cfg, "QB")).toBe(0);
-    expect(developmentDelta(200, cfg, "QB")).toBe(1);
-    expect(developmentDelta(400, cfg, "QB")).toBe(2);
-    expect(developmentDelta(2000, cfg, "QB")).toBe(3); // capped
-  });
+  function lineFor(classYear: "FR" | "SO" | "JR" | "SR", role: "starter" | "rotation" | "backup", redshirt = false) {
+    return { seasonIndex: 0, schoolId: "mont", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: 70, classYear, role, redshirt };
+  }
 
-  it("scales the snap requirement to the position's own workload", () => {
-    // A kicker plays ~125 snaps a season; a field player plays ~340. A single
-    // absolute divisor of 180 floors K's development to zero for its whole
-    // career, which caps its draft stock below the round-1 threshold outright.
-    // Development measures playing time relative to a FULL WORKLOAD for the
-    // position, so K carries its own, proportionally smaller, divisor.
-    const cfg = CONTENT.progression;
-    expect(developmentDelta(125, cfg, "QB"), "field players keep the 180 divisor").toBe(0);
-    expect(developmentDelta(125, cfg, "K"), "a full kicker season must be worth development").toBeGreaterThan(0);
-  });
-
-  it("earns every position at least one development point for a full season", () => {
-    // The contract between STAT_MODEL's snap regimes and progression's divisor.
-    // K broke it silently: 40-70 snaps/phase against a flat 180 divisor floored
-    // its development to zero for whole careers, which held its draft stock
-    // under the round-1 threshold no tuning lever could reach. Any future
-    // position with an unusual snap regime trips this instead of shipping.
-    for (const position of ALL_POSITIONS) {
-      const model = STAT_MODEL[position];
-      const fullSeason = ((model.snapsMin + model.snapsMax) / 2) * ON_FIELD_PHASES_PER_SEASON;
-      expect(
-        developmentDelta(fullSeason, CONTENT.progression, position),
-        `${position} earns no development from a full ${Math.round(fullSeason)}-snap season`,
-      ).toBeGreaterThanOrEqual(1);
+  it("pays playing time: a starter outgrows a backup over the same offseason, on average", () => {
+    let starter = 0, backup = 0;
+    for (let i = 0; i < 200; i++) {
+      const s = createCareer(setup, `dev-${i}`);
+      s.school = { schoolId: "mont", tier: 1 };
+      starter += offseasonDevelopment(s, lineFor("FR", "starter"), CONTENT, createRng(`d-${i}`));
+      backup += offseasonDevelopment(s, lineFor("FR", "backup"), CONTENT, createRng(`d-${i}`));
     }
+    expect(starter).toBeGreaterThan(backup);
   });
 
-  // DECISION 058: the upperclass decline. This is the one place a season can
-  // COST overall, and it is the mechanism the whole change rests on, so the
-  // gate and the arithmetic are pinned separately.
-  describe("upperclass decline", () => {
-    const cfg = CONTENT.progression;
-
-    it("charges a JR or SR one point per 60 snaps short of 200", () => {
-      expect(seasonOverallDelta(199, "JR", cfg, "QB")).toBe(-1); // ceil(1/60)
-      expect(seasonOverallDelta(140, "SR", cfg, "QB")).toBe(-1); // ceil(60/60)
-      expect(seasonOverallDelta(139, "SR", cfg, "QB")).toBe(-2); // ceil(61/60)
-      expect(seasonOverallDelta(0, "JR", cfg, "QB")).toBe(-4); // ceil(200/60)
-    });
-
-    it("leaves freshmen and sophomores untouched -- the gate that was measured, not a detail", () => {
-      // An ungated version was measured over ~150,000 careers and DISQUALIFIED:
-      // freshmen do not play, so a flat threshold taxes every career for two
-      // years and ends up punishing luck rather than play (report 034 §2).
-      for (const cls of ["FR", "SO"] as const) {
-        // Never negative, whatever the snap count, and otherwise exactly the
-        // development they always earned.
-        for (const snaps of [0, 120, 199, 400]) {
-          expect(seasonOverallDelta(snaps, cls, cfg, "QB")).toBe(
-            developmentDelta(snaps, cfg, "QB"),
-          );
-          expect(seasonOverallDelta(snaps, cls, cfg, "QB")).toBeGreaterThanOrEqual(0);
-        }
-      }
-    });
-
-    it("an upperclassman who plays still develops exactly as before", () => {
-      for (const snaps of [200, 400, 2000]) {
-        expect(seasonOverallDelta(snaps, "SR", cfg, "QB")).toBe(
-          developmentDelta(snaps, cfg, "QB"),
-        );
-      }
-    });
-
-    it("enterOffseason applies the decline to the number the player watches", () => {
-      const s = createCareer(setup, "decline-offseason");
-      s.overall = 70;
-      s.phase = "offseason";
-      s.eligibility.classYear = "JR";
-      s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 20, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: "JR" });
-      enterOffseason(s, CONTENT, createRng("decline-rng"));
-      expect(s.overall).toBe(70 - 3); // ceil(180/60)
-    });
+  it("grows young players faster than seniors", () => {
+    let fr = 0, sr = 0;
+    for (let i = 0; i < 200; i++) {
+      const s = createCareer(setup, `age-${i}`);
+      s.school = { schoolId: "mont", tier: 1 };
+      fr += offseasonDevelopment(s, lineFor("FR", "rotation"), CONTENT, createRng(`a-${i}`));
+      sr += offseasonDevelopment(s, lineFor("SR", "rotation"), CONTENT, createRng(`a-${i}`));
+    }
+    expect(fr).toBeGreaterThan(sr);
   });
 
-  it("a returning player's overall rises across seasons from playing", () => {
-    // Always-return policy plays multiple full seasons; overall should end above
-    // the starting baseline (60) purely from development (no gamble events needed).
+  it("a returning player's overall rises across seasons", () => {
     const s = autoplayAlwaysReturn("develops");
     expect(s.overall).toBeGreaterThan(60);
   });
 
-  it("enterOffseason raises overall by exactly developmentDelta from last season's snaps", () => {
-    const s = createCareer(setup, "hub-dev");
-    s.overall = 70;
-    s.phase = "offseason";
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear });
-    const expected = 70 + developmentDelta(400, CONTENT.progression, setup.position); // floor(400/180)=2 -> 72
-    enterOffseason(s, CONTENT, createRng("hub-dev-rng"));
-    expect(s.overall).toBe(expected);
-  });
-
-  // enterOffseason both finalizes the completed season line and advances
-  // eligibility into the next year. Recording the line's classYear on the wrong
-  // side of that boundary shifts every row of the career ledger by one year
-  // (a true freshman season labelled SO) and no other test would catch it.
-  it("finalizes the completed line with the class year it was PLAYED AS, not the one advanced into", () => {
+  it("finalizes the completed line with the class year it was PLAYED AS, and its pre-development overall", () => {
     const s = createCareer(setup, "class-year-boundary");
     s.overall = 70;
     s.phase = "offseason";
+    s.school = { schoolId: "mont", tier: 1 };
     s.eligibility = { classYear: "SO", yearsUsed: 1, redshirtUsed: false, draftEligible: false };
-    s.seasons.push({ seasonIndex: 0, schoolId: "x", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: 64, classYear: "SO" });
+    s.seasons.push({ seasonIndex: 0, schoolId: "mont", snaps: 400, stats: {}, teamWins: 0, teamLosses: 0, overall: 64, classYear: "SO", role: "starter" });
     enterOffseason(s, CONTENT, createRng("class-year-boundary"));
-    expect(s.eligibility.classYear).toBe("JR"); // the player advances
-    expect(s.seasons[0]!.classYear).toBe("SO"); // the finished season does not
-    // and overall is the end-of-season value, taken before offseason
-    // development (which is earned for the NEXT line).
+    expect(s.eligibility.classYear).toBe("JR");
+    expect(s.seasons[0]!.classYear).toBe("SO");
     expect(s.seasons[0]!.overall).toBe(70);
-    expect(s.overall).toBe(70 + developmentDelta(400, CONTENT.progression, setup.position));
+    expect(s.overall).toBeGreaterThan(70);
+  });
+
+  it("keeps the class year through a redshirt season, so no career is labelled SR twice", () => {
+    const s = createCareer(setup, "rs-class");
+    s.overall = 70;
+    s.phase = "offseason";
+    s.school = { schoolId: "mont", tier: 1 };
+    s.eligibility = { classYear: "SO", yearsUsed: 1, redshirtUsed: true, draftEligible: false };
+    s.redshirtSeasonActive = true;
+    s.seasons.push({ seasonIndex: 1, schoolId: "mont", snaps: 20, stats: {}, teamWins: 0, teamLosses: 0, overall: 70, classYear: "SO", redshirt: true });
+    enterOffseason(s, CONTENT, createRng("rs-class"));
+    expect(s.eligibility.classYear).toBe("SO");
+    expect(s.eligibility.yearsUsed).toBe(2);
   });
 });
 
@@ -405,7 +341,7 @@ describe("transfer portal", () => {
     expect(sawTransfer).toBe(true);
   });
 
-  it("staying leaves school unchanged and modifier at 1; moving changes tier and sets the modifier", () => {
+  it("staying leaves the school unchanged; moving changes it", () => {
     // Build a state parked on a transfer decision by generating offers directly,
     // then exercise applyChoice via advance for a concrete non-stay offer.
     let s = createCareer(setup, "xfer-apply");
@@ -416,16 +352,10 @@ describe("transfer portal", () => {
       if (d.eventId === "transfer") {
         const move = d.options.find((o) => o.id !== "stay");
         const beforeTier = s.school.tier;
-        if (move) {
-          const after = advance(s, move.id);
-          // A non-stay offer sets a non-1 modifier (up<1 or down/lateral>1).
-          expect(after.snapModifier).not.toBe(1);
-          // tier may change (up/down) or stay (lateral) — but school-or-modifier changed.
-          expect(after.school.tier !== beforeTier || after.snapModifier !== 1).toBe(true);
-        } else {
-          const after = advance(s, "stay");
-          expect(after.snapModifier).toBe(1);
-        }
+        void beforeTier;
+        const before = s.school.schoolId;
+        expect(advance(s, "stay").school.schoolId).toBe(before);
+        if (move) expect(advance(s, move.id).school.schoolId).not.toBe(before);
         break;
       }
       s = advance(s, d.eventId === "declare" ? "return" : d.options[0]!.id);
@@ -495,13 +425,18 @@ describe("redshirt decision", () => {
     // draw -- see redshirtDecisionState's rngCursor reset above): "rs-seed-0"'s
     // first rngChance(0.6) succeeds, "rs-seed-4"'s fails. Both outcomes are
     // reachable and exact.
+    // `advance` plays the sat season out, so read the overall the sit
+    // season ended at -- before the next offseason's development.
+    const sat = (st: GameState) => st.seasons.find((l) => l.redshirt)!.overall;
     const bumped = advance(redshirtDecisionState("rs-seed-0"), "redshirt", NO_EVENTS);
     expect(bumped.eligibility.redshirtUsed).toBe(true);
-    expect(bumped.overall).toBe(70 + NO_EVENTS.redshirt.bumpOverall);
+    expect(bumped.lastOutcome?.positive).toBe(true);
+    expect(sat(bumped)).toBe(70 + NO_EVENTS.redshirt.bumpOverall);
 
     const sunk = advance(redshirtDecisionState("rs-seed-4"), "redshirt", NO_EVENTS);
     expect(sunk.eligibility.redshirtUsed).toBe(true);
-    expect(sunk.overall).toBe(70 + NO_EVENTS.redshirt.sinkOverall);
+    expect(sunk.lastOutcome?.positive).toBe(false);
+    expect(sat(sunk)).toBe(70 + NO_EVENTS.redshirt.sinkOverall);
   });
 
   it("the redshirt season is a sit (near-zero snaps) and grants no awards", () => {
@@ -699,7 +634,8 @@ describe("wideOpen wiring is actually called by the engine, not just callable", 
       ...STRIPPED,
       schoolTraits: { ...STRIPPED.schoolTraits, wideOpen: { ...STRIPPED.schoolTraits.wideOpen, injuryProbPerPhase: 0 } },
     };
-    const wide = commitTo("unt", "wiring-snaps", content); // wideOpen, 1.15x
+    // Same tier, so the same depth-chart role; only the trait differs.
+    const wide = commitTo("sacst", "wiring-snaps", content); // wideOpen, 1.15x
     const plain = commitTo("mont", "wiring-snaps", content); // untraited, 1.0x
     const wideSnaps = wide.seasons[0]!.snaps;
     const plainSnaps = plain.seasons[0]!.snaps;

@@ -1,47 +1,44 @@
 * { box-sizing: border-box; }
 
-/* `html` sets no font-size on purpose. Audit Bug 3 was `body { font-size:
-   17px }` over an unset root: every rem in the codebase measured against the
-   browser's 16px while the text it sat next to measured 17px, so no rem
-   spacing value meant what its author thought it meant. Resolved by deleting
-   the 17px rather than by pinning the root -- pinning it would have thrown
-   away the reader's own browser text-size setting, which is the one thing a
-   type pass this small must not do. Nothing but the type moved: the root is
-   still 16px for anyone who has not changed it, so every existing rem spacing
-   literal computes to exactly what it computed to before. */
-html, body, #root { height: 100%; }
+html, body, #root { min-height: 100%; }
 
 body {
   margin: 0;
-  background: var(--turf);
+  background:
+    radial-gradient(1200px 500px at 50% -200px, #1d3a66 0%, transparent 70%),
+    var(--night);
+  background-attachment: fixed;
   color: var(--chalk);
   font-family: var(--sans);
   font-variation-settings: "wdth" 100;
   font-size: var(--t-body);
-  font-weight: var(--w-prose);
-  line-height: var(--lh-prose);
+  font-weight: 500;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
-  /* No authored string has an unbreakable 40-character token in it, but a
-     school name is engine-built and the layout has no horizontal scroll to
-     absorb one. */
   overflow-wrap: break-word;
 }
 
-/* Condensed: headlines, numerals, the rail. */
-.cond {
-  font-variation-settings: "wdth" 76;
-  letter-spacing: 0.01em;
-}
+.cond { font-variation-settings: "wdth" 72; }
 
 .app {
   min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: clamp(1rem, 4vw, 2.5rem) 1.25rem 4rem;
+  padding: clamp(1rem, 3vw, 2rem) 16px 3rem;
 }
 
-.frame {
-  width: 100%;
-  max-width: var(--measure);
+.frame { width: 100%; max-width: 40rem; }
+
+.dim { color: var(--chalk-dim); }
+.good { color: var(--good); }
+.bad { color: var(--bad); }
+.gold { color: var(--gold); }
+
+button { font: inherit; color: inherit; }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }

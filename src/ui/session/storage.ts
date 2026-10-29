@@ -1,16 +1,19 @@
-import type { LogEntry, Resolved, UiState } from "./types";
+import type { LogEntry, Resolved, SeasonRecap, UiState } from "./types";
 import type { GameState } from "../../engine/index";
 
-const PREFIX = "cfb-career-sim:v1:";
+// v2: the season loop, the cards and the save shape all changed. A v1 save is
+// left alone rather than migrated -- it describes a different game.
+const PREFIX = "cfb-career-sim:v2:";
 const CURRENT_KEY = `${PREFIX}current`;
 const LOG_KEY = `${PREFIX}log`;
-const SCHEMA = 1;
+const SCHEMA = 2;
 export const LOG_CAP = 50;
 
 interface CurrentSave {
   schema: number;
   state: GameState;
   resolved: Resolved | null;
+  recap: SeasonRecap | null;
 }
 
 interface LogSave {
@@ -18,10 +21,6 @@ interface LogSave {
   entries: LogEntry[];
 }
 
-// Every read is defensive. localStorage can be unavailable (private mode,
-// blocked site data), hold a save from an older schema, or hold something
-// another tab half-wrote. In all of those cases the right move is to behave
-// like a first visit, never to throw on the way to first paint.
 function read<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
@@ -36,13 +35,12 @@ function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // Quota or blocked storage. The game stays playable in memory.
+    // Private mode or a full quota: the game still plays, it just won't resume.
   }
 }
 
-export function saveCurrent(state: GameState, resolved: Resolved | null): void {
-  const payload: CurrentSave = { schema: SCHEMA, state, resolved };
-  write(CURRENT_KEY, payload);
+export function saveCurrent(state: GameState, resolved: Resolved | null, recap: SeasonRecap | null): void {
+  write(CURRENT_KEY, { schema: SCHEMA, state, resolved, recap } satisfies CurrentSave);
 }
 
 export function clearCurrent(): void {
@@ -53,15 +51,10 @@ export function clearCurrent(): void {
   }
 }
 
-export function loadCurrent(): { state: GameState; resolved: Resolved | null } | null {
+export function loadCurrent(): Omit<CurrentSave, "schema"> | null {
   const saved = read<CurrentSave>(CURRENT_KEY);
   if (!saved || saved.schema !== SCHEMA || !saved.state) return null;
-  // A save written before the season stamp existed has a resolved card with no
-  // `stamp` field. Normalize it to null here rather than letting `undefined`
-  // reach a consumer typed to expect the property: the save is still perfectly
-  // playable, and one missing header freeze is not worth discarding a career.
-  const resolved = saved.resolved ? { ...saved.resolved, stamp: saved.resolved.stamp ?? null } : null;
-  return { state: saved.state, resolved };
+  return { state: saved.state, resolved: saved.resolved ?? null, recap: saved.recap ?? null };
 }
 
 export function loadLog(): LogEntry[] {
@@ -75,7 +68,6 @@ export function saveLog(entries: LogEntry[]): void {
 }
 
 export function appendLog(entries: LogEntry[], entry: LogEntry): LogEntry[] {
-  // Newest first, capped, so storage cannot grow without bound.
   return [entry, ...entries].slice(0, LOG_CAP);
 }
 
@@ -83,13 +75,15 @@ export function hydrate(base: UiState): UiState {
   const log = loadLog();
   const current = loadCurrent();
   if (!current) return { ...base, log };
+  const live = current.state.status === "active" || current.resolved || current.recap;
   return {
     ...base,
     log,
-    screen: current.state.status === "active" ? "career" : "summary",
+    screen: live ? "career" : "summary",
     setup: current.state.setup,
     seed: current.state.seed,
     state: current.state,
     resolved: current.resolved,
+    recap: current.recap,
   };
 }

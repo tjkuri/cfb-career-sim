@@ -3,6 +3,7 @@ import type { ContentBundle } from "../content/schema";
 import { rngInt, type Rng } from "./rng";
 import { isSidelined } from "./effects";
 import { schoolSnapModifier } from "./school-effects";
+import { ROLE_SNAPS, roleFor } from "./role";
 
 const ON_FIELD = new Set(["nonconf", "conference", "postseason"]);
 
@@ -23,7 +24,11 @@ export function simulatePhaseProduction(state: GameState, content: ContentBundle
   if (!season) return;
   const model = STAT_MODEL[state.setup.position];
   const rolled = rngInt(rng, model.snapsMin, model.snapsMax);
-  const snaps = Math.max(0, Math.round(rolled * state.snapModifier * schoolSnapModifier(state, content)));
+  const role = season.role ?? roleFor(state.overall, state.school.tier);
+  const snaps = Math.max(
+    0,
+    Math.round(rolled * ROLE_SNAPS[role] * state.snapModifier * schoolSnapModifier(state, content)),
+  );
   season.snaps += snaps;
   const skill = state.overall / 70;
   for (const [stat, per100] of Object.entries(model.per100)) {

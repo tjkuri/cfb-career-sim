@@ -132,10 +132,10 @@ describe("lastOutcome", () => {
     }
   });
 
-  it("carries no branch flag — the field is prose and nothing else", () => {
+  it("says which way a gamble went, so the card can say it paid off or backfired", () => {
     const found = playUntil("shape-1", (_s, d) => d !== null && d.eventId === "gym-grind");
     expect(found).not.toBeNull();
     const next = advance(found!.state, "grind");
-    expect(Object.keys(next.lastOutcome!)).toEqual(["description"]);
+    expect(typeof next.lastOutcome!.positive).toBe("boolean");
   });
 });

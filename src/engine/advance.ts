@@ -1,34 +1,62 @@
-import type { ClassYear, GameEvent, GameState, Position } from "./types";
+import type { Effect, GameEvent, GameState, Role, Tier } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
-import { createRng, rngChance, type Rng } from "./rng";
+import { createRng, rngChance, rngInt, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
 import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent, selectFixedEvent } from "./select-event";
 import { simulatePhaseProduction } from "./simulate";
 import { applyRecruitingChoice } from "./recruiting";
 import { computeDraftResult } from "./draft";
-import { runPostseasonResolver } from "./postseason";
+import { runAwards, simulateTeamRecord } from "./postseason";
 import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
 import { generateTransferOffers } from "./transfer";
-import { rollAmbientInjury } from "./school-effects";
+import { rollAmbientInjury, schoolTraitOf } from "./school-effects";
+import { roleFor } from "./role";
+import { BIG_GAME_EVENT_ID, resolveBigGame, setupBigGame } from "./big-game";
+import { PLAYBOOKS } from "../content/big-game";
 
 const TRANSFER_EVENT_ID = "transfer";
 const REDSHIRT_EVENT_ID = "redshirt";
 const ON_FIELD_PHASES = new Set(["nonconf", "conference", "postseason"]);
 
-// The declare decision was DELETED (DECISION 057). It was strictly dominated at
-// every offer -- a button whose only correct use is never -- so it was removed
-// rather than reworded. A career now ends exactly one way short of a washout:
-// eligibility runs out and `enterOffseason` declares for the player.
 type HubStep = "entry" | "redshirt" | "transfer";
 const HUB_ORDER: Exclude<HubStep, "entry">[] = ["redshirt", "transfer"];
 
+// A season has two gambles -- one in the offseason, one mid-season -- plus a
+// bowl-week card some years. The rest is played out, and it ends on the big game.
+const RANDOM_SLOTS: Partial<Record<GameState["phase"], GameState["phase"][]>> = {
+  offseason: ["offseason"],
+  conference: ["nonconf", "conference"],
+  postseason: ["postseason"],
+};
+
+export interface DecisionOption {
+  id: string;
+  label: string;
+  /** A gamble: the chance of `positive`, and what each branch does. */
+  probability?: number;
+  positive?: Effect[];
+  negative?: Effect[];
+  /** A school on offer, and where the player would sit on its depth chart. */
+  school?: { name: string; tier: Tier; conference: string; role: Role; trait?: string; current?: boolean };
+  /** A play call: what it is built to beat. */
+  detail?: string;
+}
+
 export interface PendingDecision {
   eventId: string;
+  kind: "event" | "school" | "redshirt" | "bigGame";
   title: string;
   description: string;
-  options: { id: string; label: string }[];
+  options: DecisionOption[];
+  bigGame?: {
+    name: string;
+    opponent: string;
+    situation: string;
+    scout: string;
+    thrownIn: boolean;
+  };
 }
 
 function injuryLookup(content: ContentBundle): InjuryLookup {
@@ -39,48 +67,102 @@ function clone(state: GameState): GameState {
   return JSON.parse(JSON.stringify(state));
 }
 
+function schoolOptions(state: GameState, content: ContentBundle): DecisionOption[] {
+  return (state.pendingOptions ?? []).map((o) => {
+    const school = content.schools.find((s) => s.id === o.schoolId);
+    return {
+      id: o.id,
+      label: o.label,
+      school: {
+        name: school?.name ?? o.schoolId,
+        tier: o.tier,
+        conference: school?.conference ?? "",
+        role: roleFor(state.overall, o.tier),
+        trait: school?.trait ? content.traitHints[school.trait] : undefined,
+        current: o.id === "stay",
+      },
+    };
+  });
+}
+
 export function getDecision(state: GameState, content: ContentBundle = CONTENT): PendingDecision | null {
   if (state.status !== "active" || state.currentEventId === null) return null;
   if (state.currentEventId === "recruiting") {
-    const opts = state.pendingOptions ?? [];
     return {
       eventId: "recruiting",
+      kind: "school",
       title: "Signing Day",
-      description: "Where do you commit?",
-      options: opts.map((o) => ({ id: o.id, label: o.label })),
+      description: "Three programs want you. Start right away somewhere small, or fight for a job somewhere big?",
+      options: schoolOptions(state, content),
     };
   }
   if (state.currentEventId === TRANSFER_EVENT_ID) {
-    const opts = state.pendingOptions ?? [];
     return {
       eventId: TRANSFER_EVENT_ID,
+      kind: "school",
       title: "Transfer Portal",
-      description: "The portal is open. Stay, or take an offer?",
-      options: opts.map((o) => ({ id: o.id, label: o.label })),
+      description: "The portal is open and your phone is ringing. Stay, or chase a bigger stage?",
+      options: schoolOptions(state, content),
     };
   }
   if (state.currentEventId === REDSHIRT_EVENT_ID) {
+    const cfg = content.redshirt;
     return {
       eventId: REDSHIRT_EVENT_ID,
+      kind: "redshirt",
       title: "Redshirt?",
-      description: "Four games at most, and the season doesn't count against your eligibility. A year of scout team and the weight room, and a gamble on coming back stronger — it might backfire.",
+      description: "Sit out a season without burning a year of eligibility. A year in the weight room — or a year of rust.",
       options: [
-        { id: "redshirt", label: "Take the redshirt (play four games at most)" },
-        { id: "decline", label: "Play this season" },
+        {
+          id: "redshirt",
+          label: "Take the redshirt",
+          probability: cfg.successProb,
+          positive: [{ kind: "overall", timing: "immediate", amount: cfg.bumpOverall }],
+          negative: [{ kind: "overall", timing: "immediate", amount: cfg.sinkOverall }],
+        },
+        { id: "decline", label: "Play this season", probability: 1, positive: [] },
       ],
+    };
+  }
+  if (state.currentEventId === BIG_GAME_EVENT_ID && state.pendingBigGame) {
+    const g = state.pendingBigGame;
+    const book = PLAYBOOKS[state.setup.position];
+    return {
+      eventId: BIG_GAME_EVENT_ID,
+      kind: "bigGame",
+      title: g.name,
+      description: `vs ${g.opponent}`,
+      options: book.calls.map((c) => ({ id: c.id, label: c.label, detail: c.detail })),
+      bigGame: {
+        name: g.name,
+        opponent: g.opponent,
+        situation: book.situations[g.situation] ?? book.situations[0]!,
+        scout: book.counters[g.scoutedCall]!.scout,
+        thrownIn: g.thrownIn,
+      },
     };
   }
   const ev = content.events.find((e) => e.id === state.currentEventId);
   if (!ev) return null;
-  return { eventId: ev.id, title: ev.title, description: ev.description, options: ev.options.map((o) => ({ id: o.id, label: o.label })) };
+  return {
+    eventId: ev.id,
+    kind: "event",
+    title: ev.title,
+    description: ev.description,
+    options: ev.options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      probability: o.negativeOutcome ? o.probability : 1,
+      positive: o.positiveOutcome.effects,
+      negative: o.negativeOutcome && o.probability < 1 ? o.negativeOutcome.effects : undefined,
+    })),
+  };
 }
 
 export function advance(state: GameState, choiceId: string, content: ContentBundle = CONTENT): GameState {
   const s = clone(state);
   const rng = createRng(s.seed, s.rngCursor);
   const injuryOf = injuryLookup(content);
-  // Cleared before the choice resolves, so an outcome can never outlive the
-  // decision that produced it and surface against an unrelated later card.
   delete s.lastOutcome;
 
   applyChoice(s, choiceId, content, rng, injuryOf);
@@ -118,15 +200,20 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
       raiseNextHubDecision(s, content, rng, "redshirt");
       return;
     }
-    // Take the redshirt: roll the bump/sink, sit the upcoming season, preserve eligibility.
     const cfg = content.redshirt;
     const success = rngChance(rng, cfg.successProb);
     applyEffect(s, { kind: "overall", timing: "immediate", amount: success ? cfg.bumpOverall : cfg.sinkOverall }, injuryOf);
-    s.lastOutcome = { description: success ? cfg.bumpDescription : cfg.sinkDescription };
+    s.lastOutcome = { description: success ? cfg.bumpDescription : cfg.sinkDescription, positive: success };
     s.eligibility.redshirtUsed = true;
     s.snapModifier = cfg.sitSnapModifier;
     s.redshirtSeasonActive = true;
-    s.currentEventId = null; // taking the redshirt ends this offseason's hub sequence
+    s.currentEventId = null;
+    return;
+  }
+  if (s.currentEventId === BIG_GAME_EVENT_ID) {
+    resolveBigGame(s, choiceId, rng, injuryOf);
+    const result = s.seasons[s.seasons.length - 1]?.bigGame;
+    if (result) s.lastOutcome = { description: result.text, positive: result.won };
     return;
   }
   const ev = content.events.find((e) => e.id === s.currentEventId);
@@ -134,7 +221,11 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
   const opt = ev.options.find((o) => o.id === choiceId);
   if (!opt) throw new Error(`Invalid choice ${choiceId} for event ${ev.id}`);
   const outcome = resolveOutcome(opt, rng);
-  s.lastOutcome = { description: outcome.description };
+  const gamble = !!opt.negativeOutcome && opt.probability < 1;
+  s.lastOutcome = {
+    description: outcome.description,
+    positive: gamble ? outcome === opt.positiveOutcome : undefined,
+  };
   for (const eff of outcome.effects) applyEffect(s, eff, injuryOf);
   if (ev.kind === "fixed") s.phaseFiredEventIds.push(ev.id);
   s.currentEventId = null;
@@ -143,7 +234,6 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
 function advancePhase(s: GameState): void {
   const idx = PHASE_ORDER.indexOf(s.phase);
   if (idx === PHASE_ORDER.length - 1) {
-    // postseason -> next season offseason
     s.seasonIndex += 1;
     s.phase = "offseason";
   } else {
@@ -152,106 +242,39 @@ function advancePhase(s: GameState): void {
   s.phaseAbs += 1;
 }
 
-export function developmentDelta(
-  seasonSnaps: number,
-  cfg: {
-    snapsPerDevPoint: number;
-    devCap: number;
-    snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
-  },
-  position: Position,
+/**
+ * Overall gained over an offseason: a base for the class year just played, a
+ * bonus for playing time, a little noise, and a bump at a developmental school.
+ */
+export function offseasonDevelopment(
+  s: GameState,
+  line: GameState["seasons"][number],
+  content: ContentBundle,
+  rng: Rng,
 ): number {
-  // Position is required, not optional: a silent fallback is how K's
-  // development sat at zero for entire careers without anything noticing.
-  const perPoint = cfg.snapsPerDevPointByPosition?.[position] ?? cfg.snapsPerDevPoint;
-  return Math.min(cfg.devCap, Math.floor(seasonSnaps / perPoint));
+  const prog = content.progression;
+  const role: Role = line.redshirt ? "backup" : (line.role ?? "rotation");
+  const jitter = rngInt(rng, -prog.devJitter, prog.devJitter);
+  const developmental = schoolTraitOf(s, content) === "developmental" ? content.schoolTraits.developmental.developmentalBonus : 0;
+  return prog.devByClass[line.classYear] + prog.devByRole[role] + jitter + developmental;
 }
 
-// What a completed season does to `overall` -- development, or, for an
-// upperclassman who barely played, decline (DECISION 058).
-//
-// `developmentDelta` cannot return a negative number, which made `overall` a
-// one-way ratchet and was the identified root cause of an unlosable game
-// (DECISION 057). This wrapper is the only place a season can cost overall.
-//
-// The JR/SR gate is the mechanism, not a detail. An ungated snap threshold was
-// measured over ~150,000 careers (report 034 §2) and disqualified: it taxes
-// every freshman -- freshmen do not play, so the threshold charges a career for
-// its first two years -- and at the intensity where it finally produces failure
-// it stops discriminating (good 7.6%, random 8.4%, lazy 7.7%), punishing luck
-// rather than play. Gated to upperclassmen it discriminates 1:45 and reads
-// true: a freshman who does not play is normal, a junior who does not is
-// falling behind.
-export function seasonOverallDelta(
-  seasonSnaps: number,
-  classYear: ClassYear,
-  cfg: {
-    snapsPerDevPoint: number;
-    devCap: number;
-    snapsPerDevPointByPosition?: Partial<Record<Position, number>>;
-    declineSnapFloor: number;
-    snapsPerDeclinePoint: number;
-    declineSnapFloorByPosition?: Partial<Record<Position, number>>;
-    snapsPerDeclinePointByPosition?: Partial<Record<Position, number>>;
-  },
-  position: Position,
-): number {
-  const upperclass = classYear === "JR" || classYear === "SR";
-  // Position-scaled for the same reason development is: a flat floor sits above
-  // a kicker's entire season and declines a well-played K for its whole career.
-  const floor = cfg.declineSnapFloorByPosition?.[position] ?? cfg.declineSnapFloor;
-  const perPoint = cfg.snapsPerDeclinePointByPosition?.[position] ?? cfg.snapsPerDeclinePoint;
-  if (upperclass && seasonSnaps < floor) {
-    return -Math.ceil((floor - seasonSnaps) / perPoint);
-  }
-  return developmentDelta(seasonSnaps, cfg, position);
-}
-
-// The two soft-washout endings. Named so the balance harness can tell this
-// path from the character spiral without matching a literal that might drift.
 export const WASHOUT_REASONS = {
   overall: "Lost a step and washed out",
   buried: "Buried on the depth chart",
 } as const;
 
 export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): void {
-  // Reset per-season modifiers from any prior transfer/redshirt.
   s.snapModifier = 1;
+  const satOut = s.redshirtSeasonActive;
   s.redshirtSeasonActive = false;
 
-  // Develop from last season's playing time before advancing eligibility.
   const lastSeason = s.seasons[s.seasons.length - 1];
   if (lastSeason) {
-    // Finalize the completed line's OVR *before* development is applied: the
-    // development points come from last season's snaps but are earned for the
-    // next season, so they belong to the next line. classYear is deliberately
-    // not touched here -- it was recorded at kickoff, and CLASS_ORDER advances
-    // a few lines below.
     lastSeason.overall = s.overall;
-    // `classYear` here is the year the completed season was PLAYED as: it was
-    // recorded at kickoff and CLASS_ORDER has not advanced yet, so the gate
-    // asks "was the player an upperclassman for the season that just ended?",
-    // which is the question DECISION 058 answers.
-    s.overall = clampOverall(
-      s.overall +
-        seasonOverallDelta(
-          lastSeason.snaps,
-          lastSeason.classYear,
-          content.progression,
-          s.setup.position,
-        ),
-    );
+    s.overall = clampOverall(s.overall + offseasonDevelopment(s, lastSeason, content, rng));
   }
 
-  // Soft-washout: collapsed overall, or buried (near-zero snaps) for consecutive seasons.
-  //
-  // DECISION 072: a redshirt season is SKIPPED by this window. It is ~25 snaps
-  // (`sitSnapModifier` 0.05), so it used to satisfy the buried predicate on its
-  // own -- which busted an injured freshman who then sat, i.e. precisely the
-  // player the redshirt is written for, at a healthy overall. Sitting is a
-  // coach's decision, not evidence of being buried. Skipped rather than
-  // streak-breaking: the seasons on either side of a redshirt are still
-  // consecutive for this check, so a sit cannot launder a prior buried season.
   const prog = content.progression;
   const recent = s.seasons.filter((line) => !line.redshirt).slice(-prog.washoutConsecutiveSeasons);
   const buried =
@@ -265,15 +288,15 @@ export function enterOffseason(s: GameState, content: ContentBundle, rng: Rng): 
     return;
   }
 
-  // Advance eligibility one class year.
+  // A redshirt season keeps the class year: the year after it is played as
+  // the same class, which is what the extra year of eligibility is.
   const ci = CLASS_ORDER.indexOf(s.eligibility.classYear);
-  if (ci < CLASS_ORDER.length - 1) s.eligibility.classYear = CLASS_ORDER[ci + 1]!;
+  if (!satOut && ci < CLASS_ORDER.length - 1) s.eligibility.classYear = CLASS_ORDER[ci + 1]!;
   s.eligibility.yearsUsed += 1;
   s.eligibility.draftEligible = s.eligibility.classYear === "JR" || s.eligibility.classYear === "SR";
 
   const eligibilityCap = CLASS_ORDER.length + (s.eligibility.redshirtUsed ? 1 : 0);
   if (s.eligibility.yearsUsed >= eligibilityCap) {
-    // Out of eligibility -> forced to declare.
     s.status = "declared";
     return;
   }
@@ -311,22 +334,26 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
   let guard = 0;
   while (s.status === "active" && s.currentEventId === null && guard++ < 1000) {
     if (!s.phaseSimulated) {
-      // First time entering this phase: tick + produce exactly once.
       tickPhaseStart(s, injuryOf);
       if (s.status !== "active") return;
       if (ON_FIELD_PHASES.has(s.phase)) {
-        const last = s.seasons[s.seasons.length - 1];
+        let last = s.seasons[s.seasons.length - 1];
         if (!last || last.seasonIndex !== s.seasonIndex) {
-          // classYear is the year this season is PLAYED AS: enterOffseason has
-          // already advanced eligibility into it before kickoff, so the value
-          // read here is the correct one and must not be rewritten later.
-          // `redshirt` is read at the same instant and for the same reason:
-          // `redshirtSeasonActive` was set by applyChoice during the offseason
-          // that precedes this push and is cleared by enterOffseason at the
-          // NEXT boundary, so here it is true for exactly the season being sat.
-          s.seasons.push({ seasonIndex: s.seasonIndex, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 0, teamLosses: 0, overall: s.overall, classYear: s.eligibility.classYear, redshirt: s.redshirtSeasonActive });
+          last = {
+            seasonIndex: s.seasonIndex,
+            schoolId: s.school.schoolId,
+            snaps: 0,
+            stats: {},
+            teamWins: 0,
+            teamLosses: 0,
+            overall: s.overall,
+            classYear: s.eligibility.classYear,
+            redshirt: s.redshirtSeasonActive,
+            tierPlayed: s.school.tier,
+          };
+          s.seasons.push(last);
         }
-        // Before production, so a fire costs this phase's snaps too.
+        last.role = roleFor(s.overall, s.school.tier);
         rollAmbientInjury(s, content, rng, injuryOf);
       }
       simulatePhaseProduction(s, content, rng);
@@ -335,41 +362,61 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
       s.phaseRandomDrawn = false;
     }
 
-    // Fire matching fixed (scripted) events one at a time.
     const fixedEv = selectFixedEvent(s, content);
     if (fixedEv) {
       s.currentEventId = fixedEv.id;
       return;
     }
 
-    // Then at most one random event per phase.
-    if (!s.phaseRandomDrawn) {
+    if (s.phase === "postseason") settleRegularSeason(s, content, rng);
+
+    const slot = RANDOM_SLOTS[s.phase];
+    if (slot && !s.phaseRandomDrawn) {
       s.phaseRandomDrawn = true;
-      const ev: GameEvent | null = selectRandomEvent(s, content, rng);
+      // Bowl week gets a card about half the time, and only for a bowl team.
+      const draw = s.phase !== "postseason" || (bowlTeam(s) && rngChance(rng, 0.5));
+      const ev: GameEvent | null = draw ? selectRandomEvent(s, content, rng, slot) : null;
       if (ev) {
+        (s.firedEventIds ??= []).push(ev.id);
         s.currentEventId = ev.id;
         return;
       }
     }
 
-    // Phase fully handled: resolve postseason honors, then move on.
-    if (s.phase === "postseason") runPostseasonResolver(s, content, rng, injuryOf);
+    if (s.phase === "postseason") {
+      const season = s.seasons[s.seasons.length - 1];
+      if (season && season.seasonIndex === s.seasonIndex && !season.bigGame) {
+        setupBigGame(s, content, rng, injuryOf);
+        if (s.currentEventId !== null) return;
+      }
+      runAwards(s, content, rng, injuryOf);
+    }
     advancePhase(s);
     s.phaseSimulated = false;
     if (s.phase === "offseason") {
       enterOffseason(s, content, rng);
-      // Hub may raise a decision (stop) or force-declare on empty eligibility.
       if (s.currentEventId !== null || s.status !== "active") return;
     }
   }
 }
 
+// The regular season's record, played out once at the start of the postseason.
+function settleRegularSeason(s: GameState, content: ContentBundle, rng: Rng): void {
+  const season = s.seasons[s.seasons.length - 1];
+  if (!season || season.seasonIndex !== s.seasonIndex || season.teamWins + season.teamLosses > 0) return;
+  const role = season.role ?? roleFor(s.overall, s.school.tier);
+  const record = simulateTeamRecord(s.overall, s.school.tier, role, content.postseason, rng);
+  season.teamWins = record.wins;
+  season.teamLosses = record.losses;
+}
+
+function bowlTeam(s: GameState): boolean {
+  const season = s.seasons[s.seasons.length - 1];
+  return !!season && season.seasonIndex === s.seasonIndex && season.teamWins >= 6;
+}
+
 function finalizeIfEnded(s: GameState, rng: Rng, injuryOf: InjuryLookup): void {
   if (s.status === "active") return;
-  // A forced declaration returns before autoProgress reaches tickPhaseStart, so
-  // the queue's only drain never runs. Flush on every terminal status, busted
-  // included, so a reported final overall is never inflated by a penalty that
-  // was earned and then orphaned.
   flushPendingEffects(s, injuryOf);
   if (s.status === "declared") {
     s.draftResult = computeDraftResult(s, rng);

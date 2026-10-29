@@ -158,6 +158,8 @@ const ICON_GLYPHS: Record<string, string> = {
   clipboard: "📋",
   car: "🚗",
   book: "📖",
+  ring: "💍",
+  broken: "💔",
 };
 
 export const FALLBACK_ICON = "◆";

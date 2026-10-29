@@ -5,7 +5,7 @@ import { createRng } from "./rng";
 import type { ContentBundle } from "../content/schema";
 import { CONTENT } from "../content/index";
 import { POSTSEASON, PROGRESSION } from "../content/postseason";
-import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "../content/regions";
+import { REGIONS, SCHOOL_SAMPLER } from "../content/regions";
 import { REDSHIRT } from "../content/redshirt";
 import type { EventConditions, GameEvent, GameState, Setup } from "./types";
 
@@ -20,12 +20,12 @@ const dlEvent: GameEvent = { ...qbEvent, id: "dl-only", conditions: { position: 
 const bundle = (events: GameEvent[]): ContentBundle => ({
   events, injuries: {}, schools: [], positions: {} as any, trophyIds: [], awardIds: [],
   postseason: POSTSEASON, progression: PROGRESSION,
-  regions: REGIONS, schoolSampler: SCHOOL_SAMPLER, transfer: TRANSFER, redshirt: REDSHIRT,
+  regions: REGIONS, schoolSampler: SCHOOL_SAMPLER, redshirt: REDSHIRT,
   // Unused by this file's tests (no selection logic reads it); minimal shape only.
   schoolTraits: {
     wideOpen: { snapModifier: 1, injuryProbPerPhase: 0, injuryTypes: [] },
     factory: { firstSeasonSnapModifier: 1, draftStockBonusPerSeason: 0, draftStockBonusCap: 0 },
-    developmental: { snapsPerDevPointMultiplier: 1, earlySnapModifier: 1, earlySeasons: 1 },
+    developmental: { developmentalBonus: 1, earlySnapModifier: 1, earlySeasons: 1 },
   },
   // Unused by this file's tests (no selection logic reads it); minimal shape only.
   traitHints: { wideOpen: "", factory: "", developmental: "" },

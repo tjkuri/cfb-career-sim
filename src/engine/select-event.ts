@@ -8,8 +8,13 @@ import { schoolTraitOf } from "./school-effects";
 // about schoolTrait conditions. Mirrors createCareer's own CONTENT default.
 import { CONTENT } from "../content/index";
 
-export function eventMatches(state: GameState, ev: GameEvent, content: ContentBundle = CONTENT): boolean {
-  if (ev.phase !== state.phase) return false;
+export function eventMatches(
+  state: GameState,
+  ev: GameEvent,
+  content: ContentBundle = CONTENT,
+  phases: readonly GameState["phase"][] = [state.phase],
+): boolean {
+  if (!phases.includes(ev.phase)) return false;
   const c = ev.conditions;
   if (!c) return true;
   if (c.position && !c.position.includes(state.setup.position)) return false;
@@ -45,8 +50,18 @@ export function eventMatches(state: GameState, ev: GameEvent, content: ContentBu
   return true;
 }
 
-export function selectRandomEvent(state: GameState, content: ContentBundle, rng: Rng): GameEvent | null {
-  const pool = content.events.filter((e) => e.kind === "random" && eventMatches(state, e, content));
+// A random card never repeats within a career, and `phases` lets one draw
+// stand for a stretch of the season rather than a single phase.
+export function selectRandomEvent(
+  state: GameState,
+  content: ContentBundle,
+  rng: Rng,
+  phases: readonly GameState["phase"][] = [state.phase],
+): GameEvent | null {
+  const fired = new Set(state.firedEventIds ?? []);
+  const pool = content.events.filter(
+    (e) => e.kind === "random" && !fired.has(e.id) && eventMatches(state, e, content, phases),
+  );
   if (pool.length === 0) return null;
   return rngWeightedPick(rng, pool, (e) => e.weight);
 }

@@ -35,61 +35,47 @@ function entry(seed: string): LogEntry {
 beforeEach(() => { installStorage(); });
 
 describe("current save", () => {
-  it("round-trips a career and its resolved card", () => {
+  it("round-trips a career, its resolved card and its season recap", () => {
     const state = createCareer(SETUP, "s-1");
     const resolved: Resolved = {
+      kind: "event",
       title: "T",
-      description: "D",
       choiceLabel: "C",
       outcome: "O",
-      hub: null,
-      narrated: false,
-      trustBefore: null,
-      account: null,
-      remainder: null,
-      stamp: {
-        seasonNumber: 1,
-        classYear: "FR",
-        phaseLabel: "Offseason",
-        schoolName: null,
-        season: null,
-      },
-      overallBefore: 60,
+      paid: true,
+      chips: [{ text: "+3 OVR", tone: "good" }],
+      ovrBefore: 60,
+      ovrAfter: 63,
+      bigGame: null,
+      record: null,
+      roleChange: null,
     };
-    saveCurrent(state, resolved);
+    saveCurrent(state, resolved, null);
     const loaded = loadCurrent();
     expect(loaded!.state.seed).toBe("s-1");
     expect(loaded!.resolved).toEqual(resolved);
+    expect(loaded!.recap).toBeNull();
   });
 
-  it("restores a pre-stamp save with a null stamp rather than undefined", () => {
-    // Saves written before the resolved card carried a season stamp are still
-    // playable; the header simply cannot be frozen for the one card in flight.
+  it("ignores a save from the previous version of the game", () => {
     const state = createCareer(SETUP, "s-legacy");
-    localStorage.setItem(
-      "cfb-career-sim:v1:current",
-      JSON.stringify({ schema: 1, state, resolved: { title: "T", choiceLabel: "C", outcome: "O" } }),
-    );
-    const loaded = loadCurrent();
-    expect(loaded).not.toBeNull();
-    expect(loaded!.resolved).not.toBeNull();
-    expect(loaded!.resolved!.stamp).toBeNull();
-    expect("stamp" in loaded!.resolved!).toBe(true);
+    localStorage.setItem("cfb-career-sim:v1:current", JSON.stringify({ schema: 1, state, resolved: null }));
+    expect(loadCurrent()).toBeNull();
   });
 
   it("returns null after being cleared", () => {
-    saveCurrent(createCareer(SETUP, "s-2"), null);
+    saveCurrent(createCareer(SETUP, "s-2"), null, null);
     clearCurrent();
     expect(loadCurrent()).toBeNull();
   });
 
   it("discards a save from a different schema", () => {
-    localStorage.setItem("cfb-career-sim:v1:current", JSON.stringify({ schema: 99, state: {} }));
+    localStorage.setItem("cfb-career-sim:v2:current", JSON.stringify({ schema: 99, state: {} }));
     expect(loadCurrent()).toBeNull();
   });
 
   it("discards unparseable data rather than throwing", () => {
-    localStorage.setItem("cfb-career-sim:v1:current", "{not json");
+    localStorage.setItem("cfb-career-sim:v2:current", "{not json");
     expect(loadCurrent()).toBeNull();
   });
 
@@ -101,7 +87,7 @@ describe("current save", () => {
 
   it("survives storage that throws on write", () => {
     installStorage({ setItem: () => { throw new Error("quota"); } });
-    expect(() => saveCurrent(createCareer(SETUP, "s-3"), null)).not.toThrow();
+    expect(() => saveCurrent(createCareer(SETUP, "s-3"), null, null)).not.toThrow();
   });
 });
 
@@ -128,7 +114,7 @@ describe("career log", () => {
   });
 
   it("discards a malformed log", () => {
-    localStorage.setItem("cfb-career-sim:v1:log", JSON.stringify({ schema: 1, entries: "nope" }));
+    localStorage.setItem("cfb-career-sim:v2:log", JSON.stringify({ schema: 2, entries: "nope" }));
     expect(loadLog()).toEqual([]);
   });
 });
@@ -139,7 +125,7 @@ describe("hydrate", () => {
   });
 
   it("restores an in-progress career onto the career screen", () => {
-    saveCurrent(createCareer(SETUP, "s-4"), null);
+    saveCurrent(createCareer(SETUP, "s-4"), null, null);
     const ui = hydrate(INITIAL_STATE);
     expect(ui.screen).toBe("career");
     expect(ui.state!.seed).toBe("s-4");
@@ -148,7 +134,7 @@ describe("hydrate", () => {
 
   it("restores a finished career onto the summary screen", () => {
     const done = { ...createCareer(SETUP, "s-5"), status: "busted" as const, endingReason: "Done" };
-    saveCurrent(done, null);
+    saveCurrent(done, null, null);
     expect(hydrate(INITIAL_STATE).screen).toBe("summary");
   });
 

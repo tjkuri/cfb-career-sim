@@ -1,43 +1,36 @@
-import type { GameState, SchoolOffer, SeasonLine } from "./types";
+import type { GameState, SchoolOffer, SeasonLine, Tier } from "./types";
 import type { Rng } from "./rng";
 import type { ContentBundle } from "../content/schema";
-import { eligibleTiers } from "./draft";
 import { sampleSchoolInTier } from "./schools";
 
 // Signing Day offers. Round-robins across the tiers the player is eligible for,
 // highest first, sampling one distinct school per pass until offerCount is met.
 // The tier iteration order is fixed, so the only nondeterminism is the seeded
 // sampler — identical (seed, cursor) yields an identical offer set.
+// Signing Day is the career's first real trade: a big program where you will
+// sit, a mid-major where you will rotate, and a small school that will start
+// you on day one. The big offer is a Power Four school, and sometimes a
+// blueblood takes a flyer.
 export function generateRecruitingOffers(
   state: GameState,
   content: ContentBundle,
   rng: Rng,
 ): SchoolOffer[] {
-  const tiers = eligibleTiers(state).slice().sort((a, b) => b - a); // high -> low
-  const target = content.schoolSampler.offerCount;
+  const reach: Tier = rng.next() < 0.35 ? 4 : 3;
+  const tiers: Tier[] = [reach, 2, 1];
   const offers: SchoolOffer[] = [];
   const taken = new Set<string>();
-  while (offers.length < target) {
-    let added = false;
-    for (const tier of tiers) {
-      if (offers.length >= target) break;
-      const school = sampleSchoolInTier(content, tier, state.setup.homeState, rng, taken);
-      if (!school) continue;
-      taken.add(school.id);
-      offers.push({
-        id: `commit-${school.id}`,
-        label: school.trait ? `Commit to ${school.name} — ${content.traitHints[school.trait]}` : `Commit to ${school.name}`,
-        schoolId: school.id,
-        tier: school.tier,
-        // Fixed at 1 by design: recruiting offers carry no snap penalty/bonus today.
-        // applyRecruitingChoice deliberately does not read this field (unlike the
-        // transfer path, which does) — if a future stage gives recruiting offers a
-        // real snapModifier, applyRecruitingChoice will need to consume it too.
-        snapModifier: 1,
-      });
-      added = true;
-    }
-    if (!added) break; // pool exhausted — a short offer set is legal
+  for (const tier of tiers.slice(0, content.schoolSampler.offerCount)) {
+    const school = sampleSchoolInTier(content, tier, state.setup.homeState, rng, taken);
+    if (!school) continue;
+    taken.add(school.id);
+    offers.push({
+      id: `commit-${school.id}`,
+      label: `Commit to ${school.name}`,
+      schoolId: school.id,
+      tier: school.tier,
+      snapModifier: 1,
+    });
   }
   return offers;
 }
@@ -60,6 +53,7 @@ function newSeasonLine(state: GameState): SeasonLine {
     // hub, so `redshirtSeasonActive` is false; it is read rather than hardcoded
     // for the same reason `overall` and `classYear` above are.
     redshirt: state.redshirtSeasonActive,
+    tierPlayed: state.school.tier,
   };
 }
 

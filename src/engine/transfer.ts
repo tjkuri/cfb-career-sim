@@ -3,17 +3,15 @@ import type { Rng } from "./rng";
 import type { ContentBundle } from "../content/schema";
 import { eligibleTiers } from "./draft";
 import { sampleSchoolInTier } from "./schools";
+import { roleFor } from "./role";
 
-function withHint(name: string, trait: string | undefined, content: ContentBundle): string {
-  const hint = trait ? content.traitHints[trait as keyof typeof content.traitHints] : undefined;
-  return hint ? `${name} — ${hint}` : name;
-}
-
+// Every offseason the portal opens: stay, a step up, a sideways move, and a
+// step down when you are stuck on the bench.
 export function generateTransferOffers(state: GameState, content: ContentBundle, rng: Rng): SchoolOffer[] {
-  const cfg = content.transfer;
   const homeState = state.setup.homeState;
   const currentTier = state.school.tier;
   const currentSchool = content.schools.find((s) => s.id === state.school.schoolId);
+  const taken = new Set([state.school.schoolId]);
 
   const offers: SchoolOffer[] = [{
     id: "stay",
@@ -23,24 +21,20 @@ export function generateTransferOffers(state: GameState, content: ContentBundle,
     snapModifier: 1,
   }];
 
-  const lateral = sampleSchoolInTier(content, currentTier, homeState, rng, new Set([state.school.schoolId]));
-  if (lateral) offers.push({ id: `transfer-${lateral.id}`, label: `Transfer to ${withHint(lateral.name, lateral.trait, content)} (bigger role)`, schoolId: lateral.id, tier: lateral.tier, snapModifier: cfg.lateralSnapModifier });
+  const add = (tier: Tier, verb: string) => {
+    const school = sampleSchoolInTier(content, tier, homeState, rng, taken);
+    if (!school) return;
+    taken.add(school.id);
+    offers.push({ id: `transfer-${school.id}`, label: `${verb} ${school.name}`, schoolId: school.id, tier: school.tier, snapModifier: 1 });
+  };
 
-  const tiers = eligibleTiers(state);
-  const maxTier = Math.max(...tiers) as Tier;
-  if (maxTier > currentTier) {
-    const upTier = (currentTier + 1) as Tier;
-    const up = sampleSchoolInTier(content, upTier, homeState, rng);
-    if (up) offers.push({ id: `transfer-${up.id}`, label: `Transfer up to ${withHint(up.name, up.trait, content)} (tougher competition)`, schoolId: up.id, tier: up.tier, snapModifier: cfg.moveUpSnapModifier });
-  }
+  // A step up is always on the table -- whether you would start there is the
+  // gamble. A jump of two tiers takes draft stock that has the big programs calling.
+  const maxTier = Math.max(...eligibleTiers(state)) as Tier;
+  if (currentTier < 4) add((currentTier + 1) as Tier, "Transfer up to");
+  if (currentTier < 3 && maxTier >= currentTier + 2) add((currentTier + 2) as Tier, "Jump to");
+  add(currentTier, "Transfer to");
+  if (currentTier > 1 && roleFor(state.overall, currentTier) === "backup") add((currentTier - 1) as Tier, "Drop down to");
 
-  const lastSeason = state.seasons[state.seasons.length - 1];
-  const buried = currentTier > 1 && !!lastSeason && lastSeason.snaps < cfg.buriedSnapThreshold;
-  if (buried) {
-    const downTier = (currentTier - 1) as Tier;
-    const down = sampleSchoolInTier(content, downTier, homeState, rng);
-    if (down) offers.push({ id: `transfer-${down.id}`, label: `Transfer down to ${withHint(down.name, down.trait, content)} (guaranteed reps)`, schoolId: down.id, tier: down.tier, snapModifier: cfg.moveDownSnapModifier });
-  }
-
-  return offers;
+  return offers.slice(0, 4);
 }

@@ -23,12 +23,12 @@ describe("generateRecruitingOffers", () => {
     }
   });
 
-  it("only offers schools in tiers the player is eligible for", () => {
-    // A fresh recruit (overall 60, character 70) has draft stock 31 -> tiers [1, 2].
+  it("offers a big program, a mid-major and a small school", () => {
     for (let i = 0; i < 25; i++) {
       const s = createCareer(setup, `tier-${i}`);
-      const offers = generateRecruitingOffers(s, CONTENT, createRng(`tier-${i}`));
-      for (const o of offers) expect([1, 2]).toContain(o.tier);
+      const tiers = generateRecruitingOffers(s, CONTENT, createRng(`tier-${i}`)).map((o) => o.tier);
+      expect([3, 4]).toContain(tiers[0]);
+      expect(tiers.slice(1)).toEqual([2, 1]);
     }
   });
 

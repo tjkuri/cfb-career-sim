@@ -1,8 +1,11 @@
 import { createCareer, advance, getDecision, type GameState, type Setup } from "../engine/index";
-import { createRng } from "../engine/rng";
+import { createRng, rngInt, type Rng } from "../engine/rng";
 import type { ContentBundle } from "../content/schema";
 import { CONTENT } from "../content/index";
-import { firstOptionPolicy, randomPolicy, type Policy } from "./policies";
+
+export type Policy = (state: GameState, options: { id: string }[], rng: Rng) => string;
+export const firstOptionPolicy: Policy = (_s, options) => options[0]!.id;
+export const randomPolicy: Policy = (_s, options, rng) => options[rngInt(rng, 0, options.length - 1)]!.id;
 
 // content defaults to CONTENT (mirrors createCareer/advance's own default),
 // but is threaded through explicitly so a caller can swap the bundle -- e.g.

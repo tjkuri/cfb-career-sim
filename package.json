@@ -8,8 +8,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.engine.json && tsc -p tsconfig.json",
     "play": "tsx src/sim/play-headless.ts",
-    "balance": "tsx src/sim/balance.ts",
-    "traits": "tsx src/sim/trait-probe.ts",
+    "balance": "tsx src/sim/fun-balance.ts",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

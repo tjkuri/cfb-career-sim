@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { awardsProduction, validateContent, type ContentBundle } from "./schema";
 import { POSTSEASON, PROGRESSION } from "./postseason";
-import { REGIONS, SCHOOL_SAMPLER, TRANSFER } from "./regions";
+import { REGIONS, SCHOOL_SAMPLER } from "./regions";
 import { REDSHIRT } from "./redshirt";
 import { CONTENT } from "./index";
 
@@ -23,7 +23,6 @@ function goodBundle(): ContentBundle {
     progression: PROGRESSION,
     regions: REGIONS,
     schoolSampler: SCHOOL_SAMPLER,
-    transfer: TRANSFER,
     redshirt: REDSHIRT,
     // Minimal, not the real content: references only "acl", the one injury
     // this fixture's injuries table defines, so tests that replace the table
@@ -31,7 +30,7 @@ function goodBundle(): ContentBundle {
     schoolTraits: {
       wideOpen: { snapModifier: 1.15, injuryProbPerPhase: 0.06, injuryTypes: ["acl"] },
       factory: { firstSeasonSnapModifier: 0.8, draftStockBonusPerSeason: 1.5, draftStockBonusCap: 5 },
-      developmental: { snapsPerDevPointMultiplier: 0.85, earlySnapModifier: 0.9, earlySeasons: 2 },
+      developmental: { developmentalBonus: 1, earlySnapModifier: 0.9, earlySeasons: 2 },
     },
     traitHints: { wideOpen: "hint", factory: "hint", developmental: "hint" },
     events: [
@@ -332,11 +331,6 @@ describe("validateContent", () => {
     expect(validateContent(b).join()).toContain("ghostAward");
   });
 
-  it("rejects a trophy id not in trophyIds", () => {
-    const b = goodBundle();
-    b.postseason = { ...b.postseason, bowl: { id: "ghostTrophy", minWins: 7, prob: 0.5 } };
-    expect(validateContent(b).join()).toContain("ghostTrophy");
-  });
 
   it("rejects a production award referencing an unknown stat", () => {
     const b = goodBundle();
@@ -346,7 +340,7 @@ describe("validateContent", () => {
 
   it("rejects a probability outside [0,1] in postseason config", () => {
     const b = goodBundle();
-    b.postseason = { ...b.postseason, bowl: { id: "bowlWin", minWins: 7, prob: 1.5 } };
+    b.postseason = { ...b.postseason, prestige: [{ id: "heisman", bands: [{ min: 90, prob: 1.5 }], teamSuccessBoost: 0.3 }] };
     expect(validateContent(b).some((e) => e.toLowerCase().includes("prob"))).toBe(true);
   });
 
@@ -367,11 +361,6 @@ describe("validateContent", () => {
     expect(validateContent(b).join()).toContain("washoutOverallFloor");
   });
 
-  it("rejects a zero moveUpSnapModifier", () => {
-    const b = goodBundle();
-    b.transfer = { ...b.transfer, moveUpSnapModifier: 0 };
-    expect(validateContent(b).join()).toContain("moveUpSnapModifier");
-  });
 
   it("rejects a redshirt successProb outside [0,1]", () => {
     const b = goodBundle();
@@ -585,7 +574,7 @@ describe("schoolTraits validation", () => {
     const onField = CONTENT.events.filter((e) => ["nonconf", "conference", "postseason"].includes(e.phase));
     const offenders = onField.filter((e) => awardsProduction(e) && !e.conditions?.requiresPlaying).map((e) => e.id);
     expect(offenders).toEqual([]);
-    expect(onField.filter(awardsProduction).length).toBe(59);
+    expect(onField.filter(awardsProduction).length).toBe(54);
   });
 
   // DECISION 049. The four draft-prospect cards told a 60-overall sophomore his
