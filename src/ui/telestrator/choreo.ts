@@ -250,7 +250,7 @@ function passDefense(st: Stage, snap: Snap, G: number) {
 
 // RB/WR: the play comes to you out of the backfield.
 const RUN_D: Formation[] = [
-  { ...LINE, LB1: [24, 3.5], LB2: [29, 3.5], S2: [32, 5], NB: [36, 3], CB1: [7, 5], CB2: [46.5, 5], S1: [MID, 11] },
+  { ...LINE, LB1: [24, 3.5], LB2: [29, 3.5], S2: [30.5, 5.5], NB: [33.5, 3], CB1: [7, 5], CB2: [46.5, 5], S1: [MID, 11] },
   { DE1: [19, 1], DT1: [25, 1], DT2: [28.3, 1], DE2: [34.5, 1], LB1: [23, 4.5], LB2: [30, 4.5], CB1: [7, 5], CB2: [46.5, 5], NB: [40, 5], S1: [17, 11], S2: [36, 11] },
   { ...LINE, LB1: [24.5, 1.5], LB2: [29, 1.5], NB: [38, 1.5], S1: [20, 2.5], S2: [33, 2.5], CB1: [6, 1], CB2: [47.5, 1] },
 ];
@@ -475,8 +475,8 @@ const COVER_LOOKS: Formation[] = [
   { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB", "TE"]), X: [4, -1], SL: [44, -1], Z: [50, -1] },
   // Deep shot: their fastest receiver alone outside, trips to the other side
   { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB"]), X: [6, -1], SL: [11, -1.5], TE: [16, -1.5], Z: [48, -1] },
-  // Max protect: tight end and back stay in
-  { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "X", "SL", "Z", "TE"]), RB: [28.6, -4.8] },
+  // Max protect: only two wide; the tight end, a wing and the back all stay in
+  { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "X", "Z"]), TE: [32.4, -1], SL: [34.4, -2], RB: [24.6, -5] },
 ];
 
 function corner(snap: Snap): Play {
