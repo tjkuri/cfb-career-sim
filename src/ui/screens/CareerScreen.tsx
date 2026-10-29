@@ -2,6 +2,9 @@ import { useEffect } from "react";
 import type { Role } from "../../engine/index";
 import { roundShort } from "../session/game-view";
 import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonRecap } from "../session/types";
+import type { BigGameStakes } from "../../engine/index";
+import { Trophy } from "./Trophy";
+import { Confetti } from "./Confetti";
 
 interface Props {
   view: GameView;
@@ -151,7 +154,7 @@ function PlayerCard({ view }: { view: GameView }) {
         <ul className="case" aria-label="Trophy case">
           {view.trophyCase.map((t) => (
             <li key={t.id} title={t.label}>
-              <span aria-hidden="true">{t.icon}</span>
+              <Trophy id={t.id} size={20} />
               <span className="case-label">{t.label}</span>
               {t.count > 1 && <span className="case-count">×{t.count}</span>}
             </li>
@@ -244,12 +247,10 @@ function DecisionCard({ d, record, onChoose }: { d: DecisionView; record: string
 function BigGameCard({ d, record, onChoose }: { d: DecisionView; record: string | null; onChoose: (id: string) => void }) {
   const g = d.bigGame!;
   return (
-    <div className="card biggame enter">
-      <div className="bug cond">
-        <span className="bug-game">{g.name}</span>
-        <span className="bug-vs">vs {g.opponent}</span>
-      </div>
-      {record && <p className="season-so-far">You went {record} in the regular season. It all comes down to this.</p>}
+    <div className={`card biggame stakes-${g.stakes} enter`}>
+      <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} />
+      <p className="stakes-intro">{g.intro}</p>
+      {record && <p className="season-so-far">You went {record} in the regular season.</p>}
       {g.thrownIn && <p className="thrown">The starter goes down on the drive before. Coach looks down the bench at you.</p>}
       <p className="situation">{g.situation}</p>
       <p className="scout">
@@ -303,6 +304,30 @@ function ResultCard({ r, view, onContinue }: { r: Resolved; view: GameView; onCo
   );
 }
 
+const STAKES_LABEL: Record<BigGameStakes, string> = {
+  rivalry: "Rivalry",
+  bowl: "Bowl season",
+  conf: "Conference title",
+  cfp: "National title",
+};
+
+const STAKES_TROPHY: Record<BigGameStakes, { id: string; label: string } | null> = {
+  rivalry: null,
+  bowl: { id: "bowlWin", label: "Bowl champions" },
+  conf: { id: "confTitle", label: "Conference champions" },
+  cfp: { id: "cfpTitle", label: "National champions" },
+};
+
+function Bug({ stakes, name, opponent }: { stakes: BigGameStakes; name: string; opponent: string }) {
+  return (
+    <div className="bug cond">
+      <span className="bug-stakes">{STAKES_LABEL[stakes]}</span>
+      <span className="bug-game">{name}</span>
+      <span className="bug-vs">vs {opponent}</span>
+    </div>
+  );
+}
+
 function rank(role: Role): number {
   return role === "starter" ? 2 : role === "rotation" ? 1 : 0;
 }
@@ -318,12 +343,11 @@ function ContinueButton({ onContinue, label = "Continue" }: { onContinue: () => 
 function BigGameResultCard({ r, onContinue }: { r: Resolved; onContinue: () => void }) {
   const g = r.bigGame!;
   const [us, them] = g.score;
+  const trophy = g.won ? STAKES_TROPHY[g.stakes] : null;
   return (
-    <div className={`card biggame enter ${g.won ? "is-good" : "is-bad"}`}>
-      <div className="bug cond">
-        <span className="bug-game">{g.name}</span>
-        <span className="bug-vs">vs {g.opponent}</span>
-      </div>
+    <div className={`card biggame stakes-${g.stakes} enter ${g.won ? "is-good" : "is-bad"}`}>
+      {g.won && g.stakes !== "rivalry" && <Confetti big={g.stakes === "cfp"} />}
+      <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} />
       <p className="reveal">
         You called <b>{g.call}</b>. They ran <b>{g.counter}</b>.
       </p>
@@ -334,10 +358,11 @@ function BigGameResultCard({ r, onContinue }: { r: Resolved; onContinue: () => v
         </span>
       </div>
       <p className="result-text">{g.text}</p>
-      {g.won && g.stakes !== "rivalry" && (
-        <p className="trophy-won">
-          {g.stakes === "cfp" ? "💍 National Champions" : g.stakes === "conf" ? "🏆 Conference Champions" : "🥇 Bowl win"}
-        </p>
+      {trophy && (
+        <div className="trophy-won">
+          <Trophy id={trophy.id} size={g.stakes === "cfp" ? 132 : 104} className="trophy-lift" />
+          <span className="trophy-won-label cond">{trophy.label}</span>
+        </div>
       )}
       <div className="result-foot">
         <span className="dim">{g.won ? "+1 OVR · +3 Rep" : ""}</span>
@@ -382,7 +407,7 @@ function RecapCard({ r, onContinue }: { r: SeasonRecap; onContinue: () => void }
         <ul className="honors">
           {r.honors.map((h, i) => (
             <li key={h.id} className={`honor rarity-${h.rarity}`} style={{ animationDelay: `${250 + i * 220}ms` }}>
-              <span aria-hidden="true">{h.icon}</span> {h.label}
+              <Trophy id={h.id} size={28} /> {h.label}
             </li>
           ))}
         </ul>
@@ -438,7 +463,7 @@ function Ledger({ rows }: { rows: LedgerRow[] }) {
                     )}
                     {r.honors.map((h, i) => (
                       <span key={i} className={`lh rarity-${h.rarity}`} title={h.label}>
-                        {h.icon} {h.short}
+                        <Trophy id={h.id} size={13} /> {h.short}
                       </span>
                     ))}
                   </span>

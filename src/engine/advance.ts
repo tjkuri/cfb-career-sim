@@ -1,4 +1,4 @@
-import type { Effect, GameEvent, GameState, Role, Tier } from "./types";
+import type { BigGameStakes, Effect, GameEvent, GameState, Role, Tier } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, rngInt, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
@@ -14,7 +14,7 @@ import { generateTransferOffers } from "./transfer";
 import { rollAmbientInjury, schoolTraitOf } from "./school-effects";
 import { roleFor } from "./role";
 import { BIG_GAME_EVENT_ID, resolveBigGame, setupBigGame } from "./big-game";
-import { PLAYBOOKS } from "../content/big-game";
+import { BIG_GAME_INTRO, PLAYBOOKS } from "../content/big-game";
 
 const TRANSFER_EVENT_ID = "transfer";
 const REDSHIRT_EVENT_ID = "redshirt";
@@ -51,6 +51,8 @@ export interface PendingDecision {
   description: string;
   options: DecisionOption[];
   bigGame?: {
+    stakes: BigGameStakes;
+    intro: string;
     name: string;
     opponent: string;
     situation: string;
@@ -134,6 +136,8 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
       description: `vs ${g.opponent}`,
       options: book.calls.map((c) => ({ id: c.id, label: c.label, detail: c.detail })),
       bigGame: {
+        stakes: g.stakes,
+        intro: bigGameIntro(state, content),
         name: g.name,
         opponent: g.opponent,
         situation: book.situations[g.situation] ?? book.situations[0]!,
@@ -157,6 +161,16 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
       negative: o.negativeOutcome && o.probability < 1 ? o.negativeOutcome.effects : undefined,
     })),
   };
+}
+
+function bigGameIntro(state: GameState, content: ContentBundle): string {
+  const g = state.pendingBigGame!;
+  const lines = BIG_GAME_INTRO[g.stakes];
+  const conf = content.schools.find((s) => s.id === state.school.schoolId)?.conference ?? "conference";
+  // The nth game at these stakes this career gets the nth line, so a repeat
+  // trip to the title game never reads the same as the last one.
+  const before = state.seasons.filter((l) => l.bigGame?.stakes === g.stakes).length;
+  return lines[before % lines.length]!.replace("{conf}", conf);
 }
 
 export function advance(state: GameState, choiceId: string, content: ContentBundle = CONTENT): GameState {

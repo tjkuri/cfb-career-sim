@@ -58,7 +58,13 @@ export function computeDraftResult(state: GameState, rng: Rng): DraftResult {
   const stock = deriveDraftStock(state);
   const round = projectedRound(stock);
   if (round === 0) return { undrafted: true, round: 0, pick: 0, overallPick: 0, draftStock: stock };
-  const pick = rngInt(rng, 1, 32);
+  // Within the round, stock decides where you go: the top of the band picks
+  // first, with a few spots of draft-night noise either way.
+  const roundLow = UNDRAFTED_FLOOR + (7 - round) * ROUND_BAND;
+  const roundHigh = round === 1 ? 100 : roundLow + ROUND_BAND;
+  const intoRound = Math.max(0, Math.min(1, (stock - roundLow) / (roundHigh - roundLow)));
+  const base = Math.round(32 - intoRound * 31);
+  const pick = Math.max(1, Math.min(32, base + rngInt(rng, -3, 3)));
   const overallPick = (round - 1) * 32 + pick;
   return { undrafted: false, round, pick, overallPick, draftStock: stock };
 }

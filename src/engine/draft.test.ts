@@ -100,3 +100,13 @@ describe("computeDraftResult", () => {
     expect(computeDraftResult(s, createRng("x"))).toEqual(computeDraftResult(s, createRng("x")));
   });
 });
+
+describe("pick within the round", () => {
+  it("follows stock: the best prospect in a round goes near the top of it", () => {
+    const elite = base(); elite.overall = 99;
+    elite.seasons = [0, 1, 2, 3].map((i) => season({ seasonIndex: i, tierPlayed: 4, honors: ["heisman", "cfpTitle"] }));
+    const r = computeDraftResult(elite, createRng("top"));
+    expect(r.round).toBe(1);
+    expect(r.overallPick).toBeLessThanOrEqual(5);
+  });
+});

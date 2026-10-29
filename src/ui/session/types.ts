@@ -1,4 +1,4 @@
-import type { BigGameResult, DraftResult, GameState, Position, Role, Setup, Status } from "../../engine/index";
+import type { BigGameResult, BigGameStakes, DraftResult, GameState, Position, Role, Setup, Status } from "../../engine/index";
 
 export type Screen = "creation" | "career" | "summary" | "log";
 export type SeasonPhase = "offseason" | "nonconf" | "conference" | "postseason";
@@ -31,7 +31,7 @@ export interface DecisionView {
   title: string;
   description: string;
   options: OptionView[];
-  bigGame?: { name: string; opponent: string; situation: string; scout: string; thrownIn: boolean };
+  bigGame?: { stakes: BigGameStakes; intro: string; name: string; opponent: string; situation: string; scout: string; thrownIn: boolean };
 }
 
 export interface HonorView {

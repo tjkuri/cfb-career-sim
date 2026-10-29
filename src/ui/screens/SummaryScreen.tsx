@@ -3,6 +3,7 @@ import type { GameState } from "../../engine/index";
 import { buildSummary, shareText } from "../session/summary";
 import type { GameView } from "../session/types";
 import { ovrBand } from "./CareerScreen";
+import { Trophy } from "./Trophy";
 
 interface Props {
   state: GameState;
@@ -37,15 +38,20 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
         </div>
       </section>
 
-      {s.honors.length > 0 && (
-        <ul className="honors summary-honors">
+      {s.honors.length > 0 ? (
+        <ul className="cabinet" aria-label="Trophy cabinet">
           {s.honors.map((h, i) => (
-            <li key={h.id} className={`honor rarity-${h.rarity}`} style={{ animationDelay: `${400 + i * 180}ms` }}>
-              <span aria-hidden="true">{h.icon}</span> {h.count > 1 ? `${h.count}× ` : ""}
-              {h.label}
+            <li key={h.id} style={{ animationDelay: `${400 + i * 160}ms` }}>
+              <Trophy id={h.id} size={h.rarity === 3 ? 76 : h.rarity === 2 ? 62 : 52} />
+              <span className="cabinet-label">
+                {h.count > 1 && <span className="cabinet-count">{h.count}× </span>}
+                {h.label}
+              </span>
             </li>
           ))}
         </ul>
+      ) : (
+        <p className="cabinet-empty dim">An empty trophy case. Next career, take the shot.</p>
       )}
 
       <section className="sum-grid">
@@ -83,7 +89,9 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
                   <span>
                     {r.schoolName}
                     {r.record && <span className="dim"> · {r.record}</span>}
-                    {r.honors.length > 0 && <span> {r.honors.map((h) => h.icon).join(" ")}</span>}
+                    {r.honors.map((h, i) => (
+                      <Trophy key={i} id={h.id} size={16} className="inline-trophy" />
+                    ))}
                   </span>
                   {r.overall !== undefined && <span className={`lrow-ovr cond ovr-${ovrBand(r.overall)}`}>{r.overall}</span>}
                 </li>

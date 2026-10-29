@@ -235,6 +235,23 @@ const BOWLS: Record<Tier, string[]> = {
   4: ["Rose Bowl", "Sugar Bowl", "Orange Bowl", "Cotton Bowl", "Fiesta Bowl", "Peach Bowl"],
 };
 
+// Invented rivalry trophies -- every school gets one, and keeps it.
+const RIVALRY_PRIZES = [
+  "Brass Lantern", "Cedar Paddle", "Copper Kettle", "Painted Rail", "Old Mailbox", "Iron Horseshoe",
+  "Silver Canteen", "Red Lantern", "Pine Gavel", "Tin Badge", "Oak Barrel", "Golden Spike",
+];
+
+export function stableIndex(key: string, n: number): number {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return h % n;
+}
+
+export function rivalryName(schoolId: string, rivalId: string): string {
+  const pair = [schoolId, rivalId].sort().join("|");
+  return `Battle for the ${RIVALRY_PRIZES[stableIndex(pair, RIVALRY_PRIZES.length)]}`;
+}
+
 export function bigGameName(stakes: BigGameStakes, tier: Tier, conference: string, pick: number): string {
   if (stakes === "cfp") return tier === 1 ? "FCS National Championship" : "National Championship";
   if (stakes === "conf") return conference === "Independent" ? "Playoff Play-In" : `${conference} Championship`;
@@ -242,6 +259,33 @@ export function bigGameName(stakes: BigGameStakes, tier: Tier, conference: strin
   const list = BOWLS[tier];
   return list[pick % list.length]!;
 }
+
+// The line that sets the stakes before the situation. `{conf}` is the
+// school's conference.
+export const BIG_GAME_INTRO: Record<BigGameStakes, string[]> = {
+  rivalry: [
+    "Rivalry week. Lose this one and you hear about it at the gas station until next November.",
+    "No bowl this year, but nobody in town cares about that today. This is the one they paint on the barns.",
+    "The season is lost and this game is the whole season anyway. Seniors who never beat these guys are playing for it.",
+    "A trophy nobody outside the state has heard of, and everybody inside it would trade a bowl for.",
+  ],
+  bowl: [
+    "Bowl game. Neutral site, a sponsor's logo at midfield, and the last tape the scouts see this year.",
+    "Bowl game. Half the country is watching on a weekday afternoon, and every one of them will remember the last play.",
+    "Bowl week is over and the swag bags are packed. Now it is just sixty minutes and a trophy shaped like a dare.",
+    "A bowl in a city you will never come back to. Win it and you take the trophy and the last word into the offseason.",
+  ],
+  conf: [
+    "The {conf} title, on a neutral field with both fan bases split down the fifty. Win it and you hang a banner.",
+    "Championship Saturday. The {conf} trophy is on a table by the tunnel, and both teams walked past it on the way out.",
+    "Back in the {conf} title game. Last time you were here the whole thing came down to one snap. It will again.",
+  ],
+  cfp: [
+    "The National Championship. Every scout, every network, every kid in a backyard is watching this snap.",
+    "National title game. Confetti cannons are loaded in the rafters, and only one sideline gets to see them go off.",
+    "Back on the biggest stage there is. The kids who were freshmen the last time you got here are starters now.",
+  ],
+};
 
 // The trophy a big-game win is worth.
 export const BIG_GAME_TROPHY: Record<BigGameStakes, string | null> = {

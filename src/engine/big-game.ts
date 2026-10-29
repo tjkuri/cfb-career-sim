@@ -2,7 +2,7 @@ import type { BigGameResult, BigGameStakes, GameState, PendingBigGame } from "./
 import type { ContentBundle } from "../content/schema";
 import { rngChance, rngInt, rngPick, type Rng } from "./rng";
 import { applyEffect, isSidelined, type InjuryLookup } from "./effects";
-import { BIG_GAME_TROPHY, PLAYBOOKS, bigGameName } from "../content/big-game";
+import { BIG_GAME_TROPHY, PLAYBOOKS, bigGameName, rivalryName, stableIndex } from "../content/big-game";
 import { roleFor } from "./role";
 
 export const BIG_GAME_EVENT_ID = "big-game";
@@ -24,12 +24,24 @@ function pickStakes(s: GameState, wins: number, rng: Rng): BigGameStakes {
   return "rivalry";
 }
 
+// A school's rival never changes: the same conference opponent every year.
+function rivalOf(s: GameState, content: ContentBundle) {
+  const own = content.schools.find((x) => x.id === s.school.schoolId);
+  const pool = content.schools
+    .filter((x) => x.id !== s.school.schoolId && x.conference === own?.conference)
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const fallback = content.schools.filter((x) => x.id !== s.school.schoolId && x.tier === s.school.tier).sort((a, b) => a.id.localeCompare(b.id));
+  const list = pool.length > 0 ? pool : fallback;
+  return list[stableIndex(s.school.schoolId, list.length)]!;
+}
+
 function pickOpponent(s: GameState, stakes: BigGameStakes, content: ContentBundle, rng: Rng): string {
+  if (stakes === "rivalry") return rivalOf(s, content).name;
   const own = content.schools.find((x) => x.id === s.school.schoolId);
   const others = content.schools.filter((x) => x.id !== s.school.schoolId);
   let pool = others;
   if (stakes === "cfp") pool = others.filter((x) => x.tier === Math.max(3, s.school.tier) || x.tier === 4);
-  else if (stakes === "conf" || stakes === "rivalry") pool = others.filter((x) => x.conference === own?.conference);
+  else if (stakes === "conf") pool = others.filter((x) => x.conference === own?.conference);
   else pool = others.filter((x) => x.tier === s.school.tier && x.conference !== own?.conference);
   if (stakes === "cfp" && s.school.tier === 1) pool = others.filter((x) => x.tier === 1);
   if (pool.length === 0) pool = others.filter((x) => x.tier === s.school.tier);
@@ -47,7 +59,10 @@ export function setupBigGame(s: GameState, content: ContentBundle, rng: Rng, inj
   if (!season || season.seasonIndex !== s.seasonIndex) return;
   const stakes = pickStakes(s, season.teamWins, rng);
   const own = content.schools.find((x) => x.id === s.school.schoolId);
-  const name = bigGameName(stakes, s.school.tier, own?.conference ?? "", rngInt(rng, 0, 99));
+  const name =
+    stakes === "rivalry"
+      ? rivalryName(s.school.schoolId, rivalOf(s, content).id)
+      : bigGameName(stakes, s.school.tier, own?.conference ?? "", rngInt(rng, 0, 99));
   const opponent = pickOpponent(s, stakes, content, rng);
 
   const role = roleFor(s.overall, s.school.tier);
