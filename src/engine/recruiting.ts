@@ -9,14 +9,14 @@ import { sampleSchoolInTier } from "./schools";
 // sampler — identical (seed, cursor) yields an identical offer set.
 // Signing Day is the career's first real trade: a big program where you will
 // sit, a mid-major where you will rotate, and a small school that will start
-// you on day one. The big offer is a Power Four school, and sometimes a
+// you on day one. The big offer is a Power Four school, and now and then a
 // blueblood takes a flyer.
 export function generateRecruitingOffers(
   state: GameState,
   content: ContentBundle,
   rng: Rng,
 ): SchoolOffer[] {
-  const reach: Tier = rng.next() < 0.35 ? 4 : 3;
+  const reach: Tier = rng.next() < 0.15 ? 4 : 3;
   const tiers: Tier[] = [reach, 2, 1];
   const offers: SchoolOffer[] = [];
   const taken = new Set<string>();

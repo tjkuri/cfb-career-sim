@@ -22,13 +22,24 @@ describe("generateTransferOffers", () => {
     expect(offers[0]!.snapModifier).toBe(1);
   });
 
-  it("always offers a step up, until the top tier", () => {
-    for (const tier of [1, 2, 3] as const) {
-      const offers = generateTransferOffers(stateAt(tier, 62, 400), CONTENT, createRng(`up-${tier}`));
-      expect(offers.some((o) => o.tier === tier + 1)).toBe(true);
-    }
+  it("offers a step up only when it is earned: a starting job or the stock for it", () => {
+    // A backup with a modest stock gets no call from the tier above.
+    const benched = stateAt(2, 62, 100);
+    benched.seasons[0]!.role = "backup";
+    expect(generateTransferOffers(benched, CONTENT, createRng("up-b")).some((o) => o.tier === 3)).toBe(false);
+    // The same player as last season's starter does.
+    const started = stateAt(2, 70, 480);
+    started.seasons[0]!.role = "starter";
+    expect(generateTransferOffers(started, CONTENT, createRng("up-s")).some((o) => o.tier === 3)).toBe(true);
+    // Nobody is above a blueblood.
     const top = generateTransferOffers(stateAt(4, 90, 400), CONTENT, createRng("top"));
     expect(top.every((o) => o.tier === 4)).toBe(true);
+  });
+
+  it("keeps a blueblood's call for real draft stock, even for a starter", () => {
+    const s = stateAt(3, 70, 480);
+    s.seasons[0]!.role = "starter";
+    expect(generateTransferOffers(s, CONTENT, createRng("bb")).some((o) => o.tier === 4)).toBe(false);
   });
 
   it("offers a jump of two tiers only once draft stock has the big programs calling", () => {
