@@ -22,16 +22,16 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         label: "Let the screenshot ride",
         probability: 0.7,
         positiveOutcome: {
-          description: "It gets a laugh in the building and dies by Sunday. The coordinator remembers it anyway.",
+          description: "It gets a laugh in the building and dies by Sunday. You play the next month like a man with something to prove.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
           description: "It makes a recruiting Twitter account. The coordinator does not think it is funny.",
           effects: [
-            { kind: "character", amount: -13 },
+            { kind: "character", amount: -12 },
           ],
         },
       },
@@ -52,23 +52,23 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     phase: "offseason",
     weight: 3,
     title: "Family Business",
-    description: "Your cousin wants to manage your NIL money. He has a business card now. He is very confident.",
+    description: "Your cousin wants to manage your NIL. He has no experience, which he says means he is not afraid to hunt whales. He has business cards now.",
     options: [
       {
         id: "let-him-handle-it",
         label: "Let him handle it",
-        probability: 0.6,
+        probability: 0.5,
         positiveOutcome: {
-          description: "He actually gets you a decent deal. You stop thinking about it, which is the point.",
+          description: "He lands a whale: a car dealership, a real number, and a private trainer paid for out of it.",
           effects: [
-            { kind: "character", amount: -4 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
+            { kind: "moment", item: "Let your cousin hunt whales, and he landed one", icon: "money" },
           ],
         },
         negativeOutcome: {
           description: "Half the money is gone into something he calls 'an opportunity.' Family dinner is tense for a while.",
           effects: [
-            { kind: "character", amount: -23 },
+            { kind: "character", amount: -15 },
           ],
         },
       },
@@ -98,15 +98,15 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "Compliance never calls. You quit the summer job and train full time instead.",
           effects: [
-            { kind: "character", amount: -5 },
-            { kind: "overall", timing: "immediate", amount: 2 },
-            { kind: "moment", item: "Cashed an NIL check he probably should not have", icon: "money" },
+            { kind: "character", amount: -4 },
+            { kind: "overall", timing: "immediate", amount: 3 },
+            { kind: "moment", item: "Cashed an NIL check nobody read first", icon: "money" },
           ],
         },
         negativeOutcome: {
           description: "Compliance calls. The posts come down, the money goes back, and the meeting is ninety minutes long.",
           effects: [
-            { kind: "character", amount: -32 },
+            { kind: "character", amount: -22 },
           ],
         },
       },
@@ -171,19 +171,18 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
       {
         id: "cut-the-line",
         label: "Cut to the front",
-        probability: 0.5,
+        probability: 0.6,
         positiveOutcome: {
-          description: "Nobody says anything to your face. Somebody films it anyway.",
+          description: "Nobody says anything to your face. You eat, nap, and have the best lift of your week.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "snaps", amount: 15 },
+            { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
           description: "A walk-on's dad posts the clip with a caption about 'entitled scholarship guys.' It travels.",
           effects: [
             { kind: "character", amount: -5 },
-            { kind: "snaps", amount: 15 },
           ],
         },
       },
@@ -251,6 +250,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You make it back before the bed check and it becomes a story you tell for years.",
           effects: [
             { kind: "character", amount: -4 },
+            { kind: "moment", item: "Snuck out on bowl week and never got caught", icon: "sun" },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
@@ -312,7 +312,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     id: "catfished",
     kind: "random",
     phase: "conference",
-    weight: 2,
+    weight: 1,
     title: "You Got Catfished",
     description: "That 'booster's daughter' in your DMs was a rival fan running a bit. It's all over social media.",
     options: [
@@ -354,13 +354,13 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You stop taking calls from anyone who tells you something you did not want to hear.",
           effects: [
-            { kind: "character", amount: -8 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "character", amount: -6 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
           description: "One of them gets into it with a strength coach in the parking lot, wearing your jersey.",
-          effects: [{ kind: "character", amount: -10 }],
+          effects: [{ kind: "character", amount: -12 }],
         },
       },
       {
@@ -380,14 +380,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Your mother feeds you and nobody asks you for anything. You come back lighter and further behind.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "immediate", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
         negativeOutcome: {
           description: "You go home, and half of them are there when you arrive.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -409,13 +409,13 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "Every position coach in the building suddenly remembers your name. The rumor cools off before it starts.",
           effects: [
-            { kind: "character", amount: -8 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "character", amount: -6 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "The staff calls the bluff and quietly starts recruiting your replacement anyway.",
-          effects: [{ kind: "character", amount: -20 }],
+          effects: [{ kind: "character", amount: -15 }],
         },
       },
       {
@@ -435,14 +435,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You spend the week proving you are not going anywhere — in meetings, not in the weight room.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "immediate", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
         negativeOutcome: {
           description: "You shut it down, and the staff quietly wonders why you needed to.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -464,13 +464,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "The clip is everywhere by halftime. He puts you back in anyway, mostly to prove a point.",
           effects: [
-            { kind: "character", amount: -9 },
+            { kind: "character", amount: -6 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "snaps", amount: 15 },
           ],
         },
         negativeOutcome: {
           description: "The clip is everywhere by halftime, and he leaves you on the bench to make a different point.",
-          effects: [{ kind: "character", amount: -10 }],
+          effects: [{ kind: "character", amount: -12 }],
         },
       },
       {
@@ -574,8 +575,8 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You get the last word in the room, and somehow it lands — they pencil you in for a bigger role next fall, mostly to see if you can back it up.",
           effects: [
-            { kind: "character", amount: -9 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "character", amount: -6 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
@@ -599,15 +600,15 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "They hand you a list. It is a real list, with a real winter of extra work attached to it.",
           effects: [
-            { kind: "character", amount: 9 },
-            { kind: "overall", timing: "immediate", amount: -3 },
+            { kind: "character", amount: 8 },
+            { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
         negativeOutcome: {
           description: "They hand you the list. You start the winter behind anyway.",
           effects: [
             { kind: "character", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: -3 },
+            { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
       },
@@ -621,14 +622,14 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
     kind: "random",
     phase: "conference",
     weight: 2,
-    title: "Speeding Ticket in Georgia",
-    description: "Blue lights on a two-lane road outside Athens. You were doing 96.",
+    title: "Blue Lights",
+    description: "Blue lights on a two-lane road an hour outside campus. You were doing 96.",
     options: [
       {
         id: "cooperate",
         label: "Yes sir, no sir",
         probability: 0.85,
-        positiveOutcome: { description: "A warning and a story.", effects: [{ kind: "moment", item: "Talked his way out of a speeding ticket", icon: "car" }] },
+        positiveOutcome: { description: "A warning and a story.", effects: [{ kind: "moment", item: "Talked a trooper out of a speeding ticket", icon: "car" }] },
         negativeOutcome: { description: "Coach finds out. Two-game suspension.", effects: [{ kind: "suspension", phases: 2 }, { kind: "character", amount: -4 }] },
       },
     ],

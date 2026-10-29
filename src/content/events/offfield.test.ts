@@ -29,6 +29,9 @@ describe("off-field band 1 — ungated temptations", () => {
   // in this stage exempt them. Converting them is a listed tuning lever
   // (spec section 8.1, lever 5).
   const INHERITED = new Set(["catfished", "speeding-georgia"]);
+  // A straight gamble rather than a temptation: trusting family is not
+  // corrosive, it is a bet that the cousin is as good as he says.
+  const GAMBLES = new Set(["offfield-money-manager"]);
 
   it("is ungated, random, and weight 3", () => {
     for (const ev of band1) {
@@ -51,7 +54,7 @@ describe("off-field band 1 — ungated temptations", () => {
 
   it("charges character on the branch you take, not only on failure", () => {
     for (const ev of band1) {
-      if (INHERITED.has(ev.id)) continue;
+      if (INHERITED.has(ev.id) || GAMBLES.has(ev.id)) continue;
       const chosenCost = ev.options.some((o) => {
         const pos = characterSum(o.positiveOutcome);
         const neg = o.negativeOutcome ? characterSum(o.negativeOutcome) : pos;
@@ -78,7 +81,7 @@ describe("off-field band 1 — ungated temptations", () => {
 
   it("never leaves the corrosive option strictly dominated", () => {
     for (const ev of band1) {
-      if (INHERITED.has(ev.id)) continue;
+      if (INHERITED.has(ev.id) || GAMBLES.has(ev.id)) continue;
       const corrosive = ev.options.find((o) => characterSum(o.positiveOutcome) <= -4);
       expect(corrosive, `${ev.id} has no corrosive option`).toBeDefined();
       const tradeExists = paysSomething(corrosive!.positiveOutcome);

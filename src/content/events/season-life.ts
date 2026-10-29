@@ -84,7 +84,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "You come back lighter than you left. Some of that is rest and some of it is nobody watching.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 3 }],
         },
         negativeOutcome: {
           description: "Six weeks with people who still want to talk about your senior year of high school.",
@@ -120,11 +120,12 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
       {
         id: "lean-in",
         label: "Put the graphic up",
-        probability: 0.45,
+        probability: 0.5,
         positiveOutcome: {
           description: "You post it in July and then go play like a man who belongs on the list.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "character", amount: 3 },
           ],
         },
         negativeOutcome: {
@@ -153,7 +154,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You spend the second half walking a true freshman through his first real snaps. The staff notices who did that.",
           effects: [
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 4 },
             { kind: "snaps", amount: -15 },
           ],
         },
@@ -211,11 +212,11 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
       {
         id: "press-for-the-moment",
         label: "Go get the moment",
-        probability: 0.45,
+        probability: 0.5,
         positiveOutcome: {
           description: "You make the play they cut into the intro package for the rest of the season.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Made the primetime play they replayed all year", icon: "tv" },
           ],
         },

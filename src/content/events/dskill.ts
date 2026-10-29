@@ -169,7 +169,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You beat the double-team release and drop the returner before he sets his feet.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 6 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {

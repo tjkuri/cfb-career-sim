@@ -165,14 +165,14 @@ export const K_EVENTS: GameEvent[] = [
       {
         id: "run-the-fake",
         label: "Sell it and go get the first down",
-        probability: 0.5,
+        probability: 0.55,
         positiveOutcome: {
           description:
             "The edge is wide open and you tuck it upfield without much grace but plenty of urgency. Two drives later you're back out for the real thing, and that one goes through clean too.",
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 1 },
             { kind: "stat", stat: "points", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Converted a fake field goal for a first down", icon: "football" },
           ],
         },
@@ -343,7 +343,7 @@ export const K_EVENTS: GameEvent[] = [
       {
         id: "trot-out-for-the-walk-off",
         label: "Take the win",
-        probability: 0.5,
+        probability: 0.6,
         positiveOutcome: {
           description:
             "It's good, and the stadium erupts, half in celebration and half in silence. Somebody's going to be replaying this kick at your wedding someday.",
@@ -393,7 +393,7 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
             { kind: "stat", stat: "points", amount: 9 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Made a 57-yard field goal", icon: "target" },
           ],
         },

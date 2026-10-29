@@ -574,7 +574,7 @@ describe("schoolTraits validation", () => {
     const onField = CONTENT.events.filter((e) => ["nonconf", "conference", "postseason"].includes(e.phase));
     const offenders = onField.filter((e) => awardsProduction(e) && !e.conditions?.requiresPlaying).map((e) => e.id);
     expect(offenders).toEqual([]);
-    expect(onField.filter(awardsProduction).length).toBe(54);
+    expect(onField.filter(awardsProduction).length).toBe(53);
   });
 
   // DECISION 049. The four draft-prospect cards told a 60-overall sophomore his

@@ -5,7 +5,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
     id: "gym-grind",
     kind: "random",
     phase: "offseason",
-    weight: 4,
+    weight: 2,
     title: "New Workout Regimen",
     description: "Your trainer wants you putting in extra hours. Risky, but it could pay off.",
     options: [
@@ -131,7 +131,8 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You tell them the standard is the standard, and then you go play like you meant it.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "character", amount: 2 },
             { kind: "moment", item: "Told the cameras the standard is the standard", icon: "mic" },
           ],
         },
@@ -177,7 +178,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You put two reps on tape that end up in every report written about this team that spring.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Put a practice rep on every scout's report", icon: "clipboard" },
           ],
         },
@@ -235,7 +236,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "You find out exactly what you are worth on the open market, and it is more than you thought.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "Word gets back before the bowl does. You practice bowl week with a staff that has stopped investing in you.",
@@ -264,7 +265,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
           description: "You are up before he is out of his chair. Nobody forgets who did that, least of all him.",
           effects: [
             { kind: "character", amount: 2 },
-            { kind: "moment", item: "First to his feet when a teammate took the award", icon: "trophy" },
+            { kind: "moment", item: "First up cheering when a teammate took the award", icon: "trophy" },
           ],
         },
         negativeOutcome: {

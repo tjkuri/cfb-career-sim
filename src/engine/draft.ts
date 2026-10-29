@@ -45,9 +45,9 @@ export function eligibleTiers(state: GameState): Tier[] {
 }
 
 // Below this, nobody calls your name.
-export const UNDRAFTED_FLOOR = 55;
-// One round of stock. Round 1 needs 55 + 6 * 6 = 91.
-export const ROUND_BAND = 6;
+export const UNDRAFTED_FLOOR = 57;
+// One round of stock. Round 1 needs 57 + 6 * 6.2 = 94.2.
+export const ROUND_BAND = 6.2;
 
 export function projectedRound(stock: number): number {
   if (stock < UNDRAFTED_FLOOR) return 0;

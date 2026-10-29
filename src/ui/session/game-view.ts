@@ -4,7 +4,9 @@ import {
   getDecision,
   projectedRound,
   roleFor,
+  ROUND_BAND,
   TIER_NAMES,
+  UNDRAFTED_FLOOR,
   type DecisionOption,
   type Effect,
   type GameState,
@@ -295,8 +297,9 @@ export function seasonRecap(before: GameState, after: GameState): SeasonRecap | 
  * shows as a climb.
  */
 export function bigBoardRank(stock: number): number {
-  if (stock >= 55) return Math.max(1, Math.round(((91 - stock) / 6) * 32 + 16));
-  return Math.round(224 + (55 - stock) * 12);
+  const roundOne = UNDRAFTED_FLOOR + 6 * ROUND_BAND;
+  if (stock >= UNDRAFTED_FLOOR) return Math.max(1, Math.round(((roundOne - stock) / ROUND_BAND) * 32 + 16));
+  return Math.round(224 + (UNDRAFTED_FLOOR - stock) * 12);
 }
 
 export function roundLabel(round: number): string {

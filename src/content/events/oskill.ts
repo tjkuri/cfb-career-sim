@@ -287,10 +287,10 @@ export const OSKILL_EVENTS: GameEvent[] = [
       {
         id: "lobby",
         label: "Lobby for more touches",
-        probability: 0.4,
+        probability: 0.5,
         positiveOutcome: {
           description: "The staff relents and dials up a few designed touches your way.",
-          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 70 }],
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 70 }, { kind: "overall", timing: "immediate", amount: 1 }],
         },
         negativeOutcome: {
           description: "It reads as sulking, and you lose trust in the room.",

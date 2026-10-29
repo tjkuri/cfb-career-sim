@@ -12,7 +12,7 @@ export const POSTSEASON: PostseasonConfig = {
   tierExposure: { 1: 0.06, 2: 0.3, 3: 0.75, 4: 1 },
   positionMultiplier: { QB: 1.0, OSKILL: 0.8, DL: 0.4, DSKILL: 0.4, OL: 0.15, K: 0.05 },
   prestige: [
-    { id: "heisman", bands: [{ min: 94, prob: 0.55 }, { min: 90, prob: 0.3 }, { min: 86, prob: 0.1 }], teamSuccessBoost: 0.6 },
+    { id: "heisman", bands: [{ min: 94, prob: 0.45 }, { min: 90, prob: 0.22 }, { min: 86, prob: 0.07 }], teamSuccessBoost: 0.6 },
     { id: "allAmerican", bands: [{ min: 92, prob: 0.7 }, { min: 88, prob: 0.45 }, { min: 84, prob: 0.25 }, { min: 80, prob: 0.1 }], teamSuccessBoost: 0.3 },
   ],
   // Season production gates, placed for a full-time starter.

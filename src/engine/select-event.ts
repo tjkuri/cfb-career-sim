@@ -63,8 +63,14 @@ export function selectRandomEvent(
     (e) => e.kind === "random" && !fired.has(e.id) && eventMatches(state, e, content, phases),
   );
   if (pool.length === 0) return null;
-  return rngWeightedPick(rng, pool, (e) => e.weight);
+  return rngWeightedPick(rng, pool, (e) => e.weight * (e.conditions?.position ? POSITION_CARD_BOOST : 1));
 }
+
+// Position cards are the football; off-field cards are seasoning. Without
+// this, the ~30 shared off-field cards outweigh a position's ~10 cards three
+// to one, and the same handful (the cousin, the group chat) turns up in most
+// careers whatever you play.
+export const POSITION_CARD_BOOST = 3;
 
 export function selectFixedEvent(state: GameState, content: ContentBundle): GameEvent | null {
   for (const ev of content.events) {
