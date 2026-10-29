@@ -133,6 +133,19 @@ export const OSKILL_EVENTS: GameEvent[] = [
           effects: [{ kind: "stat", stat: "scrimmageYards", amount: 10 }],
         },
       },
+      {
+        id: "ask-for-the-next-one",
+        label: "Tell the coordinator to come right back to you",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "He does, two plays later, and you take it the distance. Nobody remembers the drop.",
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 90 }, { kind: "stat", stat: "totalTds", amount: 1 }, { kind: "overall", timing: "immediate", amount: 1 }, { kind: "moment", item: "Asked for the ball after a drop and scored on it", icon: "football" }],
+        },
+        negativeOutcome: {
+          description: "He comes back to you and you drop that one too. Your number goes quiet for a month.",
+          effects: [{ kind: "character", amount: -2 }, { kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
     ],
   },
   {
@@ -368,6 +381,85 @@ export const OSKILL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "The angle closes late and you're run down from behind at the ten.",
           effects: [{ kind: "stat", stat: "scrimmageYards", amount: 70 }],
+        },
+      },
+      {
+        id: "cut-it-back",
+        label: "Cut it back across the whole defense",
+        probability: 0.45,
+        positiveOutcome: {
+          description: "You reverse field, make three men miss, and score on the run of the season.",
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 80 }, { kind: "stat", stat: "totalTds", amount: 1 }, { kind: "overall", timing: "immediate", amount: 2 }, { kind: "moment", item: "Cut back across the whole defense for a touchdown", icon: "zap" }],
+        },
+        negativeOutcome: {
+          description: "You reverse field into a crowd and give back twenty of the yards you had.",
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 15 }, { kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "oskill-speed-coach",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["OSKILL"] },
+    title: "The Speed Coach",
+    description: "A track coach thinks he can take a tenth off your forty. It means tearing your stride down and building it back from the first step.",
+    options: [
+      {
+        id: "rebuild-stride",
+        label: "Rebuild the stride",
+        probability: 0.55,
+        positiveOutcome: {
+          description: "A tenth, exactly as promised. Angles that used to close on you just do not anymore.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Took a tenth off your forty in one summer", icon: "wind" }],
+        },
+        negativeOutcome: {
+          description: "New mechanics, old hamstrings. One of them gives on a timed forty in July.",
+          effects: [{ kind: "injury", injuryType: "hamstring" }],
+        },
+      },
+      {
+        id: "keep-stride",
+        label: "Keep your stride and just get stronger",
+        probability: 1,
+        positiveOutcome: {
+          description: "You look like the same player in camp, which is fine, because the same player was pretty good.",
+          effects: [{ kind: "character", amount: 1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "oskill-return-audition",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["OSKILL"], minClass: "SO" },
+    title: "Return Man Audition",
+    description: "The staff needs a punt returner and your name came up first. It is extra reps, extra film, and the most dangerous job on the field.",
+    options: [
+      {
+        id: "take-the-job",
+        label: "Take the job",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "You win it in camp with two returns nobody else could have made.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "moment", item: "Won the punt return job in camp", icon: "zap" }],
+        },
+        negativeOutcome: {
+          description: "Fourth practice, a gunner arrives at the same moment as the ball.",
+          effects: [{ kind: "injury", injuryType: "ankle" }],
+        },
+      },
+      {
+        id: "save-your-legs",
+        label: "Keep your legs for offense",
+        probability: 1,
+        positiveOutcome: {
+          description: "Somebody else takes the hits. You take the handoffs.",
+          effects: [],
         },
       },
     ],

@@ -59,6 +59,15 @@ export const OL_EVENTS: GameEvent[] = [
           effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
         },
       },
+      {
+        id: "keep-your-technique",
+        label: "Keep doing what got you here",
+        probability: 1,
+        positiveOutcome: {
+          description: "You nod through the install and keep your old stance. It works well enough, and the coach notices you did not try.",
+          effects: [{ kind: "character", amount: -1 }],
+        },
+      },
     ],
   },
   {
@@ -129,6 +138,15 @@ export const OL_EVENTS: GameEvent[] = [
             { kind: "stat", stat: "sacksAllowed", amount: 2 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
+        },
+      },
+      {
+        id: "sit-on-the-count",
+        label: "Get off a half-beat late all game",
+        probability: 1,
+        positiveOutcome: {
+          description: "No more flags. No more push, either, but nobody is screaming in your headset.",
+          effects: [{ kind: "stat", stat: "pancakes", amount: 1 }, { kind: "stat", stat: "sacksAllowed", amount: 1 }],
         },
       },
     ],
@@ -377,6 +395,72 @@ export const OL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You stay in your lane and post a clean, steady tape at the position you know.",
           effects: [{ kind: "stat", stat: "pancakes", amount: 2 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "ol-left-tackle",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["OL"], minClass: "SO" },
+    title: "Moving to Left Tackle",
+    description: "The staff wants you outside at left tackle, the position that gets paid on draft night. It also gets the other team's best pass rusher every snap.",
+    options: [
+      {
+        id: "move-outside",
+        label: "Move to left tackle",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "Your feet were always better than a guard's. By the opener you are protecting the quarterback's blind side like you were born there.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Moved to left tackle and stuck there", icon: "shield" }],
+        },
+        negativeOutcome: {
+          description: "Speed rushers eat you alive in camp, and the move costs you a month of confidence.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+        },
+      },
+      {
+        id: "stay-inside",
+        label: "Stay at guard",
+        probability: 1,
+        positiveOutcome: {
+          description: "The line stays together, and the other four appreciate not having to learn a new neighbor.",
+          effects: [{ kind: "character", amount: 1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "ol-pro-camp",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["OL"] },
+    title: "Summer With the Pros",
+    description: "A retired All-Pro lineman runs a three-week private camp. Invite only, brutal, and right in the middle of team workouts.",
+    options: [
+      {
+        id: "go-to-camp",
+        label: "Go to the camp",
+        probability: 0.6,
+        positiveOutcome: {
+          description: "Three weeks with men who did it for twelve years. Your hands are faster than they have ever been.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+        },
+        negativeOutcome: {
+          description: "You come back with turf toe and a lot of good advice you cannot use yet.",
+          effects: [{ kind: "injury", injuryType: "turfToe" }],
+        },
+      },
+      {
+        id: "stay-with-the-line",
+        label: "Stay with your own line",
+        probability: 1,
+        positiveOutcome: {
+          description: "You miss the camp. The other four noticed who stayed.",
+          effects: [{ kind: "character", amount: 2 }],
         },
       },
     ],

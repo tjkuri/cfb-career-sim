@@ -150,6 +150,15 @@ export const K_EVENTS: GameEvent[] = [
           effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
+      {
+        id: "burn-the-timeout",
+        label: "Ask for a timeout to reset",
+        probability: 1,
+        positiveOutcome: {
+          description: "You burn the team's last timeout to reset your steps. It goes through, and the coach mentions the timeout twice.",
+          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }, { kind: "stat", stat: "points", amount: 3 }, { kind: "character", amount: -1 }],
+        },
+      },
     ],
   },
   {
@@ -414,6 +423,72 @@ export const K_EVENTS: GameEvent[] = [
             { kind: "stat", stat: "fieldGoals", amount: 1 },
             { kind: "stat", stat: "points", amount: 3 },
           ],
+        },
+      },
+    ],
+  },
+  {
+    id: "k-leg-day",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["K"] },
+    title: "Leg Day",
+    description: "The strength coach wants you squatting with the linemen. Every kicker in the country swears it ruins your leg.",
+    options: [
+      {
+        id: "squat-with-linemen",
+        label: "Squat with the linemen",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "The old kickers were wrong. Your range grows five yards and the linemen adopt you as one of their own.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Added five yards of range in the weight room", icon: "target" }],
+        },
+        negativeOutcome: {
+          description: "The kickers were right. Your hamstring tells you so in June.",
+          effects: [{ kind: "injury", injuryType: "hamstring" }],
+        },
+      },
+      {
+        id: "kicker-work",
+        label: "Stick to kicker work",
+        probability: 1,
+        positiveOutcome: {
+          description: "Bands, mobility, and two hundred kicks a week. Same leg, same range.",
+          effects: [],
+        },
+      },
+    ],
+  },
+  {
+    id: "k-viral-camp",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["K"], minClass: "SO" },
+    title: "The Kicking Influencer",
+    description: "A kicking coach with a big online following wants you at his camp, and on his feed, all summer.",
+    options: [
+      {
+        id: "go-viral",
+        label: "Go to the camp and let him film you",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "His drills actually work, and a 60-yarder you hit in July does a million views.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 2 }, { kind: "moment", item: "Went viral at a kicking camp", icon: "video" }],
+        },
+        negativeOutcome: {
+          description: "The drills are for the camera. You come back with followers and a hook you did not have in May.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -1 }],
+        },
+      },
+      {
+        id: "train-with-holder",
+        label: "Train quietly with your holder",
+        probability: 1,
+        positiveOutcome: {
+          description: "You and your holder get the snap-hold-kick down to the hundredth of a second.",
+          effects: [{ kind: "character", amount: 1 }],
         },
       },
     ],

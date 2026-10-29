@@ -23,6 +23,19 @@ export const QB_EVENTS: GameEvent[] = [
         },
         negativeOutcome: { description: "You're gassed for practice.", effects: [{ kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 } ] },
       },
+      {
+        id: "take-the-receivers-out",
+        label: "Take the receivers out for wings instead",
+        probability: 0.7,
+        positiveOutcome: {
+          description: "Chemistry is a real thing. They run every route a little harder for you on Saturday.",
+          effects: [{ kind: "character", amount: 2 }, { kind: "stat", stat: "passYards", amount: 80 }],
+        },
+        negativeOutcome: {
+          description: "Wings turn into a long night, and Thursday practice is slow for all five of you.",
+          effects: [{ kind: "character", amount: -2 }, { kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
+        },
+      },
     ],
   },
   {
@@ -49,6 +62,15 @@ export const QB_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Nerves. Two picks and a rough night.",
           effects: [{ kind: "stat", stat: "ints", amount: 2 }, { kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
+      {
+        id: "manage-the-game",
+        label: "Take what they give you",
+        probability: 1,
+        positiveOutcome: {
+          description: "Short throws, no turnovers, and a win nobody will put on a highlight reel.",
+          effects: [{ kind: "stat", stat: "passYards", amount: 180 }, { kind: "stat", stat: "passTds", amount: 1 }],
         },
       },
     ],
@@ -372,6 +394,72 @@ export const QB_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "No tape, no risk. The scouts go off the season instead.",
           effects: [],
+        },
+      },
+    ],
+  },
+  {
+    id: "qb-guru",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["QB"] },
+    title: "The Quarterback Guru",
+    description: "A private QB coach in California charges more per hour than your scholarship is worth, and swears he can rebuild your release in six weeks.",
+    options: [
+      {
+        id: "rebuild-release",
+        label: "Fly out and rebuild the release",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "Quicker, higher, tighter. By August the ball is out of your hand before the rush gets home.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Rebuilt your throwing motion in one summer", icon: "zap" }],
+        },
+        negativeOutcome: {
+          description: "Half a new motion is worse than either one. Under pressure, the old hitch keeps coming back.",
+          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+        },
+      },
+      {
+        id: "throw-at-home",
+        label: "Stay home and throw with your receivers",
+        probability: 1,
+        positiveOutcome: {
+          description: "Same motion, same timing, and four receivers who know exactly where you want the ball.",
+          effects: [{ kind: "character", amount: 1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "qb-seven-on-seven",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["QB"], minClass: "SO" },
+    title: "Seven-on-Seven Summer",
+    description: "The receivers want to run 7-on-7 every morning all summer. Your arm has opinions about every morning.",
+    options: [
+      {
+        id: "every-morning",
+        label: "Run it every morning",
+        probability: 0.75,
+        positiveOutcome: {
+          description: "Two hundred throws a week to the guys who will catch them in the fall. The timing is telepathic by August.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+        },
+        negativeOutcome: {
+          description: "Somewhere around week five your shoulder starts filing complaints.",
+          effects: [{ kind: "injury", injuryType: "shoulder" }],
+        },
+      },
+      {
+        id: "twice-a-week",
+        label: "Twice a week, and save your arm",
+        probability: 1,
+        positiveOutcome: {
+          description: "You throw enough to stay sharp and not one rep more. The receivers grumble, then get over it.",
+          effects: [{ kind: "character", amount: 1 }],
         },
       },
     ],

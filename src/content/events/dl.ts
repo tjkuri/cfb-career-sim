@@ -101,6 +101,15 @@ export const DL_EVENTS: GameEvent[] = [
           effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
+      {
+        id: "rest-the-starters",
+        label: "Ask the coach to get the backups in early",
+        probability: 1,
+        positiveOutcome: {
+          description: "Nobody gets hurt in a game that means nothing, and the staff likes that you were the one who asked.",
+          effects: [{ kind: "character", amount: 2 }, { kind: "snaps", amount: -20 }],
+        },
+      },
     ],
   },
   {
@@ -381,6 +390,76 @@ export const DL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You let the season speak for itself. The sacks are already on film.",
           effects: [{ kind: "stat", stat: "sacks", amount: 1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "dl-spin-move",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["DL"] },
+    title: "A New Move",
+    description: "A pass-rush specialist wants to give you a spin move. When it works it is unblockable. When it does not, it is on the opponent's highlight reel.",
+    options: [
+      {
+        id: "add-the-spin",
+        label: "Add the spin",
+        probability: 0.45,
+        positiveOutcome: {
+          description: "First padded practice, you spin past the starting left tackle and the whole defense loses its mind.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Added a spin move nobody could block", icon: "zap" }],
+        },
+        negativeOutcome: {
+          description: "You spin, the tackle waits, and you end up facing your own end zone on film.",
+          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+        },
+      },
+      {
+        id: "perfect-the-bull",
+        label: "Perfect the bull rush you have",
+        probability: 0.8,
+        positiveOutcome: {
+          description: "Nothing new, just more of it. Tackles are going backwards faster than last year.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+        },
+        negativeOutcome: {
+          description: "A summer of the same thing, and it shows: you are exactly who you were.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "dl-move-inside",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["DL"], minClass: "SO" },
+    title: "Moving Inside",
+    description: "The staff wants twenty more pounds on you and a move to the three-technique. More double teams, fewer sacks, and a lot more respect from scouts who like big men.",
+    options: [
+      {
+        id: "put-on-the-weight",
+        label: "Put on the weight and move inside",
+        probability: 0.55,
+        positiveOutcome: {
+          description: "The weight stays fast. You collapse the pocket from the middle all summer.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "moment", item: "Moved inside and owned the middle", icon: "shield" }],
+        },
+        negativeOutcome: {
+          description: "The weight comes on, the quickness goes, and camp is a long grind.",
+          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+        },
+      },
+      {
+        id: "stay-on-the-edge",
+        label: "Stay on the edge",
+        probability: 1,
+        positiveOutcome: {
+          description: "You tell them you are an edge rusher. They write it down.",
+          effects: [{ kind: "character", amount: -1 }],
         },
       },
     ],

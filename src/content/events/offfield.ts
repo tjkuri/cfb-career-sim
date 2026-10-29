@@ -632,6 +632,19 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
         positiveOutcome: { description: "A warning and a story.", effects: [{ kind: "moment", item: "Talked a trooper out of a speeding ticket", icon: "car" }] },
         negativeOutcome: { description: "Coach finds out. Two-game suspension.", effects: [{ kind: "suspension", phases: 2 }, { kind: "character", amount: -4 }] },
       },
+      {
+        id: "tell-him-who-you-are",
+        label: "Tell him who you are",
+        probability: 0.5,
+        positiveOutcome: {
+          description: "He is a season-ticket holder. You sign his hat, take a selfie for his kid, and drive off with a warning.",
+          effects: [{ kind: "character", amount: 2 }, { kind: "moment", item: "Signed a trooper's hat instead of a ticket", icon: "car" }],
+        },
+        negativeOutcome: {
+          description: "He is not a fan. The body-cam clip is online by morning, and so is the two-game suspension.",
+          effects: [{ kind: "suspension", phases: 2 }, { kind: "character", amount: -8 }],
+        },
+      },
     ],
   },
 ];

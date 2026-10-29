@@ -66,6 +66,19 @@ export const MILESTONE_EVENTS: GameEvent[] = [
           effects: [{ kind: "moment", item: "Senior Day did not go to script", icon: "star" }],
         },
       },
+      {
+        id: "business-trip",
+        label: "Keep your helmet on and play it like any Saturday",
+        probability: 0.9,
+        positiveOutcome: {
+          description: "You jog through the ceremony and play the cleanest, most businesslike game of your career.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+        },
+        negativeOutcome: {
+          description: "You keep it all bottled up until the second quarter, and then it all comes out at once.",
+          effects: [],
+        },
+      },
     ],
   },
 ];

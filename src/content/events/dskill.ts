@@ -149,6 +149,19 @@ export const DSKILL_EVENTS: GameEvent[] = [
           ],
         },
       },
+      {
+        id: "laugh-it-off",
+        label: "Laugh at yourself in front of the room",
+        probability: 0.6,
+        positiveOutcome: {
+          description: "The room laughs with you, and by Wednesday the clip is a running joke instead of a verdict.",
+          effects: [{ kind: "character", amount: 2 }],
+        },
+        negativeOutcome: {
+          description: "The coordinator does not laugh, and pauses the clip until you stop.",
+          effects: [{ kind: "character", amount: -2 }],
+        },
+      },
     ],
   },
   {
@@ -398,6 +411,72 @@ export const DSKILL_EVENTS: GameEvent[] = [
             { kind: "stat", stat: "tackles", amount: 3 },
             { kind: "character", amount: 1 },
           ],
+        },
+      },
+    ],
+  },
+  {
+    id: "dskill-safety-or-corner",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["DSKILL"], minClass: "SO" },
+    title: "Safety or Corner",
+    description: "The staff thinks you see the field like a safety. You have played corner since you were nine.",
+    options: [
+      {
+        id: "move-to-safety",
+        label: "Move to safety",
+        probability: 0.55,
+        positiveOutcome: {
+          description: "From the middle of the field you see everything first. You are the one calling the coverage by August.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Moved to safety and ran the defense", icon: "eye" }],
+        },
+        negativeOutcome: {
+          description: "Too much field, too many reads. You are a step late to everything in camp.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+        },
+      },
+      {
+        id: "stay-at-corner",
+        label: "Stay at corner",
+        probability: 1,
+        positiveOutcome: {
+          description: "You stay on an island where you are comfortable, and the staff respects the answer.",
+          effects: [{ kind: "character", amount: 1 }],
+        },
+      },
+    ],
+  },
+  {
+    id: "dskill-ballhawk-camp",
+    kind: "random",
+    phase: "offseason",
+    weight: 3,
+    conditions: { position: ["DSKILL"] },
+    title: "Ballhawk Camp",
+    description: "A former All-Pro defensive back runs a summer camp across the country. It overlaps with voluntary workouts, which are not voluntary.",
+    options: [
+      {
+        id: "skip-for-camp",
+        label: "Skip workouts and go to the camp",
+        probability: 0.6,
+        positiveOutcome: {
+          description: "You come back with the eyes of a ten-year veteran, and nobody can argue with what you do in camp.",
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: -2 }],
+        },
+        negativeOutcome: {
+          description: "The camp is mostly a highlight video for the instructor, and the staff noticed you were gone.",
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -2 }],
+        },
+      },
+      {
+        id: "stay-for-workouts",
+        label: "Stay for team workouts",
+        probability: 1,
+        positiveOutcome: {
+          description: "You run every conditioning test with the guys who will be on the field with you.",
+          effects: [{ kind: "character", amount: 2 }],
         },
       },
     ],
