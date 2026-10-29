@@ -76,6 +76,14 @@ function play(state: GameState, decision: PendingDecision, optionId: string): { 
   return { next, resolved, recap };
 }
 
+/** The season's last snap gets the broadcast layout: calling it, and watching it. */
+export function isBroadcast(ui: UiState): boolean {
+  if (ui.screen !== "career" || !ui.state) return false;
+  if (ui.resolved) return !!ui.resolved.bigGame?.played;
+  if (ui.recap) return false;
+  return getDecision(ui.state)?.kind === "bigGame";
+}
+
 export function reducer(ui: UiState, action: Action): UiState {
   switch (action.type) {
     case "start": {

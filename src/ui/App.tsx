@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
+import { flushSync } from "react-dom";
 import type { Setup } from "../engine/index";
-import { INITIAL_STATE, isUnplayable, makeSeed, reducer } from "./session/reducer";
+import { INITIAL_STATE, isBroadcast, isUnplayable, makeSeed, reducer } from "./session/reducer";
 import { buildView } from "./session/game-view";
 import { clearCurrent, hydrate, saveCurrent, saveLog } from "./session/storage";
-import type { UiState } from "./session/types";
+import type { Action, UiState } from "./session/types";
 import { CreationScreen } from "./screens/CreationScreen";
 import { CareerScreen } from "./screens/CareerScreen";
 import { SummaryScreen } from "./screens/SummaryScreen";
@@ -32,6 +33,19 @@ export function App() {
   }, [ui.log]);
 
   const view = useMemo(() => (ui.state ? buildView(ui.state) : null), [ui.state]);
+
+  // Moving into or out of the broadcast morphs the layout instead of cutting:
+  // the card grows into the field, the player card folds into the strip.
+  // Browsers without view transitions, and reduced motion, keep the cut.
+  function act(action: Action) {
+    const flips = isBroadcast(ui) !== isBroadcast(reducer(ui, action));
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (flips && !reduce && typeof document.startViewTransition === "function") {
+      document.startViewTransition(() => flushSync(() => dispatch(action)));
+    } else {
+      dispatch(action);
+    }
+  }
 
   function start(setup: Setup) {
     dispatch({ type: "start", setup, seed });
@@ -72,8 +86,8 @@ export function App() {
           view={view}
           resolved={ui.resolved}
           recap={ui.recap}
-          onChoose={(optionId) => dispatch({ type: "choose", optionId })}
-          onContinue={() => dispatch({ type: "continue" })}
+          onChoose={(optionId) => act({ type: "choose", optionId })}
+          onContinue={() => act({ type: "continue" })}
         />
       )}
 

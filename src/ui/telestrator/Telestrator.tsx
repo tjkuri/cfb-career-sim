@@ -10,9 +10,8 @@ interface Props {
   play: Play;
   spot: Spot;
   t: number;
-  /** After the snap: ink the play, ring the stop, caption the result. */
+  /** After the snap: ink the play and ring the stop. */
   live: boolean;
-  won?: boolean;
   /** Phone framing: a narrower canvas, zoomed toward your player. */
   tight?: boolean;
   /** Pre-snap only: the defense's alignment as a plain-language label. */
@@ -48,7 +47,7 @@ function camera(G: number, tight: boolean, focusX: number, kick: boolean): { W: 
 
 const f1 = (n: number) => n.toFixed(1);
 
-export function Telestrator({ play, spot, t, live, won, tight = false, ariaLabel }: Props) {
+export function Telestrator({ play, spot, t, live, tight = false, ariaLabel }: Props) {
   const G = spot.yardsToGoal;
   const you = play.movers.find((m) => m.id === play.you)!;
   const { W, H, P } = camera(G, tight, at(you.path, 0)[0], spot.side === "kick");
@@ -173,29 +172,14 @@ export function Telestrator({ play, spot, t, live, won, tight = false, ariaLabel
   const [sx, sy, sc] = P(bx, by);
   const [ax, ay] = P(bx, by, bz);
 
-  let caption: ReactElement | null = null;
-  if (live && t >= 1) {
-    // On a kick, between the line and the posts; otherwise above where the play ended.
-    const anchor = play.flags ? [MID, G * 0.5, 0] : [...at(play.movers.find((m) => m.id === play.carrier)!.path, 1), 0];
-    const [cx, cy] = P(anchor[0]!, anchor[1]!, (anchor[2] ?? 0) + 3);
-    const x = Math.max(110, Math.min(W - 110, cx));
-    const y = Math.max(70, Math.min(H - 24, cy));
-    caption = (
-      <g className={`tf-caption ${won ? "tf-cap-good" : "tf-cap-bad"}`} transform={`translate(${f1(x)} ${f1(y)}) skewX(-10)`}>
-        <text textAnchor="middle">{play.label}</text>
-      </g>
-    );
-  }
-
   return (
-    <svg className="telestrator" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel}>
+    <svg className="telestrator" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={live && t >= 1 ? `${ariaLabel} ${play.label}.` : ariaLabel}>
       <rect className="tf-sky" x={0} y={0} width={W} height={H} />
       {field}
       <g className="tf-ink">{ink}</g>
       {bodies}
       <ellipse className="tf-shadow" cx={f1(sx)} cy={f1(sy)} rx={f1(0.35 * sc)} ry={f1(0.14 * sc)} />
       <ellipse className="tf-ball" cx={f1(ax)} cy={f1(ay)} rx={f1(0.36 * sc)} ry={f1(0.22 * sc)} />
-      {caption}
     </svg>
   );
 }

@@ -36,7 +36,7 @@ export interface Play {
   ball: (t: number) => [number, number, number];
   carrier: string; // whose path the telestrator inks
   you: string;
-  label: string; // the broadcast caption when it is over
+  label: string; // what happened, for screen readers when the snap is over
   flags?: { look: number; real: number }; // the kicker's wind: -1 left gust, 0 calm, 1 right gust
 }
 

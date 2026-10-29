@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getDecision, type Setup } from "../../engine/index";
-import { INITIAL_STATE, reducer } from "./reducer";
+import { INITIAL_STATE, isBroadcast, reducer } from "./reducer";
 import type { UiState } from "./types";
 
 const SETUP: Setup = { lastName: "Kuri", jerseyNumber: 7, homeState: "TX", position: "QB" };
@@ -82,5 +82,19 @@ describe("reducer", () => {
       ui = step(ui);
     }
     expect(decisions).toBeLessThan(30);
+  });
+
+  it("is in broadcast mode exactly while the big game is being called and watched", () => {
+    let ui = start("r-8");
+    let guard = 0;
+    while (guard++ < 200 && !(ui.state && !ui.resolved && !ui.recap && getDecision(ui.state)?.kind === "bigGame")) {
+      expect(isBroadcast(ui)).toBe(false);
+      ui = step(ui);
+    }
+    expect(isBroadcast(ui)).toBe(true);
+    ui = step(ui); // call the play
+    expect(isBroadcast(ui)).toBe(!!ui.resolved?.bigGame?.played);
+    ui = reducer(ui, { type: "continue" }); // on to the season recap
+    expect(isBroadcast(ui)).toBe(false);
   });
 });

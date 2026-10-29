@@ -79,6 +79,8 @@ export function CareerScreen({ view, resolved, recap, onChoose, onContinue }: Pr
   const broadcast =
     (showing === "decision" && view.decision?.kind === "bigGame") ||
     (showing === "result" && !!resolved?.bigGame?.played);
+  // Same rule as session/reducer.ts isBroadcast, which App uses to decide
+  // when to animate the switch.
 
   return (
     <div className={`play ${broadcast ? "play-broadcast" : ""}`}>

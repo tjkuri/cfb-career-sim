@@ -122,7 +122,7 @@ export function BigGameCard({ d, position, team, record, onChoose }: CardProps) 
   const play = useMemo(() => preSnap(position, g.spot, g.lookIndex), [position, g.spot, g.lookIndex]);
   const kick = g.spot.side === "kick";
   return (
-    <div className={`card biggame broadcast-card stakes-${g.stakes} enter`}>
+    <div className={`card biggame broadcast-card broadcast-intro stakes-${g.stakes}`}>
       <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} />
       <p className="stakes-intro">
         {g.intro}
@@ -222,7 +222,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
       {g.spot && <Scoreboard spot={g.spot} team={team} opponent={g.opponent} score={done ? g.score : undefined} />}
       {play && g.spot && (
         <div className="stage">
-          <Telestrator play={play} spot={g.spot} t={t} live won={g.won} tight={narrow} ariaLabel={`${g.call} against ${g.counter}. ${finalWord(g)}`} />
+          <Telestrator play={play} spot={g.spot} t={t} live tight={narrow} ariaLabel={`${g.call} against ${g.counter}. ${finalWord(g)}`} />
         </div>
       )}
       {done ? (
