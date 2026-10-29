@@ -185,6 +185,8 @@ export interface BigGameResult {
   played: boolean;
   score: [number, number]; // [us, them]
   situation?: number;
+  // Which of the position's situation packages the snap came from.
+  pkg?: number;
   spot?: Spot;
   call?: string;
   counter?: string;
@@ -214,6 +216,7 @@ export interface PendingBigGame {
   tendency: number;
   lookCall: number;
   situation: number;
+  pkg?: number;
   spot: Spot;
   // True when the player is a backup thrown in because the starter went down.
   thrownIn: boolean;

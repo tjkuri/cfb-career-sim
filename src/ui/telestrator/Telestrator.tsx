@@ -20,15 +20,16 @@ interface Props {
 
 type Proj = (x: number, y: number, z?: number) => [number, number, number];
 
-function camera(G: number, tight: boolean, focusX: number, kick: boolean): { W: number; H: number; P: Proj } {
+function camera(G: number, tight: boolean, focusX: number, kick: boolean, deep = false): { W: number; H: number; P: Proj } {
   const W = tight ? 600 : 960;
   const H = tight ? 440 : 430;
   const YC = -20;
   // Just behind the deepest player: the kicker on a field goal, the
   // quarterback's drop otherwise.
   const near = kick ? -11 : -8.5;
-  // A kick has to show the uprights however long it is.
-  const far = kick ? G + 12 : Math.min(G + 11, 36);
+  // A kick has to show the uprights, and a shot at the end zone the end zone,
+  // however far away they are.
+  const far = kick || deep ? G + 12 : Math.min(G + 11, 36);
   // Fit the near edge to the bottom and the far edge near the top.
   const K = (H - 70) / (1 / (near - YC) - 1 / (far - YC));
   const HOR = H - K / (near - YC);
@@ -50,7 +51,7 @@ const f1 = (n: number) => n.toFixed(1);
 export function Telestrator({ play, spot, t, live, tight = false, ariaLabel }: Props) {
   const G = spot.yardsToGoal;
   const you = play.movers.find((m) => m.id === play.you)!;
-  const { W, H, P } = camera(G, tight, at(you.path, 0)[0], spot.side === "kick");
+  const { W, H, P } = camera(G, tight, at(you.path, 0)[0], spot.side === "kick", !!play.deep);
   const pts = (list: [number, number, number?][]) =>
     list
       .map(([x, y, z]) => {
@@ -67,7 +68,7 @@ export function Telestrator({ play, spot, t, live, tight = false, ariaLabel }: P
 
   const near = spot.side === "kick" ? -12 : -10;
   const back = G + 10;
-  const far = spot.side === "kick" ? back + 2 : Math.min(back + 2, 38);
+  const far = spot.side === "kick" || play.deep ? back + 2 : Math.min(back + 2, 38);
   const field: ReactElement[] = [];
   field.push(<polygon key="apron" className="tf-apron" points={quad(-6, near, 59.3, far)} />);
   for (let y = G; y > near - 5; y -= 5) {
@@ -133,7 +134,7 @@ export function Telestrator({ play, spot, t, live, tight = false, ariaLabel }: P
   if (live) {
     const trail: [number, number, number][] = [];
     for (let s = 0; s <= t + 1e-6; s += 0.015) {
-      if (play.flags) {
+      if (play.kick) {
         const [x, y, z] = play.ball(s);
         if (s > 0.34) trail.push([x, y, z]);
       } else {
@@ -143,7 +144,7 @@ export function Telestrator({ play, spot, t, live, tight = false, ariaLabel }: P
     }
     if (trail.length > 1) ink.push(<polyline key="route" className="tf-route" points={pts(trail)} />);
     // Your own path, when the ball is in someone else's hands.
-    if (play.you !== play.carrier || play.flags) {
+    if (play.you !== play.carrier || play.kick) {
       const mine: [number, number, number][] = [];
       for (let s = 0; s <= t + 1e-6; s += 0.015) {
         const [x, y] = at(you.path, s);

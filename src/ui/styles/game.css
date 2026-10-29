@@ -287,6 +287,7 @@
   align-self: center;
 }
 .stakes-intro { font-size: 0.95rem; color: var(--chalk-soft); margin: 0 0 0.5rem; }
+.bug-setting { font-size: var(--t-micro); font-weight: 800; color: var(--chalk-soft); border: 1px solid var(--line); border-radius: 4px; padding: 0.1rem 0.4rem; align-self: center; }
 
 /* Each stage of the postseason gets its own colour, and the bigger the game
    the louder the card. */

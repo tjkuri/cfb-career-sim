@@ -4,7 +4,7 @@
 import { advance, createCareer, getDecision, type DecisionOption, type GameState, type PendingDecision } from "../engine/index";
 import { ALL_POSITIONS } from "../engine/types";
 import type { Effect } from "../engine/types";
-import { PLAYBOOKS } from "../content/big-game";
+import { playbook } from "../engine/big-game";
 
 type Policy = (d: PendingDecision, s: GameState, rand: () => number) => string;
 
@@ -28,8 +28,8 @@ function ev(o: DecisionOption): number {
 
 // Read the two clues: trust a strong film tendency, otherwise the look.
 function counterScout(d: PendingDecision, s: GameState): string {
-  const book = PLAYBOOKS[s.setup.position];
   const g = d.bigGame!;
+  const book = playbook(s.setup.position, g.pkg);
   const film = book.counters.findIndex((c) => c.label === g.scout.call);
   const look = book.counters.findIndex((c) => c.look === g.look);
   const read = film === look || g.scout.percent >= 60 ? film : look;

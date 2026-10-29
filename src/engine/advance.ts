@@ -13,8 +13,8 @@ import type { ContentBundle } from "../content/schema";
 import { generateTransferOffers } from "./transfer";
 import { rollAmbientInjury, schoolTraitOf } from "./school-effects";
 import { roleFor } from "./role";
-import { BIG_GAME_EVENT_ID, pendingBigGame, resolveBigGame, setupBigGame } from "./big-game";
-import { BIG_GAME_INTRO, PLAYBOOKS } from "../content/big-game";
+import { BIG_GAME_EVENT_ID, pendingBigGame, playbook, resolveBigGame, setupBigGame } from "./big-game";
+import { BIG_GAME_INTRO, type Situation } from "../content/big-game";
 
 const TRANSFER_EVENT_ID = "transfer";
 const REDSHIRT_EVENT_ID = "redshirt";
@@ -52,6 +52,10 @@ export interface PendingDecision {
   options: DecisionOption[];
   bigGame?: {
     stakes: BigGameStakes;
+    pkg: number;
+    packageName: string;
+    /** Which situation package the snap is from. */
+    setting: Situation;
     intro: string;
     name: string;
     opponent: string;
@@ -131,7 +135,7 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
   }
   if (state.currentEventId === BIG_GAME_EVENT_ID && state.pendingBigGame) {
     const g = pendingBigGame(state)!;
-    const book = PLAYBOOKS[state.setup.position];
+    const book = playbook(state.setup.position, g.pkg);
     return {
       eventId: BIG_GAME_EVENT_ID,
       kind: "bigGame",
@@ -140,6 +144,9 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
       options: book.calls.map((c) => ({ id: c.id, label: c.label, detail: c.detail })),
       bigGame: {
         stakes: g.stakes,
+        pkg: g.pkg ?? 0,
+        packageName: book.name,
+        setting: book.situation,
         intro: bigGameIntro(state, content),
         name: g.name,
         opponent: g.opponent,

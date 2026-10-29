@@ -43,11 +43,12 @@ export function downAndDistance(spot: Spot): string {
   return spot.side === "offense" ? `${dd} at their ${spot.yardsToGoal}` : `They have ${dd} at your ${spot.yardsToGoal}`;
 }
 
-function Bug({ stakes, name, opponent }: { stakes: BigGameStakes; name: string; opponent: string }) {
+function Bug({ stakes, name, opponent, setting }: { stakes: BigGameStakes; name: string; opponent: string; setting?: string }) {
   return (
     <div className="bug cond">
       <span className="bug-stakes">{STAKES_LABEL[stakes]}</span>
       <span className="bug-game">{name}</span>
+      {setting && <span className="bug-setting">{setting}</span>}
       <span className="bug-vs">vs {opponent}</span>
     </div>
   );
@@ -119,11 +120,12 @@ export function BigGameCard({ d, position, team, record, onChoose }: CardProps) 
   const g = d.bigGame!;
   const narrow = useNarrow();
   const [named, setNamed] = useState(false);
-  const play = useMemo(() => preSnap(position, g.spot, g.lookIndex), [position, g.spot, g.lookIndex]);
-  const kick = g.spot.side === "kick";
+  const play = useMemo(() => preSnap(position, g.spot, g.lookIndex, g.pkg), [position, g.spot, g.lookIndex, g.pkg]);
+  // The wind is the field goal's read; on a chip shot it is the block team.
+  const kick = g.setting === "fieldgoal";
   return (
     <div className={`card biggame broadcast-card broadcast-intro stakes-${g.stakes}`}>
-      <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} />
+      <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} setting={g.packageName} />
       <p className="stakes-intro">
         {g.intro}
         {record && <span className="dim"> You went {record} to get here.</span>} {g.situation}
@@ -201,6 +203,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
       drawable
         ? stagePlay({
             position,
+            pkg: g.pkg ?? 0,
             spot: g.spot!,
             mine: g.callIndex!,
             theirs: g.counterIndex!,
@@ -212,6 +215,8 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
     [drawable, position, g],
   );
   const done = !play || t >= 1;
+  // Only the long field goal is about the wind; a chip shot is about the block.
+  const windy = g.spot?.side === "kick" && (g.pkg ?? 0) === 0;
   const [us, them] = g.score;
   const trophy = g.won ? STAKES_TROPHY[g.stakes] : null;
   const matchup = g.matchup ? MATCHUP[g.matchup] : null;
@@ -228,7 +233,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
       {done ? (
         <>
           <p className="reveal">
-            {g.spot?.side === "kick" ? (
+            {windy ? (
               <>
                 You aimed <b>{g.call?.toLowerCase()}</b>. The wind: <b>{g.counter?.toLowerCase()}</b>.
               </>
@@ -239,7 +244,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
               </>
             )}
           </p>
-          {matchup && <p className={`matchup matchup-${matchup.tone}`}>{g.spot?.side === "kick" ? matchup.kick : matchup.label}</p>}
+          {matchup && <p className={`matchup matchup-${matchup.tone}`}>{windy ? matchup.kick : matchup.label}</p>}
           <div className="final cond">
             <span className="final-word">{finalWord(g)}</span>
             <span className="final-score">

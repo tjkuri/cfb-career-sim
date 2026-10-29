@@ -23,6 +23,8 @@ export interface Mover {
 
 export interface Snap {
   position: Position;
+  /** Which situation package: 0 is the first, 1 the second. */
+  pkg: number;
   spot: Spot;
   mine: number; // our call
   theirs: number; // their real call
@@ -38,6 +40,8 @@ export interface Play {
   you: string;
   label: string; // what happened, for screen readers when the snap is over
   flags?: { look: number; real: number }; // the kicker's wind: -1 left gust, 0 calm, 1 right gust
+  kick?: boolean; // ink the ball's flight rather than a runner's path
+  deep?: boolean; // a shot at the end zone from far out: frame all of it
 }
 
 function smooth(a: number): number {
@@ -627,27 +631,365 @@ function kicker(snap: Snap): Play {
     you: "K",
     label: snap.won ? "IT'S GOOD" : "NO GOOD",
     flags: { look: [1, 0, -1][snap.look]!, real: drift },
+    kick: true,
   };
 }
 
+// --- second packages ---------------------------------------------------------
+
+// Four wide for a last shot from midfield: the tight end splits out as a slot.
+const SPREAD: Formation = {
+  LT: [22.4, -1], LG: [24.5, -1], C: [MID, -1], RG: [28.8, -1], RT: [30.9, -1],
+  QB: [MID, -5], RB: [29.2, -5], X: [6, -1], SL: [14, -1.5], TE: [40, -1.5], Z: [47.5, -1],
+};
+// The same eleven in every look, so a disguise can shift into any of them.
+const DEEP_D: Formation[] = [
+  // Prevent: three rush, a tackle drops, everyone else deep
+  { DE1: [23, 1], DT1: [MID, 1], DE2: [30.5, 1], DT2: [MID + 3, 6], LB1: [22, 8], LB2: [31, 8], CB1: [6, 10], CB2: [47.5, 10], NB: [40, 12], S1: [17, 20], S3: [36, 20] },
+  // Cover 1 robber: one deep, a linebacker robbing underneath, everyone else on a man
+  { ...LINE, LB1: [25, 4], LB2: [28, 9], CB1: [6, 1], CB2: [47.5, 1], NB: [40, 1.2], S3: [14, 1.2], S1: [MID, 16] },
+  // All-out blitz: seven crowd the line
+  { ...LINE, LB1: [24.5, 1.3], LB2: [29, 1.3], NB: [40, 1.5], S3: [14, 1.5], CB1: [6, 1], CB2: [47.5, 1], S1: [MID, 9] },
+];
+
+/** Their defense against a last shot, starting from the look it showed. */
+function deepDefense(st: Stage, snap: Snap, rush: Pt) {
+  const look = DEEP_D[snap.look]!;
+  const real = DEEP_D[snap.theirs]!;
+  const G = snap.spot.yardsToGoal;
+  for (const id of Object.keys(real)) {
+    const r = real[id]!;
+    let keys: Key[];
+    const front = id.startsWith("D");
+    if (snap.theirs === 0) keys = front ? [[0.55, r[0], -2]] : [[0.85, r[0], Math.min(G + 4, r[1] + 14)]];
+    else if (snap.theirs === 2) keys = front || id.startsWith("LB") || id === "NB" ? [[0.45, (r[0] + rush[0]) / 2, rush[1] + 1]] : [[0.85, r[0], r[1] + 8]];
+    else if (id === "CB1") keys = shadow(st.get("X"), 0.9, 0.8);
+    else if (id === "CB2") keys = shadow(st.get("Z"), -0.9, 0.8);
+    else if (id === "NB") keys = shadow(st.get("TE"), 0.8, 0.8);
+    else if (id === "S3") keys = shadow(st.get("SL"), 0.8, 0.8);
+    else if (front) keys = [[0.55, r[0], -2.5]];
+    else keys = [[0.85, r[0], id === "S1" ? G + 2 : r[1] + 4]];
+    st.add(id, "D", false, look[id]!, r, ...keys);
+  }
+}
+
+function qbLastGasp(snap: Snap): Play {
+  const st = new Stage(snap);
+  const G = snap.spot.yardsToGoal;
+  const f = SPREAD;
+  blockers(st, f, true, -0.8);
+  const deep = G + 4;
+  let ball: Play["ball"];
+  let carrier = "QB";
+  let stop: { t: number; at: Pt } | null = null;
+  let label: string;
+  const Q = st.add("QB", "O", true, f.QB!, f.QB!, ...(snap.mine === 2 ? [[0.3, 33, -7], [0.55, 40, -4]] as Key[] : [[0.3, MID, -7.5]] as Key[]));
+  if (snap.mine === 0) {
+    // Four verticals: everybody deep, the ball to whoever the safety leaves.
+    st.add("RB", "O", true, f.RB!, f.RB!, [0.3, 28, -3.5]);
+    st.add("X", "O", true, f.X!, f.X!, [0.85, 7, deep]);
+    const S = st.add("SL", "O", true, f.SL!, f.SL!, [0.85, 18, deep]);
+    st.add("TE", "O", true, f.TE!, f.TE!, [0.85, 37, deep]);
+    st.add("Z", "O", true, f.Z!, f.Z!, [0.85, 47, deep]);
+    carrier = "SL";
+    ball = thrown({ passer: Q, throwT: 0.4, catchT: 0.85, to: [18, deep], peak: 12, then: S, loose: snap.won ? undefined : { t: 0.95, at: [16, deep - 3] } });
+    if (!snap.won) stop = { t: 0.86, at: [18, deep] };
+    label = snap.won ? "TOUCHDOWN" : "KNOCKED DOWN";
+  } else if (snap.mine === 1) {
+    // Hook and lateral: the curl, then the pitch to the back trailing it.
+    const Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.35, 46, 10]);
+    const R = st.add("RB", "O", true, f.RB!, f.RB!, [0.4, 40, 3], [0.52, 44.5, 8.6], ...(snap.won ? [[0.92, 45, end(G)] as Key] : [[0.6, 45, 9.4] as Key]));
+    for (const id of ["X", "SL", "TE"]) st.add(id, "O", true, f[id]!, f[id]!, [0.8, f[id]![0], deep - 4]);
+    carrier = "RB";
+    ball = (t) => {
+      if (t < 0.52) return thrown({ passer: Q, throwT: 0.32, catchT: 0.45, to: [46, 10], peak: 2, then: Z })(t);
+      if (!snap.won && t > 0.56) return [46, 8.5, 0.15] as [number, number, number];
+      return carried(R)(t);
+    };
+    if (!snap.won) stop = { t: 0.6, at: [45, 9.4] };
+    label = snap.won ? "TOUCHDOWN" : "LOOSE BALL";
+  } else {
+    // Scramble drill: buy time to the right, find the man waving in the end zone.
+    st.add("RB", "O", true, f.RB!, f.RB!, [0.3, 31, -3]);
+    st.add("X", "O", true, f.X!, f.X!, [0.8, 10, deep - 2]);
+    st.add("SL", "O", true, f.SL!, f.SL!, [0.8, 22, deep - 1]);
+    st.add("TE", "O", true, f.TE!, f.TE!, [0.8, 36, deep - 2]);
+    const Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.9, 45, deep]);
+    if (snap.won) {
+      carrier = "Z";
+      ball = thrown({ passer: Q, throwT: 0.58, catchT: 0.9, to: [45, deep], peak: 9, then: Z });
+    } else {
+      Q.path = Q.path.filter((k) => k[0] < 0.4);
+      Q.path.push([0.5, 39, -4.5]);
+      ball = carried(Q, 1.5);
+      stop = { t: 0.5, at: [39, -4.5] };
+    }
+    label = snap.won ? "TOUCHDOWN" : "SACKED";
+  }
+  deepDefense(st, snap, [MID, -7]);
+  if (stop) st.converge(st.movers.filter((m) => m.side === "D"), stop.t, stop.at);
+  Q.you = true;
+  return { movers: st.movers, ball, carrier, you: "QB", label, deep: true };
+}
+
+function skillLastGasp(snap: Snap): Play {
+  const st = new Stage(snap);
+  const G = snap.spot.yardsToGoal;
+  const f = SPREAD;
+  blockers(st, f, true, snap.mine === 2 ? 2 : -0.6);
+  const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.25, MID, -6.5]);
+  st.add("RB", "O", true, f.RB!, f.RB!, [0.3, 28, -3]);
+  for (const id of ["X", "SL", "TE"]) st.add(id, "O", true, f[id]!, f[id]!, [0.8, f[id]![0] + 2, G - 2]);
+  // You are the receiver split wide right.
+  let Z: Mover;
+  let ball: Play["ball"];
+  let stop: { t: number; at: Pt } | null = null;
+  if (snap.mine === 0) {
+    Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.85, 48.5, G + 3]);
+    ball = thrown({ passer: Q, throwT: 0.42, catchT: 0.85, to: [48.5, G + 3], peak: 11, then: Z, loose: snap.won ? undefined : { t: 0.95, at: [46, G] } });
+    if (!snap.won) stop = { t: 0.86, at: [48.5, G + 2] };
+  } else if (snap.mine === 1) {
+    Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.32, 44, 4], ...(snap.won ? [[0.9, 40, end(G)] as Key] : [[0.4, 43.4, 4.4] as Key]));
+    ball = thrown({ passer: Q, throwT: 0.25, catchT: 0.34, to: [44.3, 4], peak: 1.5, then: Z, loose: snap.won ? undefined : { t: 0.46, at: [42.5, 2.5] } });
+    if (!snap.won) stop = { t: 0.36, at: [44.3, 4] };
+  } else {
+    Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.25, 49, -2.5], ...(snap.won ? [[0.92, 45, end(G)] as Key] : [[0.42, 48, -1.2] as Key]));
+    ball = thrown({ passer: Q, throwT: 0.27, catchT: 0.34, to: [49, -2.5], peak: 1.2, then: Z });
+    if (!snap.won) stop = { t: 0.42, at: [48, -1.2] };
+  }
+  Z.you = true;
+  // Press man, soft zone or blitz, all built around the corner over you.
+  const looks: Formation[] = [
+    { ...PASS_D[2]!, CB2: [47.5, 0.8] },
+    { ...PASS_D[1]!, CB2: [46, 12], NB: [40, 10], S2: [41, 20] },
+    { ...PASS_D[0]!, LB1: [25.2, 1.4], LB2: [28.2, 1.4], CB2: [47.5, 5] },
+  ];
+  const look = looks[snap.look]!;
+  const real = looks[snap.theirs]!;
+  for (const id of Object.keys(real)) {
+    const r = real[id]!;
+    let keys: Key[] = [[0.55, r[0], r[1] + 3]];
+    if (id.startsWith("D")) keys = [[0.5, (r[0] + MID) / 2, -3]];
+    if (snap.theirs === 2 && id.startsWith("LB")) keys = [[0.42, MID, -5]];
+    if (id === "CB2") keys = snap.theirs === 0 ? shadow(Z, -0.7, 0.6) : [[0.6, 46, r[1] + 2]];
+    if (id === "CB1") keys = shadow(st.get("X"), 0.9, 0.8);
+    st.add(id, "D", false, look[id]!, r, ...keys);
+  }
+  if (stop) st.converge(st.movers.filter((m) => m.side === "D"), stop.t, stop.at);
+  return { movers: st.movers, ball, carrier: "Z", you: "Z", label: snap.won ? "TOUCHDOWN" : "STOPPED", deep: true };
+}
+
+function lineProtect(snap: Snap): Play {
+  const st = new Stage(snap);
+  const G = snap.spot.yardsToGoal;
+  const f = SPREAD;
+  // You are the left guard. The whole line slides with the call.
+  const slide = [-1.8, 1.8, 0][snap.mine]!;
+  for (const id of ["LT", "LG", "C", "RG", "RT"]) {
+    const p = f[id]!;
+    const m = st.add(id, "O", true, p, p, [0.35, p[0] + slide, -2.6]);
+    if (id === "LG") m.you = true;
+  }
+  const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.3, MID, -8]);
+  st.add("RB", "O", true, f.RB!, f.RB!, snap.mine === 2 ? [0.3, 27.5, -6] : [0.6, 33, 6]);
+  for (const id of ["X", "SL", "TE"]) st.add(id, "O", true, f[id]!, f[id]!, [0.85, (f[id]![0] + 30) / 2, G + 3]);
+  const Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.85, 40, G + 4]);
+  const looks: Formation[] = [
+    { ...LINE, LB1: [18, 1.5], LB2: [19.5, 2.8], NB: [40, 4], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
+    { ...LINE, LB1: [35.3, 1.5], LB2: [33.8, 2.8], NB: [40, 4], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
+    { ...LINE, LB1: [MID, 4], LB2: [33, 8], NB: [40, 6], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
+  ];
+  const look = looks[snap.look]!;
+  const real = looks[snap.theirs]!;
+  for (const id of Object.keys(real)) {
+    const r = real[id]!;
+    const rusher = id.startsWith("D") || (snap.theirs < 2 && id.startsWith("LB"));
+    const keys: Key[] = rusher ? [[0.45, (r[0] + MID) / 2, -4.5]] : id === "LB1" && snap.theirs === 2 ? [[0.5, MID, 1]] : [[0.85, r[0], Math.min(G + 2, r[1] + 10)]];
+    st.add(id, "D", false, look[id]!, r, ...keys);
+  }
+  let ball: Play["ball"];
+  if (snap.won) {
+    ball = thrown({ passer: Q, throwT: 0.55, catchT: 0.9, to: [40, G + 4], peak: 13, then: Z });
+  } else {
+    ball = (t) => [...at(Q.path, t), 1.5] as [number, number, number];
+    st.converge(st.movers.filter((m) => m.side === "D" && m.id.startsWith("LB")), 0.5, [MID, -7.6]);
+  }
+  return { movers: st.movers, ball, carrier: snap.won ? "Z" : "QB", you: "LG", label: snap.won ? "TOUCHDOWN" : "SACKED", deep: true };
+}
+
+function goalStand(snap: Snap): Play {
+  const st = new Stage(snap);
+  const G = snap.spot.yardsToGoal;
+  // Their goal-line offense, by the look it shows.
+  const looks: Formation[] = [
+    { ...pick(GOAL_LINE, ["LT", "LG", "C", "RG", "RT", "TE", "TE2", "X"]), QB: [MID, -1.5], FB: [MID, -3.6], RB: [MID, -5.8] },
+    { ...pick(GOAL_LINE, ["LT", "LG", "C", "RG", "RT", "TE", "TE2", "X"]), QB: [MID, -1.6], FB: [MID + 1.6, -3.8], RB: [MID, -6.3] },
+    { ...pick(GOAL_LINE, ["LT", "LG", "C", "RG", "RT", "TE2", "X"]), TE: [37, -1], QB: [MID, -2.6], FB: [MID, -4.5], RB: [MID, -6.5] },
+  ];
+  const look = looks[snap.look]!;
+  const real = looks[snap.theirs]!;
+  const off: Record<string, Mover> = {};
+  for (const id of Object.keys(real)) {
+    const r = real[id]!;
+    off[id] = st.add(id, "O", false, look[id]!, r, [0.35, r[0], r[1] + 0.6]);
+  }
+  let carrier: Mover;
+  let stopAt: Pt;
+  const done = snap.won ? 0.5 : 0.85;
+  if (snap.theirs === 0) {
+    carrier = off.QB!;
+    carrier.path.push([done, MID, snap.won ? -0.3 : end(G, 1)]);
+    stopAt = [MID, -0.3];
+  } else if (snap.theirs === 1) {
+    off.RG!.path.push([0.35, 31, -1.5]);
+    carrier = off.RB!;
+    carrier.path.push([0.35, MID + 2, -3], [done, 31.5, snap.won ? -1.8 : end(G, 1)]);
+    stopAt = [31.5, -1.8];
+  } else {
+    carrier = off.QB!;
+    carrier.path.push([0.3, MID - 1, -3.5], [0.5, 35, -3], [done, snap.won ? 36 : 39, snap.won ? -2.2 : end(G, 1)]);
+    stopAt = [36, -2.2];
+  }
+  const Q = off.QB!;
+  const ball = (t: number): [number, number, number] =>
+    carrier === Q ? carried(Q, 1.4)(t) : t < 0.32 ? ([...at(Q.path, t), 1.2] as [number, number, number]) : carried(carrier)(t);
+
+  // Our goal-line defense; you are the end on the right.
+  const ours: Formation = GL_D[0]!;
+  const yours: Key[][] = [[[0.35, 32, -2.5]], [[0.35, 34, 0.1]], [[0.4, 37.5, -0.6]]];
+  for (const id of Object.keys(ours)) {
+    const p = ours[id]!;
+    const keys = id === "DE2" ? yours[snap.mine]! : [[0.4, p[0], -0.4] as Key];
+    const m = st.add(id, "D", true, p, p, ...keys);
+    if (id === "DE2") m.you = true;
+  }
+  if (snap.won) st.converge(st.movers.filter((m) => m.side === "D"), done, stopAt, snap.strong ? st.get("DE2") : undefined);
+  return { movers: st.movers, ball, carrier: carrier.id, you: "DE2", label: snap.won ? "STUFFED" : "TOUCHDOWN" };
+}
+
+function hailMary(snap: Snap): Play {
+  const st = new Stage(snap);
+  const G = snap.spot.yardsToGoal;
+  const looks: Formation[] = [
+    { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB"]), X: [38, -1], SL: [41.5, -1.5], TE: [44.5, -1.5], Z: [48, -1] },
+    { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB", "X", "TE"]), Z: [45, -1], SL: [45.8, -2.8] },
+    {
+      LT: [22.4, -1.6], LG: [24.5, -1.4], C: [MID, -1.2], RG: [28.8, -1.4], RT: [30.9, -1.7],
+      QB: [31, -5.5], RB: [28, -5], X: [6, -1], SL: [40, -1.5], TE: [33.2, -1.2], Z: [47.5, -1],
+    },
+  ];
+  const look = looks[snap.look]!;
+  const real = looks[snap.theirs]!;
+  const off: Record<string, Mover> = {};
+  for (const id of Object.keys(real)) {
+    const r = real[id]!;
+    let keys: Key[] = [[0.3, r[0], r[1] - 0.8]];
+    if (["X", "SL", "TE", "Z"].includes(id)) keys = [[0.85, Math.min(52, r[0] + (snap.theirs === 0 ? 2 : 0)), G + 3]];
+    if (id === "QB") keys = snap.theirs === 2 ? [[0.45, 40, -4]] : [[0.3, MID, -7.5]];
+    off[id] = st.add(id, "O", false, look[id]!, r, ...keys);
+  }
+  // Our prevent; you are the deep corner on the right.
+  const ours: Formation = { DE1: [23, 1], DT1: [MID, 1], DE2: [30.5, 1], LB1: [22, 8], LB2: [31, 8], CB1: [6, 10], NB: [40, 12], S1: [17, 20], S2: [36, 20], S3: [MID, 16] };
+  for (const id of Object.keys(ours)) {
+    const p = ours[id]!;
+    st.add(id, "D", true, p, p, id.startsWith("D") ? [0.5, (p[0] + MID) / 2, -4] : [0.85, (p[0] + 44) / 2, G + 2]);
+  }
+  const yours: Key[][] = [[[0.85, 46, G + 3]], [[0.55, 45, 12]], [[0.45, 39, -1.5]]];
+  const you = st.add("CB2", "D", true, [44, 13], [44, 13], ...yours[snap.mine]!);
+  you.you = true;
+
+  const Q = off.QB!;
+  let ball: Play["ball"];
+  let carrier: string;
+  let label: string;
+  if (snap.theirs === 1) {
+    // Hook and lateral
+    const Z = off.Z!;
+    const S = off.SL!;
+    Z.path = [Z.path[0]!, ...(Z.path[1]?.[0] === 0.12 ? [Z.path[1]!] : []), [0.35, 45, 10]];
+    S.path = [S.path[0]!, ...(S.path[1]?.[0] === 0.12 ? [S.path[1]!] : []), [0.4, 44, 6], [0.5, 44.5, 9], snap.won ? [0.6, 44.6, 11] : [0.92, 44, end(G)]];
+    ball = (t) => (t < 0.5 ? thrown({ passer: Q, throwT: 0.3, catchT: 0.42, to: [45, 10], peak: 2, then: Z })(t) : carried(S)(t));
+    carrier = "SL";
+    if (snap.won) st.converge(st.movers.filter((m) => m.ours), 0.6, [44.6, 11], snap.strong ? you : undefined);
+    label = snap.won ? "STOPPED" : "TOUCHDOWN";
+  } else {
+    const target = snap.theirs === 0 ? off.SL! : off.TE!;
+    const to: Pt = snap.theirs === 0 ? [45, G + 3] : [44, G + 3];
+    const throwT = snap.theirs === 0 ? 0.42 : 0.6;
+    ball = thrown({ passer: Q, throwT, catchT: 0.9, to, peak: 14, then: target, loose: snap.won ? { t: 0.97, at: [to[0] - 2, to[1] - 2] } : undefined });
+    carrier = target.id;
+    if (snap.won) st.converge(st.movers.filter((m) => m.ours), 0.9, to, snap.strong ? you : undefined);
+    label = snap.won ? "KNOCKED DOWN" : "TOUCHDOWN";
+  }
+  return { movers: st.movers, ball, carrier, you: "CB2", label, deep: true };
+}
+
+function chipShot(snap: Snap): Play {
+  const st = new Stage(snap);
+  const G = snap.spot.yardsToGoal;
+  const hold: Pt = [MID, -7];
+  st.add("LS", "O", true, [MID, -1], [MID, -1], [0.3, MID, -0.4]);
+  [-1.3, 1.3, -2.6, 2.6, -3.9, 3.9].forEach((dx, i) => st.add(`L${i}`, "O", true, [MID + dx, -1], [MID + dx, -1], [0.3, MID + dx, -1.6]));
+  st.add("W1", "O", true, [MID - 5, -1.8], [MID - 5, -1.8], [0.3, MID - 5.4, -2.4]);
+  st.add("W2", "O", true, [MID + 5, -1.8], [MID + 5, -1.8], [0.3, MID + 5.4, -2.4]);
+  st.add("H", "O", true, hold, hold);
+  const K = st.add("K", "O", true, [MID - 1.6, -9.6], [MID - 1.6, -9.6], [0.24, MID - 1.6, -9.6], [0.32, MID - 0.4, -7.4], [0.5, MID - 0.1, -6.2]);
+  K.you = true;
+  // The block team, by the look it shows: off both edges, stacked over the
+  // center, or backed off the line.
+  const lines: Pt[][] = [
+    [[MID - 7.5, 0.9], [MID - 6.3, 0.9], [MID + 6.3, 0.9], [MID + 7.5, 0.9], [MID - 3, 0.9], [MID - 1.5, 0.9], [MID, 0.9], [MID + 1.5, 0.9], [MID + 3, 0.9], [MID, 3]],
+    [[MID - 5, 0.9], [MID - 3, 0.9], [MID - 1.2, 0.9], [MID, 0.9], [MID + 1.2, 0.9], [MID + 3, 0.9], [MID + 5, 0.9], [MID - 0.6, 2], [MID + 0.6, 2], [MID, 3.2]],
+    [[MID - 6, 3], [MID - 4, 3.2], [MID - 2, 3], [MID, 3.4], [MID + 2, 3], [MID + 4, 3.2], [MID + 6, 3], [MID - 3, 5], [MID + 3, 5], [MID, 6]],
+  ];
+  const look = lines[snap.look]!;
+  const real = lines[snap.theirs]!;
+  real.forEach((r, i) => {
+    const target: Pt = snap.theirs === 2 ? [r[0], r[1]] : [r[0] + (MID - r[0]) * (snap.theirs === 0 ? 0.55 : 0.25), -2.6];
+    st.add(`B${i}`, "D", false, look[i]!, r, [0.4, target[0], target[1]]);
+  });
+  st.add("R", "D", false, [MID, G + 8], [MID, G + 8]);
+
+  const peak = [18, 6, 12][snap.mine]!;
+  const postY = G + 10;
+  const kickT = 0.34;
+  const arriveT = 0.85;
+  const blocked = !snap.won && snap.mine !== 2;
+  const wideX = MID + (snap.spot.clock % 2 ? 4.2 : -4.2);
+  const ball = (t: number): [number, number, number] => {
+    if (t < 0.18) return [MID, -1 + (hold[1] + 1) * (t / 0.18), 0.8];
+    if (t < kickT) return [hold[0], hold[1], 0.3];
+    if (blocked) {
+      // Gets a fingertip at the line and dies.
+      const k = Math.min(1, (t - kickT) / 0.3);
+      return [MID + k * 2, hold[1] + 6 * k, 0.3 + 3 * Math.sin(k * Math.PI)];
+    }
+    const k = Math.min(1, (t - kickT) / (arriveT - kickT));
+    const x = snap.won ? MID : MID + (wideX - MID) * k * k;
+    return [x, hold[1] + (postY + 1 - hold[1]) * k, 0.3 + peak * 4 * k * (1 - k) + 4 * k];
+  };
+  return { movers: st.movers, ball, carrier: "K", you: "K", label: snap.won ? "IT'S GOOD" : blocked ? "BLOCKED" : "NO GOOD", kick: true };
+}
+
 export function stagePlay(snap: Snap): Play {
+  const second = snap.pkg === 1;
   switch (snap.position) {
     case "QB":
-      return qb(snap);
+      return second ? qbLastGasp(snap) : qb(snap);
     case "OSKILL":
-      return skill(snap);
+      return second ? skillLastGasp(snap) : skill(snap);
     case "OL":
-      return line(snap);
+      return second ? lineProtect(snap) : line(snap);
     case "DL":
-      return edge(snap);
+      return second ? goalStand(snap) : edge(snap);
     case "DSKILL":
-      return corner(snap);
+      return second ? hailMary(snap) : corner(snap);
     case "K":
-      return kicker(snap);
+      return second ? chipShot(snap) : kicker(snap);
   }
 }
 
 /** What the field shows before the snap: only the look, not the result. */
-export function preSnap(position: Position, spot: Spot, look: number): Play {
-  return stagePlay({ position, spot, mine: 0, theirs: look, look, won: true, strong: true });
+export function preSnap(position: Position, spot: Spot, look: number, pkg = 0): Play {
+  return stagePlay({ position, pkg, spot, mine: 0, theirs: look, look, won: true, strong: true });
 }
