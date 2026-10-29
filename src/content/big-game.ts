@@ -127,7 +127,7 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
     ],
     failure: [
       "The double goes nowhere. Stopped short.",
-      "The twist comes right through the gap you left. Stopped short.",
+      "Somebody comes right through the gap you left. Stopped short.",
       "Your man beats the reach and the back is dropped for a loss.",
     ],
     statBump: { pancakes: 3 },

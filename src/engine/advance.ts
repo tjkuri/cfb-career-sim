@@ -58,6 +58,7 @@ export interface PendingDecision {
     situation: string;
     scout: { call: string; percent: number };
     look: string;
+    lookIndex: number;
     spot: Spot;
     thrownIn: boolean;
   };
@@ -145,6 +146,7 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
         situation: book.situations[g.situation] ?? book.situations[0]!,
         scout: { call: book.counters[g.scoutedCall]!.label, percent: g.tendency },
         look: book.counters[g.lookCall]!.look,
+        lookIndex: g.lookCall,
         spot: g.spot,
         thrownIn: g.thrownIn,
       },

@@ -74,17 +74,23 @@ export function CareerScreen({ view, resolved, recap, onChoose, onContinue }: Pr
       )
     : view.ledger;
 
+  // The season's last snap takes over the screen: the field needs the room,
+  // and the switch itself says this one matters.
+  const broadcast =
+    (showing === "decision" && view.decision?.kind === "bigGame") ||
+    (showing === "result" && !!resolved?.bigGame?.played);
+
   return (
-    <div className="play">
+    <div className={`play ${broadcast ? "play-broadcast" : ""}`}>
       <div className="play-main">
-        <PlayerCard view={shown} />
+        {broadcast ? <PlayerStrip view={shown} /> : <PlayerCard view={shown} />}
         <section className="stage" aria-live="polite">
           {showing === "result" && resolved && <ResultCard r={resolved} view={view} onContinue={onContinue} />}
           {showing === "recap" && recap && <RecapCard r={recap} onContinue={onContinue} />}
-          {showing === "decision" && view.decision && <DecisionCard d={view.decision} team={view.schoolName ?? "You"} record={currentRecord(view)} onChoose={onChoose} />}
+          {showing === "decision" && view.decision && <DecisionCard d={view.decision} view={view} record={currentRecord(view)} onChoose={onChoose} />}
         </section>
       </div>
-      <Ledger rows={rows} />
+      {!broadcast && <Ledger rows={rows} />}
     </div>
   );
 }
@@ -104,6 +110,22 @@ function currentRecord(view: GameView): string | null {
 }
 
 // --- player card -------------------------------------------------------------
+
+function PlayerStrip({ view }: { view: GameView }) {
+  const row = view.ledger.find((r) => r.state === "current");
+  return (
+    <header className="pstrip">
+      <span className={`pstrip-ovr cond ovr-${ovrBand(view.overall)}`}>{view.overall}</span>
+      <span className="pstrip-name cond">
+        {view.name} <span className="pcard-num">#{view.number}</span>
+      </span>
+      <span className="dim">
+        {view.positionLabel} · {view.classLabel} · {view.schoolName}
+        {row?.record ? ` · ${row.record}` : ""}
+      </span>
+    </header>
+  );
+}
 
 function PlayerCard({ view }: { view: GameView }) {
   return (
@@ -224,8 +246,9 @@ function OptionBody({ o }: { o: OptionView }) {
   );
 }
 
-function DecisionCard({ d, team, record, onChoose }: { d: DecisionView; team: string; record: string | null; onChoose: (id: string) => void }) {
-  if (d.kind === "bigGame" && d.bigGame) return <BigGameCard d={d} team={team} record={record} onChoose={onChoose} />;
+function DecisionCard({ d, view, record, onChoose }: { d: DecisionView; view: GameView; record: string | null; onChoose: (id: string) => void }) {
+  if (d.kind === "bigGame" && d.bigGame)
+    return <BigGameCard d={d} position={view.position} team={view.schoolName ?? "You"} record={record} onChoose={onChoose} />;
   return (
     <div className="card enter" key={d.title}>
       <h2 className="card-title cond">{d.title}</h2>
@@ -247,7 +270,7 @@ function DecisionCard({ d, team, record, onChoose }: { d: DecisionView; team: st
 // --- result ------------------------------------------------------------------
 
 function ResultCard({ r, view, onContinue }: { r: Resolved; view: GameView; onContinue: () => void }) {
-  if (r.bigGame) return <BigGameResultCard r={r} team={view.schoolName ?? "You"} onContinue={onContinue} />;
+  if (r.bigGame) return <BigGameResultCard r={r} position={view.position} team={view.schoolName ?? "You"} onContinue={onContinue} />;
   const delta = r.ovrAfter - r.ovrBefore;
   const verdict = r.paid === true ? "It pays off" : r.paid === false ? "It backfires" : null;
   return (

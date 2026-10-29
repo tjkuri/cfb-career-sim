@@ -108,16 +108,17 @@ function clue(truth: number, accuracy: number, rng: Rng): number {
 
 /**
  * The last snap of the season, with a score that the result has to agree
- * with: on offense you trail by less than a touchdown (or it is tied in
- * overtime) and need to score now; on defense you lead by less than one and
+ * with: on offense you trail by less than a touchdown and need to score now; on defense you lead by less than one and
  * need a stop; a kicker trails by a field goal or less.
  */
 export function makeSpot(position: Position, rng: Rng): Spot {
   const side = PLAYBOOKS[position].side;
   const base = rngInt(rng, 14, 31);
   if (side === "offense") {
+    // In overtime they have already kicked a field goal on their possession,
+    // so a touchdown wins it and anything less loses it.
     const overtime = rngChance(rng, 0.2);
-    const deficit = overtime ? 0 : rngInt(rng, 3, 6);
+    const deficit = overtime ? 3 : rngInt(rng, 3, 6);
     const shortYardage = position === "OL";
     const yardsToGoal = shortYardage ? rngInt(rng, 1, 4) : rngInt(rng, 3, 24);
     const toGo = shortYardage || yardsToGoal <= 10 ? yardsToGoal : Math.min(yardsToGoal, rngInt(rng, 3, 10));
@@ -230,6 +231,9 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
       counter: book.counters[theirs]!.label,
       look: book.counters[pending.lookCall]!.look,
       matchup: matchupOf(base),
+      callIndex: mine,
+      counterIndex: theirs,
+      lookIndex: pending.lookCall,
       text: won ? book.success[mine]! : book.failure[mine]!,
       score: finalScore(pending.spot, won),
     },

@@ -329,23 +329,6 @@
 @keyframes flash { 0%, 100% { color: inherit; } 30% { color: var(--gold); transform: scale(1.25); } }
 .dd { font-weight: 900; font-size: 1.1rem; margin: 0 0 0.4rem; }
 
-/* the field */
-.field { display: block; width: 100%; height: auto; margin: 0 0 0.6rem; }
-.f-turf { fill: #1e6b34; }
-.f-ez { fill: #15542a; }
-.f-ez-ours { fill: #5a1d24; }
-.f-ez-label { fill: rgb(255 255 255 / 0.55); font: 900 10px var(--sans); text-anchor: middle; letter-spacing: 0.12em; }
-.f-line5 { stroke: rgb(255 255 255 / 0.18); stroke-width: 1; }
-.f-line10 { stroke: rgb(255 255 255 / 0.45); stroke-width: 1.5; }
-.f-num { fill: rgb(255 255 255 / 0.55); font: 800 11px var(--sans); text-anchor: middle; }
-.f-goal { stroke: #fff; stroke-width: 3; }
-.f-los { stroke: #4ea7ff; stroke-width: 3; }
-.f-gain { stroke: var(--gold); stroke-width: 3; }
-.f-posts line { stroke: var(--gold); stroke-width: 3; stroke-linecap: round; }
-.f-ball { transition: transform 900ms cubic-bezier(.3,.7,.3,1); }
-.f-ball ellipse { fill: #8a4a1c; stroke: #3c1d08; stroke-width: 1; }
-.f-ball line { stroke: #fff; stroke-width: 1.2; }
-
 /* the two clues */
 .clues { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0 0 0.75rem; }
 .clue { background: var(--input); border-radius: 8px; padding: 0.55rem 0.7rem; display: flex; flex-direction: column; gap: 0.2rem; }
@@ -555,3 +538,82 @@
 .cabinet-empty { text-align: center; margin: 1rem 0; }
 .inline-trophy { vertical-align: -3px; margin-left: 0.25rem; }
 .biggame.stakes-cfp.is-good { border-color: var(--gold); box-shadow: 0 0 0 1px rgb(255 201 64 / 0.4), 0 0 60px -8px rgb(255 201 64 / 0.6); }
+
+/* ---------- broadcast takeover ---------- */
+
+.play-broadcast { grid-template-columns: minmax(0, 1fr); max-width: 64rem; }
+.pstrip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  padding: 0.5rem 0.8rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.pstrip-ovr { font-weight: 900; font-size: 1.15rem; color: #10161f; border-radius: 6px; padding: 0.05rem 0.45rem; }
+.pstrip-name { font-weight: 900; font-size: 1.15rem; }
+.broadcast-card .stage { border-radius: 10px; overflow: hidden; margin: 0 0 0.75rem; background: #050b14; border: 1px solid var(--line); }
+.broadcast-card .stakes-intro { max-width: 60rem; }
+.name-look {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--gold);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ---------- telestrator ---------- */
+
+.telestrator { display: block; width: 100%; height: auto; }
+.tf-sky { fill: #050b14; }
+.tf-apron { fill: #123a22; }
+.tf-turf-a { fill: #22743d; }
+.tf-turf-b { fill: #1e6936; }
+.tf-ez { fill: #8a3418; }
+.tf-ez-ours { fill: #26406f; }
+.tf-yard { stroke: rgb(255 255 255 / 0.6); stroke-width: 2; }
+.tf-goal { stroke: #ffffff; stroke-width: 4; }
+.tf-hash { stroke: rgb(255 255 255 / 0.45); stroke-width: 1.5; }
+.tf-side { stroke: #ffffff; stroke-width: 3; }
+.tf-num { fill: rgb(255 255 255 / 0.6); font-family: var(--sans); font-weight: 800; text-anchor: middle; }
+.tf-post { stroke: #ffd43b; stroke-width: 4; stroke-linecap: round; }
+.tf-flag { fill: #ff6b5d; }
+.tf-stadium-flag line { stroke: #c6d0dc; stroke-width: 4; }
+.tf-stadium-flag polygon { fill: #ff6b5d; stroke: #050b14; stroke-width: 1; }
+.tf-los { stroke: #4ea7ff; stroke-width: 3.5; }
+.tf-gain { stroke: #ffd43b; stroke-width: 3.5; }
+.tf-shadow { fill: rgb(0 0 0 / 0.35); }
+.tf-o.tf-ours { fill: #13264a; stroke: #f2f5fa; }
+.tf-o.tf-theirs { fill: #4a1712; stroke: #ff8a7a; }
+.tf-x.tf-ours { stroke: #f2f5fa; stroke-linecap: round; }
+.tf-x.tf-theirs { stroke: #ff7a6b; stroke-linecap: round; }
+.tf-you-ring { fill: rgb(255 201 64 / 0.16); stroke: var(--gold); }
+.tf-you { fill: var(--gold); font-family: var(--sans); font-weight: 900; text-anchor: middle; paint-order: stroke; stroke: #050b14; stroke-width: 3px; letter-spacing: 0.06em; }
+.tf-ball { fill: #8a4a1c; stroke: #3c1d08; stroke-width: 1; }
+.tf-ink { filter: drop-shadow(0 0 6px rgb(255 225 77 / 0.6)); }
+.tf-route { fill: none; stroke: #ffe14d; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.tf-route-you { fill: none; stroke: var(--gold); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 10 7; }
+.tf-route-d { fill: none; stroke: #ff7a6b; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 2 9; }
+.tf-stop { fill: none; stroke: #ffe14d; stroke-width: 4; }
+/* The broadcast caption: heavy condensed type, leaned like a TV graphic. */
+.tf-caption text {
+  font-family: var(--sans);
+  font-variation-settings: "wdth" 66;
+  font-weight: 900;
+  font-size: 46px;
+  letter-spacing: 0.02em;
+  paint-order: stroke;
+  stroke: #050b14;
+  stroke-width: 8px;
+  stroke-linejoin: round;
+  animation: stamp 360ms cubic-bezier(.2,1.6,.4,1) both;
+}
+.tf-cap-good text { fill: #ffe14d; }
+.tf-cap-bad text { fill: #ff7a6b; }

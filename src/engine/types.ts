@@ -190,6 +190,10 @@ export interface BigGameResult {
   counter?: string;
   look?: string;
   matchup?: Matchup;
+  // Indexes into the playbook, so the play can be drawn back.
+  callIndex?: number;
+  counterIndex?: number;
+  lookIndex?: number;
   text: string;
 }
 
