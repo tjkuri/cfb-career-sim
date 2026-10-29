@@ -2,3 +2,7 @@ node_modules/
 dist/
 .DS_Store
 *.orig
+
+# The original soccer game and its teardown: kept locally, never published.
+reference/
+docs/superpowers/polish/reports/002-reference-teardown.md
