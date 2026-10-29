@@ -293,7 +293,9 @@
 .stakes-bowl { --stakes: #e1aa78; }
 .stakes-conf { --stakes: #dfe6ef; }
 .stakes-cfp { --stakes: var(--gold); }
-.biggame .bug { border-bottom-color: var(--stakes, var(--gold)); }
+.biggame .bug { border-bottom-color: var(--stakes, var(--gold)); margin-bottom: 0.6rem; }
+.biggame .card-title { margin-bottom: 0.5rem; }
+.biggame .opt { padding: 0.7rem 0.8rem; gap: 0.3rem; }
 .biggame .bug-game { color: var(--stakes, var(--gold)); }
 .stakes-rivalry { background: linear-gradient(180deg, #3a1620, var(--card) 70%); }
 .stakes-conf { background: linear-gradient(180deg, #1d3557, var(--card) 70%); }
@@ -306,7 +308,57 @@
 .bug-vs { font-weight: 800; color: var(--chalk-soft); }
 .thrown { color: var(--gold); font-weight: 700; margin: 0 0 0.5rem; }
 .situation { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.6rem; }
-.scout { color: var(--chalk-soft); background: var(--input); border-left: 3px solid var(--chalk-faint); padding: 0.5rem 0.7rem; border-radius: 4px; margin: 0 0 1rem; }
+/* scoreboard: their name and ours, the score, the clock */
+.scoreboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
+  background: #050b16;
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  margin: 0.6rem 0 0.35rem;
+}
+.sb-team { font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-them { text-align: right; }
+.sb-score { font-size: 1.9rem; font-weight: 900; min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+.sb-mid { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+.sb-clock { font-size: 0.85rem; font-weight: 900; color: var(--bad); background: #1a0a0d; padding: 0.1rem 0.45rem; border-radius: 4px; }
+.sb-dd { font-size: 0.8rem; font-weight: 800; color: var(--gold); white-space: nowrap; }
+.sb-flash { animation: flash 900ms ease 700ms both; }
+@keyframes flash { 0%, 100% { color: inherit; } 30% { color: var(--gold); transform: scale(1.25); } }
+.dd { font-weight: 900; font-size: 1.1rem; margin: 0 0 0.4rem; }
+
+/* the field */
+.field { display: block; width: 100%; height: auto; margin: 0 0 0.6rem; }
+.f-turf { fill: #1e6b34; }
+.f-ez { fill: #15542a; }
+.f-ez-ours { fill: #5a1d24; }
+.f-ez-label { fill: rgb(255 255 255 / 0.55); font: 900 10px var(--sans); text-anchor: middle; letter-spacing: 0.12em; }
+.f-line5 { stroke: rgb(255 255 255 / 0.18); stroke-width: 1; }
+.f-line10 { stroke: rgb(255 255 255 / 0.45); stroke-width: 1.5; }
+.f-num { fill: rgb(255 255 255 / 0.55); font: 800 11px var(--sans); text-anchor: middle; }
+.f-goal { stroke: #fff; stroke-width: 3; }
+.f-los { stroke: #4ea7ff; stroke-width: 3; }
+.f-gain { stroke: var(--gold); stroke-width: 3; }
+.f-posts line { stroke: var(--gold); stroke-width: 3; stroke-linecap: round; }
+.f-ball { transition: transform 900ms cubic-bezier(.3,.7,.3,1); }
+.f-ball ellipse { fill: #8a4a1c; stroke: #3c1d08; stroke-width: 1; }
+.f-ball line { stroke: #fff; stroke-width: 1.2; }
+
+/* the two clues */
+.clues { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0 0 0.75rem; }
+.clue { background: var(--input); border-radius: 8px; padding: 0.55rem 0.7rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.clue-head { font-size: var(--t-micro); font-weight: 800; color: var(--chalk-dim); }
+.clue-body { font-size: 0.95rem; line-height: 1.25; }
+.clue-meter { height: 6px; border-radius: 3px; background: rgb(255 255 255 / 0.08); overflow: hidden; margin-top: 0.2rem; }
+.clue-meter span { display: block; height: 100%; background: var(--gold); }
+.clue-note { font-size: var(--t-micro); color: var(--chalk-faint); }
+
+.matchup { font-weight: 800; margin: 0 0 0.25rem; }
+.matchup-good { color: var(--good); }
+.matchup-bad { color: var(--bad); }
+.matchup-neutral { color: var(--chalk-soft); }
 
 .reveal { color: var(--chalk-soft); margin: 0 0 0.4rem; }
 .final { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0.25rem 0 0.75rem; }
@@ -445,6 +497,11 @@
 }
 
 @media (max-width: 560px) {
+  .clues { grid-template-columns: 1fr; }
+  .sb-score { font-size: 1.5rem; }
+  .scoreboard { gap: 0.4rem; padding: 0.4rem 0.55rem; }
+  .sb-team { white-space: normal; font-size: 0.75rem; line-height: 1.1; overflow-wrap: anywhere; }
+  .sb-dd { white-space: normal; text-align: center; }
   .opts, .opts-3, .opts-4 { grid-template-columns: minmax(0, 1fr); }
   .pos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .create-row { grid-template-columns: 1fr 4.5rem 4.5rem; }

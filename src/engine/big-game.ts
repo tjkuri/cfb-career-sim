@@ -1,14 +1,17 @@
-import type { BigGameResult, BigGameStakes, GameState, PendingBigGame } from "./types";
+import type { BigGameResult, BigGameStakes, GameState, Matchup, PendingBigGame, Position, Spot } from "./types";
 import type { ContentBundle } from "../content/schema";
-import { rngChance, rngInt, rngPick, type Rng } from "./rng";
+import { createRng, rngChance, rngInt, rngPick, type Rng } from "./rng";
 import { applyEffect, isSidelined, type InjuryLookup } from "./effects";
 import { BIG_GAME_TROPHY, PLAYBOOKS, bigGameName, rivalryName, stableIndex } from "../content/big-game";
 import { roleFor } from "./role";
 
 export const BIG_GAME_EVENT_ID = "big-game";
 
-// How often the film room's tip is the call the other side actually runs.
-export const SCOUT_ACCURACY = 0.6;
+// The film's tendency is shown as a number and varies game to game; the
+// pre-snap look is honest LOOK_ACCURACY of the time. When they disagree, the
+// number decides it: past about 60%, trust the film; under it, trust the look.
+export const TENDENCIES = [35, 45, 60, 75, 90];
+export const LOOK_ACCURACY = 0.6;
 
 function pickStakes(s: GameState, wins: number, rng: Rng): BigGameStakes {
   const tier = s.school.tier;
@@ -75,13 +78,95 @@ export function setupBigGame(s: GameState, content: ContentBundle, rng: Rng, inj
     const book = PLAYBOOKS[s.setup.position];
     const fresh = book.situations.map((_, i) => i).filter((i) => !seen.includes(i));
     const situation = rngPick(rng, fresh.length > 0 ? fresh : book.situations.map((_, i) => i));
-    s.pendingBigGame = { stakes, name, opponent, scoutedCall: rngInt(rng, 0, 2), situation, thrownIn };
+    const scoutedCall = rngInt(rng, 0, 2);
+    const tendency = rngPick(rng, TENDENCIES);
+    const theirCall = clue(scoutedCall, tendency / 100, rng);
+    s.pendingBigGame = {
+      stakes,
+      name,
+      opponent,
+      theirCall,
+      scoutedCall,
+      tendency,
+      lookCall: clue(theirCall, LOOK_ACCURACY, rng),
+      situation,
+      spot: makeSpot(s.setup.position, rng),
+      thrownIn,
+    };
     s.currentEventId = BIG_GAME_EVENT_ID;
     return;
   }
   // Played without the player: a coin flip leaning on the program.
   const won = rngChance(rng, 0.42 + s.school.tier * 0.03);
   finishBigGame(s, { stakes, name, opponent, won, played: false, text: watchedText(s, won) }, rng, injuryOf);
+}
+
+function clue(truth: number, accuracy: number, rng: Rng): number {
+  if (rngChance(rng, accuracy)) return truth;
+  return rngPick(rng, [0, 1, 2].filter((i) => i !== truth));
+}
+
+/**
+ * The last snap of the season, with a score that the result has to agree
+ * with: on offense you trail by less than a touchdown (or it is tied in
+ * overtime) and need to score now; on defense you lead by less than one and
+ * need a stop; a kicker trails by a field goal or less.
+ */
+export function makeSpot(position: Position, rng: Rng): Spot {
+  const side = PLAYBOOKS[position].side;
+  const base = rngInt(rng, 14, 31);
+  if (side === "offense") {
+    const overtime = rngChance(rng, 0.2);
+    const deficit = overtime ? 0 : rngInt(rng, 3, 6);
+    const shortYardage = position === "OL";
+    const yardsToGoal = shortYardage ? rngInt(rng, 1, 4) : rngInt(rng, 3, 24);
+    const toGo = shortYardage || yardsToGoal <= 10 ? yardsToGoal : Math.min(yardsToGoal, rngInt(rng, 3, 10));
+    return {
+      side, yardsToGoal, toGo,
+      down: shortYardage ? 4 : rngChance(rng, 0.5) ? 3 : 4,
+      clock: overtime ? 0 : rngInt(rng, 3, 58),
+      us: base - deficit, them: base, overtime,
+    };
+  }
+  if (side === "defense") {
+    const lead = rngInt(rng, 1, 6);
+    const yardsToGoal = position === "DSKILL" ? rngInt(rng, 14, 45) : rngInt(rng, 6, 35);
+    return {
+      side, yardsToGoal,
+      toGo: Math.min(yardsToGoal, rngInt(rng, 2, 10)),
+      down: rngInt(rng, 1, 4) as Spot["down"],
+      clock: rngInt(rng, 4, 65),
+      us: base, them: base - lead, overtime: false,
+    };
+  }
+  const deficit = rngInt(rng, 0, 2);
+  const yardsToGoal = rngInt(rng, 13, 38); // a 30- to 55-yard kick
+  return { side, yardsToGoal, toGo: yardsToGoal, down: 4, clock: rngInt(rng, 0, 4), us: base - deficit, them: base, overtime: false };
+}
+
+/** Field-goal distance: the line of scrimmage, ten yards of end zone, a seven-yard hold. */
+export function kickDistance(spot: Spot): number {
+  return spot.yardsToGoal + 17;
+}
+
+// Longer is harder. Small next to the matchup, but you can feel a 55-yarder.
+function distanceShift(spot: Spot): number {
+  if (spot.side === "kick") return -(kickDistance(spot) - 40) * 0.01;
+  if (spot.side === "offense") return -(spot.yardsToGoal - 8) * 0.005;
+  return (spot.yardsToGoal - 20) * 0.003;
+}
+
+export function matchupOf(base: number): Matchup {
+  return base >= 0.7 ? "strong" : base <= 0.4 ? "weak" : "even";
+}
+
+// The score after the snap, consistent with the spot.
+function finalScore(spot: Spot, won: boolean): [number, number] {
+  if (spot.side === "offense") return won ? [spot.us + 7, spot.them] : [spot.us, spot.them];
+  if (spot.side === "defense") return won ? [spot.us, spot.them] : [spot.us, spot.them + 7];
+  // A missed kick in a tie goes to overtime, and they win it there.
+  if (won) return [spot.us + 3, spot.them];
+  return spot.us === spot.them ? [spot.us, spot.them + 3] : [spot.us, spot.them];
 }
 
 function watchedText(s: GameState, won: boolean): string {
@@ -93,19 +178,41 @@ function watchedText(s: GameState, won: boolean): string {
   return `${why} ${won ? "They win it without you." : "They lose it without you."}`;
 }
 
+/**
+ * A save parked on a big game from before spots and pre-snap looks existed
+ * carries neither. Fill them in from the seed, so the decision renders and
+ * resolves the same way every time.
+ */
+export function pendingBigGame(s: GameState): PendingBigGame | undefined {
+  const g = s.pendingBigGame as (Partial<PendingBigGame> & Pick<PendingBigGame, "stakes" | "name" | "opponent">) | undefined;
+  if (!g) return undefined;
+  if (g.spot && g.theirCall !== undefined && g.lookCall !== undefined) return g as PendingBigGame;
+  const rng = createRng(`${s.seed}:big-game:${s.seasonIndex}`);
+  const scoutedCall = g.scoutedCall ?? rngInt(rng, 0, 2);
+  const tendency = rngPick(rng, TENDENCIES);
+  const theirCall = clue(scoutedCall, tendency / 100, rng);
+  return {
+    situation: 0,
+    thrownIn: false,
+    ...g,
+    theirCall,
+    scoutedCall,
+    tendency,
+    lookCall: clue(theirCall, LOOK_ACCURACY, rng),
+    spot: makeSpot(s.setup.position, rng),
+  };
+}
+
 export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf: InjuryLookup): void {
-  const pending = s.pendingBigGame;
+  const pending = pendingBigGame(s);
   if (!pending) throw new Error("No big game pending");
   const book = PLAYBOOKS[s.setup.position];
   const mine = book.calls.findIndex((c) => c.id === callId);
   if (mine < 0) throw new Error(`Invalid play call: ${callId}`);
 
-  let theirs = pending.scoutedCall;
-  if (!rngChance(rng, SCOUT_ACCURACY)) {
-    const rest = [0, 1, 2].filter((i) => i !== pending.scoutedCall);
-    theirs = rngPick(rng, rest);
-  }
-  const p = bigGameOdds(s.overall, book.odds[mine]![theirs]!, pending.thrownIn);
+  const theirs = pending.theirCall;
+  const base = book.odds[mine]![theirs]!;
+  const p = bigGameOdds(s.overall, base + distanceShift(pending.spot), pending.thrownIn);
   const won = rngChance(rng, p);
   s.pendingBigGame = undefined;
   s.currentEventId = null;
@@ -118,9 +225,13 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
       won,
       played: true,
       situation: pending.situation,
+      spot: pending.spot,
       call: book.calls[mine]!.label,
       counter: book.counters[theirs]!.label,
+      look: book.counters[pending.lookCall]!.look,
+      matchup: matchupOf(base),
       text: won ? book.success[mine]! : book.failure[mine]!,
+      score: finalScore(pending.spot, won),
     },
     rng,
     injuryOf,
@@ -134,16 +245,16 @@ export function bigGameOdds(overall: number, base: number, thrownIn: boolean): n
 
 function finishBigGame(
   s: GameState,
-  r: Omit<BigGameResult, "score">,
+  r: Omit<BigGameResult, "score"> & { score?: [number, number] },
   rng: Rng,
   injuryOf: InjuryLookup,
 ): void {
   const season = s.seasons[s.seasons.length - 1]!;
+  // A game the player watched gets a plausible score; one they played gets
+  // the score their snap produced.
   const them = rngInt(rng, 13, 31);
-  // A kicker's winner is a field goal; everyone else's is a touchdown or a stop.
-  const margin = s.setup.position === "K" ? rngInt(rng, 1, 3) : rngInt(rng, 1, 7);
-  const us = r.won ? them + margin : Math.max(0, them - rngInt(rng, 1, 6));
-  const result: BigGameResult = { ...r, score: [us, them] };
+  const score: [number, number] = r.score ?? (r.won ? [them + rngInt(rng, 1, 7), them] : [Math.max(0, them - rngInt(rng, 1, 6)), them]);
+  const result: BigGameResult = { ...r, score };
   season.bigGame = result;
   if (r.won) season.teamWins += 1;
   else season.teamLosses += 1;

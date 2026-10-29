@@ -2,9 +2,9 @@ import { useEffect } from "react";
 import type { Role } from "../../engine/index";
 import { roundShort } from "../session/game-view";
 import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonRecap } from "../session/types";
-import type { BigGameStakes } from "../../engine/index";
 import { Trophy } from "./Trophy";
-import { Confetti } from "./Confetti";
+import { BigGameCard, BigGameResultCard } from "./BigGame";
+import { ContinueButton } from "./Continue";
 
 interface Props {
   view: GameView;
@@ -81,7 +81,7 @@ export function CareerScreen({ view, resolved, recap, onChoose, onContinue }: Pr
         <section className="stage" aria-live="polite">
           {showing === "result" && resolved && <ResultCard r={resolved} view={view} onContinue={onContinue} />}
           {showing === "recap" && recap && <RecapCard r={recap} onContinue={onContinue} />}
-          {showing === "decision" && view.decision && <DecisionCard d={view.decision} record={currentRecord(view)} onChoose={onChoose} />}
+          {showing === "decision" && view.decision && <DecisionCard d={view.decision} team={view.schoolName ?? "You"} record={currentRecord(view)} onChoose={onChoose} />}
         </section>
       </div>
       <Ledger rows={rows} />
@@ -224,8 +224,8 @@ function OptionBody({ o }: { o: OptionView }) {
   );
 }
 
-function DecisionCard({ d, record, onChoose }: { d: DecisionView; record: string | null; onChoose: (id: string) => void }) {
-  if (d.kind === "bigGame" && d.bigGame) return <BigGameCard d={d} record={record} onChoose={onChoose} />;
+function DecisionCard({ d, team, record, onChoose }: { d: DecisionView; team: string; record: string | null; onChoose: (id: string) => void }) {
+  if (d.kind === "bigGame" && d.bigGame) return <BigGameCard d={d} team={team} record={record} onChoose={onChoose} />;
   return (
     <div className="card enter" key={d.title}>
       <h2 className="card-title cond">{d.title}</h2>
@@ -244,38 +244,10 @@ function DecisionCard({ d, record, onChoose }: { d: DecisionView; record: string
   );
 }
 
-function BigGameCard({ d, record, onChoose }: { d: DecisionView; record: string | null; onChoose: (id: string) => void }) {
-  const g = d.bigGame!;
-  return (
-    <div className={`card biggame stakes-${g.stakes} enter`}>
-      <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} />
-      <p className="stakes-intro">{g.intro}</p>
-      {record && <p className="season-so-far">You went {record} in the regular season.</p>}
-      {g.thrownIn && <p className="thrown">The starter goes down on the drive before. Coach looks down the bench at you.</p>}
-      <p className="situation">{g.situation}</p>
-      <p className="scout">
-        <span aria-hidden="true">📼 </span>
-        {g.scout}
-      </p>
-      <h2 className="card-title cond">Call the play</h2>
-      <div className="opts opts-3">
-        {d.options.map((o, i) => (
-          <button key={o.id} type="button" className="opt" onClick={() => onChoose(o.id)}>
-            <span className="opt-key" aria-hidden="true">
-              {i + 1}
-            </span>
-            <OptionBody o={o} />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // --- result ------------------------------------------------------------------
 
 function ResultCard({ r, view, onContinue }: { r: Resolved; view: GameView; onContinue: () => void }) {
-  if (r.bigGame) return <BigGameResultCard r={r} onContinue={onContinue} />;
+  if (r.bigGame) return <BigGameResultCard r={r} team={view.schoolName ?? "You"} onContinue={onContinue} />;
   const delta = r.ovrAfter - r.ovrBefore;
   const verdict = r.paid === true ? "It pays off" : r.paid === false ? "It backfires" : null;
   return (
@@ -304,72 +276,8 @@ function ResultCard({ r, view, onContinue }: { r: Resolved; view: GameView; onCo
   );
 }
 
-const STAKES_LABEL: Record<BigGameStakes, string> = {
-  rivalry: "Rivalry",
-  bowl: "Bowl season",
-  conf: "Conference title",
-  cfp: "National title",
-};
-
-const STAKES_TROPHY: Record<BigGameStakes, { id: string; label: string } | null> = {
-  rivalry: null,
-  bowl: { id: "bowlWin", label: "Bowl champions" },
-  conf: { id: "confTitle", label: "Conference champions" },
-  cfp: { id: "cfpTitle", label: "National champions" },
-};
-
-function Bug({ stakes, name, opponent }: { stakes: BigGameStakes; name: string; opponent: string }) {
-  return (
-    <div className="bug cond">
-      <span className="bug-stakes">{STAKES_LABEL[stakes]}</span>
-      <span className="bug-game">{name}</span>
-      <span className="bug-vs">vs {opponent}</span>
-    </div>
-  );
-}
-
 function rank(role: Role): number {
   return role === "starter" ? 2 : role === "rotation" ? 1 : 0;
-}
-
-function ContinueButton({ onContinue, label = "Continue" }: { onContinue: () => void; label?: string }) {
-  return (
-    <button type="button" className="go" onClick={onContinue} autoFocus>
-      {label}
-    </button>
-  );
-}
-
-function BigGameResultCard({ r, onContinue }: { r: Resolved; onContinue: () => void }) {
-  const g = r.bigGame!;
-  const [us, them] = g.score;
-  const trophy = g.won ? STAKES_TROPHY[g.stakes] : null;
-  return (
-    <div className={`card biggame stakes-${g.stakes} enter ${g.won ? "is-good" : "is-bad"}`}>
-      {g.won && g.stakes !== "rivalry" && <Confetti big={g.stakes === "cfp"} />}
-      <Bug stakes={g.stakes} name={g.name} opponent={g.opponent} />
-      <p className="reveal">
-        You called <b>{g.call}</b>. They ran <b>{g.counter}</b>.
-      </p>
-      <div className="final cond">
-        <span className="final-word">{g.won ? "Ballgame" : "Stopped"}</span>
-        <span className="final-score">
-          {g.won ? "W" : "L"} {us}–{them}
-        </span>
-      </div>
-      <p className="result-text">{g.text}</p>
-      {trophy && (
-        <div className="trophy-won">
-          <Trophy id={trophy.id} size={g.stakes === "cfp" ? 132 : 104} className="trophy-lift" />
-          <span className="trophy-won-label cond">{trophy.label}</span>
-        </div>
-      )}
-      <div className="result-foot">
-        <span className="dim">{g.won ? "+1 OVR · +3 Rep" : ""}</span>
-        <ContinueButton onContinue={onContinue} />
-      </div>
-    </div>
-  );
 }
 
 // --- season recap -------------------------------------------------------------

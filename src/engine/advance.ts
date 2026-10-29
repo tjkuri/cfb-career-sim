@@ -1,4 +1,4 @@
-import type { BigGameStakes, Effect, GameEvent, GameState, Role, Tier } from "./types";
+import type { BigGameStakes, Effect, GameEvent, GameState, Role, Spot, Tier } from "./types";
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, rngInt, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
@@ -13,7 +13,7 @@ import type { ContentBundle } from "../content/schema";
 import { generateTransferOffers } from "./transfer";
 import { rollAmbientInjury, schoolTraitOf } from "./school-effects";
 import { roleFor } from "./role";
-import { BIG_GAME_EVENT_ID, resolveBigGame, setupBigGame } from "./big-game";
+import { BIG_GAME_EVENT_ID, pendingBigGame, resolveBigGame, setupBigGame } from "./big-game";
 import { BIG_GAME_INTRO, PLAYBOOKS } from "../content/big-game";
 
 const TRANSFER_EVENT_ID = "transfer";
@@ -56,7 +56,9 @@ export interface PendingDecision {
     name: string;
     opponent: string;
     situation: string;
-    scout: string;
+    scout: { call: string; percent: number };
+    look: string;
+    spot: Spot;
     thrownIn: boolean;
   };
 }
@@ -127,7 +129,7 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
     };
   }
   if (state.currentEventId === BIG_GAME_EVENT_ID && state.pendingBigGame) {
-    const g = state.pendingBigGame;
+    const g = pendingBigGame(state)!;
     const book = PLAYBOOKS[state.setup.position];
     return {
       eventId: BIG_GAME_EVENT_ID,
@@ -141,7 +143,9 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
         name: g.name,
         opponent: g.opponent,
         situation: book.situations[g.situation] ?? book.situations[0]!,
-        scout: book.counters[g.scoutedCall]!.scout,
+        scout: { call: book.counters[g.scoutedCall]!.label, percent: g.tendency },
+        look: book.counters[g.lookCall]!.look,
+        spot: g.spot,
         thrownIn: g.thrownIn,
       },
     };
@@ -164,7 +168,7 @@ export function getDecision(state: GameState, content: ContentBundle = CONTENT):
 }
 
 function bigGameIntro(state: GameState, content: ContentBundle): string {
-  const g = state.pendingBigGame!;
+  const g = pendingBigGame(state)!;
   const lines = BIG_GAME_INTRO[g.stakes];
   const conf = content.schools.find((s) => s.id === state.school.schoolId)?.conference ?? "conference";
   // The nth game at these stakes this career gets the nth line, so a repeat

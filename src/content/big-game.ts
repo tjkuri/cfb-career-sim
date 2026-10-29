@@ -3,12 +3,17 @@ import type { BigGameStakes, Position, Tier } from "../engine/types";
 // The play that decides the season. The player picks one of three calls, the
 // other side has picked one of three of their own, and the matchup sets the
 // odds. The film room tips which call the other side favours -- usually right.
+export type Side = "offense" | "defense" | "kick";
+
 export interface Playbook {
-  // Late-game spots. A career never sees the same one twice.
+  side: Side;
+  // A line of colour under the scoreboard. The score, clock, down and
+  // distance are generated (engine/big-game.ts), so these carry no numbers.
   situations: string[];
   calls: { id: string; label: string; detail: string }[];
-  // What the other side can run, and the tip the film room gives for each.
-  counters: { label: string; scout: string }[];
+  // What the other side can run, and the look each shows before the snap
+  // when it is not disguised.
+  counters: { label: string; look: string }[];
   // odds[myCall][theirCall], before overall is applied.
   odds: number[][];
   success: string[];
@@ -23,11 +28,12 @@ const L = 0.3; // they had it covered
 
 export const PLAYBOOKS: Record<Position, Playbook> = {
   QB: {
+    side: "offense",
     situations: [
-      "Down 4. 0:31 left. Third and goal from the 9. The whole stadium is on its feet.",
-      "Down 3. 0:08 left. Ball on their 24, no timeouts. Everyone in the building knows you are throwing.",
-      "Tied. Overtime. Third and 6 from their 18. A touchdown wins it.",
-      "Down 6. 0:47 left. Fourth and 3 at their 12. Miss and the season is over.",
+      "The whole stadium is on its feet.",
+      "Everyone in the building knows you are throwing.",
+      "Your center looks back between his legs and nods once.",
+      "The crowd is so loud you have to call the play twice.",
     ],
     calls: [
       { id: "slant", label: "Quick slant", detail: "Ball out in a second. Kills a blitz." },
@@ -35,9 +41,9 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
       { id: "fade", label: "Back-corner fade", detail: "Throw it where only he can get it. Beats a two-high shell." },
     ],
     counters: [
-      { label: "Zone blitz", scout: "Film says they send pressure on every red-zone third down." },
-      { label: "Cover 2", scout: "Film says they sit two deep and dare you to fit it in." },
-      { label: "Man press", scout: "Film says they go press-man and turn their backs to the QB." },
+      { label: "Zone blitz", look: "Linebackers creeping into the A-gaps" },
+      { label: "Cover 2", look: "Two safeties splitting the deep halves" },
+      { label: "Man press", look: "Corners up in your receivers' faces" },
     ],
     odds: [
       [W, L, N],
@@ -57,11 +63,12 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
     statBump: { passYards: 55, passTds: 1 },
   },
   OSKILL: {
+    side: "offense",
     situations: [
-      "Down 3. 0:44 left. Ball on their 22. The play is coming to you.",
-      "Down 5. 0:19 left. Second and goal from the 7. The coordinator looks at you and nods.",
-      "Tied. Overtime. Ball on their 25. Score and you win.",
-      "Down 4. 1:02 left. Third and 8 at midfield. Nobody else is getting this ball.",
+      "The play is coming to you.",
+      "The coordinator looks down the sideline and nods at you.",
+      "Nobody else is getting this ball.",
+      "The quarterback says your name in the huddle and nothing else.",
     ],
     calls: [
       { id: "bounce", label: "Bounce it outside", detail: "Win the edge. Beats a stacked box." },
@@ -69,9 +76,9 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
       { id: "wheel", label: "Wheel route", detail: "Leak out of the backfield. Beats the blitz." },
     ],
     counters: [
-      { label: "Stacked box", scout: "Film says they load eight in the box when it matters." },
-      { label: "Edge contain", scout: "Film says their ends set the edge and never crash." },
-      { label: "All-out blitz", scout: "Film says they bring everybody when the clock is short." },
+      { label: "Stacked box", look: "Eight defenders inside the tackles" },
+      { label: "Edge contain", look: "Ends lined up wide, outside the tackles" },
+      { label: "All-out blitz", look: "Everybody walked up to the line" },
     ],
     odds: [
       [W, L, N],
@@ -91,11 +98,12 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
     statBump: { scrimmageYards: 40, totalTds: 1 },
   },
   OL: {
+    side: "offense",
     situations: [
-      "Fourth and one at their 3. 0:52 left, down 5. They are daring you to run it.",
-      "Fourth and goal from the 1. 0:12 left, down 4. The coach keeps the offense on the field.",
-      "Third and 2, 1:40 left, up 3. Get the first down and you kneel it out.",
-      "Overtime. Fourth and 1 at their 4. Pick up the yard or go home.",
+      "They are daring you to run it.",
+      "The coach keeps the offense on the field and points at the line.",
+      "Everybody in the stadium knows it is a run. Block it anyway.",
+      "The running back taps your hip on the way to the huddle.",
     ],
     calls: [
       { id: "double", label: "Double the nose", detail: "Move the big man. Beats a stunt inside." },
@@ -103,9 +111,9 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
       { id: "reach", label: "Reach the edge", detail: "Seal the outside. Beats a loaded middle." },
     ],
     counters: [
-      { label: "Interior stunt", scout: "Film says their tackles twist on every short yardage snap." },
-      { label: "Slant inside", scout: "Film says the whole front slants to the strength." },
-      { label: "Load the middle", scout: "Film says they pack the A-gaps and dare you to go wide." },
+      { label: "Interior stunt", look: "Tackles shading the guards' inside shoulders" },
+      { label: "Slant inside", look: "The whole front leaning to the strong side" },
+      { label: "Load the middle", look: "Two linebackers stacked over the center" },
     ],
     odds: [
       [W, N, L],
@@ -125,11 +133,12 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
     statBump: { pancakes: 3 },
   },
   DL: {
+    side: "defense",
     situations: [
-      "Up 3. 0:40 left. They have the ball at your 30 and need a field goal or better.",
-      "Up 4. 0:22 left. They are on your 11. One stop wins it.",
-      "Overtime, up 7. Fourth and 4 from your 9. Get home and it is over.",
-      "Up 2. 1:05 left. They are at midfield and driving.",
+      "One stop wins it.",
+      "Their quarterback has not been touched all night.",
+      "The defensive coordinator gives you one word: go.",
+      "Your whole sideline is standing on the bench.",
     ],
     calls: [
       { id: "bull", label: "Bull rush", detail: "Through the man's chest. Beats a deep drop." },
@@ -137,9 +146,9 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
       { id: "drop", label: "Drop into the flat", detail: "Sit and wait. Beats the screen." },
     ],
     counters: [
-      { label: "Deep drop", scout: "Film says their QB takes seven steps and looks for the shot." },
-      { label: "Quick draw", scout: "Film says they run the draw when the rush gets wide." },
-      { label: "Screen", scout: "Film says they love the screen against an aggressive front." },
+      { label: "Deep drop", look: "Quarterback in the gun, five receivers wide" },
+      { label: "Quick draw", look: "A back offset tight next to the quarterback" },
+      { label: "Screen", look: "Linemen standing up light, the back flared out" },
     ],
     odds: [
       [W, N, L],
@@ -159,11 +168,12 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
     statBump: { sacks: 1, tfls: 1 },
   },
   DSKILL: {
+    side: "defense",
     situations: [
-      "Up 4. 0:19 left. They are on your 35 with one last shot.",
-      "Up 6. 0:04 left. They are at your 42. One Hail Mary between you and the trophy.",
-      "Overtime, up 7. Fourth and 8 from your 16. Make the stop.",
-      "Up 3. 0:51 left. They are on your 28 and out of timeouts.",
+      "One last shot, and it is coming your way.",
+      "Their best receiver lines up across from you and smiles.",
+      "Make the stop and it is over.",
+      "Their quarterback looks right at you before the snap.",
     ],
     calls: [
       { id: "jump", label: "Jump the route", detail: "Gamble on the short throw. Beats the quick out." },
@@ -171,9 +181,9 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
       { id: "blitz", label: "Corner blitz", detail: "Get to the quarterback. Beats max protect." },
     ],
     counters: [
-      { label: "Quick out", scout: "Film says they take the sideline route to stop the clock." },
-      { label: "Deep shot", scout: "Film says they throw it up and let the receiver go get it." },
-      { label: "Max protect", scout: "Film says they keep seven in to block and buy time." },
+      { label: "Quick out", look: "Receivers in tight splits near the sideline" },
+      { label: "Deep shot", look: "Their fastest receiver isolated outside" },
+      { label: "Max protect", look: "Tight end and back staying in to block" },
     ],
     odds: [
       [W, L, N],
@@ -193,11 +203,12 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
     statBump: { ints: 1, passBreakups: 1 },
   },
   K: {
+    side: "kick",
     situations: [
-      "Tied. 0:02 left. 47 yards. The flags at the top of the stadium are moving.",
-      "Down 1. 0:03 left. 52 yards, longer than you have ever hit in a game.",
-      "Overtime, down 3. 38 yards to keep the season alive. You have hit it a thousand times.",
-      "Down 2. 0:00 on the clock. 44 yards into the open end of the stadium.",
+      "They call timeout to ice you. You get to think about it.",
+      "Your holder says something to make you laugh. It almost works.",
+      "The open end of the stadium, and the wind is doing something.",
+      "You have hit this kick a thousand times. Never like this.",
     ],
     calls: [
       { id: "left", label: "Start it left", detail: "Let the wind bring it back. For a gust from the left." },
@@ -205,9 +216,9 @@ export const PLAYBOOKS: Record<Position, Playbook> = {
       { id: "right", label: "Start it right", detail: "Ride it back inside. For a gust from the right." },
     ],
     counters: [
-      { label: "Gust from the left", scout: "The flags have been snapping left to right all quarter." },
-      { label: "Dead calm", scout: "The flags are hanging limp. It is a still night." },
-      { label: "Gust from the right", scout: "The flags have been snapping right to left all quarter." },
+      { label: "Gust from the left", look: "Flags at the top of the stadium snapping left to right" },
+      { label: "Dead calm", look: "Flags hanging limp on the poles" },
+      { label: "Gust from the right", look: "Flags at the top of the stadium snapping right to left" },
     ],
     odds: [
       [0.85, 0.45, 0.25],

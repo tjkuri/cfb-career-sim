@@ -159,6 +159,23 @@ export interface SchoolOffer {
   snapModifier: number;
 }
 
+// Where the ball is when the season's last snap is called. Written as a drive
+// state so a longer drive is the same shape with more snaps.
+export interface Spot {
+  side: "offense" | "defense" | "kick";
+  // Yards from the ball to the end zone being attacked: ours on offense,
+  // theirs (i.e. ours, defended) on defense, and the line of scrimmage on a kick.
+  yardsToGoal: number;
+  down: 1 | 2 | 3 | 4;
+  toGo: number;
+  clock: number; // seconds left
+  us: number;
+  them: number;
+  overtime: boolean;
+}
+
+export type Matchup = "strong" | "even" | "weak";
+
 export interface BigGameResult {
   stakes: BigGameStakes;
   name: string;
@@ -168,8 +185,11 @@ export interface BigGameResult {
   played: boolean;
   score: [number, number]; // [us, them]
   situation?: number;
+  spot?: Spot;
   call?: string;
   counter?: string;
+  look?: string;
+  matchup?: Matchup;
   text: string;
 }
 
@@ -180,8 +200,17 @@ export interface PendingBigGame {
   opponent: string;
   // Index into the position's opponent calls that the film room says is most
   // likely. Usually right, never certain.
+  // What they will actually run, decided before the snap so the clues are
+  // consistent however often the decision is rendered.
+  theirCall: number;
+  // Two clues. The film shows their favourite call here and how often they
+  // run it (`tendency`, a percentage that changes game to game); the look is
+  // what they show before the snap, and defences disguise.
   scoutedCall: number;
+  tendency: number;
+  lookCall: number;
   situation: number;
+  spot: Spot;
   // True when the player is a backup thrown in because the starter went down.
   thrownIn: boolean;
 }

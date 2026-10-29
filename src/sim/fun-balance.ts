@@ -26,11 +26,15 @@ function ev(o: DecisionOption): number {
   return p * value(o.positive) + (1 - p) * value(o.negative);
 }
 
+// Read the two clues: trust a strong film tendency, otherwise the look.
 function counterScout(d: PendingDecision, s: GameState): string {
   const book = PLAYBOOKS[s.setup.position];
-  const scouted = book.counters.findIndex((c) => c.scout === d.bigGame?.scout);
+  const g = d.bigGame!;
+  const film = book.counters.findIndex((c) => c.label === g.scout.call);
+  const look = book.counters.findIndex((c) => c.look === g.look);
+  const read = film === look || g.scout.percent >= 60 ? film : look;
   let best = 0;
-  for (let i = 1; i < 3; i++) if (book.odds[i]![scouted]! > book.odds[best]![scouted]!) best = i;
+  for (let i = 1; i < 3; i++) if (book.odds[i]![read]! > book.odds[best]![read]!) best = i;
   return book.calls[best]!.id;
 }
 
