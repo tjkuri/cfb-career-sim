@@ -31,7 +31,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You show up in the same shape as last year. The staff notes you didn't take the plan seriously.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
     ],
@@ -65,7 +65,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You nod through the install and keep your old stance. It works well enough, and the coach notices you did not try.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
     ],
@@ -107,7 +107,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You hold your normal spot and have a clean week — but the staff quietly notes you ducked the tough assignment.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 2 },
-            { kind: "character", amount: -1 },
+            { kind: "character", amount: -2 },
           ],
         },
       },
@@ -254,12 +254,12 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You clean up your hands and finish the game with your best stretch of blocking.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 2 },
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
           ],
         },
         negativeOutcome: {
           description: "The staff keeps bringing the clip up, and it sticks with you.",
-          effects: [{ kind: "character", amount: -2 }],
+          effects: [{ kind: "character", amount: -4 }],
         },
       },
       {
@@ -277,7 +277,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You draw a personal foul on top of it, and the coordinator has a word with you at halftime.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -1 },
+            { kind: "character", amount: -2 },
           ],
         },
       },
@@ -318,7 +318,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "The backup gets his shot and does fine. You get grief in the meeting room for missing it.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
     ],
@@ -427,7 +427,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "The line stays together, and the other four appreciate not having to learn a new neighbor.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],
@@ -460,7 +460,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You miss the camp. The other four noticed who stayed.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
       },
     ],

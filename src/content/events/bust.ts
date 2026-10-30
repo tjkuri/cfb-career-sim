@@ -80,7 +80,7 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "He curves the final. You exhale for a week.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
         negativeOutcome: {
           description: "He does not curve the final.",
@@ -121,7 +121,7 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.35,
         positiveOutcome: {
           description: "The lab's chain of custody was a mess. It goes away.",
-          effects: [{ kind: "character", amount: 4 }],
+          effects: [{ kind: "character", amount: 10 }],
         },
         negativeOutcome: {
           description: "The appeal makes it a story, and the story makes it a decision.",
@@ -147,7 +147,7 @@ export const BUST_EVENTS: GameEvent[] = [
           description: "Charges dropped. The staff is not thrilled, but you are still on the roster.",
           effects: [
             { kind: "suspension", phases: 2 },
-            { kind: "character", amount: 8 },
+            { kind: "character", amount: 20 },
           ],
         },
         negativeOutcome: {
@@ -161,7 +161,7 @@ export const BUST_EVENTS: GameEvent[] = [
         probability: 0.2,
         positiveOutcome: {
           description: "Somehow the internet decides you are the sympathetic one.",
-          effects: [{ kind: "character", amount: 6 }],
+          effects: [{ kind: "character", amount: 15 }],
         },
         negativeOutcome: {
           description: "The screenshot outlives the charge. You are done here.",
@@ -227,7 +227,7 @@ export const BUST_EVENTS: GameEvent[] = [
           description: "It is not fun again yet, but it is yours again.",
           effects: [
             { kind: "overall", timing: "immediate", amount: 3 },
-            { kind: "character", amount: 5 },
+            { kind: "character", amount: 13 },
           ],
         },
         negativeOutcome: {

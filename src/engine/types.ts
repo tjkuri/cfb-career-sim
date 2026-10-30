@@ -57,6 +57,8 @@ export interface SeasonLine {
   redshirt?: boolean;
   // Depth-chart role as of the season's last on-field phase.
   role?: Role;
+  // Wore the C as of that same phase.
+  captain?: boolean;
   // The tier of the program the season was played at.
   tierPlayed?: Tier;
   // Trophy and award ids won this season, in the order they were won.

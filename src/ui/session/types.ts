@@ -49,6 +49,7 @@ export interface LedgerRow {
   schoolName?: string;
   tierName?: string;
   role?: Role;
+  captain?: boolean;
   redshirt?: boolean;
   record?: string;
   statLine?: string;
@@ -72,6 +73,8 @@ export interface GameView {
   overall: number;
   role: Role | null;
   rep: number;
+  /** Rep high enough to wear the C. */
+  captain: boolean;
   stock: number;
   round: number; // 0 = not on draft boards
   rank: number; // projected pick on the big board

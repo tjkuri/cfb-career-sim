@@ -15,6 +15,22 @@ export const TIER_NAMES: Record<Tier, string> = {
   4: "Blueblood",
 };
 
+// Rep's payoff. A player the locker room trusts wears the C: coaches break a
+// depth-chart tie their way, and the last snap of the season is theirs to win.
+// It lasts as long as the Rep does.
+export const CAPTAIN_REP = 85;
+export const CAPTAIN_DEPTH_EDGE = 3;
+export const CAPTAIN_BIG_GAME_EDGE = 0.05;
+
+export function isCaptain(state: { character: number }): boolean {
+  return state.character >= CAPTAIN_REP;
+}
+
+/** The role a player gets at a tier, with a captain's tiebreak on the depth chart. */
+export function roleOf(state: { overall: number; character: number }, tier: Tier): Role {
+  return roleFor(state.overall + (isCaptain(state) ? CAPTAIN_DEPTH_EDGE : 0), tier);
+}
+
 export function roleFor(overall: number, tier: Tier): Role {
   const bar = STARTER_BAR[tier];
   if (overall >= bar) return "starter";

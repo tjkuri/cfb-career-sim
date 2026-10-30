@@ -94,7 +94,7 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
           // bustedRate toward its ceiling; the fatigue cost is paid in
           // character instead, not in a second injury.
           description: "You get every rep, including the ones a healthier roster would have spared you, and by October you are running on fumes. The tape shows a guy who stopped playing clean, and the room notices.",
-          effects: [{ kind: "character", amount: -6 }],
+          effects: [{ kind: "character", amount: -12 }],
         },
       },
       {
@@ -104,7 +104,7 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "By October he can spell you for a series without the staff flinching, and the room notices who built him.",
           effects: [
-            { kind: "character", amount: 5 },
+            { kind: "character", amount: 13 },
             { kind: "moment", item: "Built a backup out of a walk-on", icon: "star" },
           ],
         },
@@ -112,7 +112,7 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
           description: "He is not ready and the reps you gave him were reps off your own tape, and the staff is not shy about saying so.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -3 },
+            { kind: "character", amount: -6 },
           ],
         },
       },

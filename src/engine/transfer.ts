@@ -3,7 +3,7 @@ import type { Rng } from "./rng";
 import type { ContentBundle } from "../content/schema";
 import { deriveDraftStock } from "./draft";
 import { sampleSchoolInTier } from "./schools";
-import { roleFor } from "./role";
+import { roleOf } from "./role";
 
 // The draft stock it takes for a program of each tier to call you. Starting
 // the season before counts for a lot: a starter gets the call with
@@ -47,7 +47,7 @@ export function generateTransferOffers(state: GameState, content: ContentBundle,
   if (currentTier < 4 && programCalls(state, (currentTier + 1) as Tier)) add((currentTier + 1) as Tier, "Transfer up to");
   if (currentTier < 3 && deriveDraftStock(state) >= TIER_CALL[(currentTier + 2) as Tier]) add((currentTier + 2) as Tier, "Jump to");
   add(currentTier, "Transfer to");
-  if (currentTier > 1 && roleFor(state.overall, currentTier) === "backup") add((currentTier - 1) as Tier, "Drop down to");
+  if (currentTier > 1 && roleOf(state, currentTier) === "backup") add((currentTier - 1) as Tier, "Drop down to");
 
   return offers.slice(0, 4);
 }

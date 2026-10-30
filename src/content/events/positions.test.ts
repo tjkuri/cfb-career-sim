@@ -133,7 +133,8 @@ describe.each(BUCKETS)("$position position slice", ({ position, events }) => {
     for (const ev of events) {
       for (const eff of allEffects(ev)) {
         if (eff.kind === "character") {
-          expect(Math.abs(eff.amount), `${ev.id} character effect exceeds +/-2`).toBeLessThanOrEqual(2);
+          // +/-2 before Rep was rescaled (losses x2, gains x2.5) so it moves.
+          expect(Math.abs(eff.amount), `${ev.id} character effect exceeds +/-5`).toBeLessThanOrEqual(5);
         }
       }
     }

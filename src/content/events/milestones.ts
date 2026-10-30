@@ -36,7 +36,7 @@ export const MILESTONE_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You are healthy for November. It does not feel like enough on Saturday.",
-          effects: [{ kind: "character", amount: -2 }],
+          effects: [{ kind: "character", amount: -4 }],
         },
       },
     ],

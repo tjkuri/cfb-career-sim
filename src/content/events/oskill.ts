@@ -31,7 +31,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You hold your spot, but the staff quietly notes you didn't take direction well.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
     ],
@@ -69,7 +69,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The staff reads it as ducking a challenge, and it colors how they talk about you.",
-          effects: [{ kind: "character", amount: -2 }],
+          effects: [{ kind: "character", amount: -4 }],
         },
       },
     ],
@@ -143,7 +143,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "He comes back to you and you drop that one too. Your number goes quiet for a month.",
-          effects: [{ kind: "character", amount: -2 }, { kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "character", amount: -4 }, { kind: "overall", timing: "immediate", amount: -1 }],
         },
       },
     ],
@@ -266,7 +266,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
           description: "You tell the official you trapped it. It buys you something that does not show up in the box score.",
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 10 },
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
           ],
         },
         negativeOutcome: {
@@ -294,7 +294,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You spring two long runs with key blocks. The coaches notice even if the box score doesn't.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
       },
       {
@@ -308,7 +308,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "It reads as sulking, and you lose trust in the room.",
           effects: [
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -342,7 +342,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
           description: "You play loose with nothing to lose and add a highlight to the reel.",
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 90 },
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
@@ -426,7 +426,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You look like the same player in camp, which is fine, because the same player was pretty good.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],

@@ -26,15 +26,12 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         label: "Say nothing and let the work speak",
         probability: 0.7,
         positiveOutcome: {
-          description: "You never bring it up once, and the room votes for you anyway.",
-          effects: [
-            { kind: "moment", item: "Voted captain without campaigning for it", icon: "star" },
-            { kind: "character", amount: 2 },
-          ],
+          description: "You never bring it up once, and the room notices exactly who did not campaign.",
+          effects: [{ kind: "character", amount: 8 }],
         },
         negativeOutcome: {
-          description: "The guys who did campaign get it. Nobody says it was unfair, because it was not.",
-          effects: [{ kind: "character", amount: -3 }],
+          description: "The guys who did campaign get the votes. Nobody says it was unfair, because it was not.",
+          effects: [{ kind: "character", amount: -4 }],
         },
       },
       {
@@ -45,11 +42,12 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You say out loud that you want it, and then you spend the summer backing it up.",
           effects: [
             { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "character", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "It reads as a campaign, and the room quietly votes for somebody who did not run one.",
-          effects: [{ kind: "character", amount: -4 }],
+          effects: [{ kind: "character", amount: -8 }],
         },
       },
     ],
@@ -74,7 +72,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You do exactly what you did last summer, and in August it shows that you did.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
           ],
         },
       },
@@ -84,12 +82,12 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "You come back lighter than you left. Some of that is rest and some of it is nobody watching.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 3 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 8 }],
         },
         negativeOutcome: {
           description: "Six weeks with people who still want to talk about your senior year of high school.",
           effects: [
-            { kind: "character", amount: -5 },
+            { kind: "character", amount: -10 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -114,7 +112,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "You are the only one in the room not talking about it, which somehow becomes its own story.",
-          effects: [{ kind: "character", amount: -3 }],
+          effects: [{ kind: "character", amount: -6 }],
         },
       },
       {
@@ -125,13 +123,13 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You post it in July and then go play like a man who belongs on the list.",
           effects: [
             { kind: "overall", timing: "immediate", amount: 2 },
-            { kind: "character", amount: 3 },
+            { kind: "character", amount: 8 },
           ],
         },
         negativeOutcome: {
           description: "You post it in July and spend the whole fall being measured against it.",
           effects: [
-            { kind: "character", amount: -6 },
+            { kind: "character", amount: -12 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -154,14 +152,14 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You spend the second half walking a true freshman through his first real snaps. The staff notices who did that.",
           effects: [
-            { kind: "character", amount: 4 },
+            { kind: "character", amount: 10 },
             { kind: "snaps", amount: -15 },
           ],
         },
         negativeOutcome: {
           description: "You try to stay in it from the sideline and mostly end up in the way.",
           effects: [
-            { kind: "character", amount: -4 },
+            { kind: "character", amount: -8 },
             { kind: "snaps", amount: -15 },
           ],
         },
@@ -180,7 +178,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Pushing to stay in a decided game reads as hunting numbers, because it is.",
           effects: [
-            { kind: "character", amount: -5 },
+            { kind: "character", amount: -10 },
             { kind: "snaps", amount: 10 },
           ],
         },
@@ -206,7 +204,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Nothing bad and nothing memorable. The broadcast never says your name.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
       {
@@ -224,7 +222,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You force it with the whole country watching, and that is the clip instead.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -2 },
-            { kind: "character", amount: -1 },
+            { kind: "character", amount: -2 },
           ],
         },
       },

@@ -703,3 +703,22 @@
   .ledger ol { flex: 1; }
   .ledger .lrow { flex: 1 1 0; max-height: 8rem; }
 }
+
+/* ---------- the captain's C ---------- */
+
+.cpatch {
+  display: inline-grid;
+  place-items: center;
+  width: 1.15em;
+  height: 1.15em;
+  margin-left: 0.35em;
+  border-radius: 4px;
+  background: var(--gold);
+  color: #1b1300;
+  font-weight: 900;
+  font-size: 0.8em;
+  line-height: 1;
+  vertical-align: 0.12em;
+  box-shadow: inset 0 0 0 2px rgb(27 19 0 / 0.35);
+}
+.lrow-school .cpatch { font-size: 0.75rem; }

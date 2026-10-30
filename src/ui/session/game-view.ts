@@ -1,9 +1,11 @@
 import {
+  CAPTAIN_REP,
   CLASS_ORDER,
   deriveDraftStock,
   getDecision,
+  isCaptain,
   projectedRound,
-  roleFor,
+  roleOf,
   ROUND_BAND,
   TIER_NAMES,
   UNDRAFTED_FLOOR,
@@ -91,7 +93,21 @@ export function effectChips(effects: Effect[] | undefined, position: Position): 
   return out.length > 0 ? out : [{ text: "Nothing changes", tone: "neutral" }];
 }
 
-function optionView(o: DecisionOption, position: Position): OptionView {
+/** The C changing hands is worth its own chip: "Earn the C", "Lose the C". */
+export function captainChip(repBefore: number, repAfter: number): Chip | null {
+  const was = repBefore >= CAPTAIN_REP;
+  const now = repAfter >= CAPTAIN_REP;
+  if (was === now) return null;
+  return now ? { text: "Earn the C", tone: "good" } : { text: "Lose the C", tone: "bad" };
+}
+
+function withCaptainChip(chips: Chip[], effects: Effect[] | undefined, rep: number): Chip[] {
+  const delta = (effects ?? []).reduce((a, e) => a + (e.kind === "character" ? e.amount : 0), 0);
+  const c = captainChip(rep, Math.max(0, Math.min(100, rep + delta)));
+  return c ? [...chips, c] : chips;
+}
+
+function optionView(o: DecisionOption, position: Position, rep: number): OptionView {
   if (o.school) {
     return {
       id: o.id,
@@ -110,13 +126,14 @@ function optionView(o: DecisionOption, position: Position): OptionView {
   }
   if (o.detail !== undefined) return { id: o.id, label: o.label, branches: [], detail: o.detail };
   const p = o.probability ?? 1;
-  const branches = [{ chance: Math.round(p * 100), chips: effectChips(o.positive, position) }];
-  if (o.negative && p < 1) branches.push({ chance: 100 - Math.round(p * 100), chips: effectChips(o.negative, position) });
+  const branches = [{ chance: Math.round(p * 100), chips: withCaptainChip(effectChips(o.positive, position), o.positive, rep) }];
+  if (o.negative && p < 1)
+    branches.push({ chance: 100 - Math.round(p * 100), chips: withCaptainChip(effectChips(o.negative, position), o.negative, rep) });
   return { id: o.id, label: o.label, branches };
 }
 
-export function decisionView(d: PendingDecision, position: Position): DecisionView {
-  const options = d.options.map((o) => optionView(o, position));
+export function decisionView(d: PendingDecision, position: Position, rep: number): DecisionView {
+  const options = d.options.map((o) => optionView(o, position, rep));
   if (d.kind === "redshirt") {
     // The redshirt's real trade is time, which no effect carries: say it.
     for (const o of options) {
@@ -193,6 +210,7 @@ function ledger(state: GameState): LedgerRow[] {
         schoolName: schoolName(line.schoolId),
         tierName: line.tierPlayed ? TIER_NAMES[line.tierPlayed] : undefined,
         role: line.redshirt ? undefined : line.role,
+        captain: !line.redshirt && !!line.captain,
         redshirt: !!line.redshirt,
         record: line.teamWins + line.teamLosses > 0 ? `${line.teamWins}–${line.teamLosses}` : undefined,
         statLine: line.snaps > 0 && !line.redshirt ? statLine(state.setup.position, line.stats) : undefined,
@@ -240,15 +258,16 @@ export function buildView(state: GameState): GameView {
     seasonNumber: state.seasonIndex + 1,
     phase: state.phase,
     overall: state.overall,
-    role: school ? (last?.seasonIndex === state.seasonIndex && last.role ? last.role : roleFor(state.overall, state.school.tier)) : null,
+    role: school ? (last?.seasonIndex === state.seasonIndex && last.role ? last.role : roleOf(state, state.school.tier)) : null,
     rep: state.character,
+    captain: isCaptain(state),
     stock,
     round: projectedRound(stock),
     rank: bigBoardRank(stock),
     injury: injury ? (CONTENT.injuries[injury.injuryType]?.label ?? "Injured") : null,
     trophyCase: trophyCase(state),
     ledger: ledger(state),
-    decision: decision ? decisionView(decision, state.setup.position) : null,
+    decision: decision ? decisionView(decision, state.setup.position, state.character) : null,
     status: state.status,
     draftResult: state.draftResult ?? null,
     endingReason: state.endingReason ?? null,

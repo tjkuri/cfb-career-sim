@@ -3,7 +3,7 @@ import type { ContentBundle } from "../content/schema";
 import { createRng, rngChance, rngInt, rngPick, type Rng } from "./rng";
 import { applyEffect, isSidelined, type InjuryLookup } from "./effects";
 import { BIG_GAME_TROPHY, PLAYBOOKS, bigGameName, rivalryName, stableIndex, type Situation } from "../content/big-game";
-import { roleFor } from "./role";
+import { CAPTAIN_BIG_GAME_EDGE, isCaptain, roleOf } from "./role";
 
 export const BIG_GAME_EVENT_ID = "big-game";
 
@@ -68,7 +68,7 @@ export function setupBigGame(s: GameState, content: ContentBundle, rng: Rng, inj
       : bigGameName(stakes, s.school.tier, own?.conference ?? "", rngInt(rng, 0, 99));
   const opponent = pickOpponent(s, stakes, content, rng);
 
-  const role = roleFor(s.overall, s.school.tier);
+  const role = roleOf(s, s.school.tier);
   const available = !s.redshirtSeasonActive && !isSidelined(s);
   // A backup only gets the call when the starter goes down -- which, in the
   // game that decides the season, happens more often than it should.
@@ -273,7 +273,7 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
 
   const theirs = pending.theirCall;
   const base = book.odds[mine]![theirs]!;
-  const p = bigGameOdds(s.overall, base + distanceShift(pending.spot, book.situation), pending.thrownIn);
+  const p = bigGameOdds(s.overall, base + distanceShift(pending.spot, book.situation), pending.thrownIn, isCaptain(s));
   const won = rngChance(rng, p);
   s.pendingBigGame = undefined;
   s.currentEventId = null;
@@ -303,8 +303,8 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
   );
 }
 
-export function bigGameOdds(overall: number, base: number, thrownIn: boolean): number {
-  const p = base + (overall - 75) * 0.008 - (thrownIn ? 0.05 : 0);
+export function bigGameOdds(overall: number, base: number, thrownIn: boolean, captain = false): number {
+  const p = base + (overall - 75) * 0.008 - (thrownIn ? 0.05 : 0) + (captain ? CAPTAIN_BIG_GAME_EDGE : 0);
   return Math.max(0.1, Math.min(0.92, p));
 }
 
@@ -334,7 +334,7 @@ function finishBigGame(
   const book = playbook(s.setup.position, r.pkg);
   if (r.won) {
     applyEffect(s, { kind: "overall", timing: "immediate", amount: 1 }, injuryOf);
-    applyEffect(s, { kind: "character", amount: 3 }, injuryOf);
+    applyEffect(s, { kind: "character", amount: 2 }, injuryOf);
     for (const [stat, n] of Object.entries(book.statBump)) applyEffect(s, { kind: "stat", stat, amount: n }, injuryOf);
     applyEffect(s, { kind: "moment", item: `Won the ${r.name} on the last play`, icon: r.stakes === "cfp" ? "ring" : "trophy" }, injuryOf);
   } else if (r.stakes === "cfp" || r.stakes === "conf") {

@@ -29,11 +29,11 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 0.7,
         positiveOutcome: {
           description: "Chemistry is a real thing. They run every route a little harder for you on Saturday.",
-          effects: [{ kind: "character", amount: 2 }, { kind: "stat", stat: "passYards", amount: 80 }],
+          effects: [{ kind: "character", amount: 5 }, { kind: "stat", stat: "passYards", amount: 80 }],
         },
         negativeOutcome: {
           description: "Wings turn into a long night, and Thursday practice is slow for all five of you.",
-          effects: [{ kind: "character", amount: -2 }, { kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
+          effects: [{ kind: "character", amount: -4 }, { kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
         },
       },
     ],
@@ -103,7 +103,7 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You share your notes and the room stays tight. No shakeup, no drama.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
       },
     ],
@@ -203,13 +203,13 @@ export const QB_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You calm it down at halftime and he balls out the rest of the game.",
           effects: [
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 3 },
             { kind: "stat", stat: "passYards", amount: 90 },
           ],
         },
         negativeOutcome: {
           description: "The clip won't stop looping on Twitter all week.",
-          effects: [{ kind: "character", amount: -2 }],
+          effects: [{ kind: "character", amount: -4 }],
         },
       },
       {
@@ -227,7 +227,7 @@ export const QB_EVENTS: GameEvent[] = [
           description: "It reads as immature, and the staff has a word.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
           ],
         },
       },
@@ -426,7 +426,7 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "Same motion, same timing, and four receivers who know exactly where you want the ball.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],
@@ -459,7 +459,7 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You throw enough to stay sharp and not one rep more. The receivers grumble, then get over it.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],

@@ -71,7 +71,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "She has apparently seen this exact spiral in every kicker she's ever worked with, which is either reassuring or the least reassuring thing you've ever heard. Either way, it helps.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
       },
     ],
@@ -156,7 +156,7 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You burn the team's last timeout to reset your steps. It goes through, and the coach mentions the timeout twice.",
-          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }, { kind: "stat", stat: "points", amount: 3 }, { kind: "character", amount: -1 }],
+          effects: [{ kind: "stat", stat: "fieldGoals", amount: 1 }, { kind: "stat", stat: "points", amount: 3 }, { kind: "character", amount: -2 }],
         },
       },
     ],
@@ -201,7 +201,7 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "You don't force it — you take the two yards available and live to kick another day. Not a highlight, but the coordinator trusts you with the ball again before the year's out, which is its own kind of compliment.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],
@@ -475,11 +475,11 @@ export const K_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "His drills actually work, and a 60-yarder you hit in July does a million views.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 2 }, { kind: "moment", item: "Went viral at a kicking camp", icon: "video" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 5 }, { kind: "moment", item: "Went viral at a kicking camp", icon: "video" }],
         },
         negativeOutcome: {
           description: "The drills are for the camera. You come back with followers and a hook you did not have in May.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -2 }],
         },
       },
       {
@@ -488,7 +488,7 @@ export const K_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You and your holder get the snap-hold-kick down to the hundredth of a second.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],

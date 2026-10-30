@@ -113,10 +113,11 @@ interface CardProps {
   position: Position;
   team: string;
   record: string | null;
+  captain: boolean;
   onChoose: (id: string) => void;
 }
 
-export function BigGameCard({ d, position, team, record, onChoose }: CardProps) {
+export function BigGameCard({ d, position, team, record, captain, onChoose }: CardProps) {
   const g = d.bigGame!;
   const narrow = useNarrow();
   const play = useMemo(() => preSnap(position, g.spot, g.lookIndex, g.pkg), [position, g.spot, g.lookIndex, g.pkg]);
@@ -134,6 +135,7 @@ export function BigGameCard({ d, position, team, record, onChoose }: CardProps) 
         <Telestrator play={play} spot={g.spot} t={0} live={false} tight={narrow} ariaLabel={`Before the snap. ${g.look}.`} />
       </div>
       {g.thrownIn && <p className="thrown">The starter goes down on the drive before. Coach looks down the bench at you.</p>}
+      {captain && !g.thrownIn && <p className="thrown">You wear the C. Eleven guys in the huddle look at you first.</p>}
 
       <div className="clues">
         <div className="clue">

@@ -145,7 +145,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "It sits with you, and the whiffs don't stop — you're tentative in coverage all week.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -1 },
+            { kind: "character", amount: -2 },
           ],
         },
       },
@@ -155,11 +155,11 @@ export const DSKILL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "The room laughs with you, and by Wednesday the clip is a running joke instead of a verdict.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
         negativeOutcome: {
           description: "The coordinator does not laugh, and pauses the clip until you stop.",
-          effects: [{ kind: "character", amount: -2 }],
+          effects: [{ kind: "character", amount: -4 }],
         },
       },
     ],
@@ -316,7 +316,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
             "The booth confirms it. You're gone for the rest of the game, the defense plays down a body, and the coordinator has a few words for you about it after.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -2 },
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
             { kind: "snaps", amount: -8 },
           ],
         },
@@ -329,7 +329,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You take something off it at the last half-second — no flag, no review, just a clean form tackle.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 3 },
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 3 },
           ],
         },
       },
@@ -409,7 +409,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You play clean instead of chasing highlights, and the position coach tells the scouts you're the safe bet.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 3 },
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 3 },
           ],
         },
       },
@@ -443,7 +443,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You stay on an island where you are comfortable, and the staff respects the answer.",
-          effects: [{ kind: "character", amount: 1 }],
+          effects: [{ kind: "character", amount: 3 }],
         },
       },
     ],
@@ -463,11 +463,11 @@ export const DSKILL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "You come back with the eyes of a ten-year veteran, and nobody can argue with what you do in camp.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: -4 }],
         },
         negativeOutcome: {
           description: "The camp is mostly a highlight video for the instructor, and the staff noticed you were gone.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -4 }],
         },
       },
       {
@@ -476,7 +476,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You run every conditioning test with the guys who will be on the field with you.",
-          effects: [{ kind: "character", amount: 2 }],
+          effects: [{ kind: "character", amount: 5 }],
         },
       },
     ],

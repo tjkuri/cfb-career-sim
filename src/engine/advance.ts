@@ -12,7 +12,7 @@ import { CONTENT } from "../content/index";
 import type { ContentBundle } from "../content/schema";
 import { generateTransferOffers } from "./transfer";
 import { rollAmbientInjury, schoolTraitOf } from "./school-effects";
-import { roleFor } from "./role";
+import { isCaptain, roleOf } from "./role";
 import { BIG_GAME_EVENT_ID, pendingBigGame, playbook, resolveBigGame, setupBigGame } from "./big-game";
 import { BIG_GAME_INTRO, type Situation } from "../content/big-game";
 
@@ -86,7 +86,7 @@ function schoolOptions(state: GameState, content: ContentBundle): DecisionOption
         name: school?.name ?? o.schoolId,
         tier: o.tier,
         conference: school?.conference ?? "",
-        role: roleFor(state.overall, o.tier),
+        role: roleOf(state, o.tier),
         trait: school?.trait ? content.traitHints[school.trait] : undefined,
         current: o.id === "stay",
       },
@@ -380,7 +380,8 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
           };
           s.seasons.push(last);
         }
-        last.role = roleFor(s.overall, s.school.tier);
+        last.role = roleOf(s, s.school.tier);
+        last.captain = isCaptain(s);
         rollAmbientInjury(s, content, rng, injuryOf);
       }
       simulatePhaseProduction(s, content, rng);
@@ -431,7 +432,7 @@ function autoProgress(s: GameState, content: ContentBundle, rng: Rng, injuryOf: 
 function settleRegularSeason(s: GameState, content: ContentBundle, rng: Rng): void {
   const season = s.seasons[s.seasons.length - 1];
   if (!season || season.seasonIndex !== s.seasonIndex || season.teamWins + season.teamLosses > 0) return;
-  const role = season.role ?? roleFor(s.overall, s.school.tier);
+  const role = season.role ?? roleOf(s, s.school.tier);
   const record = simulateTeamRecord(s.overall, s.school.tier, role, content.postseason, rng);
   season.teamWins = record.wins;
   season.teamLosses = record.losses;

@@ -2,7 +2,7 @@ import type { Tier, Effect, Position, GameState, Role } from "./types";
 import type { Rng } from "./rng";
 import type { PostseasonConfig, AwardBand, ContentBundle } from "../content/schema";
 import { applyEffect, type InjuryLookup } from "./effects";
-import { roleFor } from "./role";
+import { roleOf } from "./role";
 
 function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -62,7 +62,7 @@ export function resolveAwards(
 export function runAwards(state: GameState, content: ContentBundle, rng: Rng, injuryOf: InjuryLookup): void {
   const season = state.seasons[state.seasons.length - 1];
   if (!season || season.seasonIndex !== state.seasonIndex || state.redshirtSeasonActive) return;
-  const role = season.role ?? roleFor(state.overall, state.school.tier);
+  const role = season.role ?? roleOf(state, state.school.tier);
   const effects = resolveAwards(
     state.setup.position,
     state.overall,

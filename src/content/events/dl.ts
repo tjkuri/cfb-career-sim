@@ -31,7 +31,7 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You skip the drills and keep doing what's worked. The strength staff notes it.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
     ],
@@ -107,7 +107,7 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "Nobody gets hurt in a game that means nothing, and the staff likes that you were the one who asked.",
-          effects: [{ kind: "character", amount: 2 }, { kind: "snaps", amount: -20 }],
+          effects: [{ kind: "character", amount: 5 }, { kind: "snaps", amount: -20 }],
         },
       },
     ],
@@ -146,7 +146,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "The linebacker cleans it up for a minimal gain, and the coordinator notices who did their job.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 2 },
-            { kind: "character", amount: 1 },
+            { kind: "character", amount: 3 },
           ],
         },
       },
@@ -177,7 +177,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "A second flag follows, and the coordinator has seen enough — you're on a short leash the rest of the half.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
           ],
         },
       },
@@ -189,7 +189,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You stay out of the officials' notebook and get a quiet word of approval from the staff.",
           effects: [
             { kind: "stat", stat: "tfls", amount: 1 },
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
           ],
         },
       },
@@ -299,7 +299,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You take the bait, draw a personal foul, and give the coordinator a headache.",
           effects: [
             { kind: "overall", timing: "immediate", amount: -1 },
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
           ],
         },
       },
@@ -311,7 +311,7 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You let your tape do the talking. The staff appreciates the poise.",
           effects: [
             { kind: "stat", stat: "tfls", amount: 1 },
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
           ],
         },
       },
@@ -459,7 +459,7 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 1,
         positiveOutcome: {
           description: "You tell them you are an edge rusher. They write it down.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
     ],

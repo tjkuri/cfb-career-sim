@@ -1,7 +1,7 @@
 import { advance, createCareer, getDecision, type GameState, type PendingDecision } from "../../engine/index";
 import { CONTENT } from "../../content/index";
 import { buildSummary } from "./summary";
-import { effectChips, schoolName, seasonRecap } from "./game-view";
+import { captainChip, effectChips, schoolName, seasonRecap } from "./game-view";
 import { appendLog } from "./storage";
 import type { Action, LogEntry, Resolved, SeasonRecap, UiState } from "./types";
 
@@ -64,7 +64,7 @@ function play(state: GameState, decision: PendingDecision, optionId: string): { 
     choiceLabel: option.label,
     outcome: next.lastOutcome?.description ?? "",
     paid: decision.kind === "redshirt" && optionId === "decline" ? null : paid,
-    chips: decision.kind === "bigGame" ? [] : effectChips(branch, state.setup.position),
+    chips: decision.kind === "bigGame" ? [] : withC(effectChips(branch, state.setup.position), captainChip(state.character, next.character)),
     ovrBefore: state.overall,
     ovrAfter: recap ? recap.ovrEnd : next.overall,
     bigGame: decision.kind === "bigGame" ? (lastAfter?.bigGame ?? null) : null,
@@ -130,3 +130,7 @@ function settle(ui: UiState, state: GameState): UiState {
 }
 
 export { schoolName };
+
+function withC<T>(chips: T[], c: T | null): T[] {
+  return c ? [...chips, c] : chips;
+}

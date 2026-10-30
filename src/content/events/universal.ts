@@ -88,7 +88,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You bring him along yourself. The room tightens up, and the staff notices exactly who did that.",
           effects: [
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
@@ -108,7 +108,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "It reads as exactly as insecure as it is, and the room quietly picks a side.",
           effects: [
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -132,14 +132,14 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
           description: "You tell them the standard is the standard, and then you go play like you meant it.",
           effects: [
             { kind: "overall", timing: "immediate", amount: 2 },
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
             { kind: "moment", item: "Told the cameras the standard is the standard", icon: "mic" },
           ],
         },
         negativeOutcome: {
           description: "It becomes the clip they run before every game you play from here on.",
           effects: [
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -155,7 +155,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "It reads as ducking it. The room wanted somebody to say something, and you were the somebody.",
           effects: [
-            { kind: "character", amount: -1 },
+            { kind: "character", amount: -2 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -221,13 +221,13 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You get the guys to finish the season for each other instead of for a staff that already left. The interim notices, and so does everyone above him.",
           effects: [
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
             { kind: "overall", timing: "immediate", amount: 1 },
           ],
         },
         negativeOutcome: {
           description: "Half the room is already gone in their heads. You spend bowl week playing captain to nobody.",
-          effects: [{ kind: "character", amount: -1 }],
+          effects: [{ kind: "character", amount: -2 }],
         },
       },
       {
@@ -241,7 +241,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "Word gets back before the bowl does. You practice bowl week with a staff that has stopped investing in you.",
           effects: [
-            { kind: "character", amount: -2 },
+            { kind: "character", amount: -4 },
             { kind: "overall", timing: "immediate", amount: -1 },
           ],
         },
@@ -264,7 +264,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You are up before he is out of his chair. Nobody forgets who did that, least of all him.",
           effects: [
-            { kind: "character", amount: 2 },
+            { kind: "character", amount: 5 },
             { kind: "moment", item: "First up cheering when a teammate took the award", icon: "trophy" },
           ],
         },
@@ -283,7 +283,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Somebody films you not clapping. It is on the internet before the dessert plates are cleared.",
-          effects: [{ kind: "character", amount: -3 }],
+          effects: [{ kind: "character", amount: -6 }],
         },
       },
     ],

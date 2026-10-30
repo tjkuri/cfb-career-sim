@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import type { Role, Tier } from "../../engine/index";
+import { CAPTAIN_REP, type Role, type Tier } from "../../engine/index";
 import { roundShort } from "../session/game-view";
 import { phaseLabel } from "../session/labels";
 import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonPhase, SeasonRecap } from "../session/types";
@@ -142,6 +142,7 @@ function PlayerStrip({ view }: { view: GameView }) {
       <span className={`pstrip-ovr cond ovr-${ovrBand(view.overall)}`}>{view.overall}</span>
       <span className="pstrip-name cond">
         {view.name} <span className="pcard-num">#{view.number}</span>
+        {view.captain && <CaptainPatch />}
       </span>
       <span className="dim">
         {view.positionLabel} · {view.classLabel} · {view.schoolName}
@@ -161,6 +162,7 @@ function PlayerCard({ view }: { view: GameView }) {
       <div className="pcard-id">
         <div className="pcard-name cond">
           {view.name} <span className="pcard-num">#{view.number}</span>
+          {view.captain && <CaptainPatch />}
         </div>
         <div className="pcard-school">
           {view.schoolName ? (
@@ -184,9 +186,11 @@ function PlayerCard({ view }: { view: GameView }) {
             <dd className={view.role ? `role role-${view.role}` : "dim"}>{view.role ? ROLE_LABEL[view.role] : "—"}</dd>
           )}
         </div>
-        <div title="How coaches, teammates and scouts see you. Let it sink and trouble finds you.">
+        <div title={`How coaches, teammates and scouts see you. At ${CAPTAIN_REP} you wear the C: you win depth-chart ties and the last snap leans your way. Let it sink and trouble finds you.`}>
           <dt>Rep</dt>
-          <dd className={view.rep <= 35 ? "bad" : view.rep >= 80 ? "good" : ""}>{view.rep}</dd>
+          <dd className={view.rep <= 35 ? "bad" : view.captain ? "gold" : ""}>
+            {view.rep} <span className="dd-sub">{view.captain ? "Captain" : `C at ${CAPTAIN_REP}`}</span>
+          </dd>
         </div>
         <div title="Your projected pick on NFL big boards, and the round it lands in.">
           <dt>Big board</dt>
@@ -208,6 +212,15 @@ function PlayerCard({ view }: { view: GameView }) {
         </ul>
       )}
     </header>
+  );
+}
+
+// The captain's patch, sewn on the jersey's chest.
+function CaptainPatch() {
+  return (
+    <span className="cpatch" title={`Captain. Rep ${CAPTAIN_REP}+: you win depth-chart ties and the last snap leans your way.`} aria-label="Captain">
+      C
+    </span>
   );
 }
 
@@ -273,7 +286,7 @@ function OptionBody({ o }: { o: OptionView }) {
 
 function DecisionCard({ d, view, record, onChoose }: { d: DecisionView; view: GameView; record: string | null; onChoose: (id: string) => void }) {
   if (d.kind === "bigGame" && d.bigGame)
-    return <BigGameCard d={d} position={view.position} team={view.schoolName ?? "You"} record={record} onChoose={onChoose} />;
+    return <BigGameCard d={d} position={view.position} team={view.schoolName ?? "You"} record={record} captain={view.captain} onChoose={onChoose} />;
   return (
     <div className="card scene enter" key={d.title}>
       <SeasonTrack view={view} />
@@ -432,6 +445,7 @@ function Ledger({ rows }: { rows: LedgerRow[] }) {
                 <span className="lrow-school">
                   {r.schoolName}
                   {r.redshirt ? <span className="dim"> · redshirt</span> : r.role ? <span className={`dim role-${r.role}`}> · {ROLE_LABEL[r.role]}</span> : null}
+                  {r.captain && <CaptainPatch />}
                 </span>
                 {r.statLine && r.state === "done" && <span className="lrow-stats dim">{r.statLine}</span>}
                 {(r.honors.length > 0 || r.bigGame) && r.state === "done" && (
