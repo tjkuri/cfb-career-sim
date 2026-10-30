@@ -5,7 +5,7 @@ import { preSnap, stagePlay } from "../telestrator/choreo";
 import type { DecisionView, Resolved } from "../session/types";
 import { Trophy } from "./Trophy";
 import { Confetti } from "./Confetti";
-import { ContinueButton } from "./Continue";
+import { ContinueButton, useQuietFocus } from "./Continue";
 
 const STAKES_LABEL: Record<BigGameStakes, string> = {
   rivalry: "Rivalry",
@@ -197,6 +197,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
   const g = r.bigGame!;
   const narrow = useNarrow();
   const [t, skip] = useSnapClock();
+  const focus = useQuietFocus();
   const drawable = !!g.spot && g.callIndex !== undefined && g.counterIndex !== undefined && g.lookIndex !== undefined;
   const play = useMemo(
     () =>
@@ -266,7 +267,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
       ) : (
         <div className="result-foot">
           <span className="dim">{g.call}</span>
-          <button type="button" className="ghost" onClick={skip} autoFocus>
+          <button type="button" className="ghost" onClick={skip} ref={focus}>
             Skip to the result
           </button>
         </div>

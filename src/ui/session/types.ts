@@ -66,6 +66,9 @@ export interface GameView {
   tierName: string | null;
   conference: string | null;
   classLabel: string;
+  /** Which year of the career, from 1, and where in that season. */
+  seasonNumber: number;
+  phase: SeasonPhase;
   overall: number;
   role: Role | null;
   rep: number;

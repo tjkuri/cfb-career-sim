@@ -4,6 +4,7 @@ import { buildSummary, shareText } from "../session/summary";
 import type { GameView } from "../session/types";
 import { ovrBand } from "./CareerScreen";
 import { Trophy } from "./Trophy";
+import { useQuietFocus } from "./Continue";
 
 interface Props {
   state: GameState;
@@ -52,6 +53,7 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
   const busted = state.status === "busted";
   const target = busted ? 1 : s.overallPick || LAST_PICK;
   const [pick, revealed, skip] = useDraftClock(target);
+  const focus = useQuietFocus();
 
   async function copy() {
     try {
@@ -188,7 +190,7 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
       </section>
 
           <div className="sum-actions">
-            <button type="button" className="go" onClick={onRestart} autoFocus>
+            <button type="button" className="go" onClick={onRestart} ref={focus}>
               Play another career
             </button>
             <button type="button" className="ghost" onClick={copy}>

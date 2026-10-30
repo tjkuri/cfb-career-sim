@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import type { Role, Tier } from "../../engine/index";
 import { roundShort } from "../session/game-view";
-import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonRecap } from "../session/types";
+import { phaseLabel } from "../session/labels";
+import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonPhase, SeasonRecap } from "../session/types";
 import { Trophy } from "./Trophy";
 import { BigGameCard, BigGameResultCard } from "./BigGame";
 import { ContinueButton } from "./Continue";
@@ -60,6 +61,18 @@ export function CareerScreen({ view, resolved, recap, onChoose, onContinue }: Pr
     return () => window.removeEventListener("keydown", onKey);
   }, [showing, view.decision, onChoose, onContinue]);
 
+  // A new card starts at its top. If the last one left the page scrolled past
+  // where this one begins, bring its top back into view; otherwise stay put.
+  const stage = useRef<HTMLElement>(null);
+  const cardKey = `${showing}:${view.decision?.title ?? ""}:${resolved?.title ?? ""}:${recap?.seasonNumber ?? ""}`;
+  useLayoutEffect(() => {
+    const top = stage.current?.getBoundingClientRect().top ?? 0;
+    if (top < 0) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: window.scrollY + top - 12, behavior: reduce ? "auto" : "smooth" });
+    }
+  }, [cardKey]);
+
   // Until the season recap has been read, the header and the ledger show the
   // season as it ended: the offseason's growth is the recap's reveal.
   const shown: GameView = recap
@@ -95,7 +108,7 @@ export function CareerScreen({ view, resolved, recap, onChoose, onContinue }: Pr
     <div className={`play ${broadcast ? "play-broadcast" : ""}`}>
       <div className="play-main">
         {broadcast ? <PlayerStrip view={shown} /> : <PlayerCard view={shown} />}
-        <section className="stage" aria-live="polite">
+        <section className="stage" aria-live="polite" ref={stage}>
           {showing === "result" && resolved && <ResultCard r={resolved} view={view} onContinue={onContinue} />}
           {showing === "recap" && recap && <RecapCard r={recap} onContinue={onContinue} />}
           {showing === "decision" && view.decision && <DecisionCard d={view.decision} view={view} record={currentRecord(view)} onChoose={onChoose} />}
@@ -262,9 +275,12 @@ function DecisionCard({ d, view, record, onChoose }: { d: DecisionView; view: Ga
   if (d.kind === "bigGame" && d.bigGame)
     return <BigGameCard d={d} position={view.position} team={view.schoolName ?? "You"} record={record} onChoose={onChoose} />;
   return (
-    <div className="card enter" key={d.title}>
-      <h2 className="card-title cond">{d.title}</h2>
-      <p className="card-desc">{d.description}</p>
+    <div className="card scene enter" key={d.title}>
+      <SeasonTrack view={view} />
+      <div className="scene-story">
+        <h2 className="card-title cond">{d.title}</h2>
+        <p className="card-desc">{d.description}</p>
+      </div>
       <div className={`opts opts-${d.options.length}`}>
         {d.options.map((o, i) => (
           <button key={o.id} type="button" className="opt" onClick={() => onChoose(o.id)}>
@@ -279,6 +295,25 @@ function DecisionCard({ d, view, record, onChoose }: { d: DecisionView; view: Ga
   );
 }
 
+// Where the career is: the year, and how far through that season.
+const TRACK: SeasonPhase[] = ["offseason", "nonconf", "conference", "postseason"];
+
+function SeasonTrack({ view }: { view: GameView }) {
+  const at = TRACK.indexOf(view.phase);
+  return (
+    <div className="track">
+      <span className="track-year cond">Year {view.seasonNumber}</span>
+      <ol className="track-steps" aria-label={`${phaseLabel(view.phase)}, year ${view.seasonNumber}`}>
+        {TRACK.map((p, i) => (
+          <li key={p} className={i < at ? "is-done" : i === at ? "is-now" : ""} aria-current={i === at ? "step" : undefined}>
+            {phaseLabel(p)}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 // --- result ------------------------------------------------------------------
 
 function ResultCard({ r, view, onContinue }: { r: Resolved; view: GameView; onContinue: () => void }) {
@@ -286,19 +321,21 @@ function ResultCard({ r, view, onContinue }: { r: Resolved; view: GameView; onCo
   const delta = r.ovrAfter - r.ovrBefore;
   const verdict = r.paid === true ? "It pays off" : r.paid === false ? "It backfires" : null;
   return (
-    <div className={`card result enter ${r.paid === true ? "is-good" : r.paid === false ? "is-bad" : ""}`}>
-      <div className="result-head">
-        <span className="result-title">{r.title}</span>
-        {verdict && <span className="verdict cond">{verdict}</span>}
+    <div className={`card scene result enter ${r.paid === true ? "is-good" : r.paid === false ? "is-bad" : ""}`}>
+      <div className="scene-story">
+        <div className="result-head">
+          <span className="result-title">{r.title}</span>
+          {verdict && <span className="verdict cond">{verdict}</span>}
+        </div>
+        <p className="result-choice">{r.choiceLabel}</p>
+        <p className="result-text">{r.outcome}</p>
+        <ChipList chips={r.chips} />
+        {r.roleChange && (
+          <p className={`promo ${rank(r.roleChange.to) > rank(r.roleChange.from) ? "good" : "bad"}`}>
+            {rank(r.roleChange.to) > rank(r.roleChange.from) ? "Promoted" : "Demoted"}: {ROLE_LABEL[r.roleChange.from]} → {ROLE_LABEL[r.roleChange.to]}
+          </p>
+        )}
       </div>
-      <p className="result-choice">{r.choiceLabel}</p>
-      <p className="result-text">{r.outcome}</p>
-      <ChipList chips={r.chips} />
-      {r.roleChange && (
-        <p className={`promo ${rank(r.roleChange.to) > rank(r.roleChange.from) ? "good" : "bad"}`}>
-          {rank(r.roleChange.to) > rank(r.roleChange.from) ? "Promoted" : "Demoted"}: {ROLE_LABEL[r.roleChange.from]} → {ROLE_LABEL[r.roleChange.to]}
-        </p>
-      )}
       <div className="result-foot">
         <span className="dim">
           OVR {r.ovrAfter}
@@ -322,7 +359,7 @@ function RecapCard({ r, onContinue }: { r: SeasonRecap; onContinue: () => void }
   const climbed = r.roundAfter !== 0 && (r.roundBefore === 0 || r.roundAfter < r.roundBefore);
   const fell = r.roundBefore !== 0 && (r.roundAfter === 0 || r.roundAfter > r.roundBefore);
   return (
-    <div className="card recap enter">
+    <div className="card scene recap enter">
       <div className="recap-head">
         <span className="dim">
           Season {r.seasonNumber} · {r.classLabel} · {r.schoolName}

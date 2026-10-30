@@ -237,6 +237,8 @@ export function buildView(state: GameState): GameView {
     tierName: school ? TIER_NAMES[school.tier] : null,
     conference: school?.conference ?? null,
     classLabel: currentClassLabel(state),
+    seasonNumber: state.seasonIndex + 1,
+    phase: state.phase,
     overall: state.overall,
     role: school ? (last?.seasonIndex === state.seasonIndex && last.role ? last.role : roleFor(state.overall, state.school.tier)) : null,
     rep: state.character,

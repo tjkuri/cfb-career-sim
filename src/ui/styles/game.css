@@ -640,3 +640,79 @@
 .scout-good li::before { content: "+"; position: absolute; left: 0.2rem; color: var(--good); font-weight: 900; }
 .scout-bad li::before { content: "\2212"; position: absolute; left: 0.2rem; color: var(--bad); font-weight: 900; }
 .scout-next { margin: 0.75rem 0 0; color: var(--gold); font-weight: 900; font-size: 1.15rem; }
+
+/* ---------- season track ---------- */
+
+.track { display: flex; align-items: center; gap: 0.9rem; margin: 0 0 1rem; }
+.track-year { font-weight: 900; font-size: 1rem; color: var(--gold); white-space: nowrap; }
+.track-steps { flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.3rem; list-style: none; margin: 0; padding: 0; }
+.track-steps li {
+  font-size: var(--t-micro);
+  font-weight: 700;
+  color: var(--chalk-faint);
+  padding-top: 0.4rem;
+  border-top: 3px solid rgb(255 255 255 / 0.08);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-steps li.is-done { border-top-color: rgb(255 201 64 / 0.4); color: var(--chalk-dim); }
+.track-steps li.is-now { border-top-color: var(--gold); color: var(--chalk); }
+/* On a phone only the current step is named; the bars still show how far along. */
+@media (max-width: 560px) {
+  .track-steps li:not(.is-now) { color: transparent; }
+  .track-steps li.is-now { overflow: visible; }
+}
+
+/* ---------- the screen you choose on ----------
+   On a desktop window the career screen fills the height: the story sits in
+   the open space, the choices anchor to the bottom of the card where the
+   Continue button also lands, and the career column runs alongside. */
+
+@media (min-width: 881px) and (min-height: 600px) {
+  .app { padding-bottom: clamp(1rem, 3vw, 2rem); }
+  .play:not(.play-broadcast) {
+    min-height: calc(100dvh - 2 * clamp(1rem, 3vw, 2rem));
+    align-items: stretch;
+  }
+  .play:not(.play-broadcast) .stage { flex: 1; display: flex; flex-direction: column; }
+  .play:not(.play-broadcast) .stage > .card { flex: 1; }
+
+  .scene { display: flex; flex-direction: column; padding: 1.5rem 1.6rem 1.6rem; }
+  .scene-story { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0.5rem 0 1.5rem; }
+  .scene .card-title { font-size: clamp(1.9rem, 2.6vw, 2.6rem); margin-bottom: 0.6rem; text-wrap: balance; }
+  .scene .card-desc { font-size: 1.15rem; line-height: 1.5; margin: 0; max-width: 36rem; }
+  .scene .result-choice { font-size: 1.5rem; }
+  .scene .result-text { font-size: 1.15rem; line-height: 1.5; }
+  .scene .verdict { font-size: 2.2rem; }
+  .scene .result-foot { margin-top: 0; }
+  .scene.recap .recap-head { margin-top: auto; }
+  .scene.recap .result-foot { margin-top: auto; padding-top: 1.25rem; }
+  .scene .recap-record { font-size: 4.5rem; }
+  .scene .recap-game { font-size: 1.1rem; }
+  .scene .recap-stats { margin-top: 1.25rem; }
+  .scene .recap-stats dd { font-size: 1.8rem; }
+  .scene .recap-moves { margin-top: 1.25rem; }
+  .scene .big { font-size: 1.9rem; }
+
+  .scene .opts { gap: 0.75rem; }
+  .scene .opt { padding: 1.1rem 1.15rem 1.05rem; gap: 0.65rem; min-height: 8.5rem; }
+  .scene .opt-label { font-size: 1.4rem; }
+  .scene .opt-key { font-size: var(--t-meta); top: 0.7rem; right: 0.75rem; }
+  .scene .odds { height: 1.6rem; }
+  .scene .odds-num { font-size: 1.05rem; }
+  .scene .chip { font-size: 0.8125rem; padding: 0.18rem 0.5rem; }
+  .scene .school-meta, .scene .school-perk, .scene .opt-detail { font-size: 0.875rem; }
+  .scene .school-role { font-size: 1.05rem; margin-top: auto; }
+  .scene .opts-3 .opt-label { font-size: 1.2rem; }
+  .scene { container-type: inline-size; }
+  /* Three choices in a narrow window would break words mid-letter: stack them. */
+  @container (max-width: 30rem) {
+    .opts-3 { grid-template-columns: minmax(0, 1fr); }
+    .opts-3 .opt { min-height: 0; }
+  }
+
+  .play:not(.play-broadcast) .ledger { display: flex; flex-direction: column; }
+  .ledger ol { flex: 1; }
+  .ledger .lrow { flex: 1 1 0; max-height: 8rem; }
+}
