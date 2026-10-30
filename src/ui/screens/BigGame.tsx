@@ -119,7 +119,6 @@ interface CardProps {
 export function BigGameCard({ d, position, team, record, onChoose }: CardProps) {
   const g = d.bigGame!;
   const narrow = useNarrow();
-  const [named, setNamed] = useState(false);
   const play = useMemo(() => preSnap(position, g.spot, g.lookIndex, g.pkg), [position, g.spot, g.lookIndex, g.pkg]);
   // The wind is the field goal's read; on a chip shot it is the block team.
   const kick = g.setting === "fieldgoal";
@@ -149,15 +148,10 @@ export function BigGameCard({ d, position, team, record, onChoose }: CardProps) 
         <div className="clue">
           <span className="clue-head">{kick ? "The flags right now" : "Pre-snap look"}</span>
           <span className="clue-body">
-            {named ? <b>{g.look}</b> : kick ? "Read the flags on the uprights." : "Read the alignment on the field."}
+            <b>{g.look}</b>
           </span>
           <span className="clue-note">
-            {kick ? "Wind shifts about 4 kicks in 10." : "Defenses disguise about 4 looks in 10."}{" "}
-            {!named && (
-              <button type="button" className="name-look" onClick={() => setNamed(true)}>
-                Name it for me
-              </button>
-            )}
+            {kick ? "Wind shifts about 4 kicks in 10." : "Defenses disguise about 4 looks in 10."}
           </span>
         </div>
       </div>
