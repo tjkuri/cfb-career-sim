@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GameState } from "../../engine/index";
 import { buildSummary, shareText } from "../session/summary";
 import type { GameView } from "../session/types";
@@ -15,32 +15,41 @@ interface Props {
 }
 
 const TICK_MS = 3200;
+const HOLD_MS = 700; // on your pick, before the card turns over
 const LAST_PICK = 224; // seven rounds of 32
 
 /**
  * Draft night: the board ticks through the picks, slowing as it reaches
- * yours, and stops on your name, or runs out without it.
+ * yours, holds there a beat, then turns over. It runs on the clock, not the
+ * count, so a top-five pick gets the same wait as a seventh-rounder. A career
+ * that washed out has no draft night to wait through.
  */
-function useDraftClock(target: number): [number, boolean, () => void] {
-  const [pick, setPick] = useState(() => (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? target : 1));
-  const done = pick >= target;
+function useDraftClock(target: number, run: boolean): [number, boolean, () => void] {
+  const [pick, setPick] = useState(1);
+  const [done, setDone] = useState(() => !run || window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const raf = useRef(0);
   useEffect(() => {
     if (done) return;
-    let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / TICK_MS);
       // Fast through the early picks, crawling into yours.
       const eased = 1 - Math.pow(1 - p, 4);
-      setPick(Math.max(1, Math.round(target * eased)));
-      if (p < 1) raf = requestAnimationFrame(tick);
+      setPick(1 + Math.round((target - 1) * eased));
+      if (now - start < TICK_MS + HOLD_MS) raf.current = requestAnimationFrame(tick);
+      else setDone(true);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-    // Runs once; skipping jumps straight to the end.
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+    // Runs once; skipping stops it.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return [pick, done, () => setPick(target)];
+  function skip() {
+    cancelAnimationFrame(raf.current);
+    setPick(target);
+    setDone(true);
+  }
+  return [pick, done, skip];
 }
 
 function roundAndPick(n: number): string {
@@ -52,7 +61,7 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
   const [copied, setCopied] = useState(false);
   const busted = state.status === "busted";
   const target = busted ? 1 : s.overallPick || LAST_PICK;
-  const [pick, revealed, skip] = useDraftClock(target);
+  const [pick, revealed, skip] = useDraftClock(target, !busted);
   const focus = useQuietFocus();
 
   async function copy() {
@@ -82,7 +91,7 @@ export function SummaryScreen({ state, view, hasLog, onRestart, onViewLog }: Pro
             <p className="draft-clock-label">Draft night · on the clock</p>
             <p className="draft-clock cond">{roundAndPick(pick)}</p>
             <p className="draft-sub dim">Pick #{pick}. Your phone is face up on the table.</p>
-            <button type="button" className="ghost" onClick={skip}>
+            <button type="button" className="ghost" onClick={skip} ref={focus}>
               Skip to my pick
             </button>
           </>
