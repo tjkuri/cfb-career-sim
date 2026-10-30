@@ -18,10 +18,10 @@ interface Props {
 const ROLE_LABEL: Record<Role, string> = { starter: "Starter", rotation: "Rotation", backup: "Backup" };
 
 // What a program gives you back for the fight to start there: a team that
-// wins, and the spotlight national awards and draft scouts follow.
+// wins, practices that make you better, and the spotlight scouts follow.
 const TIER_PERK: Record<Tier, string> = {
-  4: "Title contender. National spotlight for awards and scouts.",
-  3: "Bowl regular. Plenty of scouts in the stands.",
+  4: "Title contender. You practice against future pros every day.",
+  3: "Bowl regular. Tough practices, plenty of scouts in the stands.",
   2: "Bowl hopeful. Scouts check in now and then.",
   1: "Small stage. Scouts rarely make the trip.",
 };
@@ -250,6 +250,7 @@ function OptionBody({ o }: { o: OptionView }) {
         </span>
         <span className="school-perk">{TIER_PERK[s.tier]}</span>
         <span className={`school-role role-${s.role}`}>You'd be: {ROLE_LABEL[s.role]}</span>
+        <span className="school-growth">About +{s.growth} OVR from a season there</span>
         {s.trait && <span className="school-trait">{s.trait}</span>}
       </>
     );

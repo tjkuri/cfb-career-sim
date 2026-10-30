@@ -22,7 +22,7 @@ export const OL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The cut — or the bulk — never quite settles, and camp is a grind.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -52,11 +52,11 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 0.55,
         positiveOutcome: {
           description: "The new fundamentals click by the end of camp, and everything downstream gets easier.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "You're still fighting old habits when the season opener arrives.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -95,7 +95,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "The speed off the edge is a different animal, and you're grabbing more than blocking.",
           effects: [
             { kind: "stat", stat: "sacksAllowed", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -128,15 +128,18 @@ export const OL_EVENTS: GameEvent[] = [
         label: "Reset and tighten the count",
         probability: 0.75,
         positiveOutcome: {
-          description: "You settle in and finish the game clean.",
-          effects: [{ kind: "stat", stat: "pancakes", amount: 3 }],
+          description: "You settle in, finish the game clean, and never think about the count again.",
+          effects: [
+            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "stat", stat: "pancakes", amount: 3 },
+          ],
         },
         negativeOutcome: {
           description: "It snowballs — by the fourth quarter you're guessing at the snap.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: -2 },
             { kind: "stat", stat: "sacksAllowed", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -177,7 +180,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You spend the next series watching the reaction instead of your assignment.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -214,7 +217,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You win the leverage battle snap after snap and he never gets home.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 7 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 4 },
             { kind: "moment", item: "Shut down an All-Conference pass rusher one-on-one", icon: "shield" },
           ],
         },
@@ -222,7 +225,7 @@ export const OL_EVENTS: GameEvent[] = [
           description: "He wins the edge over and over and the sack total balloons.",
           effects: [
             { kind: "stat", stat: "sacksAllowed", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -270,13 +273,13 @@ export const OL_EVENTS: GameEvent[] = [
           description: "It somehow works — the crowd gets loud, the line feeds off it, and you dominate the rest of the game.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 5 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 4 },
           ],
         },
         negativeOutcome: {
           description: "You draw a personal foul on top of it, and the coordinator has a word with you at halftime.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -2 },
           ],
         },
@@ -301,14 +304,14 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You grind through it and the line holds up despite the missing hand.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 4 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
           description: "The cast costs you grip and technique, and it's a long, sloppy afternoon.",
           effects: [
             { kind: "stat", stat: "sacksAllowed", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -341,14 +344,14 @@ export const OL_EVENTS: GameEvent[] = [
           description: "You win enough reps in the one-on-ones that people start talking about you differently.",
           effects: [
             { kind: "stat", stat: "pancakes", amount: 6 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "The best pass rushers in the country are all in one building, and it's a rough week on tape.",
           effects: [
             { kind: "stat", stat: "sacksAllowed", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -414,11 +417,11 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "Your feet were always better than a guard's. By the opener you are protecting the quarterback's blind side like you were born there.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Moved to left tackle and stuck there", icon: "shield" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 5 }, { kind: "moment", item: "Moved to left tackle and stuck there", icon: "shield" }],
         },
         negativeOutcome: {
           description: "Speed rushers eat you alive in camp, and the move costs you a month of confidence.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -447,7 +450,7 @@ export const OL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "Three weeks with men who did it for twelve years. Your hands are faster than they have ever been.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "You come back with turf toe and a lot of good advice you cannot use yet.",

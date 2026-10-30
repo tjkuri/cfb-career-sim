@@ -1,6 +1,7 @@
 import {
   CAPTAIN_REP,
   CLASS_ORDER,
+  FIFTH_YEAR_DISCOUNT,
   deriveDraftStock,
   getDecision,
   isCaptain,
@@ -58,7 +59,9 @@ export function effectChips(effects: Effect[] | undefined, position: Position): 
         break;
       case "injury": {
         const inj = CONTENT.injuries[e.injuryType];
-        chips.push({ text: `${inj?.label ?? "Injury"} ${MINUS}${inj?.overallDelta ?? 3}`, tone: "bad" });
+        // Most of it heals; `lasting` is the part that never comes back.
+        const lasting = inj?.lasting ? `, ${MINUS}${inj.lasting} for good` : "";
+        chips.push({ text: `${inj?.label ?? "Injury"} ${MINUS}${inj?.overallDelta ?? 3}${lasting}`, tone: "bad" });
         break;
       }
       case "suspension":
@@ -107,7 +110,7 @@ function withCaptainChip(chips: Chip[], effects: Effect[] | undefined, rep: numb
   return c ? [...chips, c] : chips;
 }
 
-function optionView(o: DecisionOption, position: Position, rep: number): OptionView {
+function optionView(o: DecisionOption, position: Position, rep: number, growthBase: number): OptionView {
   if (o.school) {
     return {
       id: o.id,
@@ -121,6 +124,7 @@ function optionView(o: DecisionOption, position: Position, rep: number): OptionV
         role: o.school.role,
         trait: o.school.trait,
         current: !!o.school.current,
+        growth: growthBase + CONTENT.progression.devByRole[o.school.role] + (CONTENT.progression.devByTier?.[o.school.tier] ?? 0),
       },
     };
   }
@@ -132,14 +136,18 @@ function optionView(o: DecisionOption, position: Position, rep: number): OptionV
   return { id: o.id, label: o.label, branches };
 }
 
-export function decisionView(d: PendingDecision, position: Position, rep: number): DecisionView {
-  const options = d.options.map((o) => optionView(o, position, rep));
+export function decisionView(d: PendingDecision, position: Position, rep: number, growthBase = 0): DecisionView {
+  const options = d.options.map((o) => optionView(o, position, rep, growthBase));
   if (d.kind === "redshirt") {
     // The redshirt's real trade is time, which no effect carries: say it.
     for (const o of options) {
       const extra: Chip[] =
         o.id === "redshirt"
-          ? [{ text: "Sit out this season", tone: "neutral" }, { text: "+1 year of eligibility", tone: "good" }]
+          ? [
+              { text: "Sit out this season", tone: "neutral" },
+              { text: "+1 year of eligibility", tone: "good" },
+              { text: `${MINUS}${FIFTH_YEAR_DISCOUNT} stock as a 5th-year senior`, tone: "bad" },
+            ]
           : [{ text: "Keep your spot on the field", tone: "neutral" }];
       o.branches = o.branches.map((b) => ({ ...b, chips: [...b.chips.filter((c) => c.tone !== "neutral"), ...extra] }));
     }
@@ -267,7 +275,7 @@ export function buildView(state: GameState): GameView {
     injury: injury ? (CONTENT.injuries[injury.injuryType]?.label ?? "Injured") : null,
     trophyCase: trophyCase(state),
     ledger: ledger(state),
-    decision: decision ? decisionView(decision, state.setup.position, state.character) : null,
+    decision: decision ? decisionView(decision, state.setup.position, state.character, CONTENT.progression.devByClass[state.eligibility.classYear]) : null,
     status: state.status,
     draftResult: state.draftResult ?? null,
     endingReason: state.endingReason ?? null,

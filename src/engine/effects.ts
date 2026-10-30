@@ -1,6 +1,6 @@
 import type { Effect, GameState } from "./types";
 
-export type InjuryInfo = { overallDelta: number; recoveryPhases: number };
+export type InjuryInfo = { overallDelta: number; recoveryPhases: number; lasting?: number };
 export type InjuryLookup = (injuryType: string) => InjuryInfo;
 
 export function clampOverall(n: number): number {
@@ -69,7 +69,7 @@ export function applyEffect(state: GameState, effect: Effect, injuryOf: InjuryLo
         kind: "injury",
         injuryType: effect.injuryType,
         remainingPhases: info.recoveryPhases,
-        restoreAmount: info.overallDelta,
+        restoreAmount: info.overallDelta - (info.lasting ?? 0),
       });
       return;
     }

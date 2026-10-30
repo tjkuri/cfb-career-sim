@@ -24,7 +24,7 @@ export const K_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description:
             "The timing never quite locks in, and you're still second-guessing the count when the calendar flips to August.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
         },
       },
       {
@@ -56,12 +56,12 @@ export const K_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "Kick twelve splits it clean, and so do the next eleven after that. Whatever was wrong in your head just isn't there anymore.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 6 }],
         },
         negativeOutcome: {
           description:
             "You never find the miss. It just gets more expensive the longer you stand out there looking for it.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -96,7 +96,7 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 2 },
             { kind: "stat", stat: "points", amount: 6 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
@@ -105,7 +105,7 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: -1 },
             { kind: "stat", stat: "points", amount: -3 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -147,7 +147,7 @@ export const K_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description:
             "You think about it exactly one thought too many, push it right, and the shortest miss of your life gets the loudest silence of your season.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -181,7 +181,7 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 1 },
             { kind: "stat", stat: "points", amount: 3 },
-            { kind: "overall", timing: "immediate", amount: 3 },
+            { kind: "overall", timing: "immediate", amount: 6 },
             { kind: "moment", item: "Converted a fake field goal for a first down", icon: "football" },
           ],
         },
@@ -190,7 +190,7 @@ export const K_EVENTS: GameEvent[] = [
             "There is nowhere to go, and a linebacker introduces himself the hard way. You spend the walk to the sideline discovering an ankle can bend like that.",
           effects: [
             { kind: "injury", injuryType: "ankle" },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -235,7 +235,7 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: -1 },
             { kind: "stat", stat: "points", amount: -3 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -271,14 +271,14 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 2 },
             { kind: "stat", stat: "points", amount: 6 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Called the stadium's wind correctly on a game-deciding kick", icon: "wind" },
           ],
         },
         negativeOutcome: {
           description:
             "You aim for the swirl and, this once, the swirl doesn't show up. Wide left, and the coordinator raises an eyebrow you'll be thinking about all week.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -314,14 +314,14 @@ export const K_EVENTS: GameEvent[] = [
             { kind: "stat", stat: "fieldGoals", amount: 2 },
             { kind: "stat", stat: "points", amount: 6 },
             { kind: "stat", stat: "gameWinners", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Set up a game-tying kick with an onside recovery", icon: "football" },
           ],
         },
         negativeOutcome: {
           description:
             "It skips a yard too far and their return man scoops it in stride. The sideline goes quiet fast, and there isn't a second chance.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -360,14 +360,14 @@ export const K_EVENTS: GameEvent[] = [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
             { kind: "stat", stat: "points", amount: 9 },
             { kind: "stat", stat: "gameWinners", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Kicked a walk-off field goal to win a bowl game", icon: "trophy" },
           ],
         },
         negativeOutcome: {
           description:
             "It has the distance and misses left by a foot. The postgame is a blur, and it's the only thing anyone wants to talk about for a while.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -3 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -6 }],
         },
       },
       {
@@ -402,14 +402,14 @@ export const K_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "fieldGoals", amount: 3 },
             { kind: "stat", stat: "points", amount: 9 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 4 },
             { kind: "moment", item: "Made a 57-yard field goal", icon: "target" },
           ],
         },
         negativeOutcome: {
           description:
             "It's got the leg. It does not have the accuracy — off the upright and away in the wrong direction.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -475,11 +475,11 @@ export const K_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "His drills actually work, and a 60-yarder you hit in July does a million views.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: 5 }, { kind: "moment", item: "Went viral at a kicking camp", icon: "video" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "character", amount: 5 }, { kind: "moment", item: "Went viral at a kicking camp", icon: "video" }],
         },
         negativeOutcome: {
           description: "The drills are for the camera. You come back with followers and a hook you did not have in May.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }, { kind: "character", amount: -2 }],
         },
       },
       {

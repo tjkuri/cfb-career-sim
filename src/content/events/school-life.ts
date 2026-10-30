@@ -48,20 +48,16 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "By the fourth quarter you are running on nothing, and the tape shows it as clearly as everyone in the stadium saw it.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
       {
         id: "ask-for-a-series",
         label: "Ask for a series off to get your legs back",
-        probability: 0.75,
+        probability: 1,
         positiveOutcome: {
           description: "You come off for one series, get your wind, and finish the game upright.",
-          effects: [],
-        },
-        negativeOutcome: {
-          description: "There is nobody to put in. The series happens without you and it does not go well, and everyone knows why.",
           effects: [],
         },
       },
@@ -111,7 +107,7 @@ export const SCHOOL_LIFE_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "He is not ready and the reps you gave him were reps off your own tape, and the staff is not shy about saying so.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -6 },
           ],
         },

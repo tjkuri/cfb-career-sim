@@ -18,11 +18,11 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 0.55,
         positiveOutcome: {
           description: "The new reps click fast and you carve out a real role there.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "The fit never quite comes together, and it shows on the depth chart.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -56,7 +56,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "You stall out two reps short, and it's the running joke of the summer.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -88,8 +88,9 @@ export const OSKILL_EVENTS: GameEvent[] = [
         label: "Take the return job",
         probability: 0.7,
         positiveOutcome: {
-          description: "You add real yardage in the return game and never leave the field.",
+          description: "You add real yardage in the return game, never leave the field, and get faster in space.",
           effects: [
+            { kind: "overall", timing: "immediate", amount: 1 },
             { kind: "stat", stat: "scrimmageYards", amount: 60 },
             { kind: "snaps", amount: 5 },
           ],
@@ -139,11 +140,11 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "He does, two plays later, and you take it the distance. Nobody remembers the drop.",
-          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 90 }, { kind: "stat", stat: "totalTds", amount: 1 }, { kind: "overall", timing: "immediate", amount: 1 }, { kind: "moment", item: "Asked for the ball after a drop and scored on it", icon: "football" }],
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 90 }, { kind: "stat", stat: "totalTds", amount: 1 }, { kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Asked for the ball after a drop and scored on it", icon: "football" }],
         },
         negativeOutcome: {
           description: "He comes back to you and you drop that one too. Your number goes quiet for a month.",
-          effects: [{ kind: "character", amount: -4 }, { kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "character", amount: -4 }, { kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
     ],
@@ -208,7 +209,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
           description: "You wear defenses down in the fourth quarter and become the whole offense.",
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 190 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
@@ -249,13 +250,13 @@ export const OSKILL_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 40 },
             { kind: "stat", stat: "totalTds", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Had a highlight sideline catch upheld on review", icon: "video" },
           ],
         },
         negativeOutcome: {
           description: "The booth finds a blade of grass under the ball. Overturned.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -273,7 +274,7 @@ export const OSKILL_EVENTS: GameEvent[] = [
           description: "Replay would have given it to you. You take it off the board yourself.",
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: -20 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -303,13 +304,13 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "The staff relents and dials up a few designed touches your way.",
-          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 70 }, { kind: "overall", timing: "immediate", amount: 1 }],
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 70 }, { kind: "overall", timing: "immediate", amount: 4 }],
         },
         negativeOutcome: {
           description: "It reads as sulking, and you lose trust in the room.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -343,14 +344,14 @@ export const OSKILL_EVENTS: GameEvent[] = [
           effects: [
             { kind: "stat", stat: "scrimmageYards", amount: 90 },
             { kind: "character", amount: 5 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "You take a hard hit in a game that means nothing on your permanent record.",
           effects: [
             { kind: "injury", injuryType: "collarbone" },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -389,11 +390,11 @@ export const OSKILL_EVENTS: GameEvent[] = [
         probability: 0.45,
         positiveOutcome: {
           description: "You reverse field, make three men miss, and score on the run of the season.",
-          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 80 }, { kind: "stat", stat: "totalTds", amount: 1 }, { kind: "overall", timing: "immediate", amount: 2 }, { kind: "moment", item: "Cut back across the whole defense for a touchdown", icon: "zap" }],
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 80 }, { kind: "stat", stat: "totalTds", amount: 1 }, { kind: "overall", timing: "immediate", amount: 4 }, { kind: "moment", item: "Cut back across the whole defense for a touchdown", icon: "zap" }],
         },
         negativeOutcome: {
           description: "You reverse field into a crowd and give back twenty of the yards you had.",
-          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 15 }, { kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "stat", stat: "scrimmageYards", amount: 15 }, { kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
     ],

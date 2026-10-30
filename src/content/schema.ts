@@ -21,6 +21,8 @@ export interface ProgressionConfig {
   // adds `developmentalBonus` on top.
   devByClass: Record<ClassYear, number>;
   devByRole: Record<Role, number>;
+  // Practising against better players: growth for the level of the program.
+  devByTier?: Record<Tier, number>;
   devJitter: number;
   washoutOverallFloor: number;
   washoutSnapFloor: number;
@@ -62,7 +64,7 @@ export interface SchoolTraitConfig {
 
 export interface ContentBundle {
   events: GameEvent[];
-  injuries: Record<string, { label: string; overallDelta: number; recoveryPhases: number }>;
+  injuries: Record<string, { label: string; overallDelta: number; recoveryPhases: number; lasting?: number }>;
   schools: { id: string; name: string; tier: 1 | 2 | 3 | 4; conference: string; state: string; trait?: SchoolTrait }[];
   positions: Record<Position, { label: string; stats: string[] }>;
   trophyIds: string[];

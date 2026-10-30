@@ -12,6 +12,10 @@ const HONOR_VALUE: Record<string, number> = {
   bowlWin: 1,
 };
 
+// Scouts take a few points off a fifth-year senior: less upside left. It is
+// what keeps the redshirt a trade instead of a free extra season.
+export const FIFTH_YEAR_DISCOUNT = 8;
+
 function productionScore(state: GameState): number {
   const totalSnaps = state.seasons.reduce((a, s) => a + s.snaps, 0);
   return Math.min(12, totalSnaps / 160);
@@ -32,6 +36,7 @@ export interface StockParts {
   rep: number;
   honors: number;
   competition: number;
+  age: number;
 }
 
 export function stockParts(state: GameState): StockParts {
@@ -42,12 +47,13 @@ export function stockParts(state: GameState): StockParts {
     rep: (state.character - 50) * 0.12,
     honors: honors.reduce((a, id) => a + (HONOR_VALUE[id] ?? 0), 0),
     competition: competitionScore(state),
+    age: state.eligibility.redshirtUsed ? -FIFTH_YEAR_DISCOUNT : 0,
   };
 }
 
 export function deriveDraftStock(state: GameState): number {
   const p = stockParts(state);
-  const raw = p.overall + p.production + p.rep + p.honors + p.competition;
+  const raw = p.overall + p.production + p.rep + p.honors + p.competition + p.age;
   return Math.max(0, Math.min(100, Math.round(raw)));
 }
 

@@ -10,7 +10,12 @@ function value(effects: Effect[]): number {
   for (const e of effects) {
     if (e.kind === "overall") v += e.amount;
     if (e.kind === "character") v += e.amount * 0.15;
-    if (e.kind === "injury") v -= CONTENT.injuries[e.injuryType]?.overallDelta ?? 3;
+    if (e.kind === "injury") {
+      // What an injury really costs: the part that never comes back, plus the
+      // games missed while the rest heals.
+      const inj = CONTENT.injuries[e.injuryType];
+      v -= (inj?.lasting ?? 0) + (inj?.recoveryPhases ?? 2) * 0.5;
+    }
     if (e.kind === "suspension") v -= 2;
     if (e.kind === "ending") v -= 40;
     if (e.kind === "snaps") v += e.amount / 60;

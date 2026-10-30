@@ -246,6 +246,7 @@
 .school-role { font-weight: 800; font-size: 0.95rem; }
 .school-perk { color: var(--chalk-soft); font-size: var(--t-meta); line-height: 1.35; }
 .school-trait { color: var(--chalk-soft); font-size: var(--t-meta); font-style: italic; }
+.school-growth { color: var(--chalk-dim); font-size: var(--t-meta); font-weight: 700; }
 
 /* ---------- result ---------- */
 
@@ -689,7 +690,7 @@
   .scene .odds { height: 1.6rem; }
   .scene .odds-num { font-size: 1.05rem; }
   .scene .chip { font-size: 0.8125rem; padding: 0.18rem 0.5rem; }
-  .scene .school-meta, .scene .school-perk, .scene .opt-detail { font-size: 0.875rem; }
+  .scene .school-meta, .scene .school-perk, .scene .school-growth, .scene .opt-detail { font-size: 0.875rem; }
   .scene .school-role { font-size: 1.05rem; margin-top: auto; }
   .scene .opts-3 .opt-label { font-size: 1.2rem; }
   .scene { container-type: inline-size; }

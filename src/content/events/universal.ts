@@ -44,8 +44,11 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         label: "Get up and finish the drive",
         probability: 0.55,
         positiveOutcome: {
-          description: "It holds. You finish the game and ice it for a week.",
-          effects: [{ kind: "moment", item: "Finished the game on one good leg", icon: "medical" }],
+          description: "It holds. You finish the game and ice it for a week, and the locker room does not forget it.",
+          effects: [
+            { kind: "character", amount: 5 },
+            { kind: "moment", item: "Finished the game on one good leg", icon: "medical" },
+          ],
         },
         negativeOutcome: {
           description: "It does not hold. The trainer meets you at the numbers and you do not put weight on it again until January.",
@@ -55,10 +58,10 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
       {
         id: "cart",
         label: "Wave for the trainer",
-        probability: 0.6,
+        probability: 0.75,
         positiveOutcome: {
-          description: "Sprain, not a tear. They shut you down early and you keep the rest of the season.",
-          effects: [{ kind: "injury", injuryType: "ankle" }],
+          description: "A bruise and a scare, not a tear. They sit you for the rest of the game and you are back next week.",
+          effects: [],
         },
         negativeOutcome: {
           description: "The scan finds more than the sideline test did.",
@@ -94,7 +97,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "He passes you by the spring game, and the staff stops pretending the rotation is open.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -109,7 +112,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
           description: "It reads as exactly as insecure as it is, and the room quietly picks a side.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -140,7 +143,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
           description: "It becomes the clip they run before every game you play from here on.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -150,13 +153,13 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         probability: 0.8,
         positiveOutcome: {
           description: "You bore the press into leaving you alone, and you get back to work.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "It reads as ducking it. The room wanted somebody to say something, and you were the somebody.",
           effects: [
             { kind: "character", amount: -2 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -178,13 +181,13 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You put two reps on tape that end up in every report written about this team that spring.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 3 },
+            { kind: "overall", timing: "immediate", amount: 5 },
             { kind: "moment", item: "Put a practice rep on every scout's report", icon: "clipboard" },
           ],
         },
         negativeOutcome: {
           description: "You press, and the rep they write down is the one you lost.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -236,13 +239,13 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "You find out exactly what you are worth on the open market, and it is more than you thought.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 5 }],
         },
         negativeOutcome: {
           description: "Word gets back before the bowl does. You practice bowl week with a staff that has stopped investing in you.",
           effects: [
             { kind: "character", amount: -4 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -279,7 +282,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         probability: 0.4,
         positiveOutcome: {
           description: "The staff reads the look on your face as a promise about next season, and they like it.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "Somebody films you not clapping. It is on the internet before the dessert plates are cleared.",
@@ -310,7 +313,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "You are running on an empty tank by December and it shows in the game itself.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -323,7 +326,7 @@ export const UNIVERSAL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "You come back rusty, and rusty in December looks a lot like slow.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
     ],

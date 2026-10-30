@@ -109,6 +109,8 @@ function scouting(state: GameState): Scouting {
     },
     { share: state.character >= 85 ? 1 : state.character <= 50 ? 0 : 0.5, good: "Clean character report", bad: "Character questions in the interviews" },
   ];
+  // The redshirt's price, paid on draft night.
+  if (state.eligibility.redshirtUsed) lines.push({ share: 0.2, good: "", bad: "Fifth-year senior: less upside left" });
   const ranked = [...lines].sort((a, b) => b.share - a.share);
   const liked = ranked.filter((l) => l.share >= 0.55).slice(0, 2).map((l) => l.good);
   const concerns = ranked.reverse().filter((l) => l.share < 0.4).slice(0, 2).map((l) => l.bad);

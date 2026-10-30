@@ -41,7 +41,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You say out loud that you want it, and then you spend the summer backing it up.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "character", amount: 3 },
           ],
         },
@@ -66,12 +66,12 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         probability: 0.75,
         positiveOutcome: {
           description: "You stay with the guys who are serious about it, and you report in August ahead of where you left.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
         },
         negativeOutcome: {
           description: "You do exactly what you did last summer, and in August it shows that you did.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -4 },
           ],
         },
@@ -88,7 +88,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "Six weeks with people who still want to talk about your senior year of high school.",
           effects: [
             { kind: "character", amount: -10 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -122,7 +122,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You post it in July and then go play like a man who belongs on the list.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 4 },
             { kind: "character", amount: 8 },
           ],
         },
@@ -130,7 +130,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You post it in July and spend the whole fall being measured against it.",
           effects: [
             { kind: "character", amount: -12 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -172,7 +172,7 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
           description: "You talk your way into one more drive and make it worth the argument.",
           effects: [
             { kind: "snaps", amount: 25 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
@@ -214,14 +214,14 @@ export const SEASON_LIFE_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You make the play they cut into the intro package for the rest of the season.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 3 },
+            { kind: "overall", timing: "immediate", amount: 6 },
             { kind: "moment", item: "Made the primetime play they replayed all year", icon: "tv" },
           ],
         },
         negativeOutcome: {
           description: "You force it with the whole country watching, and that is the clip instead.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
             { kind: "character", amount: -2 },
           ],
         },

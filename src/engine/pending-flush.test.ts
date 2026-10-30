@@ -38,8 +38,9 @@ function lastStepBeforeDraft(): { state: GameState; choiceId: string } {
       s = advance(s, choiceId);
     }
     // A washout ends the career mid-season and never reaches the draft; this
-    // fixture needs the drafted path, where `draftResult` exists to be charged.
-    if (s.status === "drafted" && last) return last;
+    // fixture needs the drafted path, where `draftResult` exists to be charged,
+    // and stock below the 100 cap so a penalty can show in it.
+    if (s.status === "drafted" && last && s.draftResult!.draftStock < 90) return last;
   }
   throw new Error("no career reached the draft in 40 seeds");
 }

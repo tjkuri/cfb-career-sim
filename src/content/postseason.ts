@@ -27,8 +27,11 @@ export const POSTSEASON: PostseasonConfig = {
 };
 
 export const PROGRESSION: ProgressionConfig = {
-  devByClass: { FR: 2, SO: 2, JR: 1, SR: 1 },
-  devByRole: { starter: 2, rotation: 1, backup: 0 },
+  // Growth is earned: a little for being young, most of it for playing time
+  // and for who you practise against every day.
+  devByClass: { FR: 1, SO: 0, JR: 0, SR: 0 },
+  devByRole: { starter: 3, rotation: 2, backup: 0 },
+  devByTier: { 1: 0, 2: 1, 3: 2, 4: 3 },
   devJitter: 1,
   washoutOverallFloor: 45,
   washoutSnapFloor: 40,

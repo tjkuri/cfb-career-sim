@@ -22,7 +22,7 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The new mechanics fight your instincts all summer, and you're slower off the ball than when you started.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -56,7 +56,7 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The added weight shows up in your legs before it shows up in your game.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -65,11 +65,11 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "You come back looking like a different kind of player, and the coaches love the new burst.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 4 }],
         },
         negativeOutcome: {
           description: "You're faster and weaker at the same time, and it costs you at the point of attack.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
     ],
@@ -98,7 +98,7 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "The coaches pull the starters once the game's decided, and you watch the fourth quarter from the sideline.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -130,12 +130,12 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You run him down from behind for the sack.",
           effects: [
             { kind: "stat", stat: "sacks", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "He cuts back through the hole you left, and it's a long run the other way.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -170,13 +170,13 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You bait the tackle into a bad protection call two drives later and finish him for real.",
           effects: [
             { kind: "stat", stat: "sacks", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 4 },
           ],
         },
         negativeOutcome: {
           description: "A second flag follows, and the coordinator has seen enough — you're on a short leash the rest of the half.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -4 },
           ],
         },
@@ -213,14 +213,14 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You split the double team clean and the quarterback never sees it coming.",
           effects: [
             { kind: "stat", stat: "sacks", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Split a double team for a sack", icon: "shield" },
           ],
         },
         negativeOutcome: {
           description: "Two bodies is two bodies, and you spend the game on the ground instead of in the backfield.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             // Sacks is a low-count stat; 1 is the smallest unit that means anything.
             { kind: "stat", stat: "sacks", amount: -1 },
           ],
@@ -255,13 +255,13 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You come up with it yourself — sack and forced fumble on the same play.",
           effects: [
             { kind: "stat", stat: "sacks", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Forced and recovered a fumble in the same pile", icon: "hand" },
           ],
         },
         negativeOutcome: {
           description: "The officials rule it down before the ball came out, and the sack stands alone.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -292,13 +292,13 @@ export const DL_EVENTS: GameEvent[] = [
           description: "You play with an edge all game and make sure he feels every snap.",
           effects: [
             { kind: "stat", stat: "sacks", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "You take the bait, draw a personal foul, and give the coordinator a headache.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -4 },
           ],
         },
@@ -340,7 +340,7 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Three weeks of live pass rush against your own tackle leaves you banged up and worn down by kickoff.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -373,14 +373,14 @@ export const DL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You post a get-off time that makes the room go quiet.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 4 },
             { kind: "stat", stat: "tfls", amount: 1 },
             { kind: "moment", item: "Posted a get-off number that turned heads", icon: "stopwatch" },
           ],
         },
         negativeOutcome: {
           description: "You look pedestrian on the stopwatch, and it's all the room wants to talk about.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -409,11 +409,11 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 0.45,
         positiveOutcome: {
           description: "First padded practice, you spin past the starting left tackle and the whole defense loses its mind.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Added a spin move nobody could block", icon: "zap" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 6 }, { kind: "moment", item: "Added a spin move nobody could block", icon: "zap" }],
         },
         negativeOutcome: {
           description: "You spin, the tackle waits, and you end up facing your own end zone on film.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -426,7 +426,7 @@ export const DL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "A summer of the same thing, and it shows: you are exactly who you were.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
     ],
@@ -446,11 +446,11 @@ export const DL_EVENTS: GameEvent[] = [
         probability: 0.55,
         positiveOutcome: {
           description: "The weight stays fast. You collapse the pocket from the middle all summer.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "moment", item: "Moved inside and owned the middle", icon: "shield" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Moved inside and owned the middle", icon: "shield" }],
         },
         negativeOutcome: {
           description: "The weight comes on, the quickness goes, and camp is a long grind.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {

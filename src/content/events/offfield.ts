@@ -144,7 +144,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "Good episode. You show up to walkthrough not knowing the new checks, and it shows.",
           effects: [
             { kind: "character", amount: -8 },
-            { kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 },
+            { kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 },
           ],
         },
       },
@@ -258,7 +258,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "The bed check catches an empty room. You run stadium steps before the practice everyone else sleeps through.",
           effects: [
             { kind: "character", amount: -10 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -387,7 +387,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You go home, and half of them are there when you arrive.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -442,7 +442,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "You shut it down, and the staff quietly wonders why you needed to.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
           ],
         },
       },
@@ -553,7 +553,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "He respects it, but the extra conditioning happens either way.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "deferred", amount: -3, delayPhases: 1 },
+            { kind: "overall", timing: "deferred", amount: -6, delayPhases: 1 },
           ],
         },
       },
@@ -608,7 +608,7 @@ export const OFFFIELD_EVENTS: GameEvent[] = [
           description: "They hand you the list. You start the winter behind anyway.",
           effects: [
             { kind: "character", amount: 8 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },

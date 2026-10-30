@@ -21,7 +21,7 @@ export const QB_EVENTS: GameEvent[] = [
             { kind: "stat", stat: "passYards", amount: 120 },
           ],
         },
-        negativeOutcome: { description: "You're gassed for practice.", effects: [{ kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 } ] },
+        negativeOutcome: { description: "You're gassed for practice.", effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 } ] },
       },
       {
         id: "take-the-receivers-out",
@@ -33,7 +33,7 @@ export const QB_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Wings turn into a long night, and Thursday practice is slow for all five of you.",
-          effects: [{ kind: "character", amount: -4 }, { kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
+          effects: [{ kind: "character", amount: -4 }, { kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
         },
       },
     ],
@@ -61,7 +61,7 @@ export const QB_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Nerves. Two picks and a rough night.",
-          effects: [{ kind: "stat", stat: "ints", amount: 2 }, { kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "stat", stat: "ints", amount: 2 }, { kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -90,11 +90,11 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "You outwork him through camp and the staff never blinks.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 4 }],
         },
         negativeOutcome: {
           description: "He wins the early reps and the whispers start.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -123,11 +123,11 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "The verbiage clicks and you're calling protections like a vet.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 3 }],
         },
         negativeOutcome: {
           description: "You're still peeking at the wristband deep into fall camp.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {
@@ -164,7 +164,7 @@ export const QB_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "You get caught in a bad check against a disguised blitz.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "stat", stat: "ints", amount: 1 },
           ],
         },
@@ -172,17 +172,10 @@ export const QB_EVENTS: GameEvent[] = [
       {
         id: "run-whats-called",
         label: "Just run what's signaled",
-        probability: 0.8,
+        probability: 1,
         positiveOutcome: {
           description: "You execute the call as drawn and the drive stays on schedule.",
           effects: [{ kind: "stat", stat: "passYards", amount: 70 }],
-        },
-        negativeOutcome: {
-          description: "The look was wrong and nobody had the authority to fix it. Three-and-out.",
-          effects: [
-            { kind: "stat", stat: "passYards", amount: -30 },
-            { kind: "overall", timing: "immediate", amount: -1 },
-          ],
         },
       },
     ],
@@ -219,14 +212,14 @@ export const QB_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "The fire fuels a big second half.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "stat", stat: "passYards", amount: 110 },
           ],
         },
         negativeOutcome: {
           description: "It reads as immature, and the staff has a word.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -4 },
           ],
         },
@@ -250,13 +243,13 @@ export const QB_EVENTS: GameEvent[] = [
           description: "You drop a dime in the bucket and move the chains in one shot.",
           effects: [
             { kind: "stat", stat: "passYards", amount: 180 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
           description: "It sails on you and the DB reads it the whole way.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "stat", stat: "ints", amount: 1 },
             // The drive dies here, and forcing it downfield all night leaves you
             // under your own baseline — the gamble has to be able to cost yards,
@@ -293,12 +286,12 @@ export const QB_EVENTS: GameEvent[] = [
           description: "Everyone's on the same page. Clean snap, clean play.",
           effects: [
             { kind: "stat", stat: "passYards", amount: 130 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "The center jumps early and the whole play blows up.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -329,14 +322,14 @@ export const QB_EVENTS: GameEvent[] = [
           description: "You march them the length of the field and win it at the horn.",
           effects: [
             { kind: "stat", stat: "passYards", amount: 220 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
             { kind: "moment", item: "Led a game-winning two-minute drill", icon: "clock" },
           ],
         },
         negativeOutcome: {
           description: "You spike the clock, force a throw, and it's over.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
             { kind: "stat", stat: "ints", amount: 1 },
           ],
         },
@@ -353,7 +346,7 @@ export const QB_EVENTS: GameEvent[] = [
           description: "The clock beats you at the twenty-eight with the field goal unit still on the sideline.",
           effects: [
             { kind: "stat", stat: "passYards", amount: -30 },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -376,13 +369,13 @@ export const QB_EVENTS: GameEvent[] = [
           description: "You look the part all week and have your best day of the year.",
           effects: [
             { kind: "stat", stat: "passYards", amount: 200 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 3 },
           ],
         },
         negativeOutcome: {
           description: "You look tight, throw two picks, and it's the last thing scouts remember.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
             { kind: "stat", stat: "ints", amount: 2 },
           ],
         },
@@ -413,11 +406,11 @@ export const QB_EVENTS: GameEvent[] = [
         probability: 0.5,
         positiveOutcome: {
           description: "Quicker, higher, tighter. By August the ball is out of your hand before the rush gets home.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Rebuilt your throwing motion in one summer", icon: "zap" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 5 }, { kind: "moment", item: "Rebuilt your throwing motion in one summer", icon: "zap" }],
         },
         negativeOutcome: {
           description: "Half a new motion is worse than either one. Under pressure, the old hitch keeps coming back.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -4, delayPhases: 1 }],
         },
       },
       {

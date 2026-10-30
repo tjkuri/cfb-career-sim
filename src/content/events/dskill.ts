@@ -24,7 +24,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description:
             "Half the verbiage still isn't automatic once fall camp starts, and it costs you a beat on every snap.",
-          effects: [{ kind: "overall", timing: "deferred", amount: -1, delayPhases: 1 }],
+          effects: [{ kind: "overall", timing: "deferred", amount: -2, delayPhases: 1 }],
         },
       },
       {
@@ -56,11 +56,11 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description:
             "The extra reps compound — you're diagnosing plays before the guard even twitches.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 4 }],
         },
         negativeOutcome: {
           description: "You're in the building so much you're gassed by fall camp, and it shows.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -74,7 +74,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "Even reasonable extra reps catch up to you some mornings, and today's one of them.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
     ],
@@ -97,14 +97,14 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You read it clean and take it away before it ever reaches him.",
           effects: [
             { kind: "stat", stat: "ints", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
             { kind: "moment", item: "Jumped a route for an interception", icon: "hand" },
           ],
         },
         negativeOutcome: {
           description:
             "You guess wrong. He's already past you before your feet reset, and it's a long gain the other way.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -138,13 +138,13 @@ export const DSKILL_EVENTS: GameEvent[] = [
             "You bounce back with the best tackling day of your season, and the reel gets replaced fast.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 13 },
-            { kind: "overall", timing: "immediate", amount: 1 },
+            { kind: "overall", timing: "immediate", amount: 2 },
           ],
         },
         negativeOutcome: {
           description: "It sits with you, and the whiffs don't stop — you're tentative in coverage all week.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             { kind: "character", amount: -2 },
           ],
         },
@@ -182,14 +182,14 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You beat the double-team release and drop the returner before he sets his feet.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 6 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 4 },
           ],
         },
         negativeOutcome: {
           description: "Two blockers converge on you in the tunnel and you land wrong on an ankle underneath the pile.",
           effects: [
             { kind: "injury", injuryType: "ankle" },
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
           ],
         },
       },
@@ -229,7 +229,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         negativeOutcome: {
           description: "He finally gets over the top of you late, and it's the one route all game he wins.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -1 },
+            { kind: "overall", timing: "immediate", amount: -2 },
             // Shadowing the No. 1 all game means fewer balls near you to make plays on.
             { kind: "stat", stat: "tackles", amount: -4 },
           ],
@@ -265,14 +265,14 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "You break on it clean and there's nothing but grass between you and the end zone.",
           effects: [
             { kind: "stat", stat: "ints", amount: 1 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 5 },
             { kind: "moment", item: "Returned an interception for a touchdown", icon: "bolt" },
           ],
         },
         negativeOutcome: {
           description:
             "You get a hand on it and it slips through — no pick, no return, just a near-miss the whole stadium groans about.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -307,7 +307,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description: "The review clears you — controlled, legal, and it turns the whole sideline's heads.",
           effects: [
             { kind: "stat", stat: "tackles", amount: 2 },
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 5 },
             { kind: "moment", item: "Delivered a hit that survived a targeting review", icon: "shield" },
           ],
         },
@@ -315,7 +315,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
           description:
             "The booth confirms it. You're gone for the rest of the game, the defense plays down a body, and the coordinator has a few words for you about it after.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: -2 },
+            { kind: "overall", timing: "immediate", amount: -4 },
             { kind: "character", amount: -4 },
             { kind: "snaps", amount: -8 },
           ],
@@ -360,7 +360,7 @@ export const DSKILL_EVENTS: GameEvent[] = [
         },
         negativeOutcome: {
           description: "You jump it a beat early and he adjusts — incompletion, but the safety chews you out for freelancing.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
         },
       },
       {
@@ -391,14 +391,14 @@ export const DSKILL_EVENTS: GameEvent[] = [
         positiveOutcome: {
           description: "You win the rep clean twice in a row, and the scouts start writing your name down instead of his.",
           effects: [
-            { kind: "overall", timing: "immediate", amount: 2 },
+            { kind: "overall", timing: "immediate", amount: 5 },
             { kind: "stat", stat: "passBreakups", amount: 1 },
             { kind: "moment", item: "Won one-on-ones in front of NFL scouts", icon: "eye" },
           ],
         },
         negativeOutcome: {
           description: "He wins the rep both times, and the notebook fills up with somebody else's name.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -430,11 +430,11 @@ export const DSKILL_EVENTS: GameEvent[] = [
         probability: 0.55,
         positiveOutcome: {
           description: "From the middle of the field you see everything first. You are the one calling the coverage by August.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 3 }, { kind: "moment", item: "Moved to safety and ran the defense", icon: "eye" }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 4 }, { kind: "moment", item: "Moved to safety and ran the defense", icon: "eye" }],
         },
         negativeOutcome: {
           description: "Too much field, too many reads. You are a step late to everything in camp.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -2 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -4 }],
         },
       },
       {
@@ -463,11 +463,11 @@ export const DSKILL_EVENTS: GameEvent[] = [
         probability: 0.6,
         positiveOutcome: {
           description: "You come back with the eyes of a ten-year veteran, and nobody can argue with what you do in camp.",
-          effects: [{ kind: "overall", timing: "immediate", amount: 2 }, { kind: "character", amount: -4 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: 4 }, { kind: "character", amount: -4 }],
         },
         negativeOutcome: {
           description: "The camp is mostly a highlight video for the instructor, and the staff noticed you were gone.",
-          effects: [{ kind: "overall", timing: "immediate", amount: -1 }, { kind: "character", amount: -4 }],
+          effects: [{ kind: "overall", timing: "immediate", amount: -2 }, { kind: "character", amount: -4 }],
         },
       },
       {

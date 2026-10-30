@@ -283,7 +283,8 @@ export function offseasonDevelopment(
   const role: Role = line.redshirt ? "backup" : (line.role ?? "rotation");
   const jitter = rngInt(rng, -prog.devJitter, prog.devJitter);
   const developmental = schoolTraitOf(s, content) === "developmental" ? content.schoolTraits.developmental.developmentalBonus : 0;
-  return prog.devByClass[line.classYear] + prog.devByRole[role] + jitter + developmental;
+  const level = prog.devByTier?.[line.tierPlayed ?? s.school.tier] ?? 0;
+  return prog.devByClass[line.classYear] + prog.devByRole[role] + level + jitter + developmental;
 }
 
 export const WASHOUT_REASONS = {
