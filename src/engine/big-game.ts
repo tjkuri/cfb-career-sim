@@ -13,6 +13,10 @@ export const BIG_GAME_EVENT_ID = "big-game";
 export const TENDENCIES = [35, 45, 60, 75, 90];
 export const LOOK_ACCURACY = 0.6;
 
+// What winning the last snap is worth, on top of the trophy.
+export const BIG_GAME_WIN_OVR = 1;
+export const BIG_GAME_WIN_REP = 2;
+
 function pickStakes(s: GameState, wins: number, rng: Rng): BigGameStakes {
   const tier = s.school.tier;
   const cfp =
@@ -333,8 +337,8 @@ function finishBigGame(
 
   const book = playbook(s.setup.position, r.pkg);
   if (r.won) {
-    applyEffect(s, { kind: "overall", timing: "immediate", amount: 1 }, injuryOf);
-    applyEffect(s, { kind: "character", amount: 2 }, injuryOf);
+    applyEffect(s, { kind: "overall", timing: "immediate", amount: BIG_GAME_WIN_OVR }, injuryOf);
+    applyEffect(s, { kind: "character", amount: BIG_GAME_WIN_REP }, injuryOf);
     for (const [stat, n] of Object.entries(book.statBump)) applyEffect(s, { kind: "stat", stat, amount: n }, injuryOf);
     applyEffect(s, { kind: "moment", item: `Won the ${r.name} on the last play`, icon: r.stakes === "cfp" ? "ring" : "trophy" }, injuryOf);
   } else if (r.stakes === "cfp" || r.stakes === "conf") {

@@ -4,3 +4,4 @@ export { deriveDraftStock, computeDraftResult, eligibleTiers, projectedRound, st
 export { roleFor, roleOf, isCaptain, CAPTAIN_REP, TIER_NAMES, STARTER_BAR } from "./role";
 export { ALL_POSITIONS, ALL_SCHOOL_TRAITS, CLASS_ORDER } from "./types";
 export type { GameState, Setup, Position, DraftResult, SchoolTrait, ClassYear, Status, Role, Tier, Effect, SeasonLine, BigGameResult, BigGameStakes, Spot, Matchup } from "./types";
+export { BIG_GAME_WIN_OVR, BIG_GAME_WIN_REP } from "./big-game";

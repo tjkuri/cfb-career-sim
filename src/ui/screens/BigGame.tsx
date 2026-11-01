@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { BigGameResult, BigGameStakes, Matchup, Position, Spot } from "../../engine/index";
+import { BIG_GAME_WIN_OVR, BIG_GAME_WIN_REP, type BigGameResult, type BigGameStakes, type Matchup, type Position, type Spot } from "../../engine/index";
 import { Telestrator } from "../telestrator/Telestrator";
 import { preSnap, stagePlay } from "../telestrator/choreo";
 import type { DecisionView, Resolved } from "../session/types";
@@ -256,7 +256,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
             </div>
           )}
           <div className="result-foot">
-            <span className="dim">{g.won ? "+1 OVR · +3 Rep" : ""}</span>
+            <span className="dim">{g.won ? `+${BIG_GAME_WIN_OVR} OVR · +${BIG_GAME_WIN_REP} Rep` : ""}</span>
             <ContinueButton onContinue={onContinue} />
           </div>
         </>
