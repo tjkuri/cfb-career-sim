@@ -50,14 +50,14 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
       "The crowd is so loud you have to call the play twice.",
     ],
     calls: [
-      { id: "slant", label: "Quick slant", detail: "Ball out in a second. Kills a blitz." },
+      { id: "slant", label: "Quick slant", detail: "Ball out in a second. Kills the blitz." },
       { id: "draw", label: "QB draw", detail: "Take it yourself. Burns man coverage." },
-      { id: "fade", label: "Back-corner fade", detail: "Throw it where only he can get it. Beats a two-high shell." },
+      { id: "fade", label: "Corner route", detail: "The slot breaks for the back pylon, into the hole behind the corner. Beats Cover 2." },
     ],
     counters: [
-      { label: "Zone blitz", look: "Linebackers creeping into the A-gaps" },
+      { label: "Cover 0 blitz", look: "Linebackers in the A-gaps and nobody deep" },
       { label: "Cover 2", look: "Two safeties splitting the deep halves" },
-      { label: "Man press", look: "Corners up in your receivers' faces" },
+      { label: "Cover 1 press", look: "Corners up in your receivers' faces, one safety deep" },
     ],
     odds: [
       [W, L, N],
@@ -72,7 +72,7 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
     failure: [
       "A linebacker sits right in the window. The pass dies at the goal line.",
       "Free rusher, unblocked. You never get a step.",
-      "The corner is all over it. Ball falls incomplete, and so does the season.",
+      "A defender gets a fingertip on it in the back corner. Incomplete, and so is the season.",
     ],
     statBump: { passYards: 55, passTds: 1 },
   },
@@ -124,13 +124,13 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
       "The running back taps your hip on the way to the huddle.",
     ],
     calls: [
-      { id: "double", label: "Double the nose", detail: "Move the big man. Beats a stunt inside." },
-      { id: "pull", label: "Pull and lead", detail: "Get out in front. Beats an inside slant." },
+      { id: "double", label: "Wedge", detail: "Everybody blocks down. Beats a stunt inside." },
+      { id: "pull", label: "Pull and lead", detail: "Get out in front, away from the slant. Beats a slanting front." },
       { id: "reach", label: "Reach the edge", detail: "Seal the outside. Beats a loaded middle." },
     ],
     counters: [
       { label: "Interior stunt", look: "Tackles shading the guards' inside shoulders" },
-      { label: "Slant inside", look: "The whole front leaning to the strong side" },
+      { label: "Slant strong", look: "The whole front leaning to the strong side" },
       { label: "Load the middle", look: "Two linebackers stacked over the center" },
     ],
     odds: [
@@ -139,12 +139,12 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
       [N, L, W],
     ],
     success: [
-      "You and the guard drive the nose tackle into the end zone, and the back follows you in.",
+      "The wedge drives the nose tackle into the end zone, and the back follows you in.",
       "You pull, find the linebacker, and bury him. Touchdown behind your block.",
       "You seal the edge and the back walks in untouched. Your name is the first one in the post-game.",
     ],
     failure: [
-      "The double goes nowhere. Stopped short.",
+      "The wedge goes nowhere. Stopped short.",
       "Somebody comes right through the gap you left. Stopped short.",
       "Your man beats the reach and the back is dropped for a loss.",
     ],
@@ -161,29 +161,29 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
       "Your whole sideline is standing on the bench.",
     ],
     calls: [
-      { id: "bull", label: "Bull rush", detail: "Through the man's chest. Beats a deep drop." },
-      { id: "speed", label: "Speed rush", detail: "Bend the edge. Beats a quick run." },
+      { id: "bull", label: "Bull rush", detail: "Through the man's chest, square in your gap. Beats the draw." },
+      { id: "speed", label: "Speed rush", detail: "Bend the edge. Beats a deep drop." },
       { id: "drop", label: "Drop into the flat", detail: "Sit and wait. Beats the screen." },
     ],
     counters: [
       { label: "Deep drop", look: "Quarterback in the gun, five receivers wide" },
-      { label: "Quick draw", look: "A back offset tight next to the quarterback" },
+      { label: "Draw", look: "A back offset tight next to the quarterback" },
       { label: "Screen", look: "Linemen standing up light, the back flared out" },
     ],
     odds: [
-      [W, N, L],
-      [L, W, N],
-      [N, L, W],
+      [N, W, L],
+      [W, L, N],
+      [L, N, W],
     ],
     success: [
-      "You walk the tackle straight into his own quarterback. Sack, fumble, ballgame.",
-      "The back takes the handoff and you are already there. Loss of four, clock runs out.",
+      "You stay square, collapse the middle, and nothing gets past you. Clock runs out.",
+      "You bend the edge before he can set his feet. Ballgame.",
       "You sit in the flat, read it all the way, and the ball goes right into your hands. Ballgame.",
     ],
     failure: [
-      "You get home a half-second late. The ball is gone, and so is the lead.",
-      "You get wide, he steps up into a clean pocket, and finds the shot.",
-      "You drop, and they go right through the hole you left.",
+      "You push the pocket, but not fast enough. The ball is gone, and so is the lead.",
+      "You fly upfield and they go right through where you were.",
+      "You drop, and they find the space you left.",
     ],
     statBump: { sacks: 1, tfls: 1 },
   },
@@ -198,14 +198,14 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
       "Their quarterback looks right at you before the snap.",
     ],
     calls: [
-      { id: "jump", label: "Jump the route", detail: "Gamble on the short throw. Beats the quick out." },
-      { id: "deep", label: "Stay deep", detail: "Nothing gets over you. Beats the Hail Mary." },
-      { id: "blitz", label: "Corner blitz", detail: "Get to the quarterback. Beats max protect." },
+      { id: "jump", label: "Jump the out", detail: "Sit on the outside break. Beats the quick out." },
+      { id: "deep", label: "Bail deep", detail: "Nothing gets over you. Beats the deep shot." },
+      { id: "blitz", label: "Press, inside leverage", detail: "Jam him and take away the inside. Beats the slant." },
     ],
     counters: [
-      { label: "Quick out", look: "Receivers in tight splits near the sideline" },
+      { label: "Quick out", look: "Your man in a tight split, all that room to break outside" },
       { label: "Deep shot", look: "Their fastest receiver isolated outside" },
-      { label: "Max protect", look: "Tight end and back staying in to block" },
+      { label: "Slant", look: "Your man split out wide by the sideline, all that room inside" },
     ],
     odds: [
       [W, L, N],
@@ -213,14 +213,14 @@ const FIRST_PACKAGES: Record<Position, Playbook> = {
       [L, N, W],
     ],
     success: [
-      "You jump the throw and take it the other way. Pick, game over.",
-      "He throws it up and you are the highest man in the end zone. Ballgame.",
-      "Off the edge untouched. Strip-sack as the clock hits zero.",
+      "You sit on the break and beat him to the ball. Ballgame.",
+      "You stay on top of everything, and the throw never finds him. Ballgame.",
+      "You win at the line, and the ball never gets to him. Ballgame.",
     ],
     failure: [
-      "You jump it and they go over the top. Touchdown, and it is your man.",
+      "You guess, and you guess wrong. Touchdown, and it is your man.",
       "You bail deep, he has all day, and he finds the hole underneath.",
-      "You blitz and the throw goes right where you were. They kick the winner.",
+      "You take away one side and he wins on the other. Easy catch, and he is gone.",
     ],
     statBump: { ints: 1, passBreakups: 1 },
   },
@@ -276,13 +276,13 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
       "The other team is so deep you can barely see their safeties.",
     ],
     calls: [
-      { id: "verticals", label: "Four verticals", detail: "Everybody deep. Beats a single high safety." },
+      { id: "verticals", label: "Four verticals", detail: "Four routes deep against three deep defenders. Beats Cover 3." },
       { id: "hook-lateral", label: "Hook and lateral", detail: "Hit the curl, pitch it behind. Beats prevent." },
       { id: "scramble", label: "Scramble drill", detail: "Buy time and find somebody. Beats the blitz." },
     ],
     counters: [
       { label: "Prevent", look: "Safeties twenty-five yards deep, corners way off" },
-      { label: "Cover 1 robber", look: "One safety deep, everyone else locked on a man" },
+      { label: "Cover 3", look: "One safety in the middle of the field, corners off and deep" },
       { label: "All-out blitz", look: "Seven defenders crowding the line" },
     ],
     odds: [
@@ -291,14 +291,14 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
       [N, L, W],
     ],
     success: [
-      "Four men go deep and the lone safety can only take one. You find the other.",
+      "Four men go deep against three deep defenders. You find the seam nobody has.",
       "The curl, the pitch, and the trailer is gone before the prevent can turn around.",
       "You slip the first rusher, roll right, and find your guy waving in the end zone.",
     ],
     failure: [
       "Everybody is covered deep. Your heave dies in a crowd of jerseys.",
       "The pitch is behind him and rolls loose. Ballgame, the wrong way.",
-      "The spy never leaves you. You run out of field and out of time.",
+      "Everybody stays in their zone with their eyes on you. You run out of room, and out of time.",
     ],
     statBump: { passYards: 45, passTds: 1 },
   },
@@ -314,7 +314,7 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
     ],
     calls: [
       { id: "go-route", label: "Go route", detail: "Beat the jam and run. Beats press man." },
-      { id: "slant-run", label: "Slant and run", detail: "Catch it short, make a man miss. Beats a soft zone." },
+      { id: "slant-run", label: "Curl and run", detail: "Sit down in the soft spot, then turn upfield. Beats a soft zone." },
       { id: "screen", label: "Screen", detail: "Let them come, then go behind your blockers. Beats the blitz." },
     ],
     counters: [
@@ -329,12 +329,12 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
     ],
     success: [
       "You swat his hands off at the line and there is nobody within five yards when it comes down.",
-      "You catch the slant in stride, make the first man miss, and the rest is a footrace you win.",
+      "You sit down in the hole, turn, and make the first man miss. The rest is a footrace you win.",
       "They all come, you slip out behind them, and three blockers are waiting in front of you.",
     ],
     failure: [
       "He gets his hands on you at the line and the timing is gone.",
-      "You catch it and turn right into a safety who read it all the way.",
+      "You sit down in the hole and it closes before the ball gets there.",
       "They sniff out the screen and you are swarmed before you can turn.",
     ],
     statBump: { scrimmageYards: 40, totalTds: 1 },
@@ -352,12 +352,12 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
     calls: [
       { id: "slide-left", label: "Slide left", detail: "Shift the whole line left. Beats a left-side overload." },
       { id: "slide-right", label: "Slide right", detail: "Shift the whole line right. Beats a right-side overload." },
-      { id: "max-protect", label: "Keep the back in", detail: "Seven to block. Beats a four-man rush with a spy." },
+      { id: "max-protect", label: "Keep the back in", detail: "Seven to block. The back picks up an A-gap blitz." },
     ],
     counters: [
       { label: "Overload left", look: "Three rushers stacked off your left edge" },
       { label: "Overload right", look: "Three rushers stacked off your right edge" },
-      { label: "Four-man rush and a spy", look: "Four down linemen and a linebacker hanging at the line" },
+      { label: "Double A-gap blitz", look: "Two linebackers walked up over the center" },
     ],
     odds: [
       [W, L, N],
@@ -367,12 +367,12 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
     success: [
       "The overload walks right into the slide. The quarterback has all day and throws it to the end zone.",
       "You pick up the extra rusher on the right and the pocket holds. Touchdown.",
-      "Seven men to block four. The quarterback could have made a sandwich.",
+      "The back stays in, picks up the extra rusher, and the pocket holds. Touchdown.",
     ],
     failure: [
       "You slide left and they come from the right. The quarterback never sees him.",
       "You slide right and they come from the left. Sack, game over.",
-      "Seven to block and nobody open. The quarterback holds it until the spy gets him.",
+      "Seven to block and only three out on routes. Nobody gets open, and the quarterback goes down.",
     ],
     statBump: { pancakes: 3 },
   },
@@ -461,8 +461,8 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
       "Short enough to make in your sleep, if it gets off.",
     ],
     calls: [
-      { id: "high", label: "Get it up fast", detail: "Steep and quick. Beats the edge rush." },
-      { id: "line-drive", label: "Line drive", detail: "Low and hard over the middle. Beats the leaper." },
+      { id: "line-drive", label: "Quick and low", detail: "Off the ground before the edge gets home. Beats the edge rush." },
+      { id: "high", label: "Get it up steep", detail: "Over the leaper's hands. Beats the middle surge." },
       { id: "normal", label: "Your normal kick", detail: "Full routine. Beats a team that drops back." },
     ],
     counters: [
@@ -476,14 +476,14 @@ const SECOND_PACKAGES: Record<Position, Playbook> = {
       [0.35, 0.6, 0.85],
     ],
     success: [
-      "It is up and over the edge rushers before they leave their feet. Good.",
-      "Low and hard, under the leaper's hands and over the bar. Good.",
+      "Quick and low, gone before the edge rushers get there. Good.",
+      "Steep, over the leaper's fingertips, and through. Good.",
       "Nobody comes, you take your time, and it splits the uprights.",
     ],
     failure: [
-      "Too steep, too short. It barely clears the line and drops like a stone.",
-      "The leaper gets a fingertip on it and it wobbles wide.",
-      "You rush it for no reason and hook it left.",
+      "Low and hurried, and it never has a chance.",
+      "Too much under it. It hangs, and it never gets there.",
+      "Your full routine takes a beat too long and a rusher gets a hand on it.",
     ],
     statBump: { fieldGoals: 1, gameWinners: 1 },
   },

@@ -158,7 +158,7 @@ const SHOTGUN: Formation = {
 };
 const LINE: Formation = { DE1: [21.5, 1], DT1: [25, 1], DT2: [28.3, 1], DE2: [32, 1] };
 const PASS_D: Formation[] = [
-  { ...LINE, LB1: [25.6, 2.2], LB2: [28, 2.2], CB1: [6, 6], CB2: [47.5, 6], NB: [40, 5], S1: [17, 10], S2: [36, 10] },
+  { ...LINE, LB1: [25.6, 2.2], LB2: [28, 2.2], CB1: [6, 3], CB2: [47.5, 3], NB: [40, 3], S1: [20, 4.5], S2: [33, 4.5] },
   { ...LINE, LB1: [22, 5], LB2: [31, 5], CB1: [7, 2.5], CB2: [46.5, 2.5], NB: [39, 5], S1: [13, 12], S2: [41, 12] },
   { ...LINE, LB1: [24.5, 4], LB2: [29, 4], CB1: [6, 0.9], CB2: [47.5, 0.9], NB: [40, 0.9], S1: [MID, 13], S2: [33, 7] },
 ];
@@ -201,15 +201,16 @@ function qb(snap: Snap): Play {
     if (!snap.won) stop = { t: 0.56, at: [27.2, Math.min(2.4, snap.spot.toGo - 1)] };
     label = snap.won ? "TOUCHDOWN" : "STUFFED";
   } else {
+    // Smash: Z sits down on a hitch, the slot breaks for the back pylon.
     const Q = st.add("QB", "O", true, f.QB!, f.QB!, [0.3, MID, -7]);
     st.add("RB", "O", true, f.RB!, f.RB!, [0.3, 28, -3]);
-    const deep = Math.min(G + 7, G + 9);
-    const Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.35, 49, Math.min(6, G)], [0.78, 50.3, deep], [0.88, snap.won ? 50.6 : 49.6, deep + (snap.won ? 0.8 : -0.8)]);
+    const deep = G + 4;
+    st.add("Z", "O", true, f.Z!, f.Z!, [0.35, 47.5, Math.min(5, G - 0.5)]);
+    const S = st.add("SL", "O", true, f.SL!, f.SL!, [0.35, 41, Math.min(6, G)], [0.78, 49.5, deep], [0.88, snap.won ? 50.3 : 49, deep + (snap.won ? 0.6 : -0.6)]);
     st.add("X", "O", true, f.X!, f.X!, [0.4, 7, 8], [0.75, 12, G + 1]);
-    st.add("SL", "O", true, f.SL!, f.SL!, [0.5, 39, 10]);
-    carrier = "Z";
-    ball = thrown({ passer: Q, throwT: 0.38, catchT: 0.78, to: [50.3, deep], peak: 9, then: Z, loose: snap.won ? undefined : { t: 0.92, at: [48, deep - 3] } });
-    if (!snap.won) stop = { t: 0.8, at: [50, deep - 0.6] };
+    carrier = "SL";
+    ball = thrown({ passer: Q, throwT: 0.4, catchT: 0.78, to: [49.5, deep], peak: 7, then: S, loose: snap.won ? undefined : { t: 0.92, at: [47.5, deep - 3] } });
+    if (!snap.won) stop = { t: 0.8, at: [49.2, deep - 0.4] };
     label = snap.won ? "TOUCHDOWN" : "INCOMPLETE";
   }
 
@@ -219,7 +220,8 @@ function qb(snap: Snap): Play {
   return { movers: st.movers, ball, carrier, you: "QB", label };
 }
 
-/** The defense's three pass calls, starting from the look they showed. */
+/** The defense's three pass calls, starting from the look they showed: Cover 0
+ * blitz, Cover 2, Cover 1 press. Whoever has no move here plays man. */
 function passDefense(st: Stage, snap: Snap, G: number) {
   const look = PASS_D[snap.look]!;
   const real = PASS_D[snap.theirs]!;
@@ -228,7 +230,7 @@ function passDefense(st: Stage, snap: Snap, G: number) {
     {
       DE1: [[0.5, 23, -3]], DT1: [[0.5, 25.5, -2]], DT2: [[0.5, 28, -2]], DE2: [[0.5, 30.5, -3]],
       LB1: [[0.42, 26, -4.5]], LB2: [[0.42, 27.5, -4.5]],
-      CB1: [[0.8, 8, 11]], CB2: [[0.8, 45, 11]], NB: [[0.8, 38, 9]], S1: [[0.9, 18, deep]], S2: [[0.9, 35, deep]],
+      S1: [[0.5, 24, -3]], S2: [[0.6, 31, 2]],
     },
     {
       DE1: [[0.6, 23.5, -1.5]], DT1: [[0.6, 25.5, -1]], DT2: [[0.6, 28, -1]], DE2: [[0.6, 30, -1.5]],
@@ -367,7 +369,7 @@ function line(snap: Snap): Play {
 const PASS_LOOKS: Formation[] = [
   // Deep drop: shotgun, five wide
   { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "X", "SL", "Z"]), TE: [35.5, -1], RB: [17, -1.2] },
-  // Quick draw: a back offset tight to the quarterback
+  // Draw: a back offset tight to the quarterback
   { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "X", "SL", "Z", "TE"]), RB: [28.3, -4.6] },
   // Screen: linemen light, the back flared
   {
@@ -473,14 +475,16 @@ function edge(snap: Snap): Play {
   return { movers: st.movers, ball, carrier, you: "DE2", label };
 }
 
-// LB/DB: you are the corner over their best receiver.
+// LB/DB: you are the corner over their best receiver, Z. His split tells you
+// the route: tight to the formation leaves room to break out, wide by the
+// sideline leaves room only inside.
 const COVER_LOOKS: Formation[] = [
-  // Quick out: tight splits near the sideline
-  { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB", "TE"]), X: [4, -1], SL: [44, -1], Z: [50, -1] },
+  // Quick out: a reduced split, room to break outside
+  { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB", "TE"]), X: [12, -1], SL: [37, -1.5], Z: [42, -1] },
   // Deep shot: their fastest receiver alone outside, trips to the other side
   { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB"]), X: [6, -1], SL: [11, -1.5], TE: [16, -1.5], Z: [48, -1] },
-  // Max protect: only two wide; the tight end, a wing and the back all stay in
-  { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "X", "Z"]), TE: [32.4, -1], SL: [34.4, -2], RB: [24.6, -5] },
+  // Slant: split out wide by the sideline, all that room inside
+  { ...pick(SHOTGUN, ["LT", "LG", "C", "RG", "RT", "QB", "RB", "TE"]), X: [5, -1], SL: [39, -1.5], Z: [51, -1] },
 ];
 
 function corner(snap: Snap): Play {
@@ -492,49 +496,48 @@ function corner(snap: Snap): Play {
   for (const id of Object.keys(real)) {
     const r = real[id]!;
     let keys: Key[] = [[0.3, r[0], r[1] - 0.6]];
-    if (id === "QB") keys = [[0.3, MID, snap.theirs === 2 ? -8 : -6.5]];
+    if (id === "QB") keys = [[0.3, MID, snap.theirs === 1 ? -7.5 : -6]];
     if (["X", "SL"].includes(id) || (id === "TE" && snap.theirs === 1)) keys = [[0.6, r[0] + 2, Math.min(r[1] + 12, G + 3)]];
     off[id] = st.add(id, "O", false, look[id]!, r, ...keys);
   }
   const Q = off.QB!;
   const Z = off.Z!;
-  const SL = off.SL!;
-  let target: Mover;
+  const zx = real.Z![0];
+  const stem = Z.path[1]?.[0] === 0.12 ? [Z.path[1]!] : [];
   let to: Pt;
   let throwT: number;
   let catchT: number;
   let peak: number;
   if (snap.theirs === 0) {
-    Z.path = [Z.path[0]!, ...(Z.path[1]?.[0] === 0.12 ? [Z.path[1]!] : []), [0.3, 50, Math.min(4, G - 1)], [0.45, 52.3, Math.min(5, G - 0.5)]];
-    target = Z;
-    to = [52.3, Math.min(5, G - 0.5)];
+    to = [Math.min(52.3, zx + 7), Math.min(5, G - 0.5)];
+    Z.path = [Z.path[0]!, ...stem, [0.3, zx + 0.5, to[1]], [0.45, to[0], to[1]]];
     throwT = 0.32;
     catchT = 0.45;
     peak = 1.5;
   } else if (snap.theirs === 1) {
     const deep = Math.min(G + 4, G + 8);
-    Z.path = [Z.path[0]!, ...(Z.path[1]?.[0] === 0.12 ? [Z.path[1]!] : []), [0.5, 48.5, Math.min(12, G)], [0.85, 48.5, deep]];
-    target = Z;
     to = [48.5, deep];
+    Z.path = [Z.path[0]!, ...stem, [0.5, 48.5, Math.min(12, G)], [0.85, 48.5, deep]];
     throwT = 0.45;
     catchT = 0.85;
     peak = 9;
   } else {
-    SL.path = [SL.path[0]!, ...(SL.path[1]?.[0] === 0.12 ? [SL.path[1]!] : []), [0.45, 40, Math.min(8, G - 1)], [0.66, 35, Math.min(9, G - 0.5)]];
-    target = SL;
-    to = [35, Math.min(9, G - 0.5)];
-    throwT = 0.52;
-    catchT = 0.66;
-    peak = 2;
+    to = [zx - 7, Math.min(5.5, G - 0.5)];
+    Z.path = [Z.path[0]!, ...stem, [0.26, zx - 0.6, Math.min(2.5, G - 0.5)], [0.42, to[0], to[1]]];
+    throwT = 0.28;
+    catchT = 0.42;
+    peak = 1.2;
   }
 
-  // You: jump the route, stay deep, or come on the blitz.
+  // You: jump the out, bail deep, or press with inside leverage. You line up
+  // over Z wherever his split puts him.
+  const lookZ = look.Z![0];
   const yours: Key[][] = [
-    [[0.25, 49, 3.5], [catchT, to[0] - 0.4, to[1] + 0.3]],
-    [[0.6, 47.5, Math.min(G, 14)], [0.85, 48, Math.min(G + 3, G + 6)]],
-    [[0.25, 40, 0], [0.5, MID + 1.5, -6.5]],
+    [[0.25, zx + 2, 3.5], [0.45, zx + 6, Math.min(4.5, G - 0.5)]],
+    [[0.6, zx, Math.min(G, 14)], [0.85, zx + 0.5, Math.min(G + 3, G + 6)]],
+    [[0.15, zx - 1, 1.2], [0.42, zx - 5.5, Math.min(5, G - 0.5)]],
   ];
-  const you = st.add("CB2", "D", true, [47.5, 4], [47.5, 4], ...yours[snap.mine]!);
+  const you = st.add("CB2", "D", true, [lookZ, 4], [zx, 4], ...yours[snap.mine]!);
   you.you = true;
   const ourD: Formation = { ...OUR_D };
   delete ourD.CB2;
@@ -543,22 +546,15 @@ function corner(snap: Snap): Play {
     let keys: Key[] = [[0.5, p[0], -1.5]];
     if (id.startsWith("LB")) keys = [[0.6, (p[0] + 30) / 2, 6]];
     if (id === "CB1") keys = shadow(off.X!, 0.9, 0.8);
-    if (id === "NB") keys = shadow(SL, 0.8, 0.8);
+    if (id === "NB") keys = shadow(off.SL!, 0.8, 0.8);
     if (id.startsWith("S")) keys = [[0.8, p[0] + (id === "S2" ? 6 : 0), G + 2]];
     st.add(id, "D", true, p, p, ...keys);
   }
 
   let ball: Play["ball"];
   let label: string;
-  let carrier = target.id;
-  const sack = snap.won && snap.mine === 2 && snap.theirs === 2;
-  const pick6 = snap.won && snap.strong && !sack;
-  if (sack) {
-    ball = (t) => [...at(Q.path, t), 1.5] as [number, number, number];
-    st.converge([you], 0.5, [MID, -6.8], you);
-    carrier = "CB2";
-    label = "SACK";
-  } else if (pick6) {
+  let carrier = "Z";
+  if (snap.won && snap.strong) {
     // Picked off: you catch it and go the other way.
     you.path = you.path.filter((k) => k[0] < catchT);
     you.path.push([catchT, to[0], to[1]], [1, Math.max(4, to[0] - 10), to[1] - 22]);
@@ -570,9 +566,9 @@ function corner(snap: Snap): Play {
     st.converge(st.movers.filter((m) => m.side === "D" && m.ours), catchT, to);
     label = "BROKEN UP";
   } else {
-    target.path = target.path.filter((k) => k[0] <= catchT);
-    target.path.push([0.95, Math.min(52, to[0] + 1), end(G)]);
-    ball = thrown({ passer: Q, throwT, catchT, to, peak, then: target });
+    Z.path = Z.path.filter((k) => k[0] <= catchT);
+    Z.path.push([0.95, Math.min(52, Math.max(2, to[0] + 1)), end(G)]);
+    ball = thrown({ passer: Q, throwT, catchT, to, peak, then: Z });
     label = "TOUCHDOWN";
   }
   return { movers: st.movers, ball, carrier, you: "CB2", label };
@@ -646,8 +642,8 @@ const SPREAD: Formation = {
 const DEEP_D: Formation[] = [
   // Prevent: three rush, a tackle drops, everyone else deep
   { DE1: [23, 1], DT1: [MID, 1], DE2: [30.5, 1], DT2: [MID + 3, 6], LB1: [22, 8], LB2: [31, 8], CB1: [6, 10], CB2: [47.5, 10], NB: [40, 12], S1: [17, 20], S3: [36, 20] },
-  // Cover 1 robber: one deep, a linebacker robbing underneath, everyone else on a man
-  { ...LINE, LB1: [25, 4], LB2: [28, 9], CB1: [6, 1], CB2: [47.5, 1], NB: [40, 1.2], S3: [14, 1.2], S1: [MID, 16] },
+  // Cover 3: one safety in the middle, the corners off and bailing to deep thirds
+  { ...LINE, LB1: [25, 4], LB2: [28.5, 4.5], CB1: [6, 8], CB2: [47.5, 8], NB: [40, 5], S3: [14, 5], S1: [MID, 16] },
   // All-out blitz: seven crowd the line
   { ...LINE, LB1: [24.5, 1.3], LB2: [29, 1.3], NB: [40, 1.5], S3: [14, 1.5], CB1: [6, 1], CB2: [47.5, 1], S1: [MID, 9] },
 ];
@@ -663,10 +659,7 @@ function deepDefense(st: Stage, snap: Snap, rush: Pt) {
     const front = id.startsWith("D");
     if (snap.theirs === 0) keys = front ? [[0.55, r[0], -2]] : [[0.85, r[0], Math.min(G + 4, r[1] + 14)]];
     else if (snap.theirs === 2) keys = front || id.startsWith("LB") || id === "NB" ? [[0.45, (r[0] + rush[0]) / 2, rush[1] + 1]] : [[0.85, r[0], r[1] + 8]];
-    else if (id === "CB1") keys = shadow(st.get("X"), 0.9, 0.8);
-    else if (id === "CB2") keys = shadow(st.get("Z"), -0.9, 0.8);
-    else if (id === "NB") keys = shadow(st.get("TE"), 0.8, 0.8);
-    else if (id === "S3") keys = shadow(st.get("SL"), 0.8, 0.8);
+    else if (id === "CB1" || id === "CB2") keys = [[0.85, r[0] + (id === "CB1" ? 4 : -4), Math.min(G + 3, r[1] + 16)]];
     else if (front) keys = [[0.55, r[0], -2.5]];
     else keys = [[0.85, r[0], id === "S1" ? G + 2 : r[1] + 4]];
     st.add(id, "D", false, look[id]!, r, ...keys);
@@ -749,9 +742,9 @@ function skillLastGasp(snap: Snap): Play {
     ball = thrown({ passer: Q, throwT: 0.42, catchT: 0.85, to: [48.5, G + 3], peak: 11, then: Z, loose: snap.won ? undefined : { t: 0.95, at: [46, G] } });
     if (!snap.won) stop = { t: 0.86, at: [48.5, G + 2] };
   } else if (snap.mine === 1) {
-    Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.32, 44, 4], ...(snap.won ? [[0.9, 40, end(G)] as Key] : [[0.4, 43.4, 4.4] as Key]));
-    ball = thrown({ passer: Q, throwT: 0.25, catchT: 0.34, to: [44.3, 4], peak: 1.5, then: Z, loose: snap.won ? undefined : { t: 0.46, at: [42.5, 2.5] } });
-    if (!snap.won) stop = { t: 0.36, at: [44.3, 4] };
+    Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.36, 47, 9], ...(snap.won ? [[0.9, 42, end(G)] as Key] : [[0.46, 46.8, 9.4] as Key]));
+    ball = thrown({ passer: Q, throwT: 0.3, catchT: 0.4, to: [47, 9], peak: 2, then: Z, loose: snap.won ? undefined : { t: 0.52, at: [45.5, 7.5] } });
+    if (!snap.won) stop = { t: 0.42, at: [47, 9] };
   } else {
     Z = st.add("Z", "O", true, f.Z!, f.Z!, [0.25, 49, -2.5], ...(snap.won ? [[0.92, 45, end(G)] as Key] : [[0.42, 48, -1.2] as Key]));
     ball = thrown({ passer: Q, throwT: 0.27, catchT: 0.34, to: [49, -2.5], peak: 1.2, then: Z });
@@ -797,14 +790,14 @@ function lineProtect(snap: Snap): Play {
   const looks: Formation[] = [
     { ...LINE, LB1: [18, 1.5], LB2: [19.5, 2.8], NB: [40, 4], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
     { ...LINE, LB1: [35.3, 1.5], LB2: [33.8, 2.8], NB: [40, 4], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
-    { ...LINE, LB1: [MID, 4], LB2: [33, 8], NB: [40, 6], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
+    { ...LINE, LB1: [MID - 1, 1.6], LB2: [MID + 1, 1.6], NB: [40, 6], CB1: [6, 6], CB2: [47.5, 6], S1: [17, 14], S2: [36, 14] },
   ];
   const look = looks[snap.look]!;
   const real = looks[snap.theirs]!;
   for (const id of Object.keys(real)) {
     const r = real[id]!;
-    const rusher = id.startsWith("D") || (snap.theirs < 2 && id.startsWith("LB"));
-    const keys: Key[] = rusher ? [[0.45, (r[0] + MID) / 2, -4.5]] : id === "LB1" && snap.theirs === 2 ? [[0.5, MID, 1]] : [[0.85, r[0], Math.min(G + 2, r[1] + 10)]];
+    const rusher = id.startsWith("D") || id.startsWith("LB");
+    const keys: Key[] = rusher ? [[0.45, (r[0] + MID) / 2, -4.5]] : [[0.85, r[0], Math.min(G + 2, r[1] + 10)]];
     st.add(id, "D", false, look[id]!, r, ...keys);
   }
   let ball: Play["ball"];
@@ -950,11 +943,11 @@ function chipShot(snap: Snap): Play {
   });
   st.add("R", "D", false, [MID, G + 8], [MID, G + 8]);
 
-  const peak = [18, 6, 12][snap.mine]!;
+  const peak = [6, 18, 12][snap.mine]!; // quick and low, steep, your normal kick
   const postY = G + 10;
   const kickT = 0.34;
   const arriveT = 0.85;
-  const blocked = !snap.won && snap.mine !== 2;
+  const blocked = !snap.won && snap.theirs !== 2; // nobody blocks a kick when they back off
   const wideX = MID + (snap.spot.clock % 2 ? 4.2 : -4.2);
   const ball = (t: number): [number, number, number] => {
     if (t < 0.18) return [MID, -1 + (hold[1] + 1) * (t / 0.18), 0.8];
