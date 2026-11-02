@@ -9,17 +9,18 @@ export const BIG_GAME_EVENT_ID = "big-game";
 
 // The film's tendency is shown as a number and varies game to game; the
 // pre-snap look is honest LOOK_ACCURACY of the time. When they disagree, the
-// number decides it: past about 60%, trust the film; under it, trust the look.
-export const TENDENCIES = [35, 45, 60, 75, 90];
+// number decides it: over 60%, trust the film; under it, trust the look. The
+// film never runs past 70%, so it is never a gimme and the look always counts.
+export const TENDENCIES = [40, 50, 60, 70];
 export const LOOK_ACCURACY = 0.6;
 
 // The bigger the game, the less the film gives away: a title-game opponent
 // has scouted you back and breaks its own habits.
 export const TENDENCIES_BY_STAKES: Record<BigGameStakes, number[]> = {
-  rivalry: [45, 60, 75, 90],
-  bowl: [45, 60, 75, 90],
-  conf: [35, 45, 60, 75, 90],
-  cfp: [35, 45, 60, 75],
+  rivalry: TENDENCIES,
+  bowl: TENDENCIES,
+  conf: TENDENCIES,
+  cfp: [35, 45, 55, 65],
 };
 
 // The read decides the play. The right call always works; an even call or a

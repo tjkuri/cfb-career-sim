@@ -27,12 +27,16 @@ function ev(o: DecisionOption): number {
 }
 
 // Read the two clues: trust a strong film tendency, otherwise the look.
+// READ=film follows the film blindly and READ=random guesses, to measure what
+// a careful read is worth.
+const READ = process.env.READ ?? "smart";
 function counterScout(d: PendingDecision, s: GameState): string {
   const g = d.bigGame!;
   const book = playbook(s.setup.position, g.pkg);
   const film = book.counters.findIndex((c) => c.label === g.scout.call);
   const look = book.counters.findIndex((c) => c.look === g.look);
-  const read = film === look || g.scout.percent >= 60 ? film : look;
+  if (READ === "random") return book.calls[Math.floor(Math.random() * 3)]!.id;
+  const read = READ === "film" || film === look || g.scout.percent > 60 ? film : look;
   let best = 0;
   for (let i = 1; i < 3; i++) if (book.odds[i]![read]! > book.odds[best]![read]!) best = i;
   return book.calls[best]!.id;
@@ -76,6 +80,7 @@ function rand(seed: number): () => number {
 const N = Number(process.argv[2] ?? 1500);
 for (const [name, policy] of Object.entries(POLICIES)) {
   const r = rand(7);
+  const byStakes: Record<string, [number, number]> = {};
   let decisions = 0, bigGames = 0, bigWins = 0, heisman = 0, aa = 0, busted = 0, ovr = 0, natty = 0, repeats = 0;
   const rounds = new Array(8).fill(0) as number[];
   const perPos: Record<string, number[]> = {};
@@ -93,7 +98,13 @@ for (const [name, policy] of Object.entries(POLICIES)) {
     }
     for (const n of seen.values()) if (n > 1) repeats++;
     for (const line of s.seasons) {
-      if (line.bigGame?.played) { bigGames++; if (line.bigGame.won) bigWins++; }
+      if (line.bigGame?.played) {
+        bigGames++;
+        if (line.bigGame.won) bigWins++;
+        const b = (byStakes[line.bigGame.stakes] ??= [0, 0]);
+        b[0] += line.bigGame.won ? 1 : 0;
+        b[1] += 1;
+      }
       for (const h of line.honors ?? []) {
         if (h === "heisman") heisman++;
         if (h === "allAmerican") aa++;
@@ -111,6 +122,7 @@ for (const [name, policy] of Object.entries(POLICIES)) {
   console.log(`\n== ${name} (${N} careers)`);
   console.log(`decisions/career ${(decisions / N).toFixed(1)}  final OVR ${(ovr / N).toFixed(1)}  busted ${pct(busted)}  repeated cards ${repeats}`);
   console.log(`big games played/career ${(bigGames / N).toFixed(2)}  won ${((100 * bigWins) / Math.max(1, bigGames)).toFixed(0)}%  natty careers-ish ${pct(natty)}`);
+  console.log(`big games won by stakes: ${Object.entries(byStakes).map(([k, [w, n]]) => `${k} ${((100 * w) / n).toFixed(0)}% (${n})`).join("  ")}`);
   console.log(`heisman/career ${pct(heisman)}  all-american/career ${pct(aa)}`);
   console.log(`draft: R1 ${pct(rounds[1]!)} R2-3 ${pct(rounds[2]! + rounds[3]!)} R4-7 ${pct(rounds[4]! + rounds[5]! + rounds[6]! + rounds[7]!)} UDFA ${pct(rounds[0]!)}`);
   console.log(`R1 by position: ${Object.entries(perPos).map(([p, [a, b]]) => `${p} ${((100 * a!) / b!).toFixed(0)}%`).join("  ")}`);
