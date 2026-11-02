@@ -124,6 +124,7 @@ function optionView(o: DecisionOption, position: Position, rep: number, growthBa
         role: o.school.role,
         trait: o.school.trait,
         current: !!o.school.current,
+        home: o.school.home,
         growth: growthBase + CONTENT.progression.devByRole[o.school.role] + (CONTENT.progression.devByTier?.[o.school.tier] ?? 0),
       },
     };

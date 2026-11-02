@@ -131,6 +131,10 @@ function partLabel(p: WheelPart, g: BigGameResult): string {
       return `Talent (${Math.round(75 + p.amount / WHEEL_PER_OVR)} OVR)`;
     case "captain":
       return "You wear the C";
+    case "hometown":
+      return "Your home state is watching";
+    case "stakes":
+      return g.stakes === "cfp" ? "Playoff pressure" : "Title-game pressure";
     case "thrownIn":
       return "Cold off the bench";
     case "spot":

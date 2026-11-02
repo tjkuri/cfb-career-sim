@@ -246,6 +246,8 @@
 .school-role { font-weight: 800; font-size: 0.95rem; }
 .school-perk { color: var(--chalk-soft); font-size: var(--t-meta); line-height: 1.35; }
 .school-trait { color: var(--chalk-soft); font-size: var(--t-meta); font-style: italic; }
+.school-home { font-size: var(--t-meta); font-weight: 800; color: var(--chalk-soft); }
+.school-home.home-state { color: var(--gold); }
 .school-growth { color: var(--chalk-dim); font-size: var(--t-meta); font-weight: 700; }
 
 /* ---------- result ---------- */

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { CAPTAIN_REP, type Role, type Tier } from "../../engine/index";
+import { CAPTAIN_REP, HOMETOWN_REP, type Role, type Tier } from "../../engine/index";
 import { roundShort } from "../session/game-view";
 import { phaseLabel } from "../session/labels";
 import type { Chip, DecisionView, GameView, LedgerRow, OptionView, Resolved, SeasonPhase, SeasonRecap } from "../session/types";
@@ -248,6 +248,8 @@ function OptionBody({ o }: { o: OptionView }) {
           {s.tierName}
           {s.conference && s.conference !== "Independent" ? ` · ${s.conference}` : ""}
         </span>
+        {s.home === "state" && <span className="school-home home-state">{s.current ? "Home state" : `Home state: +${HOMETOWN_REP} Rep`}</span>}
+        {s.home === "region" && <span className="school-home">Close to home</span>}
         <span className="school-perk">{TIER_PERK[s.tier]}</span>
         <span className={`school-role role-${s.role}`}>You'd be: {ROLE_LABEL[s.role]}</span>
         <span className="school-growth">About +{s.growth} OVR from a season there</span>

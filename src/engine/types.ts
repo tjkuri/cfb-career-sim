@@ -179,7 +179,7 @@ export interface Spot {
 export type Matchup = "strong" | "even" | "weak";
 
 export interface WheelPart {
-  kind: "matchup" | "talent" | "captain" | "thrownIn" | "spot";
+  kind: "matchup" | "talent" | "captain" | "hometown" | "thrownIn" | "stakes" | "spot";
   amount: number;
 }
 

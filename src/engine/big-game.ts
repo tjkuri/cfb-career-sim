@@ -28,6 +28,9 @@ export const TENDENCIES_BY_STAKES: Record<BigGameStakes, number[]> = {
 export const WHEEL_BASE: Record<Exclude<Matchup, "strong">, number> = { even: 0.45, weak: 0.15 };
 const WHEEL_RANGE: Record<Exclude<Matchup, "strong">, [number, number]> = { even: [0.15, 0.8], weak: [0.05, 0.45] };
 export const WHEEL_PER_OVR = 0.01;
+// A title-game opponent is good too; a hometown kid has a whole state behind him.
+export const WHEEL_STAKES: Record<BigGameStakes, number> = { rivalry: 0, bowl: 0, conf: -0.05, cfp: -0.1 };
+export const WHEEL_HOMETOWN = 0.05;
 
 // What winning the last snap is worth, on top of the trophy.
 export const BIG_GAME_WIN_OVR = 1;
@@ -284,7 +287,7 @@ export function pendingBigGame(s: GameState): PendingBigGame | undefined {
   };
 }
 
-export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf: InjuryLookup): void {
+export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf: InjuryLookup, hometown = false): void {
   const pending = pendingBigGame(s);
   if (!pending) throw new Error("No big game pending");
   const book = playbook(s.setup.position, pending.pkg);
@@ -296,7 +299,7 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
   let won = true;
   let wheel: BigGameResult["wheel"];
   if (matchup !== "strong") {
-    const parts = wheelParts(matchup, s.overall, pending.thrownIn, isCaptain(s), distanceShift(pending.spot, book.situation));
+    const parts = wheelParts(matchup, s.overall, pending.thrownIn, isCaptain(s), distanceShift(pending.spot, book.situation), pending.stakes, hometown);
     const odds = wheelOdds(matchup, parts);
     const roll = rng.next();
     won = roll < odds;
@@ -333,13 +336,23 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
 }
 
 /** What goes into the wheel after a call that did not beat theirs. */
-export function wheelParts(matchup: Exclude<Matchup, "strong">, overall: number, thrownIn: boolean, captain: boolean, spot = 0): WheelPart[] {
+export function wheelParts(
+  matchup: Exclude<Matchup, "strong">,
+  overall: number,
+  thrownIn: boolean,
+  captain: boolean,
+  spot = 0,
+  stakes: BigGameStakes = "bowl",
+  hometown = false,
+): WheelPart[] {
   const parts: WheelPart[] = [
     { kind: "matchup", amount: WHEEL_BASE[matchup] },
     { kind: "talent", amount: (overall - 75) * WHEEL_PER_OVR },
   ];
   if (captain) parts.push({ kind: "captain", amount: CAPTAIN_BIG_GAME_EDGE });
+  if (hometown) parts.push({ kind: "hometown", amount: WHEEL_HOMETOWN });
   if (thrownIn) parts.push({ kind: "thrownIn", amount: -0.05 });
+  if (WHEEL_STAKES[stakes] !== 0) parts.push({ kind: "stakes", amount: WHEEL_STAKES[stakes] });
   if (Math.abs(spot) >= 0.005) parts.push({ kind: "spot", amount: spot });
   return parts;
 }

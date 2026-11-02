@@ -2,6 +2,7 @@ import type { BigGameStakes, Effect, GameEvent, GameState, Role, Spot, Tier } fr
 import { PHASE_ORDER, CLASS_ORDER } from "./types";
 import { createRng, rngChance, rngInt, type Rng } from "./rng";
 import { applyEffect, tickPhaseStart, flushPendingEffects, clampOverall, type InjuryLookup } from "./effects";
+import { HOMETOWN_REP, isHometown, nearHome } from "./schools";
 import { resolveOutcome } from "./outcomes";
 import { selectRandomEvent, selectFixedEvent } from "./select-event";
 import { simulatePhaseProduction } from "./simulate";
@@ -39,7 +40,7 @@ export interface DecisionOption {
   positive?: Effect[];
   negative?: Effect[];
   /** A school on offer, and where the player would sit on its depth chart. */
-  school?: { name: string; tier: Tier; conference: string; role: Role; trait?: string; current?: boolean };
+  school?: { name: string; tier: Tier; conference: string; role: Role; trait?: string; current?: boolean; home?: "state" | "region" };
   /** A play call: what it is built to beat. */
   detail?: string;
 }
@@ -89,6 +90,7 @@ function schoolOptions(state: GameState, content: ContentBundle): DecisionOption
         role: roleOf(state, o.tier),
         trait: school?.trait ? content.traitHints[school.trait] : undefined,
         current: o.id === "stay",
+        home: nearHome(school?.state, state.setup.homeState, content),
       },
     };
   });
@@ -205,6 +207,7 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     const offer = (s.pendingOptions ?? []).find((o) => o.id === choiceId);
     if (!offer) throw new Error(`Invalid recruiting choice: ${choiceId}`);
     applyRecruitingChoice(s, offer.schoolId, content);
+    if (isHometown(s, content)) applyEffect(s, { kind: "character", amount: HOMETOWN_REP }, injuryOf);
     s.pendingOptions = undefined;
     s.currentEventId = null;
     return;
@@ -212,7 +215,10 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
   if (s.currentEventId === TRANSFER_EVENT_ID) {
     const offer = (s.pendingOptions ?? []).find((o) => o.id === choiceId);
     if (!offer) throw new Error(`Invalid transfer choice: ${choiceId}`);
-    if (offer.id !== "stay") s.school = { schoolId: offer.schoolId, tier: offer.tier };
+    if (offer.id !== "stay") {
+      s.school = { schoolId: offer.schoolId, tier: offer.tier };
+      if (isHometown(s, content)) applyEffect(s, { kind: "character", amount: HOMETOWN_REP }, injuryOf);
+    }
     s.snapModifier = offer.snapModifier;
     s.pendingOptions = undefined;
     s.currentEventId = null;
@@ -238,7 +244,7 @@ function applyChoice(s: GameState, choiceId: string, content: ContentBundle, rng
     return;
   }
   if (s.currentEventId === BIG_GAME_EVENT_ID) {
-    resolveBigGame(s, choiceId, rng, injuryOf);
+    resolveBigGame(s, choiceId, rng, injuryOf, isHometown(s, content));
     const result = s.seasons[s.seasons.length - 1]?.bigGame;
     if (result) s.lastOutcome = { description: result.text, positive: result.won };
     return;

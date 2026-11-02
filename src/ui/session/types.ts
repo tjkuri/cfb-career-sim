@@ -23,7 +23,7 @@ export interface OptionView {
   /** One branch for a sure thing, two for a gamble. Empty for a play call. */
   branches: Branch[];
   /** `growth`: about how much OVR a season there adds, from playing time and practice level. */
-  school?: { name: string; tier: Tier; tierName: string; conference: string; role: Role; trait?: string; current: boolean; growth: number };
+  school?: { name: string; tier: Tier; tierName: string; conference: string; role: Role; trait?: string; current: boolean; growth: number; home?: "state" | "region" };
   detail?: string;
 }
 

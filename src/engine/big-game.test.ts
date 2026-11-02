@@ -82,3 +82,17 @@ describe("the read decides it", () => {
     expect(wheelOdds("weak", wheelParts("weak", 40, true, false))).toBeGreaterThan(0);
   });
 });
+
+describe("the wheel's other slices", () => {
+  it("makes a title game harder to bail out of", () => {
+    const bowl = wheelOdds("even", wheelParts("even", 82, false, false, 0, "bowl"));
+    expect(wheelOdds("even", wheelParts("even", 82, false, false, 0, "conf"))).toBeLessThan(bowl);
+    expect(wheelOdds("even", wheelParts("even", 82, false, false, 0, "cfp"))).toBeCloseTo(bowl - 0.1);
+  });
+
+  it("gives a hometown kid a bigger wedge", () => {
+    expect(wheelOdds("weak", wheelParts("weak", 82, false, false, 0, "bowl", true))).toBeCloseTo(
+      wheelOdds("weak", wheelParts("weak", 82, false, false, 0, "bowl")) + 0.05,
+    );
+  });
+});

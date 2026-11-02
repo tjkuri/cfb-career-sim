@@ -712,3 +712,19 @@ describe("SeasonLine.redshirt", () => {
     for (const line of s.seasons) expect(line.redshirt).toBe(false);
   });
 });
+
+describe("home state", () => {
+  it("tags offers near home and pays Rep for signing with a home-state school", () => {
+    // Find a Signing Day with a Texas school on the board.
+    for (let i = 0; i < 200; i++) {
+      const s = createCareer({ ...setup, homeState: "TX" }, `home-${i}`);
+      const d = getDecision(s)!;
+      const home = d.options.find((o) => o.school?.home === "state");
+      const away = d.options.find((o) => !o.school?.home);
+      if (!home || !away) continue;
+      expect(advance(s, home.id).character - advance(s, away.id).character).toBe(5);
+      return;
+    }
+    throw new Error("no Signing Day with both a home and an away offer");
+  });
+});

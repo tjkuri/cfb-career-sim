@@ -1,4 +1,4 @@
-import type { Tier } from "./types";
+import type { GameState, Tier } from "./types";
 import type { ContentBundle } from "../content/schema";
 import { rngWeightedPick, type Rng } from "./rng";
 
@@ -10,6 +10,21 @@ function sameRegion(a: string, b: string, regions: ContentBundle["regions"]): bo
     if (states.includes(a) && states.includes(b)) return true;
   }
   return false;
+}
+
+/** "state" for a school in the player's home state, "region" for one nearby. */
+export function nearHome(schoolState: string | undefined, homeState: string, content: ContentBundle): "state" | "region" | undefined {
+  if (!schoolState) return undefined;
+  if (schoolState === homeState) return "state";
+  return sameRegion(schoolState, homeState, content.regions) ? "region" : undefined;
+}
+
+// Signing with (or transferring to) a school in your home state.
+export const HOMETOWN_REP = 5;
+
+export function isHometown(state: GameState, content: ContentBundle): boolean {
+  const school = content.schools.find((x) => x.id === state.school.schoolId);
+  return school?.state === state.setup.homeState;
 }
 
 export function schoolWeight(school: SchoolRow, homeState: string, content: ContentBundle): number {
