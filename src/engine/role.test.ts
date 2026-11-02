@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CAPTAIN_REP, STARTER_BAR, isCaptain, roleOf } from "./role";
-import { bigGameOdds } from "./big-game";
+import { wheelOdds, wheelParts } from "./big-game";
 
 describe("the captain's C", () => {
   it("goes to Rep at or above the bar, and goes away with it", () => {
@@ -19,8 +19,8 @@ describe("the captain's C", () => {
     expect(roleOf({ overall, character: 100 }, 4)).toBe("rotation");
   });
 
-  it("leans the last snap a captain's way", () => {
-    expect(bigGameOdds(75, 0.55, false, true)).toBeCloseTo(0.6);
-    expect(bigGameOdds(75, 0.55, false, false)).toBeCloseTo(0.55);
+  it("widens a captain's wedge on the wheel", () => {
+    expect(wheelOdds("even", wheelParts("even", 75, false, true))).toBeCloseTo(0.5);
+    expect(wheelOdds("even", wheelParts("even", 75, false, false))).toBeCloseTo(0.45);
   });
 });

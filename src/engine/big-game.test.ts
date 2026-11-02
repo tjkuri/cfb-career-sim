@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { PLAYBOOKS } from "../content/big-game";
-import { makeSpot } from "./big-game";
+import { BIG_GAME_EVENT_ID, makeSpot, resolveBigGame, wheelOdds, wheelParts } from "./big-game";
+import { createCareer } from "./create-career";
 import { createRng } from "./rng";
-import { ALL_POSITIONS } from "./types";
+import { ALL_POSITIONS, type PendingBigGame } from "./types";
 
 describe("makeSpot", () => {
   it("is always the last snap: fourth down, or the clock running out", () => {
@@ -39,5 +40,45 @@ describe("result lines", () => {
         }
       }
     }
+  });
+});
+
+describe("the read decides it", () => {
+  const spot = makeSpot("QB", createRng("w"));
+  const pending = (theirCall: number): PendingBigGame => ({
+    stakes: "bowl", name: "Test Bowl", opponent: "Them", theirCall, scoutedCall: theirCall, tendency: 90, lookCall: theirCall, situation: 0, pkg: 0, spot, thrownIn: false,
+  });
+  const play = (callId: string, theirCall: number, seed: string, overall = 75) => {
+    const s = createCareer({ lastName: "A", jerseyNumber: 1, homeState: "TX", position: "QB" }, seed);
+    s.overall = overall;
+    s.seasons.push({ seasonIndex: 0, schoolId: s.school.schoolId, snaps: 0, stats: {}, teamWins: 9, teamLosses: 3, overall, classYear: "FR", role: "starter", tierPlayed: 2 });
+    s.pendingBigGame = pending(theirCall);
+    s.currentEventId = BIG_GAME_EVENT_ID;
+    resolveBigGame(s, callId, createRng(seed), () => ({ overallDelta: 3, recoveryPhases: 1 }));
+    return s.seasons[0]!.bigGame!;
+  };
+
+  it("always wins with the call that beats theirs, and never spins", () => {
+    // Quick slant beats the Cover 0 blitz.
+    for (let i = 0; i < 50; i++) {
+      const r = play("slant", 0, `strong-${i}`, 40);
+      expect(r.matchup).toBe("strong");
+      expect(r.won).toBe(true);
+      expect(r.wheel).toBeUndefined();
+    }
+  });
+
+  it("spins the wheel otherwise, and the spin decides it", () => {
+    for (let i = 0; i < 50; i++) {
+      const r = play("draw", 0, `weak-${i}`);
+      expect(r.matchup).toBe("weak");
+      expect(r.won).toBe(r.wheel!.roll < r.wheel!.odds);
+    }
+  });
+
+  it("gives talent a bigger wedge", () => {
+    expect(wheelOdds("weak", wheelParts("weak", 92, false, false))).toBeGreaterThan(wheelOdds("weak", wheelParts("weak", 70, false, false)));
+    expect(wheelOdds("even", wheelParts("even", 99, false, true))).toBeLessThanOrEqual(0.8);
+    expect(wheelOdds("weak", wheelParts("weak", 40, true, false))).toBeGreaterThan(0);
   });
 });

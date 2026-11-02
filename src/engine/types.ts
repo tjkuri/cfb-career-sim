@@ -178,6 +178,11 @@ export interface Spot {
 
 export type Matchup = "strong" | "even" | "weak";
 
+export interface WheelPart {
+  kind: "matchup" | "talent" | "captain" | "thrownIn" | "spot";
+  amount: number;
+}
+
 export interface BigGameResult {
   stakes: BigGameStakes;
   name: string;
@@ -194,6 +199,11 @@ export interface BigGameResult {
   counter?: string;
   look?: string;
   matchup?: Matchup;
+  // The look's own call: what they showed you before the snap.
+  shown?: string;
+  // An even or wrong call goes to the wheel: `odds` of making a play anyway,
+  // built from `parts`, and where the spin landed (a win when roll < odds).
+  wheel?: { odds: number; roll: number; parts: WheelPart[] };
   // Indexes into the playbook, so the play can be drawn back.
   callIndex?: number;
   counterIndex?: number;

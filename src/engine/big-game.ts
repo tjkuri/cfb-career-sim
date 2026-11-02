@@ -1,4 +1,4 @@
-import type { BigGameResult, BigGameStakes, GameState, Matchup, PendingBigGame, Position, Spot } from "./types";
+import type { BigGameResult, BigGameStakes, GameState, Matchup, PendingBigGame, Position, Spot, WheelPart } from "./types";
 import type { ContentBundle } from "../content/schema";
 import { createRng, rngChance, rngInt, rngPick, type Rng } from "./rng";
 import { applyEffect, isSidelined, type InjuryLookup } from "./effects";
@@ -12,6 +12,21 @@ export const BIG_GAME_EVENT_ID = "big-game";
 // number decides it: past about 60%, trust the film; under it, trust the look.
 export const TENDENCIES = [35, 45, 60, 75, 90];
 export const LOOK_ACCURACY = 0.6;
+
+// The bigger the game, the less the film gives away: a title-game opponent
+// has scouted you back and breaks its own habits.
+export const TENDENCIES_BY_STAKES: Record<BigGameStakes, number[]> = {
+  rivalry: [45, 60, 75, 90],
+  bowl: [45, 60, 75, 90],
+  conf: [35, 45, 60, 75, 90],
+  cfp: [35, 45, 60, 75],
+};
+
+// The read decides the play. The right call always works; an even call or a
+// wrong one goes to the wheel, and the wheel is where talent and the C pay.
+export const WHEEL_BASE: Record<Exclude<Matchup, "strong">, number> = { even: 0.45, weak: 0.15 };
+const WHEEL_RANGE: Record<Exclude<Matchup, "strong">, [number, number]> = { even: [0.15, 0.8], weak: [0.05, 0.45] };
+export const WHEEL_PER_OVR = 0.01;
 
 // What winning the last snap is worth, on top of the trophy.
 export const BIG_GAME_WIN_OVR = 1;
@@ -87,7 +102,7 @@ export function setupBigGame(s: GameState, content: ContentBundle, rng: Rng, inj
     const fresh = book.situations.map((_, i) => i).filter((i) => !seen.includes(i));
     const situation = rngPick(rng, fresh.length > 0 ? fresh : book.situations.map((_, i) => i));
     const scoutedCall = rngInt(rng, 0, 2);
-    const tendency = rngPick(rng, TENDENCIES);
+    const tendency = rngPick(rng, TENDENCIES_BY_STAKES[stakes]);
     const theirCall = clue(scoutedCall, tendency / 100, rng);
     s.pendingBigGame = {
       stakes,
@@ -276,9 +291,16 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
   if (mine < 0) throw new Error(`Invalid play call: ${callId}`);
 
   const theirs = pending.theirCall;
-  const base = book.odds[mine]![theirs]!;
-  const p = bigGameOdds(s.overall, base + distanceShift(pending.spot, book.situation), pending.thrownIn, isCaptain(s));
-  const won = rngChance(rng, p);
+  const matchup = matchupOf(book.odds[mine]![theirs]!);
+  let won = true;
+  let wheel: BigGameResult["wheel"];
+  if (matchup !== "strong") {
+    const parts = wheelParts(matchup, s.overall, pending.thrownIn, isCaptain(s), distanceShift(pending.spot, book.situation));
+    const odds = wheelOdds(matchup, parts);
+    const roll = rng.next();
+    won = roll < odds;
+    wheel = { odds, roll, parts };
+  }
   s.pendingBigGame = undefined;
   s.currentEventId = null;
   finishBigGame(
@@ -295,7 +317,9 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
       call: book.calls[mine]!.label,
       counter: book.counters[theirs]!.label,
       look: book.counters[pending.lookCall]!.look,
-      matchup: matchupOf(base),
+      shown: book.counters[pending.lookCall]!.label,
+      matchup,
+      wheel,
       callIndex: mine,
       counterIndex: theirs,
       lookIndex: pending.lookCall,
@@ -307,9 +331,22 @@ export function resolveBigGame(s: GameState, callId: string, rng: Rng, injuryOf:
   );
 }
 
-export function bigGameOdds(overall: number, base: number, thrownIn: boolean, captain = false): number {
-  const p = base + (overall - 75) * 0.008 - (thrownIn ? 0.05 : 0) + (captain ? CAPTAIN_BIG_GAME_EDGE : 0);
-  return Math.max(0.1, Math.min(0.92, p));
+/** What goes into the wheel after a call that did not beat theirs. */
+export function wheelParts(matchup: Exclude<Matchup, "strong">, overall: number, thrownIn: boolean, captain: boolean, spot = 0): WheelPart[] {
+  const parts: WheelPart[] = [
+    { kind: "matchup", amount: WHEEL_BASE[matchup] },
+    { kind: "talent", amount: (overall - 75) * WHEEL_PER_OVR },
+  ];
+  if (captain) parts.push({ kind: "captain", amount: CAPTAIN_BIG_GAME_EDGE });
+  if (thrownIn) parts.push({ kind: "thrownIn", amount: -0.05 });
+  if (Math.abs(spot) >= 0.005) parts.push({ kind: "spot", amount: spot });
+  return parts;
+}
+
+export function wheelOdds(matchup: Exclude<Matchup, "strong">, parts: WheelPart[]): number {
+  const [lo, hi] = WHEEL_RANGE[matchup];
+  const p = parts.reduce((a, x) => a + x.amount, 0);
+  return Math.max(lo, Math.min(hi, p));
 }
 
 function finishBigGame(

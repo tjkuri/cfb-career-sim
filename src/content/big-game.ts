@@ -1,8 +1,9 @@
 import type { BigGameStakes, Position, Tier } from "../engine/types";
 
 // The play that decides the season. The player picks one of three calls, the
-// other side has picked one of three of their own, and the matchup sets the
-// odds. The film room tips which call the other side favours -- usually right.
+// other side has picked one of three of their own. The call that beats theirs
+// always works; any other goes to a wheel that talent and the C can widen.
+// The film room tips which call the other side favours -- usually right.
 export type Side = "offense" | "defense" | "kick";
 
 // Where on the field the season's last snap happens. Each position has a
@@ -26,7 +27,7 @@ export interface Playbook {
   // What the other side can run, and the look each shows before the snap
   // when it is not disguised.
   counters: { label: string; look: string }[];
-  // odds[myCall][theirCall], before overall is applied.
+  // odds[myCall][theirCall]: W beats theirs, N is an even fight, L loses it.
   odds: number[][];
   success: string[];
   failure: string[];

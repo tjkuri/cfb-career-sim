@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BIG_GAME_WIN_OVR, BIG_GAME_WIN_REP, type BigGameResult, type BigGameStakes, type Matchup, type Position, type Spot } from "../../engine/index";
+import { BIG_GAME_WIN_OVR, BIG_GAME_WIN_REP, WHEEL_PER_OVR, type BigGameResult, type BigGameStakes, type Matchup, type Position, type Spot, type WheelPart } from "../../engine/index";
 import { Telestrator } from "../telestrator/Telestrator";
 import { preSnap, stagePlay } from "../telestrator/choreo";
 import type { DecisionView, Resolved } from "../session/types";
@@ -22,9 +22,9 @@ const STAKES_TROPHY: Record<BigGameStakes, { id: string; label: string } | null>
 };
 
 const MATCHUP: Record<Matchup, { label: string; kick: string; tone: string }> = {
-  strong: { label: "Right call: it beats what they ran", kick: "Right read: you played the wind", tone: "good" },
-  even: { label: "Even matchup: it came down to execution", kick: "Half a read: it came down to your leg", tone: "neutral" },
-  weak: { label: "Wrong call: they had it covered", kick: "Wrong read: the wind had other ideas", tone: "bad" },
+  strong: { label: "Right call. You burned them.", kick: "Right read. You played the wind.", tone: "good" },
+  even: { label: "Even matchup. Somebody has to make a play.", kick: "Half a read. It's on your leg now.", tone: "neutral" },
+  weak: { label: "Wrong call. Can you make a play anyway?", kick: "Wrong read. Can your leg beat the wind?", tone: "bad" },
 };
 
 function clock(seconds: number): string {
@@ -72,6 +72,10 @@ function Scoreboard({ spot, team, opponent, score }: { spot: Spot; team: string;
 
 // --- the snap ----------------------------------------------------------------
 
+// The result plays out in beats: the read is revealed, a call that did not
+// beat theirs spins the wheel, then the snap is drawn.
+const READ_MS = 1500;
+const WHEEL_MS = 3000;
 const SNAP_MS = 3800;
 
 function useNarrow(): boolean {
@@ -86,24 +90,101 @@ function useNarrow(): boolean {
   return narrow;
 }
 
-/** Runs the snap from 0 to 1 once, unless reduced motion asks for the end. */
-function useSnapClock(): [number, () => void] {
-  const [t, setT] = useState(() => (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1 : 0));
+/** Milliseconds since the result appeared, up to `total`; skipping jumps to the end. */
+function useResultClock(total: number): [number, () => void] {
+  const [ms, setMs] = useState(() => (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? total : 0));
   useEffect(() => {
-    if (t >= 1) return;
+    if (ms >= total) return;
     let raf = 0;
     const start = performance.now();
     const tick = (now: number) => {
-      const next = Math.min(1, (now - start) / SNAP_MS);
-      setT(next);
-      if (next < 1) raf = requestAnimationFrame(tick);
+      const next = Math.min(total, now - start);
+      setMs(next);
+      if (next < total) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // Runs once per mount; skipping sets t to 1 directly.
+    // Runs once per mount; skipping sets the clock to the end directly.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return [t, () => setT(1)];
+  return [ms, () => setMs(total)];
+}
+
+// --- the wheel ---------------------------------------------------------------
+
+const SPINS = 4;
+
+function pct(x: number): string {
+  return `${Math.round(x * 100)}%`;
+}
+
+function signed(x: number): string {
+  const n = Math.round(x * 100);
+  return `${n >= 0 ? "+" : "−"}${Math.abs(n)}%`;
+}
+
+function partLabel(p: WheelPart, g: BigGameResult): string {
+  switch (p.kind) {
+    case "matchup":
+      return g.matchup === "weak" ? "Wrong call" : "Even matchup";
+    case "talent":
+      return `Talent (${Math.round(75 + p.amount / WHEEL_PER_OVR)} OVR)`;
+    case "captain":
+      return "You wear the C";
+    case "thrownIn":
+      return "Cold off the bench";
+    case "spot":
+      return g.spot?.side === "kick" ? `${g.spot.yardsToGoal + 17}-yard kick` : "Field position";
+  }
+}
+
+// A point on the wheel `turn` of the way round, clockwise from the top.
+function rim(turn: number, r: number): [number, number] {
+  const a = turn * 2 * Math.PI;
+  return [50 + r * Math.sin(a), 50 - r * Math.cos(a)];
+}
+
+function Wheel({ g, progress }: { g: BigGameResult; progress: number }) {
+  const w = g.wheel!;
+  const eased = 1 - Math.pow(1 - progress, 3);
+  // The landing point comes round to the pointer at the top.
+  const angle = -(SPINS + w.roll) * 360 * eased;
+  const [x, y] = rim(w.odds, 46);
+  const wedge = `M50 50 L50 4 A46 46 0 ${w.odds > 0.5 ? 1 : 0} 1 ${x.toFixed(2)} ${y.toFixed(2)} Z`;
+  const landed = progress >= 1;
+  const parts = w.parts.filter((p) => p.kind === "matchup" || Math.round(p.amount * 100) !== 0);
+  return (
+    <div className={`wheel ${landed ? (g.won ? "wheel-made" : "wheel-missed") : ""}`}>
+      <svg className="wheel-disc" viewBox="0 0 100 100" role="img" aria-label={`${pct(w.odds)} chance to make a play. ${landed ? (g.won ? "Made it." : "Missed.") : "Spinning."}`}>
+        <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: "50px 50px" }}>
+          <circle cx="50" cy="50" r="46" className="wheel-miss" />
+          <path d={wedge} className="wheel-make" />
+          <circle cx="50" cy="50" r="46" className="wheel-rim" />
+        </g>
+        <path d="M44 0 L56 0 L50 11 Z" className="wheel-pointer" />
+        <circle cx="50" cy="50" r="9" className="wheel-hub" />
+      </svg>
+      <div className="wheel-side">
+        <ul className="wheel-parts">
+          {parts.map((p) => (
+            <li key={p.kind}>
+              <span>{partLabel(p, g)}</span>
+              <span className={p.kind === "matchup" ? "" : p.amount >= 0 ? "up" : "down"}>
+                {p.kind === "matchup" ? pct(p.amount) : signed(p.amount)}
+              </span>
+            </li>
+          ))}
+          <li className="wheel-total">
+            <span>Chance to make a play</span>
+            <span>{pct(w.odds)}</span>
+          </li>
+        </ul>
+        <p className="wheel-verdict cond" aria-live="polite">
+          {landed ? (g.won ? "You made a play!" : "Not this time.") : "\u00a0"}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 // --- the call ----------------------------------------------------------------
@@ -192,9 +273,11 @@ interface ResultProps {
 export function BigGameResultCard({ r, position, team, onContinue }: ResultProps) {
   const g = r.bigGame!;
   const narrow = useNarrow();
-  const [t, skip] = useSnapClock();
-  const focus = useQuietFocus();
   const drawable = !!g.spot && g.callIndex !== undefined && g.counterIndex !== undefined && g.lookIndex !== undefined;
+  const spins = !!g.wheel;
+  const snapAt = READ_MS + (spins ? WHEEL_MS : 0);
+  const [ms, skip] = useResultClock(drawable ? snapAt + SNAP_MS : 0);
+  const focus = useQuietFocus();
   const play = useMemo(
     () =>
       drawable
@@ -211,12 +294,18 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
         : null,
     [drawable, position, g],
   );
+  const t = drawable ? Math.max(0, Math.min(1, (ms - snapAt) / SNAP_MS)) : 1;
   const done = !play || t >= 1;
+  const readShown = !play || ms >= 250;
+  const wheelProgress = Math.max(0, Math.min(1, (ms - READ_MS) / (WHEEL_MS - 600)));
+  // While it spins, the wheel sits over the frozen field where the eye already is.
+  const spinning = spins && !!play && ms >= READ_MS && ms < snapAt;
   // Only the long field goal is about the wind; a chip shot is about the block.
   const windy = g.spot?.side === "kick" && (g.pkg ?? 0) === 0;
   const [us, them] = g.score;
   const trophy = g.won ? STAKES_TROPHY[g.stakes] : null;
   const matchup = g.matchup ? MATCHUP[g.matchup] : null;
+  const disguised = g.lookIndex !== undefined && g.lookIndex !== g.counterIndex;
   return (
     <div className={`card biggame broadcast-card stakes-${g.stakes} enter ${done ? (g.won ? "is-good" : "is-bad") : ""}`}>
       {done && g.won && g.stakes !== "rivalry" && <Confetti big={g.stakes === "cfp"} />}
@@ -224,24 +313,38 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
       {g.spot && <Scoreboard spot={g.spot} team={team} opponent={g.opponent} score={done ? g.score : undefined} />}
       {play && g.spot && (
         <div className="stage">
-          <Telestrator play={play} spot={g.spot} t={t} live tight={narrow} ariaLabel={`${g.call} against ${g.counter}. ${finalWord(g)}`} />
+          <Telestrator play={play} spot={g.spot} t={t} live={t > 0} tight={narrow} ariaLabel={`${g.call} against ${g.counter}. ${finalWord(g)}`} />
+          {spinning && (
+            <div className="wheel-overlay">
+              <Wheel g={g} progress={wheelProgress} />
+            </div>
+          )}
         </div>
       )}
-      {done ? (
-        <>
+      {readShown && (
+        <div className="read-beat enter">
           <p className="reveal">
             {windy ? (
               <>
                 You aimed <b>{g.call?.toLowerCase()}</b>. The wind: <b>{g.counter?.toLowerCase()}</b>.
               </>
+            ) : disguised && g.shown ? (
+              <>
+                You called <b>{g.call}</b>. They showed <b>{g.shown}</b> and ran <b>{g.counter}</b>.
+              </>
             ) : (
               <>
                 You called <b>{g.call}</b>. They ran <b>{g.counter}</b>
-                {g.lookIndex !== undefined && g.lookIndex !== g.counterIndex ? <span className="dim"> (they showed you something else)</span> : null}.
+                {disguised ? <span className="dim"> (they showed you something else)</span> : null}.
               </>
             )}
           </p>
           {matchup && <p className={`matchup matchup-${matchup.tone}`}>{windy ? matchup.kick : matchup.label}</p>}
+        </div>
+      )}
+      {spins && (done || (!play && ms >= READ_MS)) && <Wheel g={g} progress={1} />}
+      {done ? (
+        <>
           <div className="final cond">
             <span className="final-word">{finalWord(g)}</span>
             <span className="final-score">

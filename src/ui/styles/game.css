@@ -347,6 +347,53 @@
 .matchup-neutral { color: var(--chalk-soft); }
 
 .reveal { color: var(--chalk-soft); margin: 0 0 0.4rem; }
+.read-beat { margin: 0.35rem 0 0.25rem; }
+
+/* the wheel: a call that did not beat theirs spins for a play anyway */
+.wheel {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  background: var(--input);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin: 0.35rem 0 0.6rem;
+  animation: enter 280ms ease-out both;
+}
+.wheel-disc { width: 100%; height: auto; overflow: visible; }
+.wheel-miss { fill: rgb(255 93 93 / 0.28); }
+.wheel-make { fill: var(--good); }
+.wheel-rim { fill: none; stroke: rgb(255 255 255 / 0.35); stroke-width: 1.5; }
+.wheel-pointer { fill: var(--gold); }
+.wheel-hub { fill: #050b16; stroke: var(--gold); stroke-width: 2; }
+.wheel-made .wheel-disc { filter: drop-shadow(0 0 14px rgb(61 220 132 / 0.55)); }
+.wheel-missed .wheel-make { opacity: 0.55; }
+.wheel-side { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+.wheel-parts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.92rem; }
+.wheel-parts li { display: flex; justify-content: space-between; gap: 0.75rem; color: var(--chalk-soft); }
+.wheel-parts li span:last-child { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--chalk); }
+.wheel-parts .up { color: var(--good) !important; }
+.wheel-parts .down { color: var(--bad) !important; }
+.wheel-total { border-top: 1px solid var(--line); padding-top: 0.25rem; margin-top: 0.15rem; font-weight: 800; color: var(--chalk) !important; }
+.wheel-total span:last-child { color: var(--gold) !important; font-size: 1.05rem; }
+.wheel-verdict { margin: 0; font-size: 1.3rem; font-weight: 900; min-height: 1.6rem; }
+.wheel-made .wheel-verdict { color: var(--good); animation: stamp 380ms cubic-bezier(.2,1.6,.4,1) both; }
+.wheel-missed .wheel-verdict { color: var(--bad); animation: stamp 380ms cubic-bezier(.2,1.6,.4,1) both; }
+.wheel-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0.75rem;
+  background: rgb(5 11 22 / 0.55);
+  animation: enter 220ms ease-out both;
+}
+.wheel-overlay .wheel { width: min(26rem, 100%); margin: 0; background: var(--card); grid-template-columns: 9rem minmax(0, 1fr); box-shadow: 0 12px 40px rgb(0 0 0 / 0.5); border: 1px solid var(--line); }
+@media (max-width: 420px) {
+  .wheel-overlay .wheel { grid-template-columns: 5.5rem minmax(0, 1fr); }
+  .wheel { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 0.75rem; padding: 0.6rem 0.7rem; }
+}
 .final { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0.25rem 0 0.75rem; }
 .final-word { font-size: clamp(2.5rem, 8vw, 3.75rem); font-weight: 900; line-height: 0.95; animation: stamp 420ms cubic-bezier(.2,1.6,.4,1) both 150ms; }
 .final-score { font-size: 1.8rem; font-weight: 900; }
@@ -557,7 +604,7 @@
 }
 .pstrip-ovr { font-weight: 900; font-size: 1.15rem; color: #10161f; border-radius: 6px; padding: 0.05rem 0.45rem; }
 .pstrip-name { font-weight: 900; font-size: 1.15rem; }
-.broadcast-card .stage { border-radius: 10px; overflow: hidden; margin: 0 0 0.75rem; background: #050b14; border: 1px solid var(--line); }
+.broadcast-card .stage { position: relative; border-radius: 10px; overflow: hidden; margin: 0 0 0.75rem; background: #050b14; border: 1px solid var(--line); }
 .broadcast-card .stakes-intro { max-width: 60rem; }
 /* ---------- telestrator ---------- */
 
