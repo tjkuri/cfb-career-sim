@@ -72,8 +72,8 @@ function Scoreboard({ spot, team, opponent, score }: { spot: Spot; team: string;
 
 // --- the snap ----------------------------------------------------------------
 
-// The result plays out in beats: the read is revealed, a call that did not
-// beat theirs spins the wheel, then the snap is drawn.
+// The result plays out in beats. A call that did not beat theirs reveals the
+// read and spins the wheel before the snap; a right call just snaps.
 const READ_MS = 1500;
 const WHEEL_MS = 3000;
 const SNAP_MS = 3800;
@@ -275,7 +275,10 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
   const narrow = useNarrow();
   const drawable = !!g.spot && g.callIndex !== undefined && g.counterIndex !== undefined && g.lookIndex !== undefined;
   const spins = !!g.wheel;
-  const snapAt = READ_MS + (spins ? WHEEL_MS : 0);
+  // A right call goes straight to the snap and is revealed after it, so the
+  // play itself is the surprise. Anything else needs the read first: it is
+  // why the wheel is spinning.
+  const snapAt = spins ? READ_MS + WHEEL_MS : 0;
   const [ms, skip] = useResultClock(drawable ? snapAt + SNAP_MS : 0);
   const focus = useQuietFocus();
   const play = useMemo(
@@ -296,7 +299,7 @@ export function BigGameResultCard({ r, position, team, onContinue }: ResultProps
   );
   const t = drawable ? Math.max(0, Math.min(1, (ms - snapAt) / SNAP_MS)) : 1;
   const done = !play || t >= 1;
-  const readShown = !play || ms >= 250;
+  const readShown = spins ? !play || ms >= 250 : done;
   const wheelProgress = Math.max(0, Math.min(1, (ms - READ_MS) / (WHEEL_MS - 600)));
   // While it spins, the wheel sits over the frozen field where the eye already is.
   const spinning = spins && !!play && ms >= READ_MS && ms < snapAt;
